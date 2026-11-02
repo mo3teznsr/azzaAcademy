@@ -79,6 +79,8 @@ export interface Course {
   category: string;
   level: CourseLevel;
   coverStyle: CoverStyle | string;
+  /** `/media/...` path or absolute URL; null = typographic cover. Resolve with `mediaUrl`. */
+  coverImageUrl: string | null;
   priceFils: number;
   status: CourseStatus;
   modules: CourseModule[];
@@ -86,7 +88,7 @@ export interface Course {
   updatedAt: ISODate;
 }
 
-export type CourseRef = Pick<Course, 'id' | 'slug' | 'titleEn' | 'titleAr' | 'coverStyle'>;
+export type CourseRef = Pick<Course, 'id' | 'slug' | 'titleEn' | 'titleAr' | 'coverStyle' | 'coverImageUrl'>;
 
 export interface ScheduleRule {
   id: string;
@@ -289,7 +291,7 @@ export interface Recording {
   startsAt: ISODate;
   endedAt: ISODate | null;
   recordingUrl: string;
-  batch: { id: string; code: string; course: Pick<Course, 'id' | 'titleEn' | 'titleAr' | 'coverStyle'> };
+  batch: { id: string; code: string; course: Pick<Course, 'id' | 'titleEn' | 'titleAr' | 'coverStyle' | 'coverImageUrl'> };
 }
 
 export interface Notification {

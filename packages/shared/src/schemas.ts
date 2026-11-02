@@ -68,6 +68,13 @@ export const createCourseInput = z.object({
   category: z.string().min(2),
   level: z.enum(COURSE_LEVELS),
   coverStyle: z.enum(['sun', 'sky', 'sage', 'peach']).default('sun'),
+  /** Photo cover: bundled art under `/media/` or an https URL (uploaded file). Null = typographic cover. */
+  coverImageUrl: z
+    .string()
+    .max(500)
+    .refine((v) => /^\/media\/[a-z0-9/_-]+\.(jpg|png|webp)$/.test(v) || v.startsWith('https://'), 'Must be a /media/ path or an https URL')
+    .nullable()
+    .optional(),
   priceAed: z.number().positive(),
   modules: z.array(courseModuleInput).default([]),
 });

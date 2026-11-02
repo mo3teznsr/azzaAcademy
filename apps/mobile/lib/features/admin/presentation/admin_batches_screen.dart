@@ -159,7 +159,7 @@ class BatchQuickViewScreen extends ConsumerWidget {
               if (b.teacher != null) ...[
                 SectionHeader(l.teacherLabel),
                 Row(children: [
-                  InitialsAvatar(b.teacher!.name),
+                  InitialsAvatar(b.teacher!.name, imageUrl: b.teacher!.image),
                   const SizedBox(width: 12),
                   Text(b.teacher!.name, style: t.titleSmall),
                 ]),

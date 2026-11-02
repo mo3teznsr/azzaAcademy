@@ -81,7 +81,7 @@ export function People() {
                   <TableRow key={u.id}>
                     <TableCell>
                       <span className="flex items-center gap-2.5">
-                        <InitialsAvatar name={u.name} size={32} />
+                        <InitialsAvatar name={u.name} src={u.image} size={32} />
                         <span>
                           <bdi className="block font-medium">{u.name}</bdi>
                           <span className="text-xs text-muted-foreground" dir="ltr">

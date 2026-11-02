@@ -4,6 +4,12 @@
  */
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
 
+/** Resolves an API-relative media path (`/media/...`, `/uploads/...`) to an absolute URL; absolute URLs pass through. */
+export function mediaUrl(path: string | null | undefined): string | undefined {
+  if (!path) return undefined;
+  return path.startsWith('/') ? `${API_URL}${path}` : path;
+}
+
 export type QueryValue = string | number | boolean | undefined | null | Array<string | number>;
 export type Query = Record<string, QueryValue>;
 

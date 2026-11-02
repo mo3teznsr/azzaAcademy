@@ -22,7 +22,7 @@ export function UserMenu({ settingsHref }: { settingsHref: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-full p-1 pe-3 outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/60">
-        <InitialsAvatar name={name} size={36} />
+        <InitialsAvatar name={name} src={user?.image} size={36} />
         <span className="hidden text-sm font-semibold sm:inline">
           <bdi>{name}</bdi>
         </span>

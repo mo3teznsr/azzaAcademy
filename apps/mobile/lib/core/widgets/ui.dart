@@ -6,8 +6,10 @@ import '../domain/enums.dart';
 import '../l10n/l10n.dart';
 import '../theme/tokens.dart';
 import '../theme/typography.dart';
+import 'media_image.dart';
 import 'signal_mark.dart';
 
+export 'media_image.dart';
 export 'signal_mark.dart';
 export 'states.dart';
 
@@ -273,12 +275,14 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
+/// Portrait when [imageUrl] is set (falls back to initials while loading or on error), else initials.
 class InitialsAvatar extends StatelessWidget {
-  const InitialsAvatar(this.name, {super.key, this.size = 40, this.color, this.speaking = false});
+  const InitialsAvatar(this.name, {super.key, this.size = 40, this.color, this.speaking = false, this.imageUrl});
   final String name;
   final double size;
   final Color? color;
   final bool speaking;
+  final String? imageUrl;
 
   static String initialsOf(String name) {
     final parts = name.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
@@ -290,6 +294,10 @@ class InitialsAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AzzaPalette.of(context);
+    final initials = Text(
+      initialsOf(name),
+      style: AzzaFonts.display(arabic: context.isArabic, size: size * 0.38, weight: FontWeight.w700, color: color == null ? p.text : AzzaColors.ink),
+    );
     return AnimatedContainer(
       duration: AzzaMotion.quick,
       width: size,
@@ -300,10 +308,8 @@ class InitialsAvatar extends StatelessWidget {
         color: color ?? p.line,
         border: speaking ? Border.all(color: AzzaColors.sun, width: 2.5) : null,
       ),
-      child: Text(
-        initialsOf(name),
-        style: AzzaFonts.display(arabic: context.isArabic, size: size * 0.38, weight: FontWeight.w700, color: color == null ? p.text : AzzaColors.ink),
-      ),
+      clipBehavior: imageUrl == null ? Clip.none : Clip.antiAlias,
+      child: imageUrl == null ? initials : MediaImage(imageUrl, fallback: Center(child: initials), cacheWidth: size),
     );
   }
 }

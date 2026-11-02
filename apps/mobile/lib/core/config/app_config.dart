@@ -27,6 +27,13 @@ class AppConfig {
 
   bool get stripeEnabled => stripePublishableKey.isNotEmpty;
 
+  /// Resolves an API-relative media path (`/media/...`, `/uploads/...`) against [apiBaseUrl];
+  /// absolute URLs pass through, empty → null.
+  String? resolveMediaUrl(String? path) {
+    if (path == null || path.isEmpty) return null;
+    return path.startsWith('/') ? '$apiBaseUrl$path' : path;
+  }
+
   /// Business constants mirrored from the API config (display only — the API is authoritative).
   static const bankTransferHoldHours = 48;
   static const lobbyOpensMinutesBefore = 15;

@@ -21,7 +21,7 @@ const { auth, services } = container;
 
 // ───────────────────────── users ─────────────────────────
 
-async function ensureUser(name: string, email: string, role: Role, extra: { locale?: string; phone?: string } = {}) {
+async function ensureUser(name: string, email: string, role: Role, extra: { locale?: string; phone?: string; image?: string } = {}) {
   let user = await db.user.findUnique({ where: { email } });
   if (!user) {
     await auth.api.signUpEmail({ body: { name, email, password: PASSWORD } });
@@ -29,7 +29,7 @@ async function ensureUser(name: string, email: string, role: Role, extra: { loca
   }
   return db.user.update({
     where: { id: user.id },
-    data: { role, emailVerified: true, timezone: 'Asia/Dubai', locale: extra.locale ?? 'en', phone: extra.phone },
+    data: { role, emailVerified: true, timezone: 'Asia/Dubai', locale: extra.locale ?? 'en', phone: extra.phone, ...(extra.image && { image: extra.image }) },
   });
 }
 
@@ -50,6 +50,7 @@ const PDF_MODULES = [
 const COURSES = [
   {
     slug: 'product-design-foundations',
+    coverImageUrl: '/media/courses/product-design-foundations.jpg',
     titleEn: 'Product Design Foundations',
     titleAr: 'أساسيات تصميم المنتجات',
     descriptionEn: 'Twelve live sessions from research to a portfolio-ready case study.',
@@ -61,6 +62,7 @@ const COURSES = [
   },
   {
     slug: 'spoken-arabic-a1',
+    coverImageUrl: '/media/courses/spoken-arabic-a1.jpg',
     titleEn: 'Spoken Arabic A1',
     titleAr: 'العربية المحكية A1',
     descriptionEn: 'Gulf Arabic for everyday conversations.',
@@ -72,6 +74,7 @@ const COURSES = [
   },
   {
     slug: 'python-for-data-l2',
+    coverImageUrl: '/media/courses/python-for-data-l2.jpg',
     titleEn: 'Python for Data L2',
     titleAr: 'بايثون للبيانات - المستوى 2',
     descriptionEn: 'pandas, plotting and a real dataset project.',
@@ -83,6 +86,7 @@ const COURSES = [
   },
   {
     slug: 'watercolour-l1',
+    coverImageUrl: '/media/courses/watercolour-l1.jpg',
     titleEn: 'Watercolour L1',
     titleAr: 'الألوان المائية - المستوى 1',
     descriptionEn: 'Washes, layering and loose botanicals.',
@@ -193,10 +197,10 @@ async function ensurePaidEnrollment(args: {
 async function main() {
   console.info('Seeding users…');
   const nour = await ensureUser('Nour Adel', 'admin@azza.test', 'ADMIN');
-  const lina = await ensureUser('Lina Haddad', 'lina@azza.test', 'TEACHER', { locale: 'ar' });
-  const omar = await ensureUser('Omar Saleh', 'omar@azza.test', 'TEACHER', { locale: 'ar' });
-  const maya = await ensureUser('Maya Chen', 'maya@azza.test', 'TEACHER');
-  const tomas = await ensureUser('Tomás Rivera', 'tomas@azza.test', 'TEACHER');
+  const lina = await ensureUser('Lina Haddad', 'lina@azza.test', 'TEACHER', { locale: 'ar', image: '/media/teachers/lina-haddad.jpg' });
+  const omar = await ensureUser('Omar Saleh', 'omar@azza.test', 'TEACHER', { locale: 'ar', image: '/media/teachers/omar-saleh.jpg' });
+  const maya = await ensureUser('Maya Chen', 'maya@azza.test', 'TEACHER', { image: '/media/teachers/maya-chen.jpg' });
+  const tomas = await ensureUser('Tomás Rivera', 'tomas@azza.test', 'TEACHER', { image: '/media/teachers/tomas-rivera.jpg' });
   const sara = await ensureUser('Sara Kamal', 'sara@azza.test', 'STUDENT', { phone: '+971501234567' });
   const others = [];
   for (const name of STUDENT_NAMES) others.push(await ensureUser(name, emailFor(name), 'STUDENT'));

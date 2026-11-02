@@ -55,7 +55,7 @@ class CourseDetailScreen extends ConsumerWidget {
               for (final teacher in teachers.values) ...[
                 const SizedBox(height: 18),
                 Row(children: [
-                  InitialsAvatar(teacher.name, color: coverColor(c.coverStyle)),
+                  InitialsAvatar(teacher.name, color: coverColor(c.coverStyle), imageUrl: teacher.image),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

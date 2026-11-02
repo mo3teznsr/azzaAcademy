@@ -218,6 +218,8 @@ model Course {
   category      String
   level         CourseLevel
   coverStyle    String       @default("sun")
+  /// Photo cover: a path under the API's `/media/` (bundled art) or an uploaded file URL. Null = typographic cover.
+  coverImageUrl String?
   priceFils     Int
   status        CourseStatus @default(DRAFT)
   createdAt     DateTime     @default(now())

@@ -87,7 +87,7 @@ function CourseView({ course }: { course: Course }) {
           {desc.text && <p className="max-w-2xl text-lg leading-relaxed text-stone">{desc.text}</p>}
           {teacher && (
             <div className="flex items-center gap-3">
-              <InitialsAvatar name={teacher.name} size={48} />
+              <InitialsAvatar name={teacher.name} src={teacher.image} size={48} />
               <div>
                 <b className="block">
                   <bdi>{teacher.name}</bdi>

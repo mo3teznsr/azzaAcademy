@@ -121,7 +121,7 @@ function OnAirHero({ session }: { session: ScheduleItem }) {
         <div className="flex flex-wrap items-center gap-5 text-[15px]">
           {session.batch.teacher && (
             <span className="flex items-center gap-2">
-              <InitialsAvatar name={session.batch.teacher.name} size={32} className="border-2 border-ink" />
+              <InitialsAvatar name={session.batch.teacher.name} src={session.batch.teacher.image} size={32} className="border-2 border-ink" />
               {fill(t.learn.presenting, { name: session.batch.teacher.name })}
             </span>
           )}

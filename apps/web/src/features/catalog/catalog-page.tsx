@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { ArrowDown, Search } from 'lucide-react';
@@ -36,7 +37,17 @@ function Hero() {
   const live = useLiveNow();
   const n = live.data?.liveSessions ?? 0;
   return (
-    <section className="grid items-end gap-10 pt-10 lg:grid-cols-[1.35fr_1fr]">
+    <section className="relative isolate -mx-4 mt-6 grid items-end gap-10 overflow-hidden rounded-[28px] px-6 pb-8 pt-40 sm:-mx-0 sm:px-10 lg:grid-cols-[1.35fr_1fr] lg:pt-56">
+      {/* The empty dark side of the photo sits behind the headline; mirrored in RTL so it stays on the reading start. */}
+      <Image
+        src="/images/scenes/hero.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="-z-20 object-cover object-[70%_center] rtl:-scale-x-100"
+      />
+      <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-ink via-ink/60 to-ink/10" />
       <div>
         <div className="label-mono mb-4 flex items-center gap-2 text-onair">
           <SignalMark size={18} /> {t.nav.public.findBatch}

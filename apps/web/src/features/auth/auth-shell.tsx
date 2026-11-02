@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import Image from 'next/image';
 import { Logo } from '@/components/brand/signal-mark';
 import { LocaleSwitcher } from '@/components/brand/switchers';
 import { useI18n } from '@/lib/i18n/provider';
@@ -10,7 +11,9 @@ export function AuthShell({ kicker, title, sub, children }: { kicker: string; ti
   const { t } = useI18n();
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
-      <section className="relative hidden flex-col justify-between overflow-hidden border-e border-line p-12 lg:flex">
+      <section className="relative isolate hidden flex-col justify-between overflow-hidden border-e border-line p-12 lg:flex">
+        <Image src="/images/scenes/auth.jpg" alt="" fill priority sizes="55vw" className="-z-20 object-cover object-top opacity-70" />
+        <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-ink via-ink/70 to-ink/20" />
         <Logo />
         <div>
           <h2 className="font-display text-[clamp(72px,8vw,140px)] font-extrabold leading-[0.82]">

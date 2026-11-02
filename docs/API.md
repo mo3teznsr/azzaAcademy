@@ -34,6 +34,8 @@ User fields: `id, name, email, role, locale ('en'|'ar'), timezone, displayCurren
 ## Courses ✅
 `GET /api/v1/courses` (`courseListQuery`; non-admins see PUBLISHED) · `GET /api/v1/courses/:idOrSlug` · `POST` (ADMIN, `createCourseInput`) · `PATCH /:id` (ADMIN, `updateCourseInput`).
 
+**Images.** `course.coverImageUrl` (also on every embedded course ref) is a photo cover: a `/media/...` path or an `https://` URL; `null` = typographic cover in `coverStyle` colours. People keep their photo in `image` (seeded teachers: `/media/teachers/<name>.jpg`). Paths starting with `/` are relative to the API origin — clients resolve them (`mediaUrl()` on web, `resolveMediaUrl()` on mobile). `GET /media/*` serves the bundled art in `apps/api/public/media/` (public, static).
+
 ## Batches ✅
 | | |
 |---|---|

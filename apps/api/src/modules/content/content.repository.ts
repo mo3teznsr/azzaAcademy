@@ -79,7 +79,7 @@ export class PrismaContentRepository {
         startsAt: true,
         endedAt: true,
         recordingUrl: true,
-        batch: { select: { id: true, code: true, course: { select: { id: true, titleEn: true, titleAr: true, coverStyle: true } } } },
+        batch: { select: { id: true, code: true, course: { select: { id: true, titleEn: true, titleAr: true, coverStyle: true, coverImageUrl: true } } } },
       },
     });
   }

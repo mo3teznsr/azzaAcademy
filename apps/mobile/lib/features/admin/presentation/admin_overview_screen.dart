@@ -46,7 +46,7 @@ class AdminOverviewScreen extends ConsumerWidget {
                     DisplayText(l.opsGreeting(user?.firstName ?? ''), size: 32),
                   ]),
                 ),
-                InitialsAvatar(user?.name ?? '', size: 44),
+                InitialsAvatar(user?.name ?? '', size: 44, imageUrl: user?.image),
               ]),
               const SizedBox(height: 20),
               Material(

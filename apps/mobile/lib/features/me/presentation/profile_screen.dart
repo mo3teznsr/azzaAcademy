@@ -47,7 +47,7 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 16, AzzaSpace.gutter, 32),
           children: [
             Row(children: [
-              InitialsAvatar(user.name, size: 64, color: p.accent),
+              InitialsAvatar(user.name, size: 64, color: p.accent, imageUrl: user.image),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -1,4 +1,4 @@
-export { ApiError, API_URL } from './client';
+export { ApiError, API_URL, mediaUrl } from './client';
 export * from './types';
 export { coursesApi } from './courses';
 export { batchesApi } from './batches';

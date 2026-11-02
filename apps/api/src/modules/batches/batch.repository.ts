@@ -42,7 +42,7 @@ export interface TeacherBusySlot {
 }
 
 const summary = {
-  course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverStyle: true, priceFils: true, category: true } },
+  course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverStyle: true, coverImageUrl: true, priceFils: true, category: true } },
   teacher: { select: { id: true, name: true, image: true } },
   schedule: true,
   _count: { select: { enrollments: { where: { status: 'ACTIVE' as const } }, sessions: true } },

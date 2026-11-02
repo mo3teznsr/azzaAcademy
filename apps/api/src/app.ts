@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { serveStatic } from 'hono/bun';
 import { logger } from 'hono/logger';
+import { fileURLToPath } from 'node:url';
 import type { Container } from './container';
 import { errorHandler } from './http/error-handler';
 import { sessionMiddleware } from './http/middleware';
@@ -17,6 +19,9 @@ import { rescheduleRequestRoutes } from './modules/sessions/reschedule-request.r
 import { calendarFeedRoutes } from './modules/me/calendar.routes';
 import { statsRoutes } from './modules/stats/stats.routes';
 import { webhookRoutes } from './modules/webhooks/webhook.routes';
+
+/** `apps/api/public/media/` regardless of the process cwd. */
+const MEDIA_ROOT = fileURLToPath(new URL('../public/media/', import.meta.url));
 
 export function createApp(container: Container) {
   const { auth, config, services, adapters } = container;
@@ -47,6 +52,10 @@ export function createApp(container: Container) {
   app.use('/api/*', sessionMiddleware(auth));
 
   app.get('/health', (c) => c.json({ ok: true }));
+  // Bundled art (course covers, teacher portraits) shipped with the API; paths are stored as `/media/...`.
+  app.get('/media/*', serveStatic({ root: MEDIA_ROOT, rewriteRequestPath: (p) => p.slice('/media'.length) }), (c) =>
+    c.json({ error: { code: 'NOT_FOUND', message: 'File not found' } }, 404),
+  );
   // Uploaded files served from the FileStorage port; keys are unguessable. With S3 the URLs point at
   // CloudFront instead — this route only keeps older local `/uploads/...` links working.
   app.get('/uploads/*', async (c) => {

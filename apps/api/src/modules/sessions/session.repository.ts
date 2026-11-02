@@ -74,7 +74,7 @@ export class PrismaSessionRepository {
             timezone: true,
             language: true,
             status: true,
-            course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverStyle: true } },
+            course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverStyle: true, coverImageUrl: true } },
             teacher: { select: { id: true, name: true, image: true } },
           },
         },

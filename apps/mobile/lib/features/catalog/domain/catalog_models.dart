@@ -27,6 +27,7 @@ class Course {
     this.category = '',
     this.level = CourseLevel.beginner,
     this.coverStyle = 'sun',
+    this.coverImageUrl,
     this.priceFils = 0,
     this.status = CourseStatus.published,
     this.modules = const [],
@@ -43,6 +44,7 @@ class Course {
         category: str(j, 'category'),
         level: CourseLevel.parse(j['level']),
         coverStyle: str(j, 'coverStyle', 'sun'),
+        coverImageUrl: strOrNull(j, 'coverImageUrl'),
         priceFils: integer(j, 'priceFils'),
         status: CourseStatus.parse(j['status']),
         modules: list(j, 'modules').map(CourseModule.fromJson).toList()..sort((a, b) => a.order.compareTo(b.order)),
@@ -58,6 +60,9 @@ class Course {
   final String category;
   final CourseLevel level;
   final String coverStyle;
+
+  /// Photo cover (`/media/...` or absolute URL); null = typographic cover.
+  final String? coverImageUrl;
   final int priceFils;
   final CourseStatus status;
   final List<CourseModule> modules;

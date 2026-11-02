@@ -1,7 +1,35 @@
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { mediaUrl } from '@/lib/api/client';
 import { initials, toneFor } from '@/lib/schedule';
 
-export function InitialsAvatar({ name, size = 32, className, tone }: { name: string; size?: number; className?: string; tone?: string }) {
+/** Portrait when the person has an `image`, otherwise coloured initials. Decorative: the name is always shown beside it. */
+export function InitialsAvatar({
+  name,
+  src,
+  size = 32,
+  className,
+  tone,
+}: {
+  name: string;
+  src?: string | null;
+  size?: number;
+  className?: string;
+  tone?: string;
+}) {
+  const url = mediaUrl(src);
+  if (url) {
+    return (
+      <Image
+        src={url}
+        alt=""
+        width={size}
+        height={size}
+        className={cn('shrink-0 rounded-full object-cover', className)}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
   return (
     <span
       aria-hidden
