@@ -39,5 +39,10 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    # See Shims/DeviceInfoVisionShim.h (Xcode 26.0.x SDK lacks isiOSAppOnVision).
+    next unless target.name == 'device_info_plus'
+    target.build_configurations.each do |config|
+      config.build_settings['OTHER_CFLAGS'] = ['$(inherited)', '-include', '${PODS_ROOT}/../Shims/DeviceInfoVisionShim.h']
+    end
   end
 end
