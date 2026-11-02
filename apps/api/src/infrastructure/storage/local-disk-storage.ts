@@ -1,13 +1,10 @@
-import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { FileStorage, StoredFile } from '../../core/ports';
-
-const KEY = /^([a-z0-9-]+)\/([a-f0-9]{32})\.([a-z0-9]{2,5})$/;
-const TYPES: Record<string, string> = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', heic: 'image/heic' };
+import { newStorageKey, storageKeyContentType } from './storage-key';
 
 /**
- * Stores files under `<root>/<folder>/<random>.<ext>` and serves them at `<publicBaseUrl>/<key>`.
+ * Local/dev adapter. Stores files under `<root>/<folder>/<random>.<ext>` and serves them at `<publicBaseUrl>/<key>`.
  * Keys are unguessable (128-bit) and strictly validated on read, so the route can't escape `root`.
  */
 export class LocalDiskStorage implements FileStorage {
@@ -17,19 +14,18 @@ export class LocalDiskStorage implements FileStorage {
   ) {}
 
   async save(file: { folder: string; extension: string; contentType: string; bytes: Uint8Array }): Promise<StoredFile> {
-    const key = `${file.folder}/${randomBytes(16).toString('hex')}.${file.extension}`;
-    if (!KEY.test(key)) throw new Error(`Invalid storage key ${key}`);
+    const key = newStorageKey(file.folder, file.extension);
     await mkdir(join(this.root, file.folder), { recursive: true });
     await writeFile(join(this.root, key), file.bytes);
     return { key, url: `${this.publicBaseUrl.replace(/\/$/, '')}/${key}` };
   }
 
   async read(key: string) {
-    const m = KEY.exec(key);
-    if (!m) return null;
+    const contentType = storageKeyContentType(key);
+    if (!contentType) return null;
     try {
       const bytes = new Uint8Array(await readFile(join(this.root, key)));
-      return { bytes, contentType: TYPES[m[3]!] ?? 'application/octet-stream' };
+      return { bytes, contentType };
     } catch {
       return null;
     }

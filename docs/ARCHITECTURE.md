@@ -46,3 +46,17 @@ cd apps/api && cp .env.example .env   # set DATABASE_URL, BETTER_AUTH_SECRET
 bunx prisma migrate dev && bun run db:seed
 bun run dev                           # http://localhost:4000
 ```
+
+## File storage (S3 + CloudFront)
+
+Uploads (payment receipts) go through the `FileStorage` port. With `S3_BUCKET` + `CLOUDFRONT_URL` set, `S3FileStorage` writes to S3 and returns CloudFront URLs; otherwise dev falls back to `LocalDiskStorage` (`apps/api/uploads/`). Production refuses to boot without S3.
+
+AWS setup:
+
+1. **S3 bucket** (e.g. `azza-uploads-prod` in `AWS_REGION`): keep *Block all public access* on; default encryption SSE-S3.
+2. **CloudFront distribution** with the bucket as origin and **Origin Access Control** (sign requests). Viewer protocol: redirect to HTTPS; cache policy `CachingOptimized` (keys are immutable). Optionally add an alternate domain (e.g. `cdn.azza.ae`) with an ACM certificate from `us-east-1`.
+3. **Bucket policy**: allow `s3:GetObject` on `arn:aws:s3:::<bucket>/*` to principal `cloudfront.amazonaws.com` with condition `AWS:SourceArn` = the distribution ARN (CloudFront's OAC screen generates it).
+4. **API IAM permissions**: `s3:PutObject` and `s3:GetObject` on `arn:aws:s3:::<bucket>/*`. Use the task/instance role in AWS; locally use `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`.
+5. Set `AWS_REGION`, `S3_BUCKET`, `CLOUDFRONT_URL` (the `https://dxxxx.cloudfront.net` or custom domain) in the API env.
+
+Keys are 128-bit random (`receipts/<hex>.<ext>`), so CloudFront URLs are unguessable but not access-controlled; switch to CloudFront signed URLs if receipts must require auth.

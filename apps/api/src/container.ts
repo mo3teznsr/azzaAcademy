@@ -14,6 +14,7 @@ import { FakePaymentGateway, StripePaymentGateway } from './infrastructure/payme
 import { FirebasePushNotifier, LogPushNotifier } from './infrastructure/push/push-notifiers';
 import { SocketIoBroadcaster } from './infrastructure/realtime/realtime';
 import { LocalDiskStorage } from './infrastructure/storage/local-disk-storage';
+import { S3FileStorage } from './infrastructure/storage/s3-storage';
 import { DisabledVideoProvider, LiveKitVideoProvider } from './infrastructure/video/livekit-provider';
 import { PrismaBatchRepository } from './modules/batches/batch.repository';
 import { BatchService } from './modules/batches/batch.service';
@@ -99,7 +100,10 @@ export function createAdapters(config: AppConfig): Adapters {
       ? new StripePaymentGateway(config.STRIPE_SECRET_KEY, config.STRIPE_WEBHOOK_SECRET)
       : new FakePaymentGateway(),
     realtime: new SocketIoBroadcaster(),
-    storage: new LocalDiskStorage(config.UPLOADS_DIR ?? DEFAULT_UPLOADS_DIR, `${config.API_URL.replace(/\/$/, '')}/uploads`),
+    storage:
+      config.S3_BUCKET && config.CLOUDFRONT_URL
+        ? new S3FileStorage(config.S3_BUCKET, config.AWS_REGION, config.CLOUDFRONT_URL)
+        : new LocalDiskStorage(config.UPLOADS_DIR ?? DEFAULT_UPLOADS_DIR, `${config.API_URL.replace(/\/$/, '')}/uploads`),
   };
 }
 

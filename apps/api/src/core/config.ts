@@ -7,8 +7,13 @@ const envSchema = z.object({
   API_URL: z.url().default('http://localhost:4000'),
   WEB_URL: z.url().default('http://localhost:3000'),
   TRUSTED_ORIGINS: z.string().default('http://localhost:3000'),
-  /** Local-disk FileStorage root (receipts); defaults to apps/api/uploads. */
+  /** Local-disk FileStorage root (receipts); defaults to apps/api/uploads. Used only when S3 is not configured. */
   UPLOADS_DIR: z.string().optional(),
+
+  /** S3 + CloudFront FileStorage. Set S3_BUCKET and CLOUDFRONT_URL to enable (required in production). */
+  AWS_REGION: z.string().default('me-central-1'),
+  S3_BUCKET: z.string().optional(),
+  CLOUDFRONT_URL: z.url().optional().or(z.literal('')),
 
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.url().default('http://localhost:4000'),
@@ -44,6 +49,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('\n  ');
     throw new Error(`Invalid environment:\n  ${issues}`);
+  }
+  if (Boolean(parsed.data.S3_BUCKET) !== Boolean(parsed.data.CLOUDFRONT_URL)) {
+    throw new Error('Invalid environment:\n  S3_BUCKET and CLOUDFRONT_URL must be set together');
+  }
+  if (parsed.data.NODE_ENV === 'production' && !parsed.data.S3_BUCKET) {
+    throw new Error('Invalid environment:\n  S3_BUCKET and CLOUDFRONT_URL are required in production');
   }
   return {
     ...parsed.data,

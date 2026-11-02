@@ -47,7 +47,8 @@ export function createApp(container: Container) {
   app.use('/api/*', sessionMiddleware(auth));
 
   app.get('/health', (c) => c.json({ ok: true }));
-  // Uploaded files (receipts) served from the FileStorage port; keys are unguessable.
+  // Uploaded files served from the FileStorage port; keys are unguessable. With S3 the URLs point at
+  // CloudFront instead — this route only keeps older local `/uploads/...` links working.
   app.get('/uploads/*', async (c) => {
     const file = await adapters.storage.read(c.req.path.slice('/uploads/'.length));
     if (!file) return c.json({ error: { code: 'NOT_FOUND', message: 'File not found' } }, 404);
