@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 
 import '../../../core/prefs/app_prefs.dart';
@@ -8,10 +9,13 @@ import '../../me/data/me_repository.dart';
 import '../domain/app_user.dart';
 import 'auth_controller.dart';
 
-/// Production session hooks: sync locale/timezone/currency chosen during
-/// onboarding to `PATCH /me`, and register the FCM token at `POST /me/devices`.
+/// Production session hooks.
+/// - Sign-up: save the language/timezone/currency chosen during onboarding to the new profile (`PATCH /me`).
+/// - Sign-in / restore: the account's saved profile wins — adopt its locale and display currency locally,
+///   so one person's device choices are never written into another account signing in on the same phone.
+/// - Both: register the FCM token at `POST /me/devices` (when push is configured).
 List<Override> productionSessionHooks() => [
-      postSignInHookProvider.overrideWith((ref) => (AppUser user) async {
+      postSignUpHookProvider.overrideWith((ref) => (AppUser user) async {
             final me = ref.read(meRepositoryProvider);
             final locale = ref.read(localeProvider);
             final onboarding = ref.read(onboardingProvider);
@@ -23,11 +27,14 @@ List<Override> productionSessionHooks() => [
                   .updateProfile(locale: locale, timezone: onboarding.timezone, displayCurrency: currency)
                   .then<void>((_) {}, onError: (_) {}));
             }
-            final push = ref.read(pushServiceProvider);
-            if (!push.enabled) return;
-            final token = await push.token();
-            if (token != null) await me.registerDevice(token, push.platform);
-            push.tokenRefresh.listen((t) => me.registerDevice(t, push.platform).then<void>((_) {}, onError: (_) {}));
+            await _registerDevice(ref, user);
+          }),
+      postSignInHookProvider.overrideWith((ref) => (AppUser user) async {
+            if (ref.read(localeProvider) != user.locale) await ref.read(localeProvider.notifier).set(user.locale);
+            if (ref.read(displayCurrencyProvider) != user.displayCurrency) {
+              await ref.read(displayCurrencyProvider.notifier).set(user.displayCurrency);
+            }
+            await _registerDevice(ref, user);
           }),
       preSignOutHookProvider.overrideWith((ref) => (AppUser user) async {
             final push = ref.read(pushServiceProvider);
@@ -36,3 +43,12 @@ List<Override> productionSessionHooks() => [
             if (token != null) await ref.read(meRepositoryProvider).unregisterDevice(token);
           }),
     ];
+
+Future<void> _registerDevice(Ref ref, AppUser user) async {
+  final push = ref.read(pushServiceProvider);
+  if (!push.enabled) return;
+  final me = ref.read(meRepositoryProvider);
+  final token = await push.token();
+  if (token != null) await me.registerDevice(token, push.platform);
+  push.tokenRefresh.listen((t) => me.registerDevice(t, push.platform).then<void>((_) {}, onError: (_) {}));
+}

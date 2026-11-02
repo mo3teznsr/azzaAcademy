@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/prefs/app_prefs.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
@@ -77,7 +78,7 @@ class EarningsScreen extends ConsumerWidget {
                   child: Row(children: [
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('${b.code} · ${b.courseTitle}', style: t.titleSmall),
+                        Text('${b.code} · ${b.title(ref.watch(localeProvider))}', style: t.titleSmall),
                         Text(
                           [l.sessionsDelivered(f.n(b.sessionsDelivered)), if (b.perSessionFils != null) '${f.aed(b.perSessionFils!)} / S'].join(' · '),
                           style: t.bodySmall,

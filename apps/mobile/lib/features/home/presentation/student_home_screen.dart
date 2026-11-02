@@ -166,8 +166,10 @@ class _BatchTile extends ConsumerWidget {
     final next = b.nextSession(now);
     final locale = ref.watch(localeProvider);
     final pendingPayment = !enrollment.isActive;
+    final orderId = enrollment.latestOrderId;
     return RaisedCard(
-      onTap: () => context.push(Routes.batchSchedule(b.id)),
+      // A seat that isn't paid yet opens its order (upload receipt / status); otherwise the schedule.
+      onTap: () => context.push(pendingPayment && orderId != null ? Routes.order(orderId) : Routes.batchSchedule(b.id)),
       child: Row(
         children: [
           Slate('${b.code} · ${fmt.n(enrollment.done(now))}/${fmt.n(enrollment.total)}'),
@@ -178,7 +180,15 @@ class _BatchTile extends ConsumerWidget {
               children: [
                 Text(b.course?.title(locale) ?? b.code, style: Theme.of(context).textTheme.titleSmall),
                 if (pendingPayment)
-                  Text(l.orderVerifying, style: Theme.of(context).textTheme.bodySmall)
+                  Text(
+                    switch (enrollment.latestOrderStatus) {
+                      OrderStatus.awaitingReceipt => l.orderAwaitingReceipt,
+                      OrderStatus.awaitingPayment => l.orderAwaitingPayment,
+                      OrderStatus.amountMismatch => l.orderAmountMismatch,
+                      _ => l.orderVerifying,
+                    },
+                    style: Theme.of(context).textTheme.bodySmall,
+                  )
                 else if (next != null)
                   Text(l.nextAt(fmt.dayTime(next.startsAt)), style: Theme.of(context).textTheme.bodySmall),
               ],

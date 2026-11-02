@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/prefs/app_prefs.dart';
+import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
@@ -50,6 +51,7 @@ class _AdminBatchesScreenState extends ConsumerState<AdminBatchesScreen> {
                     label: Text(s == null ? l.allFilter : s.wire.toLowerCase()),
                     selected: _status == s,
                     showCheckmark: false,
+                    labelStyle: TextStyle(color: _status == s ? AzzaPalette.of(context).onAccent : AzzaPalette.of(context).text),
                     onSelected: (_) => setState(() => _status = s),
                   ),
                 ),
@@ -132,7 +134,7 @@ class BatchQuickViewScreen extends ConsumerWidget {
                   Text(
                     [
                       if (b.startsOn != null && b.endsOn != null) '${f.shortDate(b.startsOn!)} → ${f.shortDate(b.endsOn!)}',
-                      l.sessionsRun(f.n(b.sessionsDone(now)), f.n(b.sessionCount)),
+                      if (b.sessions.isNotEmpty) l.sessionsRun(f.n(b.sessionsDone(now)), f.n(b.sessionCount)),
                     ].join(' · '),
                     style: t.bodySmall,
                   ),

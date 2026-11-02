@@ -66,6 +66,12 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
     final t = Theme.of(context).textTheme;
     final p = AzzaPalette.of(context);
     final reasons = [l.reasonShort, l.reasonReference, l.reasonUnreadable, l.reasonNotReceived];
+    // Prefill the received amount before the bottom bar is built, so Approve is enabled on first render.
+    final loaded = order.value;
+    if (!_hydrated && loaded != null) {
+      _hydrated = true;
+      _received.text = Money.filsToAed(loaded.receivedFils ?? loaded.totalFils).toStringAsFixed(2);
+    }
 
     return Scaffold(
       appBar: AppBar(title: order.hasValue ? Text(l.transferTitle(order.requireValue.reference)) : null),
@@ -73,10 +79,6 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
         value: order,
         onRetry: () => ref.invalidate(orderProvider(widget.orderId)),
         data: (o) {
-          if (!_hydrated) {
-            _hydrated = true;
-            _received.text = Money.filsToAed(o.receivedFils ?? o.totalFils).toStringAsFixed(2);
-          }
           final received = double.tryParse(_received.text.replaceAll(',', ''));
           final matches = received != null && Money.aedToFils(received) == o.totalFils;
           return ListView(

@@ -51,7 +51,11 @@ class TeacherBatchesScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Text(scheduleLabel(f, b.schedule), style: Theme.of(context).textTheme.bodyMedium),
                   Text(
-                    '${l.enrolledLabel} ${f.n(b.seatsTaken)}/${f.n(b.capacity)} · ${l.doneLabel} ${f.n(b.sessionsDone(now))}/${f.n(b.sessionCount)}',
+                    [
+                      '${l.enrolledLabel} ${f.n(b.seatsTaken)}/${f.n(b.capacity)}',
+                      // `GET /batches` items carry no sessions[]; progress shows on the batch detail.
+                      if (b.sessions.isNotEmpty) '${l.doneLabel} ${f.n(b.sessionsDone(now))}/${f.n(b.sessionCount)}',
+                    ].join(' · '),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ]),

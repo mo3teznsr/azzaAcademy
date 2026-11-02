@@ -84,6 +84,8 @@ class BatchEarning {
   final int sessionCount;
   final int? perSessionFils;
   final int? projectedTotalFils;
+
+  String title(AppLocale l) => l == AppLocale.ar && courseTitleAr != null ? courseTitleAr! : courseTitle;
 }
 
 @immutable

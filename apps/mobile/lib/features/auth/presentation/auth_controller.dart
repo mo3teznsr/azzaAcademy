@@ -11,7 +11,11 @@ import '../domain/app_user.dart';
 /// Overridable so tests and previews stay offline.
 typedef SessionHook = Future<void> Function(AppUser user);
 
+/// After sign-in / session restore (the account's saved profile wins).
 final postSignInHookProvider = Provider<SessionHook>((ref) => (_) async {});
+
+/// After creating an account (device choices from onboarding are saved to the new profile).
+final postSignUpHookProvider = Provider<SessionHook>((ref) => (_) async {});
 final preSignOutHookProvider = Provider<SessionHook>((ref) => (_) async {});
 
 /// `AsyncData(null)` = signed out, `AsyncData(user)` = signed in,
@@ -50,7 +54,7 @@ class AuthController extends AsyncNotifier<AppUser?> {
   Future<AppUser> signUp(String name, String email, String password) async {
     final user = await ref.read(authRepositoryProvider).signUp(name: name, email: email, password: password);
     state = AsyncData(user);
-    unawaited(_runHook(postSignInHookProvider, user));
+    unawaited(_runHook(postSignUpHookProvider, user));
     return user;
   }
 
