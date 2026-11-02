@@ -1,0 +1,54 @@
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+
+export type SignalState = 'scheduled' | 'starting' | 'live' | 'ended';
+
+const COLOR: Record<SignalState, string> = {
+  scheduled: 'var(--sky)',
+  starting: 'var(--sun)',
+  live: 'var(--onair)',
+  ended: 'var(--stone)',
+};
+
+/** The "signal" motif: a dot with two arcs. Arcs pulse only while a room is live. */
+export function SignalMark({ state = 'live', size = 24, className, title }: { state?: SignalState; size?: number; className?: string; title?: string }) {
+  const color = COLOR[state];
+  const arcs = state !== 'ended';
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      role={title ? 'img' : undefined}
+      aria-label={title}
+      aria-hidden={title ? undefined : true}
+      className={cn('shrink-0', className)}
+      style={{ direction: 'ltr' }}
+    >
+      <circle cx="12" cy="12" r="3.2" fill={color} />
+      {arcs && (
+        <path
+          d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          className={state === 'live' ? 'signal-arc-live' : undefined}
+          opacity={state === 'scheduled' ? 0.6 : 1}
+        />
+      )}
+    </svg>
+  );
+}
+
+export function Logo({ href = '/', className, suffix }: { href?: string; className?: string; suffix?: string }) {
+  return (
+    <Link href={href} className={cn('inline-flex items-center gap-2.5 text-foreground no-underline', className)} aria-label="Azza">
+      <SignalMark size={26} />
+      <span className="font-display text-2xl font-extrabold" dir="ltr">
+        azza
+      </span>
+      {suffix && <span className="label-mono text-stone ms-auto">{suffix}</span>}
+    </Link>
+  );
+}

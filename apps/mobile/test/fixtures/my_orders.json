@@ -1,0 +1,53 @@
+{
+  "items": [
+    {
+      "id": "cmvz28m0a003f8vv1avrsl7za",
+      "reference": "AZ-B07-30101",
+      "enrollmentId": "cmvz28m07003e8vv1q566taaa",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "method": "STRIPE",
+      "status": "PAID",
+      "subtotalFils": 88000,
+      "discountFils": 0,
+      "vatFils": 4400,
+      "totalFils": 92400,
+      "receivedFils": 92400,
+      "refundedFils": 0,
+      "feeFils": 2780,
+      "displayCurrency": "AED",
+      "fxRate": 1,
+      "couponCode": null,
+      "stripePaymentIntentId": "pi_seed_AZ-B07-30101",
+      "bankAccountId": null,
+      "receiptUrl": null,
+      "receiptUploadedAt": null,
+      "expiresAt": null,
+      "verifiedById": null,
+      "verifiedAt": null,
+      "rejectionReason": null,
+      "paidAt": "2026-10-05T09:30:00.000Z",
+      "createdAt": "2026-10-05T09:00:00.000Z",
+      "updatedAt": "2026-11-02T09:32:19.690Z",
+      "user": {
+        "id": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+        "name": "Sara Kamal",
+        "email": "sara@azza.test"
+      },
+      "bankAccount": null,
+      "verifiedBy": null,
+      "enrollment": {
+        "id": "cmvz28m07003e8vv1q566taaa",
+        "status": "ACTIVE",
+        "batch": {
+          "id": "cmvz28lxn001a8vv1yak5nlw5",
+          "code": "B07",
+          "course": {
+            "id": "cmvz28ls400028vv1nbzu7jlh",
+            "titleEn": "Product Design Foundations",
+            "titleAr": "أساسيات تصميم المنتجات"
+          }
+        }
+      }
+    }
+  ]
+}

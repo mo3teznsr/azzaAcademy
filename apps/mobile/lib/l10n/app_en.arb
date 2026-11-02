@@ -1,0 +1,979 @@
+{
+  "@@locale": "en",
+  "appName": "azza",
+  "retry": "Try again",
+  "errorTitle": "Something went off-air.",
+  "emptyGeneric": "Nothing here yet.",
+  "seeAll": "See all",
+  "continueLabel": "Continue",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saved": "Saved",
+  "skip": "Skip",
+  "signOut": "Sign out",
+  "edit": "Edit",
+  "copy": "Copy",
+  "copied": "Copied",
+  "close": "Close",
+  "send": "Send",
+  "you": "You",
+  "comingSoon": "Coming soon on mobile.",
+  "navHome": "Home",
+  "navExplore": "Explore",
+  "navSchedule": "Schedule",
+  "navLibrary": "Library",
+  "navMe": "Me",
+  "navToday": "Today",
+  "navBatches": "Batches",
+  "navCalendar": "Calendar",
+  "navEarnings": "Earnings",
+  "navOverview": "Overview",
+  "navLive": "Live",
+  "navApprovals": "Approvals",
+  "statusScheduled": "Scheduled",
+  "statusStartsIn": "Starts in {minutes}m",
+  "@statusStartsIn": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "statusLive": "Live",
+  "statusEnded": "Ended",
+  "statusRescheduled": "Rescheduled",
+  "statusCancelled": "Cancelled",
+  "batchDraft": "Draft",
+  "batchEnrolling": "Enrolling",
+  "batchFull": "Full · waitlist",
+  "batchRunning": "Running",
+  "batchCompleted": "Completed",
+  "batchCancelled": "Cancelled",
+  "orderAwaitingPayment": "Awaiting payment",
+  "orderAwaitingReceipt": "Awaiting receipt",
+  "orderVerifying": "Verifying",
+  "orderAmountMismatch": "Amount mismatch",
+  "orderPaid": "Paid",
+  "orderFailed": "Failed",
+  "orderRejected": "Rejected",
+  "orderExpired": "Expired",
+  "orderRefunded": "Refunded",
+  "splashTagline": "Live cohorts · since 2026",
+  "splashLine": "Learn live, with a batch that shows up.",
+  "chooseLanguage": "Choose your language",
+  "leftToRight": "Left to right",
+  "rightToLeft": "Right to left",
+  "languageHint": "You can change the language any time from Me → Language & region. Each batch sets its own session language.",
+  "onboardingTitle": "What do you want to learn live?",
+  "onboardingTimezone": "Your timezone — batch times convert to it",
+  "detected": "detected",
+  "bestTime": "Best time for you",
+  "mornings": "Mornings",
+  "evenings": "Evenings",
+  "weekends": "Weekends",
+  "interestDesign": "Design",
+  "interestLanguages": "Languages",
+  "interestCode": "Code",
+  "interestBusiness": "Business",
+  "interestArt": "Art",
+  "interestMusic": "Music",
+  "signInTitle": "Take your seat.",
+  "signInSubtitle": "One account for every batch you join — on your phone or the web.",
+  "signUpTitle": "Create your account.",
+  "email": "Email",
+  "password": "Password",
+  "fullName": "Full name",
+  "signIn": "Sign in",
+  "createAccount": "Create account",
+  "haveAccount": "I already have an account",
+  "noAccount": "New here? Create an account",
+  "orLabel": "or",
+  "continueGoogle": "Continue with Google",
+  "continueApple": "Continue with Apple",
+  "termsNote": "By continuing you agree to the Terms and Privacy policy.",
+  "invalidEmail": "Enter a valid email",
+  "passwordTooShort": "At least 8 characters",
+  "nameTooShort": "At least 2 characters",
+  "verifyTitle": "Check your inbox.",
+  "verifyBody": "We sent a verification link to {email}.",
+  "@verifyBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "resendIn": "Resend in {time}",
+  "@resendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "resend": "Resend",
+  "changeEmail": "Change email",
+  "verifyPermissions": "After this we'll ask for camera and mic once, so you can join sessions in one tap.",
+  "verifyContinue": "Verify & continue",
+  "greetingMorning": "Morning, {name}",
+  "@greetingMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingAfternoon": "Afternoon, {name}",
+  "@greetingAfternoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingEvening": "Evening, {name}",
+  "@greetingEvening": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "liveNow": "Live now",
+  "joinLiveRoom": "Join live room",
+  "inRoom": "{count} in room",
+  "@inRoom": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "myBatches": "My batches",
+  "nextAt": "Next · {when}",
+  "@nextAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "continueWatching": "Continue watching",
+  "noBatchesTitle": "No batches yet",
+  "noBatchesBody": "Pick a course and a batch whose schedule fits your week.",
+  "exploreCta": "Explore courses",
+  "upNext": "Up next",
+  "exploreTitle": "Find a batch that fits your week.",
+  "searchCourses": "Search courses",
+  "allFilter": "All",
+  "coursesCount": "{count} courses",
+  "@coursesCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "noCoursesFound": "No courses match. Try another search.",
+  "levelN": "Level {n}",
+  "@levelN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "liveSessionsN": "{n} live sessions",
+  "@liveSessionsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "recordings": "Recordings",
+  "certificate": "Certificate",
+  "teaches": "Teaches {codes}",
+  "@teaches": {
+    "placeholders": {
+      "codes": {
+        "type": "String"
+      }
+    }
+  },
+  "outcomesTitle": "You'll leave able to",
+  "syllabusN": "Syllabus · {n} modules",
+  "@syllabusN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "fromPrice": "From {price}",
+  "@fromPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "chooseBatchN": "Choose a batch · {n}",
+  "@chooseBatchN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "pickBatch": "Pick your batch.",
+  "timesShownIn": "Times shown in {tz}",
+  "@timesShownIn": {
+    "placeholders": {
+      "tz": {
+        "type": "String"
+      }
+    }
+  },
+  "fullSchedule": "Full schedule",
+  "enrollIn": "Enroll in {code}",
+  "@enrollIn": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "seatsLeft": "{n} seats left",
+  "@seatsLeft": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "seatsOf": "{taken}/{capacity}",
+  "@seatsOf": {
+    "placeholders": {
+      "taken": {
+        "type": "String"
+      },
+      "capacity": {
+        "type": "String"
+      }
+    }
+  },
+  "noOpenBatches": "No open batches right now. Check back soon.",
+  "joiningLate": "Joining late? {ran} sessions already ran — they're in the library as recordings. {left} live sessions left.",
+  "@joiningLate": {
+    "placeholders": {
+      "ran": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "addToCalendar": "Add to calendar",
+  "continueWithPrice": "Continue · {price}",
+  "@continueWithPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionN": "Session {n}",
+  "@sessionN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "joinWaitlist": "Join waitlist",
+  "checkoutTitle": "Checkout",
+  "stepOf": "Step {a} / {b}",
+  "@stepOf": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "showPricesIn": "Show prices in",
+  "batchPrice": "Batch price",
+  "coupon": "Coupon",
+  "apply": "Apply",
+  "discount": "Discount",
+  "vat": "VAT",
+  "total": "Total",
+  "chargedInAed": "Charged in {aed}. Your bank converts. {currency} is an estimate at 1 AED = {rate} {currency}.",
+  "@chargedInAed": {
+    "placeholders": {
+      "aed": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "chargedExact": "Charged in AED. This is the exact amount.",
+  "payWith": "Pay with",
+  "payCard": "Card · Apple Pay · Google Pay",
+  "payCardSub": "Instant seat · 3-D Secure",
+  "payBank": "Bank transfer",
+  "payBankSub": "Seat held 48 h while you transfer",
+  "continueAmount": "Continue · {amount}",
+  "@continueAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "couponInvalid": "That coupon didn't apply.",
+  "payByCard": "Pay by card",
+  "payAmount": "Pay {amount}",
+  "@payAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cardNote": "Your bank may ask you to confirm with 3-D Secure. Your card statement will show {amount}.",
+  "@cardNote": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "securedByStripe": "Secured by Stripe · we never store card numbers",
+  "stripeUnavailable": "Card payments aren't configured in this build. Use bank transfer.",
+  "paymentCancelled": "Payment cancelled.",
+  "bankTransfer": "Bank transfer",
+  "seatHeld": "Seat held {time}",
+  "@seatHeld": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "transferExactly": "Transfer exactly",
+  "reference": "Reference",
+  "referenceHint": "Put the reference in the transfer notes. Send AED, or ask your bank to convert so {amount} arrives.",
+  "@referenceHint": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "chooseBank": "Choose a receiving bank",
+  "copyIbanOf": "Copy full IBAN of {bank}",
+  "@copyIbanOf": {
+    "placeholders": {
+      "bank": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadReceipt": "Upload transfer receipt (PDF, JPG, PNG · max 10 MB)",
+  "chooseFile": "Choose file",
+  "fileTooLarge": "File is larger than 10 MB.",
+  "iSentTransfer": "I've sent the transfer",
+  "holdExpired": "The 48 h hold expired and the seat was released.",
+  "noBanks": "No receiving banks are active. Contact support.",
+  "orderRef": "Order {ref}",
+  "@orderRef": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "almostOnAir": "Almost on air.",
+  "verifyingBody": "We hold your seat in {code} while finance checks the transfer of {amount}.",
+  "@verifyingBody": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "tlOrderCreated": "Seat held",
+  "tlReceiptUploaded": "Receipt uploaded",
+  "tlFinanceVerifying": "Finance verifying",
+  "tlSeatConfirmed": "Seat confirmed",
+  "rejectedTitle": "Receipt needs attention",
+  "reupload": "Re-upload receipt",
+  "contactSupport": "Contact finance support",
+  "orderFailedBody": "The payment didn't go through. You can try again.",
+  "orderExpiredBody": "This order expired and the seat was released.",
+  "goToSchedule": "Go to my schedule",
+  "youreIn": "You're in.",
+  "enrolledBody": "Your seat in {course} · {code} is yours. {n} live sessions are now in your schedule.",
+  "@enrolledBody": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "nextTake": "Next take",
+  "days": "days",
+  "hrs": "hrs",
+  "mins": "min",
+  "lobbyOpensAt": "lobby opens {time}",
+  "@lobbyOpensAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncCalendar": "Sync {n} sessions to calendar",
+  "@syncCalendar": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "watchRecordings": "Watch recordings",
+  "myOrders": "My orders",
+  "noOrders": "No orders yet.",
+  "thisWeek": "This week",
+  "noSessionsWeek": "No sessions this week.",
+  "prevWeek": "Previous week",
+  "nextWeek": "Next week",
+  "lobbyOpenStarts": "Lobby open · starts {time}",
+  "@lobbyOpenStarts": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "lobbyStarts": "Lobby · starts {time}",
+  "@lobbyStarts": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cameraPreview": "You · camera preview",
+  "microphone": "Microphone",
+  "camera": "Camera",
+  "joinAs": "Join as {name}",
+  "@joinAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lobbyClosed": "The lobby opens 15 min before the session starts.",
+  "goLive": "Go live",
+  "recordSession": "Record session",
+  "recordSessionSub": "Saved to the batch library after processing",
+  "waitingN": "{n} waiting",
+  "@waitingN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "networkCheck": "Network check runs when you join",
+  "connecting": "Connecting…",
+  "rec": "Rec",
+  "reconnecting": "Reconnecting…",
+  "reconnectingBody": "Weak signal. Video paused to keep audio.",
+  "hostLabel": "host",
+  "chat": "Chat",
+  "peopleN": "People ({n})",
+  "@peopleN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "handsN": "Hands raised · {n}",
+  "@handsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "messageHint": "Message",
+  "leave": "Leave",
+  "raiseHand": "Hand",
+  "muteAll": "Mute all",
+  "record": "Record",
+  "endForAll": "End for all",
+  "endConfirmTitle": "End the session for everyone?",
+  "endConfirmBody": "The room closes, recording stops and attendance is saved.",
+  "allowSpeak": "Allow to speak",
+  "mute": "Mute",
+  "remove": "Remove",
+  "noMessages": "No messages yet. Say hi.",
+  "noHands": "No hands raised.",
+  "onlyYou": "Only you are here so far.",
+  "liveUnavailable": "Video isn't available for this session yet.",
+  "wrapTitle": "That's a wrap.",
+  "endedStayed": "Ended {time} · you stayed {min} min",
+  "@endedStayed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "howWas": "How was {slate}?",
+  "@howWas": {
+    "placeholders": {
+      "slate": {
+        "type": "String"
+      }
+    }
+  },
+  "tagClear": "Clear",
+  "tagPace": "Good pace",
+  "tagExamples": "Great examples",
+  "tagAudio": "Audio issues",
+  "tagTooFast": "Too fast",
+  "recordingProcessing": "Recording processing",
+  "recordingSoon": "Ready in about 20 min · we'll notify you",
+  "nextLabel": "Next",
+  "sendFeedback": "Send feedback",
+  "thanksFeedback": "Thanks — Feedback sent.",
+  "libraryTitle": "Library",
+  "continueAt": "Continue · {at}",
+  "@continueAt": {
+    "placeholders": {
+      "at": {
+        "type": "String"
+      }
+    }
+  },
+  "allRecordingsN": "All recordings · {n}",
+  "@allRecordingsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "materials": "Materials",
+  "noRecordings": "Recordings land here after each session.",
+  "noMaterials": "No materials shared yet.",
+  "assignments": "Assignments",
+  "dueTab": "Due",
+  "submittedTab": "Submitted",
+  "gradedTab": "Graded",
+  "dueAt": "Due {when}",
+  "@dueAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "submitAssignment": "Submit assignment",
+  "linkLabel": "Link",
+  "textLabel": "Notes",
+  "noAssignments": "No assignments here.",
+  "submittedOk": "Submitted.",
+  "scoreOf": "{score} / {max}",
+  "@scoreOf": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enrollFirst": "Enroll in a batch to unlock recordings and materials.",
+  "inbox": "Inbox",
+  "markAllRead": "Mark all read",
+  "today": "Today",
+  "earlier": "Earlier",
+  "noNotifications": "You're all caught up.",
+  "timezone": "Timezone",
+  "language": "Language",
+  "notifications": "Notifications",
+  "account": "Account",
+  "batchesN": "{n} batches",
+  "@batchesN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "languageRegion": "Language & region",
+  "appLanguage": "App language",
+  "numerals": "Numerals",
+  "numeralsArabic": "Arabic-Indic ٠١٢٣٤٥٦٧٨٩",
+  "numeralsWestern": "Western 0123456789",
+  "preview": "Preview",
+  "displayCurrency": "Display currency",
+  "pushLobby": "Lobby open",
+  "pushChanges": "Schedule changes",
+  "pushRecordings": "Recordings & grades",
+  "editProfile": "Edit profile",
+  "nextTakeLobbyOpen": "Next take · lobby open",
+  "nextTakeIn": "Next take · starts in {time}",
+  "@nextTakeIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "enterLobby": "Enter lobby",
+  "studentsN": "{n} students",
+  "@studentsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "todayStat": "Today",
+  "weekStat": "Week",
+  "sessionsLabel": "sessions",
+  "attendStat": "Attend.",
+  "laterToday": "Later today",
+  "noSessionsToday": "No sessions today. Enjoy the quiet.",
+  "rosterTitle": "{code} roster",
+  "@rosterTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "enrolledLabel": "Enrolled",
+  "avgAttendance": "Avg attend.",
+  "doneLabel": "Done",
+  "searchStudents": "Search students",
+  "atRisk": "At risk",
+  "waitlist": "Waitlist",
+  "messageAll": "Message all of {code}",
+  "@messageAll": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "noStudents": "No students yet.",
+  "noTeacherBatches": "No batches assigned to you yet.",
+  "prepTitle": "Session prep",
+  "runOfShow": "Run of show · {min} min",
+  "@runOfShow": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "addBlock": "+ Add block",
+  "blockLabel": "Block label",
+  "atMinute": "At minute",
+  "filesForStudents": "Files for students",
+  "privateNotes": "Private notes",
+  "reschedule": "Reschedule",
+  "openLobby": "Open lobby",
+  "moveSession": "Move this session",
+  "newDay": "New day",
+  "startTime": "Start time",
+  "reason": "Reason",
+  "notifyStudents": "Notify students when approved",
+  "sendToAdmin": "Send to admin for approval",
+  "adminReviews": "Admins review requests within 24 h.",
+  "requestSent": "Request sent to admin.",
+  "attendanceSummary": "Attendance summary",
+  "present": "Present",
+  "late": "Late",
+  "leftEarly": "Left early",
+  "absent": "Absent",
+  "attendanceRule": "Filled from LiveKit join/leave events. Full attendance = at least 75% of the session.",
+  "publishRecording": "Publish recording to {code}",
+  "@publishRecording": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ranFor": "ran {duration}",
+  "@ranFor": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "earningsTitle": "Earnings",
+  "earnedSoFar": "Earned this month so far",
+  "nextPayoutOn": "pays {date}",
+  "@nextPayoutOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "displayOnly": "Display only: payouts are always made in AED.",
+  "pendingLabel": "Pending",
+  "scheduledRest": "still scheduled this month",
+  "availableLabel": "Available",
+  "lifetimePaid": "Paid to date",
+  "byBatch": "This period by batch",
+  "netRevenueNote": "Net revenue = paid enrollments − refunds − Stripe fees. A refund after a payout is deducted from your next payout.",
+  "payoutMethod": "Payout method",
+  "verified": "Verified",
+  "unverified": "Pending verification",
+  "bankName": "Bank",
+  "accountHolder": "Account holder",
+  "iban": "IBAN",
+  "swift": "SWIFT",
+  "payoutCurrency": "Payout currency",
+  "changeBank": "Change bank account",
+  "addBank": "Add bank account",
+  "changeBankNote": "A new account is re-verified by finance before the next run. Payouts pause until it is approved.",
+  "history": "History",
+  "noPayouts": "No payouts yet.",
+  "noBankDetails": "Add a UAE bank account to receive payouts.",
+  "ibanInvalid": "UAE IBAN: AE + 21 digits",
+  "swiftInvalid": "8 or 11 letters/digits",
+  "sessionsDelivered": "{n} sessions delivered",
+  "@sessionsDelivered": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "opsGreeting": "Ops, {name}",
+  "@opsGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "onAirLabel": "On air",
+  "roomsPeople": "{rooms} rooms · {people} people",
+  "@roomsPeople": {
+    "placeholders": {
+      "rooms": {
+        "type": "String"
+      },
+      "people": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionsToday": "Sessions today",
+  "activeBatches": "Active batches",
+  "revenueMonth": "Revenue this month",
+  "seatsFilled": "Seats filled",
+  "needsYou": "Needs you",
+  "noAlerts": "Nothing needs a decision right now.",
+  "liveMonitorTitle": "On air now",
+  "autoRefresh": "auto-refresh {s}s",
+  "@autoRefresh": {
+    "placeholders": {
+      "s": {
+        "type": "String"
+      }
+    }
+  },
+  "liveN": "{n} live",
+  "@liveN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "joinSilently": "Join silently",
+  "noLiveRooms": "No rooms are on air.",
+  "participantsN": "{n} people",
+  "@participantsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "recordingOn": "recording",
+  "batchesTitle": "Batches",
+  "seatsLabel": "seats",
+  "nextSession": "Next session",
+  "teacherLabel": "Teacher",
+  "sessionsRun": "{done} of {total} sessions run",
+  "@sessionsRun": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "transfersToVerify": "Transfers to verify",
+  "payoutRuns": "Payout runs",
+  "noTransfers": "No transfers waiting.",
+  "noPayoutRuns": "No payout runs yet.",
+  "transferTitle": "Transfer {ref}",
+  "@transferTitle": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptPreview": "Receipt preview",
+  "openFullSize": "Open full size",
+  "noReceipt": "No receipt uploaded yet.",
+  "studentLabel": "Student",
+  "batchLabel": "Batch",
+  "expected": "Expected",
+  "receivedStatement": "Received (bank statement, AED)",
+  "rejectReason": "Reject reason (if rejecting)",
+  "reasonShort": "Amount short",
+  "reasonReference": "Reference missing",
+  "reasonUnreadable": "Receipt unreadable",
+  "reasonNotReceived": "Not received yet",
+  "reject": "Reject",
+  "approve": "Approve",
+  "decline": "Decline",
+  "approveEnroll": "Approve & enroll",
+  "requestNewReceipt": "Ask for a new receipt",
+  "reviewDone": "Decision saved.",
+  "payoutRunTitle": "Payout run · {period}",
+  "@payoutRunTitle": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "awaitingApproval": "Awaiting approval",
+  "totalTeachers": "Total · {n} teachers",
+  "@totalTeachers": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "heldNote": "{n} held: bank account not verified or below the minimum.",
+  "@heldNote": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "approvePayouts": "Approve {n} payouts · {amount}",
+  "@approvePayouts": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFile": "Download bank transfer file",
+  "runApproved": "Run approved.",
+  "held": "Held",
+  "ready": "Ready",
+  "paidLabel": "Paid",
+  "carriedOver": "Carried over",
+  "alertTransfersToVerify": "{n} bank transfers to verify",
+  "@alertTransfersToVerify": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "alertSeatHoldsExpiring": "{n} seat holds expire within 24 h",
+  "@alertSeatHoldsExpiring": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "alertTeacherBankUnverified": "{n} teacher bank details to verify",
+  "@alertTeacherBankUnverified": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "alertPayoutsHeld": "{n} payouts on hold",
+  "@alertPayoutsHeld": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "rescheduleRequestTitle": "{teacher} asks to move {slate}",
+  "@rescheduleRequestTitle": {
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      },
+      "slate": {
+        "type": "String"
+      }
+    }
+  },
+  "newPayoutRun": "New payout run",
+  "myRescheduleRequests": "My requests",
+  "requestPending": "Pending",
+  "requestApproved": "Approved",
+  "requestDeclined": "Declined",
+  "videoDevMode": "Video is off in this environment (LiveKit isn't configured). Chat and raised hands still work."
+}

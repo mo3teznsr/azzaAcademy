@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "CONFLICT",
+    "message": "You already have an order in progress for this batch",
+    "details": {
+      "code": "ORDER_IN_PROGRESS",
+      "orderId": "cmvz6o59v0004cvv19xsrl878"
+    }
+  }
+}

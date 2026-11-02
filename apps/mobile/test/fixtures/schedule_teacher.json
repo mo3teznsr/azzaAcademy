@@ -1,0 +1,581 @@
+{
+  "from": "2026-11-02T00:00:00.000Z",
+  "to": "2026-12-02T00:00:00.000Z",
+  "items": [
+    {
+      "id": "cmvz28lxs001c8vv1ifukn527",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "number": 1,
+      "title": "Seeing like a designer",
+      "agenda": [
+        {
+          "label": "Warm-up & recap",
+          "minute": 0
+        },
+        {
+          "label": "Seeing like a designer",
+          "minute": 15
+        },
+        {
+          "label": "Studio time",
+          "minute": 60
+        },
+        {
+          "label": "Q&A",
+          "minute": 80
+        }
+      ],
+      "notes": null,
+      "startsAt": "2026-11-10T15:00:00.000Z",
+      "endsAt": "2026-11-10T16:30:00.000Z",
+      "status": "ENDED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b07-s01-4a6bfa25",
+      "startedAt": "2026-11-10T15:02:00.000Z",
+      "endedAt": "2026-11-10T16:30:00.000Z",
+      "recordingUrl": "https://recordings.azza.test/b07/s01.mp4",
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.595Z",
+      "updatedAt": "2026-11-02T10:35:33.631Z",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "language": "AR",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001d8vv112jmw08l",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "number": 2,
+      "title": "Research & interviews",
+      "agenda": [
+        {
+          "label": "Warm-up & recap",
+          "minute": 0
+        },
+        {
+          "label": "Research & interviews",
+          "minute": 15
+        },
+        {
+          "label": "Studio time",
+          "minute": 60
+        },
+        {
+          "label": "Q&A",
+          "minute": 80
+        }
+      ],
+      "notes": null,
+      "startsAt": "2026-11-12T15:00:00.000Z",
+      "endsAt": "2026-11-12T16:30:00.000Z",
+      "status": "ENDED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b07-s02-2c3e4226",
+      "startedAt": "2026-11-12T15:02:00.000Z",
+      "endedAt": "2026-11-12T16:30:00.000Z",
+      "recordingUrl": "https://recordings.azza.test/b07/s02.mp4",
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.595Z",
+      "updatedAt": "2026-11-02T10:35:33.669Z",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "language": "AR",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lz600248vv1f12mctux",
+      "batchId": "cmvz28lz500228vv1s71jxk36",
+      "number": 1,
+      "title": "Seeing like a designer",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-11-14T06:00:00.000Z",
+      "endsAt": "2026-11-14T07:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b09-s01-426b0fc3",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.649Z",
+      "updatedAt": "2026-11-02T09:32:19.649Z",
+      "batch": {
+        "id": "cmvz28lz500228vv1s71jxk36",
+        "code": "B09",
+        "language": "EN",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lz600258vv1jy30z847",
+      "batchId": "cmvz28lz500228vv1s71jxk36",
+      "number": 2,
+      "title": "Research & interviews",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-11-15T06:00:00.000Z",
+      "endsAt": "2026-11-15T07:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b09-s02-060252e9",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.649Z",
+      "updatedAt": "2026-11-02T09:32:19.649Z",
+      "batch": {
+        "id": "cmvz28lz500228vv1s71jxk36",
+        "code": "B09",
+        "language": "EN",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001e8vv1oyl6h7kc",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "number": 3,
+      "title": "Problem framing",
+      "agenda": [
+        {
+          "label": "Warm-up & recap",
+          "minute": 0
+        },
+        {
+          "label": "Problem framing",
+          "minute": 15
+        },
+        {
+          "label": "Studio time",
+          "minute": 60
+        },
+        {
+          "label": "Q&A",
+          "minute": 80
+        }
+      ],
+      "notes": null,
+      "startsAt": "2026-11-17T15:00:00.000Z",
+      "endsAt": "2026-11-17T16:30:00.000Z",
+      "status": "ENDED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b07-s03-662b7131",
+      "startedAt": "2026-11-17T15:02:00.000Z",
+      "endedAt": "2026-11-17T16:30:00.000Z",
+      "recordingUrl": "https://recordings.azza.test/b07/s03.mp4",
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.595Z",
+      "updatedAt": "2026-11-02T10:35:33.676Z",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "language": "AR",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001f8vv1vgglmsof",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "number": 4,
+      "title": "Sketching & ideation",
+      "agenda": [
+        {
+          "label": "Warm-up & recap",
+          "minute": 0
+        },
+        {
+          "label": "Sketching & ideation",
+          "minute": 15
+        },
+        {
+          "label": "Studio time",
+          "minute": 60
+        },
+        {
+          "label": "Q&A",
+          "minute": 80
+        }
+      ],
+      "notes": null,
+      "startsAt": "2026-11-19T15:00:00.000Z",
+      "endsAt": "2026-11-19T16:30:00.000Z",
+      "status": "ENDED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b07-s04-278ad6e1",
+      "startedAt": "2026-11-19T15:02:00.000Z",
+      "endedAt": "2026-11-19T16:30:00.000Z",
+      "recordingUrl": "https://recordings.azza.test/b07/s04.mp4",
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.595Z",
+      "updatedAt": "2026-11-02T10:35:33.683Z",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "language": "AR",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lz600268vv1unl81uzx",
+      "batchId": "cmvz28lz500228vv1s71jxk36",
+      "number": 3,
+      "title": "Problem framing",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-11-21T06:00:00.000Z",
+      "endsAt": "2026-11-21T07:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b09-s03-87b5ceee",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.649Z",
+      "updatedAt": "2026-11-02T09:32:19.649Z",
+      "batch": {
+        "id": "cmvz28lz500228vv1s71jxk36",
+        "code": "B09",
+        "language": "EN",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lz600278vv1bkn3u9gt",
+      "batchId": "cmvz28lz500228vv1s71jxk36",
+      "number": 4,
+      "title": "Sketching & ideation",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-11-22T06:00:00.000Z",
+      "endsAt": "2026-11-22T07:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b09-s04-f23430cc",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.649Z",
+      "updatedAt": "2026-11-02T09:32:19.649Z",
+      "batch": {
+        "id": "cmvz28lz500228vv1s71jxk36",
+        "code": "B09",
+        "language": "EN",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001g8vv1nps51dgi",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "number": 5,
+      "title": "Information architecture",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-11-24T15:00:00.000Z",
+      "endsAt": "2026-11-24T16:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b07-s05-97fca2d9",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.595Z",
+      "updatedAt": "2026-11-02T09:32:19.595Z",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "language": "AR",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001h8vv1adk9b9gq",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "number": 6,
+      "title": "Wireframes",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-11-26T15:00:00.000Z",
+      "endsAt": "2026-11-26T16:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b07-s06-7191ada8",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.595Z",
+      "updatedAt": "2026-11-02T09:32:19.595Z",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "language": "AR",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lz600288vv10rv7qk58",
+      "batchId": "cmvz28lz500228vv1s71jxk36",
+      "number": 5,
+      "title": "Information architecture",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-11-28T06:00:00.000Z",
+      "endsAt": "2026-11-28T07:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b09-s05-9af243ce",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.649Z",
+      "updatedAt": "2026-11-02T09:32:19.649Z",
+      "batch": {
+        "id": "cmvz28lz500228vv1s71jxk36",
+        "code": "B09",
+        "language": "EN",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lz600298vv135wwtg1q",
+      "batchId": "cmvz28lz500228vv1s71jxk36",
+      "number": 6,
+      "title": "Wireframes",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-11-29T06:00:00.000Z",
+      "endsAt": "2026-11-29T07:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b09-s06-028c7e9b",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.649Z",
+      "updatedAt": "2026-11-02T09:32:19.649Z",
+      "batch": {
+        "id": "cmvz28lz500228vv1s71jxk36",
+        "code": "B09",
+        "language": "EN",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001i8vv110hc09j1",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "number": 7,
+      "title": "Visual hierarchy",
+      "agenda": null,
+      "notes": null,
+      "startsAt": "2026-12-01T15:00:00.000Z",
+      "endsAt": "2026-12-01T16:30:00.000Z",
+      "status": "SCHEDULED",
+      "movedFrom": null,
+      "moveReason": null,
+      "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "roomName": "b07-s07-58b68b05",
+      "startedAt": null,
+      "endedAt": null,
+      "recordingUrl": null,
+      "egressId": null,
+      "createdAt": "2026-11-02T09:32:19.595Z",
+      "updatedAt": "2026-11-02T09:32:19.595Z",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "language": "AR",
+        "timezone": "Asia/Dubai",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        }
+      }
+    }
+  ]
+}

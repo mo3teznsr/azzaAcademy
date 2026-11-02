@@ -1,0 +1,76 @@
+{
+  "items": [
+    {
+      "id": "cmvz28lxs001f8vv1vgglmsof",
+      "number": 4,
+      "title": "Sketching & ideation",
+      "startsAt": "2026-11-19T15:00:00.000Z",
+      "endedAt": "2026-11-19T16:30:00.000Z",
+      "recordingUrl": "https://recordings.azza.test/b07/s04.mp4",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001e8vv1oyl6h7kc",
+      "number": 3,
+      "title": "Problem framing",
+      "startsAt": "2026-11-17T15:00:00.000Z",
+      "endedAt": "2026-11-17T16:30:00.000Z",
+      "recordingUrl": "https://recordings.azza.test/b07/s03.mp4",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001d8vv112jmw08l",
+      "number": 2,
+      "title": "Research & interviews",
+      "startsAt": "2026-11-12T15:00:00.000Z",
+      "endedAt": "2026-11-12T16:30:00.000Z",
+      "recordingUrl": "https://recordings.azza.test/b07/s02.mp4",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        }
+      }
+    },
+    {
+      "id": "cmvz28lxs001c8vv1ifukn527",
+      "number": 1,
+      "title": "Seeing like a designer",
+      "startsAt": "2026-11-10T15:00:00.000Z",
+      "endedAt": "2026-11-10T16:30:00.000Z",
+      "recordingUrl": "https://recordings.azza.test/b07/s01.mp4",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun"
+        }
+      }
+    }
+  ]
+}

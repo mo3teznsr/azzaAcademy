@@ -1,0 +1,101 @@
+{
+  "id": "cmvz28ls400028vv1nbzu7jlh",
+  "slug": "product-design-foundations",
+  "titleEn": "Product Design Foundations",
+  "titleAr": "أساسيات تصميم المنتجات",
+  "descriptionEn": "Twelve live sessions from research to a portfolio-ready case study.",
+  "descriptionAr": null,
+  "category": "Design",
+  "level": "BEGINNER",
+  "coverStyle": "sun",
+  "priceFils": 88000,
+  "status": "PUBLISHED",
+  "createdAt": "2026-11-02T09:32:19.396Z",
+  "updatedAt": "2026-11-02T10:35:33.530Z",
+  "modules": [
+    {
+      "id": "cmvz28ls800038vv1zux7mf9r",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 0,
+      "titleEn": "Seeing like a designer",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls800048vv15mokcfjy",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 1,
+      "titleEn": "Research & interviews",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls800058vv18f29zt4p",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 2,
+      "titleEn": "Problem framing",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls800068vv1tq7i1tv8",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 3,
+      "titleEn": "Sketching & ideation",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls800078vv15d3gnrte",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 4,
+      "titleEn": "Information architecture",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls800088vv1g4lyaz6c",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 5,
+      "titleEn": "Wireframes",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls800098vv1ayji0047",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 6,
+      "titleEn": "Visual hierarchy",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls8000a8vv1ou9ptt8s",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 7,
+      "titleEn": "Typography & colour",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls8000b8vv13sjcavcy",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 8,
+      "titleEn": "Components & systems",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls8000c8vv1f6vbihnk",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 9,
+      "titleEn": "Prototyping",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls8000d8vv11fxjsfc7",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 10,
+      "titleEn": "Usability testing",
+      "titleAr": null
+    },
+    {
+      "id": "cmvz28ls8000e8vv12gufj8os",
+      "courseId": "cmvz28ls400028vv1nbzu7jlh",
+      "order": 11,
+      "titleEn": "Portfolio & critique",
+      "titleAr": null
+    }
+  ]
+}

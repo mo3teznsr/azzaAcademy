@@ -1,0 +1,632 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  runtime  = "bun"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────── Enums ─────────────────────────
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum SessionLanguage {
+  AR
+  EN
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum BatchStatus {
+  DRAFT
+  ENROLLING
+  FULL
+  RUNNING
+  COMPLETED
+  CANCELLED
+}
+
+enum SessionStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+  CANCELLED
+}
+
+enum EnrollmentStatus {
+  PENDING_PAYMENT
+  AWAITING_TRANSFER
+  VERIFYING
+  ACTIVE
+  WAITLISTED
+  CANCELLED
+  REFUNDED
+  EXPIRED
+}
+
+enum PaymentMethod {
+  STRIPE
+  BANK_TRANSFER
+}
+
+enum OrderStatus {
+  AWAITING_PAYMENT
+  AWAITING_RECEIPT
+  VERIFYING
+  AMOUNT_MISMATCH
+  PAID
+  FAILED
+  REJECTED
+  EXPIRED
+  REFUNDED
+}
+
+enum EarningStatus {
+  PENDING
+  AVAILABLE
+  PAID
+  REVERSED
+}
+
+enum PayoutRunStatus {
+  DRAFT
+  APPROVED
+  PROCESSING
+  PAID
+}
+
+enum PayoutStatus {
+  READY
+  HELD
+  PAID
+  CARRIED_OVER
+}
+
+enum AttendanceMarkKind {
+  PRESENT
+  LATE
+  LEFT_EARLY
+  ABSENT
+}
+
+enum RescheduleRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+enum MaterialKind {
+  SLIDES
+  FILE
+  LINK
+  VIDEO
+}
+
+// ───────────────────────── Auth (better-auth) ─────────────────────────
+
+model User {
+  id              String    @id
+  name            String
+  email           String    @unique
+  emailVerified   Boolean   @default(false)
+  image           String?
+  role            Role      @default(STUDENT)
+  locale          String    @default("en")
+  timezone        String    @default("Asia/Dubai")
+  displayCurrency String    @default("AED")
+  phone           String?
+  banned          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  sessions      AuthSession[]
+  accounts      Account[]
+  teaching      Batch[]             @relation("BatchTeacher")
+  enrollments   Enrollment[]
+  orders        Order[]             @relation("OrderStudent")
+  verifiedOrders Order[]            @relation("OrderVerifier")
+  attendance    Attendance[]
+  messages      ChatMessage[]
+  earnings      Earning[]
+  payouts       Payout[]
+  bankDetails   TeacherBankDetails?
+  devices       DeviceToken[]
+  notifications Notification[]
+  submissions   Submission[]
+  feedback      SessionFeedback[]
+  hostedSessions LiveSession[]      @relation("SessionHost")
+  attendanceMarks AttendanceMark[]  @relation("AttendanceMarkStudent")
+  rescheduleRequests RescheduleRequest[] @relation("RescheduleRequester")
+  rescheduleDecisions RescheduleRequest[] @relation("RescheduleDecider")
+
+  @@map("user")
+}
+
+/// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
+model AuthSession {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ───────────────────────── Catalog ─────────────────────────
+
+model Course {
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  titleEn       String
+  titleAr       String?
+  descriptionEn String       @default("")
+  descriptionAr String?
+  category      String
+  level         CourseLevel
+  coverStyle    String       @default("sun")
+  priceFils     Int
+  status        CourseStatus @default(DRAFT)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  modules CourseModule[]
+  batches Batch[]
+
+  @@index([status, category])
+}
+
+model CourseModule {
+  id       String  @id @default(cuid())
+  courseId String
+  course   Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  order    Int
+  titleEn  String
+  titleAr  String?
+
+  @@unique([courseId, order])
+}
+
+model Batch {
+  id                 String          @id @default(cuid())
+  code               String
+  courseId           String
+  course             Course          @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  teacherId          String
+  teacher            User            @relation("BatchTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  capacity           Int
+  language           SessionLanguage
+  timezone           String
+  priceFils          Int?
+  waitlistEnabled    Boolean         @default(true)
+  minStudents        Int             @default(0)
+  enrollmentOpensOn  DateTime?
+  enrollmentClosesOn DateTime?
+  status             BatchStatus     @default(DRAFT)
+  startsOn           DateTime
+  endsOn             DateTime
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  schedule    ScheduleRule?
+  sessions    LiveSession[]
+  enrollments Enrollment[]
+  materials   Material[]
+  assignments Assignment[]
+  earnings    Earning[]
+
+  @@unique([courseId, code])
+  @@index([teacherId, status])
+}
+
+model ScheduleRule {
+  id           String     @id @default(cuid())
+  batchId      String     @unique
+  batch        Batch      @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  weekdays     Int[]
+  startTime    String
+  durationMin  Int
+  sessionCount Int
+  skipDates    String[]
+}
+
+/// A scheduled live class. Each maps 1:1 to a LiveKit room.
+model LiveSession {
+  id          String        @id @default(cuid())
+  batchId     String
+  batch       Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  number      Int
+  title       String
+  agenda      Json?
+  notes       String?
+  startsAt    DateTime
+  endsAt      DateTime
+  status      SessionStatus @default(SCHEDULED)
+  movedFrom   DateTime?
+  moveReason  String?
+  hostId      String?
+  host        User?         @relation("SessionHost", fields: [hostId], references: [id])
+  roomName    String        @unique
+  startedAt   DateTime?
+  endedAt     DateTime?
+  recordingUrl String?
+  egressId    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  attendance Attendance[]
+  messages   ChatMessage[]
+  materials  Material[]
+  earnings   Earning[]
+  feedback   SessionFeedback[]
+  assignments Assignment[]
+  attendanceMarks AttendanceMark[]
+  rescheduleRequests RescheduleRequest[]
+
+  @@unique([batchId, number])
+  @@index([startsAt])
+  @@map("live_session")
+}
+
+// ───────────────────────── Enrollment & payments ─────────────────────────
+
+model Enrollment {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  batchId   String
+  batch     Batch            @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  status    EnrollmentStatus @default(PENDING_PAYMENT)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  orders Order[]
+
+  @@unique([userId, batchId])
+  @@index([batchId, status])
+}
+
+/// All amounts in fils of AED. displayCurrency + fxRate are a snapshot for receipts only.
+model Order {
+  id                    String        @id @default(cuid())
+  reference             String        @unique
+  enrollmentId          String
+  enrollment            Enrollment    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User          @relation("OrderStudent", fields: [userId], references: [id])
+  method                PaymentMethod
+  status                OrderStatus
+  subtotalFils          Int
+  discountFils          Int           @default(0)
+  vatFils               Int           @default(0)
+  totalFils             Int
+  receivedFils          Int?
+  refundedFils          Int           @default(0)
+  feeFils               Int           @default(0)
+  displayCurrency       String        @default("AED")
+  fxRate                Decimal       @default(1) @db.Decimal(12, 6)
+  couponCode            String?
+  stripePaymentIntentId String?       @unique
+  bankAccountId         String?
+  bankAccount           BankAccount?  @relation(fields: [bankAccountId], references: [id])
+  receiptUrl            String?
+  receiptUploadedAt     DateTime?
+  expiresAt             DateTime?
+  verifiedById          String?
+  verifiedBy            User?         @relation("OrderVerifier", fields: [verifiedById], references: [id])
+  verifiedAt            DateTime?
+  rejectionReason       String?
+  paidAt                DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([status, method])
+}
+
+model BankAccount {
+  id           String   @id @default(cuid())
+  bankName     String
+  accountName  String
+  iban         String
+  swift        String
+  branch       String?
+  instructions String?
+  currency     String   @default("AED")
+  active       Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders Order[]
+}
+
+model FxRate {
+  currency  String   @id
+  ratePerAed Decimal @db.Decimal(12, 6)
+  source    String   @default("manual")
+  updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  percentOff     Int?
+  amountOffFils  Int?
+  maxRedemptions Int?
+  redemptions    Int       @default(0)
+  expiresOn      DateTime?
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+}
+
+// ───────────────────────── Live classroom ─────────────────────────
+
+model Attendance {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime
+  leftAt    DateTime?
+  seconds   Int         @default(0)
+
+  @@index([sessionId, userId])
+}
+
+/// Teacher/admin correction of one student's attendance for one session; wins over the LiveKit join log.
+model AttendanceMark {
+  id         String             @id @default(cuid())
+  sessionId  String
+  session    LiveSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User               @relation("AttendanceMarkStudent", fields: [userId], references: [id], onDelete: Cascade)
+  mark       AttendanceMarkKind
+  markedById String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@unique([sessionId, userId])
+  @@map("attendance_mark")
+}
+
+/// A host's request to move a session; an admin approves (session is moved) or declines it.
+model RescheduleRequest {
+  id            String                  @id @default(cuid())
+  sessionId     String
+  session       LiveSession             @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  requestedById String
+  requestedBy   User                    @relation("RescheduleRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  startsAt      DateTime
+  endsAt        DateTime
+  reason        String?
+  status        RescheduleRequestStatus @default(PENDING)
+  decidedById   String?
+  decidedBy     User?                   @relation("RescheduleDecider", fields: [decidedById], references: [id])
+  decidedAt     DateTime?
+  decisionNote  String?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@index([status, createdAt])
+  @@index([sessionId])
+  @@map("reschedule_request")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  pinned    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
+}
+
+model SessionFeedback {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int
+  tags      String[]
+  comment   String?
+  createdAt DateTime    @default(now())
+
+  @@unique([sessionId, userId])
+}
+
+model Material {
+  id        String       @id @default(cuid())
+  batchId   String
+  batch     Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  sessionId String?
+  session   LiveSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  title     String
+  url       String
+  kind      MaterialKind
+  createdAt DateTime     @default(now())
+}
+
+model Assignment {
+  id          String       @id @default(cuid())
+  batchId     String
+  batch       Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  sessionId   String?
+  session     LiveSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  title       String
+  description String       @default("")
+  dueAt       DateTime
+  maxScore    Int          @default(100)
+  createdAt   DateTime     @default(now())
+
+  submissions Submission[]
+}
+
+model Submission {
+  id           String     @id @default(cuid())
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url          String?
+  text         String?
+  score        Int?
+  feedback     String?
+  submittedAt  DateTime   @default(now())
+  gradedAt     DateTime?
+
+  @@unique([assignmentId, userId])
+}
+
+// ───────────────────────── Earnings & payouts ─────────────────────────
+
+model Earning {
+  id          String        @id @default(cuid())
+  teacherId   String
+  teacher     User          @relation(fields: [teacherId], references: [id])
+  batchId     String
+  batch       Batch         @relation(fields: [batchId], references: [id])
+  sessionId   String?
+  session     LiveSession?  @relation(fields: [sessionId], references: [id])
+  kind        String        @default("SESSION") // SESSION | REFUND_ADJUSTMENT | BONUS | DEDUCTION
+  amountFils  Int
+  status      EarningStatus @default(PENDING)
+  availableAt DateTime
+  payoutId    String?
+  payout      Payout?       @relation(fields: [payoutId], references: [id])
+  note        String?
+  createdAt   DateTime      @default(now())
+
+  @@unique([sessionId, teacherId, kind])
+  @@index([teacherId, status])
+}
+
+model PayoutRun {
+  id          String          @id @default(cuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  status      PayoutRunStatus @default(DRAFT)
+  approvedById String?
+  approvedAt  DateTime?
+  paidAt      DateTime?
+  createdAt   DateTime        @default(now())
+
+  payouts Payout[]
+
+  @@unique([periodStart, periodEnd])
+}
+
+model Payout {
+  id                String       @id @default(cuid())
+  runId             String
+  run               PayoutRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  teacherId         String
+  teacher           User         @relation(fields: [teacherId], references: [id])
+  amountFils        Int
+  adjustmentsFils   Int          @default(0)
+  status            PayoutStatus @default(READY)
+  holdReason        String?
+  transferReference String?
+  paidAt            DateTime?
+  createdAt         DateTime     @default(now())
+
+  earnings Earning[]
+
+  @@unique([runId, teacherId])
+}
+
+model TeacherBankDetails {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankName      String
+  accountHolder String
+  iban          String
+  swift         String
+  verified      Boolean   @default(false)
+  verifiedAt    DateTime?
+  updatedAt     DateTime  @updatedAt
+}
+
+// ───────────────────────── Notifications ─────────────────────────
+
+model DeviceToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}

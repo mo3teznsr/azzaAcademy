@@ -1,0 +1,1435 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Arabic (`ar`).
+class AppLocalizationsAr extends AppLocalizations {
+  AppLocalizationsAr([String locale = 'ar']) : super(locale);
+
+  @override
+  String get appName => 'azza';
+
+  @override
+  String get retry => 'حاول مجددًا';
+
+  @override
+  String get errorTitle => 'حدث خلل في البث.';
+
+  @override
+  String get emptyGeneric => 'لا شيء هنا بعد.';
+
+  @override
+  String get seeAll => 'عرض الكل';
+
+  @override
+  String get continueLabel => 'متابعة';
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get save => 'حفظ';
+
+  @override
+  String get saved => 'تم الحفظ';
+
+  @override
+  String get skip => 'تخطٍّ';
+
+  @override
+  String get signOut => 'تسجيل الخروج';
+
+  @override
+  String get edit => 'تعديل';
+
+  @override
+  String get copy => 'نسخ';
+
+  @override
+  String get copied => 'تم النسخ';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get send => 'إرسال';
+
+  @override
+  String get you => 'أنت';
+
+  @override
+  String get comingSoon => 'قريبًا على الجوال.';
+
+  @override
+  String get navHome => 'الرئيسية';
+
+  @override
+  String get navExplore => 'استكشف';
+
+  @override
+  String get navSchedule => 'الجدول';
+
+  @override
+  String get navLibrary => 'المكتبة';
+
+  @override
+  String get navMe => 'حسابي';
+
+  @override
+  String get navToday => 'اليوم';
+
+  @override
+  String get navBatches => 'دفعاتي';
+
+  @override
+  String get navCalendar => 'التقويم';
+
+  @override
+  String get navEarnings => 'الأرباح';
+
+  @override
+  String get navOverview => 'نظرة عامة';
+
+  @override
+  String get navLive => 'مباشر';
+
+  @override
+  String get navApprovals => 'الموافقات';
+
+  @override
+  String get statusScheduled => 'مجدولة';
+
+  @override
+  String statusStartsIn(String minutes) {
+    return 'تبدأ خلال $minutes د';
+  }
+
+  @override
+  String get statusLive => 'مباشر';
+
+  @override
+  String get statusEnded => 'انتهت';
+
+  @override
+  String get statusRescheduled => 'أُعيدت جدولتها';
+
+  @override
+  String get statusCancelled => 'أُلغيت';
+
+  @override
+  String get batchDraft => 'مسودة';
+
+  @override
+  String get batchEnrolling => 'التسجيل مفتوح';
+
+  @override
+  String get batchFull => 'مكتملة · قائمة انتظار';
+
+  @override
+  String get batchRunning => 'جارية';
+
+  @override
+  String get batchCompleted => 'مكتملة';
+
+  @override
+  String get batchCancelled => 'ملغاة';
+
+  @override
+  String get orderAwaitingPayment => 'بانتظار الدفع';
+
+  @override
+  String get orderAwaitingReceipt => 'بانتظار الإيصال';
+
+  @override
+  String get orderVerifying => 'قيد التحقق';
+
+  @override
+  String get orderAmountMismatch => 'المبلغ غير مطابق';
+
+  @override
+  String get orderPaid => 'مدفوع';
+
+  @override
+  String get orderFailed => 'فشل';
+
+  @override
+  String get orderRejected => 'مرفوض';
+
+  @override
+  String get orderExpired => 'منتهي';
+
+  @override
+  String get orderRefunded => 'مسترد';
+
+  @override
+  String get splashTagline => 'دفعات مباشرة · منذ ٢٠٢٦';
+
+  @override
+  String get splashLine => 'تعلّم مباشرةً، مع دفعة تحضر فعلًا.';
+
+  @override
+  String get chooseLanguage => 'اختر لغتك';
+
+  @override
+  String get leftToRight => 'من اليسار إلى اليمين';
+
+  @override
+  String get rightToLeft => 'من اليمين إلى اليسار';
+
+  @override
+  String get languageHint =>
+      'يمكنك تغيير اللغة في أي وقت من حسابي ← اللغة والمنطقة. لغة الجلسات تحدّدها كل دفعة على حدة.';
+
+  @override
+  String get onboardingTitle => 'ماذا تريد أن تتعلّم مباشرةً؟';
+
+  @override
+  String get onboardingTimezone =>
+      'منطقتك الزمنية — تُحوَّل مواعيد الدفعات إليها';
+
+  @override
+  String get detected => 'تم اكتشافها';
+
+  @override
+  String get bestTime => 'أنسب وقت لك';
+
+  @override
+  String get mornings => 'الصباح';
+
+  @override
+  String get evenings => 'المساء';
+
+  @override
+  String get weekends => 'عطلة الأسبوع';
+
+  @override
+  String get interestDesign => 'التصميم';
+
+  @override
+  String get interestLanguages => 'اللغات';
+
+  @override
+  String get interestCode => 'البرمجة';
+
+  @override
+  String get interestBusiness => 'الأعمال';
+
+  @override
+  String get interestArt => 'الفن';
+
+  @override
+  String get interestMusic => 'الموسيقى';
+
+  @override
+  String get signInTitle => 'احجز مقعدك.';
+
+  @override
+  String get signInSubtitle =>
+      'حساب واحد لكل دفعة تنضم إليها — على هاتفك أو على الويب.';
+
+  @override
+  String get signUpTitle => 'أنشئ حسابك.';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get fullName => 'الاسم الكامل';
+
+  @override
+  String get signIn => 'تسجيل الدخول';
+
+  @override
+  String get createAccount => 'إنشاء حساب';
+
+  @override
+  String get haveAccount => 'لديّ حساب بالفعل';
+
+  @override
+  String get noAccount => 'جديد هنا؟ أنشئ حسابًا';
+
+  @override
+  String get orLabel => 'أو';
+
+  @override
+  String get continueGoogle => 'المتابعة عبر Google';
+
+  @override
+  String get continueApple => 'المتابعة عبر Apple';
+
+  @override
+  String get termsNote => 'بالمتابعة فإنك توافق على الشروط وسياسة الخصوصية.';
+
+  @override
+  String get invalidEmail => 'أدخل بريدًا إلكترونيًا صالحًا';
+
+  @override
+  String get passwordTooShort => '٨ أحرف على الأقل';
+
+  @override
+  String get nameTooShort => 'حرفان على الأقل';
+
+  @override
+  String get verifyTitle => 'تفقّد بريدك.';
+
+  @override
+  String verifyBody(String email) {
+    return 'أرسلنا رابط تحقق إلى $email.';
+  }
+
+  @override
+  String resendIn(String time) {
+    return 'إعادة الإرسال خلال $time';
+  }
+
+  @override
+  String get resend => 'إعادة الإرسال';
+
+  @override
+  String get changeEmail => 'تغيير البريد';
+
+  @override
+  String get verifyPermissions =>
+      'بعد ذلك سنطلب الكاميرا والميكروفون مرة واحدة، لتنضم إلى الجلسات بلمسة واحدة.';
+
+  @override
+  String get verifyContinue => 'تحقّق وتابع';
+
+  @override
+  String greetingMorning(String name) {
+    return 'صباح الخير، $name';
+  }
+
+  @override
+  String greetingAfternoon(String name) {
+    return 'مساء الخير، $name';
+  }
+
+  @override
+  String greetingEvening(String name) {
+    return 'مساء الخير، $name';
+  }
+
+  @override
+  String get liveNow => 'مباشر الآن';
+
+  @override
+  String get joinLiveRoom => 'انضم الآن';
+
+  @override
+  String inRoom(String count) {
+    return '$count في الغرفة';
+  }
+
+  @override
+  String get myBatches => 'دفعاتي';
+
+  @override
+  String nextAt(String when) {
+    return 'التالية · $when';
+  }
+
+  @override
+  String get continueWatching => 'تابع المشاهدة';
+
+  @override
+  String get noBatchesTitle => 'لا دفعات بعد';
+
+  @override
+  String get noBatchesBody => 'اختر دورة ودفعة يناسب جدولها أسبوعك.';
+
+  @override
+  String get exploreCta => 'استكشف الدورات';
+
+  @override
+  String get upNext => 'التالي';
+
+  @override
+  String get exploreTitle => 'اعثر على دفعة تناسب أسبوعك.';
+
+  @override
+  String get searchCourses => 'ابحث في الدورات';
+
+  @override
+  String get allFilter => 'الكل';
+
+  @override
+  String coursesCount(String count) {
+    return '$count دورة';
+  }
+
+  @override
+  String get noCoursesFound => 'لا توجد دورات مطابقة. جرّب بحثًا آخر.';
+
+  @override
+  String levelN(String n) {
+    return 'المستوى $n';
+  }
+
+  @override
+  String liveSessionsN(String n) {
+    return '$n جلسة مباشرة';
+  }
+
+  @override
+  String get recordings => 'التسجيلات';
+
+  @override
+  String get certificate => 'شهادة';
+
+  @override
+  String teaches(String codes) {
+    return 'يدرّس $codes';
+  }
+
+  @override
+  String get outcomesTitle => 'ستخرج قادرًا على';
+
+  @override
+  String syllabusN(String n) {
+    return 'المنهج · $n وحدات';
+  }
+
+  @override
+  String fromPrice(String price) {
+    return 'ابتداءً من $price';
+  }
+
+  @override
+  String chooseBatchN(String n) {
+    return 'اختر دفعة · $n';
+  }
+
+  @override
+  String get pickBatch => 'اختر دفعة';
+
+  @override
+  String timesShownIn(String tz) {
+    return 'التوقيت: $tz';
+  }
+
+  @override
+  String get fullSchedule => 'الجدول الكامل';
+
+  @override
+  String enrollIn(String code) {
+    return 'سجّل في $code';
+  }
+
+  @override
+  String seatsLeft(String n) {
+    return '$n مقاعد متبقية';
+  }
+
+  @override
+  String seatsOf(String taken, String capacity) {
+    return '$taken/$capacity';
+  }
+
+  @override
+  String get noOpenBatches => 'لا دفعات مفتوحة حاليًا. عُد قريبًا.';
+
+  @override
+  String joiningLate(String ran, String left) {
+    return 'تنضم متأخرًا؟ انعقدت $ran جلسات — تجدها في المكتبة كتسجيلات. تتبقى $left جلسات مباشرة.';
+  }
+
+  @override
+  String get addToCalendar => 'أضف إلى التقويم';
+
+  @override
+  String continueWithPrice(String price) {
+    return 'متابعة · $price';
+  }
+
+  @override
+  String sessionN(String n) {
+    return 'الجلسة $n';
+  }
+
+  @override
+  String get joinWaitlist => 'انضم لقائمة الانتظار';
+
+  @override
+  String get checkoutTitle => 'الدفع';
+
+  @override
+  String stepOf(String a, String b) {
+    return 'الخطوة $a / $b';
+  }
+
+  @override
+  String get showPricesIn => 'اعرض الأسعار بـ';
+
+  @override
+  String get batchPrice => 'سعر الدفعة';
+
+  @override
+  String get coupon => 'قسيمة';
+
+  @override
+  String get apply => 'تطبيق';
+
+  @override
+  String get discount => 'الخصم';
+
+  @override
+  String get vat => 'ضريبة القيمة المضافة';
+
+  @override
+  String get total => 'الإجمالي';
+
+  @override
+  String chargedInAed(String aed, String currency, String rate) {
+    return 'يُخصم $aed. يحوّل بنكك العملة. $currency تقدير بسعر 1 درهم = $rate $currency.';
+  }
+
+  @override
+  String get chargedExact => 'يُخصم بالدرهم. هذا هو المبلغ الدقيق.';
+
+  @override
+  String get payWith => 'ادفع عبر';
+
+  @override
+  String get payCard => 'بطاقة · Apple Pay · Google Pay';
+
+  @override
+  String get payCardSub => 'مقعد فوري · 3-D Secure';
+
+  @override
+  String get payBank => 'تحويل بنكي';
+
+  @override
+  String get payBankSub => 'يُحجز المقعد ٤٨ ساعة أثناء التحويل';
+
+  @override
+  String continueAmount(String amount) {
+    return 'متابعة · $amount';
+  }
+
+  @override
+  String get couponInvalid => 'لم تُطبَّق القسيمة.';
+
+  @override
+  String get payByCard => 'الدفع بالبطاقة';
+
+  @override
+  String payAmount(String amount) {
+    return 'ادفع $amount';
+  }
+
+  @override
+  String cardNote(String amount) {
+    return 'قد يطلب بنكك التأكيد عبر 3-D Secure. سيظهر في كشف بطاقتك $amount.';
+  }
+
+  @override
+  String get securedByStripe => 'مؤمَّن عبر Stripe · لا نخزّن أرقام البطاقات';
+
+  @override
+  String get stripeUnavailable =>
+      'الدفع بالبطاقة غير مفعّل في هذه النسخة. استخدم التحويل البنكي.';
+
+  @override
+  String get paymentCancelled => 'أُلغي الدفع.';
+
+  @override
+  String get bankTransfer => 'تحويل بنكي';
+
+  @override
+  String seatHeld(String time) {
+    return 'المقعد محجوز $time';
+  }
+
+  @override
+  String get transferExactly => 'حوّل بالضبط';
+
+  @override
+  String get reference => 'المرجع';
+
+  @override
+  String referenceHint(String amount) {
+    return 'ضع المرجع في ملاحظات التحويل. أرسل بالدرهم، أو اطلب من بنكك التحويل ليصل $amount.';
+  }
+
+  @override
+  String get chooseBank => 'اختر البنك المستلِم';
+
+  @override
+  String copyIbanOf(String bank) {
+    return 'انسخ رقم الآيبان الكامل لـ $bank';
+  }
+
+  @override
+  String get uploadReceipt =>
+      'ارفع إيصال التحويل (PDF أو JPG أو PNG · حتى ١٠ م.ب)';
+
+  @override
+  String get chooseFile => 'اختر ملفًا';
+
+  @override
+  String get fileTooLarge => 'الملف أكبر من ١٠ م.ب.';
+
+  @override
+  String get iSentTransfer => 'أرسلت التحويل';
+
+  @override
+  String get holdExpired => 'انتهت مهلة الـ٤٨ ساعة وأُطلق المقعد.';
+
+  @override
+  String get noBanks => 'لا توجد بنوك مستلِمة مفعّلة. تواصل مع الدعم.';
+
+  @override
+  String orderRef(String ref) {
+    return 'الطلب $ref';
+  }
+
+  @override
+  String get almostOnAir => 'على وشك البث.';
+
+  @override
+  String verifyingBody(String code, String amount) {
+    return 'نحجز مقعدك في $code بينما يتحقق قسم المالية من تحويل $amount.';
+  }
+
+  @override
+  String get tlOrderCreated => 'المقعد محجوز';
+
+  @override
+  String get tlReceiptUploaded => 'رُفع الإيصال';
+
+  @override
+  String get tlFinanceVerifying => 'المالية تتحقق';
+
+  @override
+  String get tlSeatConfirmed => 'تأكد المقعد';
+
+  @override
+  String get rejectedTitle => 'الإيصال يحتاج إلى مراجعة';
+
+  @override
+  String get reupload => 'أعد رفع الإيصال';
+
+  @override
+  String get contactSupport => 'تواصل مع دعم المالية';
+
+  @override
+  String get orderFailedBody => 'لم يكتمل الدفع. يمكنك المحاولة مجددًا.';
+
+  @override
+  String get orderExpiredBody => 'انتهت صلاحية هذا الطلب وأُطلق المقعد.';
+
+  @override
+  String get goToSchedule => 'اذهب إلى جدولي';
+
+  @override
+  String get youreIn => 'أنت معنا.';
+
+  @override
+  String enrolledBody(String course, String code, String n) {
+    return 'مقعدك في $course · $code محجوز لك. أُضيفت $n جلسات مباشرة إلى جدولك.';
+  }
+
+  @override
+  String get nextTake => 'الجلسة التالية';
+
+  @override
+  String get days => 'أيام';
+
+  @override
+  String get hrs => 'ساعات';
+
+  @override
+  String get mins => 'دقائق';
+
+  @override
+  String lobbyOpensAt(String time) {
+    return 'تُفتح الردهة $time';
+  }
+
+  @override
+  String syncCalendar(String n) {
+    return 'زامن $n جلسات مع التقويم';
+  }
+
+  @override
+  String get watchRecordings => 'شاهد التسجيلات';
+
+  @override
+  String get myOrders => 'طلباتي';
+
+  @override
+  String get noOrders => 'لا طلبات بعد.';
+
+  @override
+  String get thisWeek => 'هذا الأسبوع';
+
+  @override
+  String get noSessionsWeek => 'لا جلسات هذا الأسبوع.';
+
+  @override
+  String get prevWeek => 'الأسبوع السابق';
+
+  @override
+  String get nextWeek => 'الأسبوع التالي';
+
+  @override
+  String lobbyOpenStarts(String time) {
+    return 'الردهة مفتوحة · تبدأ $time';
+  }
+
+  @override
+  String lobbyStarts(String time) {
+    return 'الردهة · تبدأ $time';
+  }
+
+  @override
+  String get cameraPreview => 'أنت · معاينة الكاميرا';
+
+  @override
+  String get microphone => 'الميكروفون';
+
+  @override
+  String get camera => 'الكاميرا';
+
+  @override
+  String joinAs(String name) {
+    return 'انضم باسم $name';
+  }
+
+  @override
+  String get lobbyClosed => 'تُفتح الردهة قبل ١٥ دقيقة من بدء الجلسة.';
+
+  @override
+  String get goLive => 'ابدأ البث';
+
+  @override
+  String get recordSession => 'سجّل الجلسة';
+
+  @override
+  String get recordSessionSub => 'تُحفظ في مكتبة الدفعة بعد المعالجة';
+
+  @override
+  String waitingN(String n) {
+    return '$n ينتظرون';
+  }
+
+  @override
+  String get networkCheck => 'يُفحص الاتصال عند الانضمام';
+
+  @override
+  String get connecting => 'جارٍ الاتصال…';
+
+  @override
+  String get rec => 'تسجيل';
+
+  @override
+  String get reconnecting => 'جارٍ إعادة الاتصال…';
+
+  @override
+  String get reconnectingBody => 'إشارة ضعيفة. أُوقف الفيديو للحفاظ على الصوت.';
+
+  @override
+  String get hostLabel => 'المضيف';
+
+  @override
+  String get chat => 'الدردشة';
+
+  @override
+  String peopleN(String n) {
+    return 'المشاركون ($n)';
+  }
+
+  @override
+  String handsN(String n) {
+    return 'الأيدي المرفوعة · $n';
+  }
+
+  @override
+  String get messageHint => 'رسالة';
+
+  @override
+  String get leave => 'مغادرة';
+
+  @override
+  String get raiseHand => 'رفع اليد';
+
+  @override
+  String get muteAll => 'كتم الجميع';
+
+  @override
+  String get record => 'تسجيل';
+
+  @override
+  String get endForAll => 'إنهاء للجميع';
+
+  @override
+  String get endConfirmTitle => 'إنهاء الجلسة للجميع؟';
+
+  @override
+  String get endConfirmBody => 'تُغلق الغرفة ويتوقف التسجيل ويُحفظ الحضور.';
+
+  @override
+  String get allowSpeak => 'السماح بالتحدث';
+
+  @override
+  String get mute => 'كتم';
+
+  @override
+  String get remove => 'إزالة';
+
+  @override
+  String get noMessages => 'لا رسائل بعد. ألقِ التحية.';
+
+  @override
+  String get noHands => 'لا أيدي مرفوعة.';
+
+  @override
+  String get onlyYou => 'أنت الوحيد هنا حتى الآن.';
+
+  @override
+  String get liveUnavailable => 'الفيديو غير متاح لهذه الجلسة بعد.';
+
+  @override
+  String get wrapTitle => 'انتهى التصوير.';
+
+  @override
+  String endedStayed(String time, String min) {
+    return 'انتهت $time · بقيت $min دقيقة';
+  }
+
+  @override
+  String howWas(String slate) {
+    return 'كيف كانت $slate؟';
+  }
+
+  @override
+  String get tagClear => 'واضحة';
+
+  @override
+  String get tagPace => 'إيقاع جيد';
+
+  @override
+  String get tagExamples => 'أمثلة رائعة';
+
+  @override
+  String get tagAudio => 'مشاكل صوت';
+
+  @override
+  String get tagTooFast => 'سريعة جدًا';
+
+  @override
+  String get recordingProcessing => 'التسجيل قيد المعالجة';
+
+  @override
+  String get recordingSoon => 'جاهز خلال ٢٠ دقيقة تقريبًا · سنُعلمك';
+
+  @override
+  String get nextLabel => 'التالي';
+
+  @override
+  String get sendFeedback => 'أرسل التقييم';
+
+  @override
+  String get thanksFeedback => 'شكرًا — أُرسل التقييم.';
+
+  @override
+  String get libraryTitle => 'المكتبة';
+
+  @override
+  String continueAt(String at) {
+    return 'تابع · $at';
+  }
+
+  @override
+  String allRecordingsN(String n) {
+    return 'كل التسجيلات · $n';
+  }
+
+  @override
+  String get materials => 'المواد';
+
+  @override
+  String get noRecordings => 'تظهر التسجيلات هنا بعد كل جلسة.';
+
+  @override
+  String get noMaterials => 'لم تُشارك مواد بعد.';
+
+  @override
+  String get assignments => 'الواجبات';
+
+  @override
+  String get dueTab => 'مستحقة';
+
+  @override
+  String get submittedTab => 'مُسلّمة';
+
+  @override
+  String get gradedTab => 'مُقيّمة';
+
+  @override
+  String dueAt(String when) {
+    return 'موعد التسليم $when';
+  }
+
+  @override
+  String get submitAssignment => 'سلّم الواجب';
+
+  @override
+  String get linkLabel => 'رابط';
+
+  @override
+  String get textLabel => 'ملاحظات';
+
+  @override
+  String get noAssignments => 'لا واجبات هنا.';
+
+  @override
+  String get submittedOk => 'تم التسليم.';
+
+  @override
+  String scoreOf(String score, String max) {
+    return '$score / $max';
+  }
+
+  @override
+  String get enrollFirst => 'سجّل في دفعة لتفتح التسجيلات والمواد.';
+
+  @override
+  String get inbox => 'الوارد';
+
+  @override
+  String get markAllRead => 'تعليم الكل كمقروء';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get earlier => 'سابقًا';
+
+  @override
+  String get noNotifications => 'لا جديد لديك.';
+
+  @override
+  String get timezone => 'المنطقة الزمنية';
+
+  @override
+  String get language => 'اللغة';
+
+  @override
+  String get notifications => 'الإشعارات';
+
+  @override
+  String get account => 'الحساب';
+
+  @override
+  String batchesN(String n) {
+    return '$n دفعات';
+  }
+
+  @override
+  String get languageRegion => 'اللغة والمنطقة';
+
+  @override
+  String get appLanguage => 'لغة التطبيق';
+
+  @override
+  String get numerals => 'الأرقام';
+
+  @override
+  String get numeralsArabic => 'أرقام هندية ٠١٢٣٤٥٦٧٨٩';
+
+  @override
+  String get numeralsWestern => 'أرقام غربية 0123456789';
+
+  @override
+  String get preview => 'معاينة';
+
+  @override
+  String get displayCurrency => 'عملة العرض';
+
+  @override
+  String get pushLobby => 'فتح الردهة';
+
+  @override
+  String get pushChanges => 'تغييرات الجدول';
+
+  @override
+  String get pushRecordings => 'التسجيلات والدرجات';
+
+  @override
+  String get editProfile => 'تعديل الملف';
+
+  @override
+  String get nextTakeLobbyOpen => 'الجلسة التالية · الردهة مفتوحة';
+
+  @override
+  String nextTakeIn(String time) {
+    return 'الجلسة التالية · تبدأ خلال $time';
+  }
+
+  @override
+  String get enterLobby => 'افتح الردهة';
+
+  @override
+  String studentsN(String n) {
+    return '$n طالبًا';
+  }
+
+  @override
+  String get todayStat => 'اليوم';
+
+  @override
+  String get weekStat => 'الأسبوع';
+
+  @override
+  String get sessionsLabel => 'جلسات';
+
+  @override
+  String get attendStat => 'الحضور';
+
+  @override
+  String get laterToday => 'لاحقًا اليوم';
+
+  @override
+  String get noSessionsToday => 'لا جلسات اليوم. استمتع بالهدوء.';
+
+  @override
+  String rosterTitle(String code) {
+    return 'قائمة $code';
+  }
+
+  @override
+  String get enrolledLabel => 'المسجّلون';
+
+  @override
+  String get avgAttendance => 'متوسط الحضور';
+
+  @override
+  String get doneLabel => 'منجزة';
+
+  @override
+  String get searchStudents => 'ابحث عن طالب';
+
+  @override
+  String get atRisk => 'معرّضون للتعثر';
+
+  @override
+  String get waitlist => 'قائمة الانتظار';
+
+  @override
+  String messageAll(String code) {
+    return 'راسل كل $code';
+  }
+
+  @override
+  String get noStudents => 'لا طلاب بعد.';
+
+  @override
+  String get noTeacherBatches => 'لم تُسند إليك دفعات بعد.';
+
+  @override
+  String get prepTitle => 'تحضير الجلسة';
+
+  @override
+  String runOfShow(String min) {
+    return 'سير الجلسة · $min دقيقة';
+  }
+
+  @override
+  String get addBlock => '+ أضف فقرة';
+
+  @override
+  String get blockLabel => 'عنوان الفقرة';
+
+  @override
+  String get atMinute => 'عند الدقيقة';
+
+  @override
+  String get filesForStudents => 'ملفات للطلاب';
+
+  @override
+  String get privateNotes => 'ملاحظات خاصة';
+
+  @override
+  String get reschedule => 'إعادة جدولة';
+
+  @override
+  String get openLobby => 'افتح الردهة';
+
+  @override
+  String get moveSession => 'انقل هذه الجلسة';
+
+  @override
+  String get newDay => 'اليوم الجديد';
+
+  @override
+  String get startTime => 'وقت البدء';
+
+  @override
+  String get reason => 'السبب';
+
+  @override
+  String get notifyStudents => 'أبلغ الطلاب عند الموافقة';
+
+  @override
+  String get sendToAdmin => 'أرسل للإدارة للموافقة';
+
+  @override
+  String get adminReviews => 'تراجع الإدارة الطلبات خلال ٢٤ ساعة.';
+
+  @override
+  String get requestSent => 'أُرسل الطلب إلى الإدارة.';
+
+  @override
+  String get attendanceSummary => 'ملخص الحضور';
+
+  @override
+  String get present => 'حاضر';
+
+  @override
+  String get late => 'متأخر';
+
+  @override
+  String get leftEarly => 'غادر مبكرًا';
+
+  @override
+  String get absent => 'غائب';
+
+  @override
+  String get attendanceRule =>
+      'احتُسب الحضور من سجلات الانضمام والمغادرة في LiveKit. الحضور الكامل = ٧٥٪ من مدة الجلسة على الأقل.';
+
+  @override
+  String publishRecording(String code) {
+    return 'انشر التسجيل في $code';
+  }
+
+  @override
+  String ranFor(String duration) {
+    return 'استمرت $duration';
+  }
+
+  @override
+  String get earningsTitle => 'الأرباح';
+
+  @override
+  String get earnedSoFar => 'المكتسب هذا الشهر حتى الآن';
+
+  @override
+  String nextPayoutOn(String date) {
+    return 'يُدفع $date';
+  }
+
+  @override
+  String get displayOnly => 'للعرض فقط: تُدفع المستحقات دائمًا بالدرهم.';
+
+  @override
+  String get pendingLabel => 'معلّق';
+
+  @override
+  String get scheduledRest => 'مجدولة لبقية الشهر';
+
+  @override
+  String get availableLabel => 'متاح';
+
+  @override
+  String get lifetimePaid => 'المدفوع حتى الآن';
+
+  @override
+  String get byBatch => 'هذه الفترة حسب الدفعة';
+
+  @override
+  String get netRevenueNote =>
+      'صافي الإيراد = التسجيلات المدفوعة − المبالغ المستردة − رسوم Stripe. يُخصم أي استرداد بعد الدفع من دفعتك التالية.';
+
+  @override
+  String get payoutMethod => 'طريقة الدفع';
+
+  @override
+  String get verified => 'موثّق';
+
+  @override
+  String get unverified => 'بانتظار التوثيق';
+
+  @override
+  String get bankName => 'البنك';
+
+  @override
+  String get accountHolder => 'صاحب الحساب';
+
+  @override
+  String get iban => 'الآيبان';
+
+  @override
+  String get swift => 'سويفت';
+
+  @override
+  String get payoutCurrency => 'عملة الدفع';
+
+  @override
+  String get changeBank => 'غيّر الحساب البنكي';
+
+  @override
+  String get addBank => 'أضف حسابًا بنكيًا';
+
+  @override
+  String get changeBankNote =>
+      'يُعاد توثيق الحساب الجديد قبل الدفعة التالية. تتوقف المدفوعات حتى تتم الموافقة.';
+
+  @override
+  String get history => 'السجل';
+
+  @override
+  String get noPayouts => 'لا مدفوعات بعد.';
+
+  @override
+  String get noBankDetails => 'أضف حسابًا بنكيًا إماراتيًا لاستلام المستحقات.';
+
+  @override
+  String get ibanInvalid => 'آيبان إماراتي: AE + ٢١ رقمًا';
+
+  @override
+  String get swiftInvalid => '٨ أو ١١ حرفًا/رقمًا';
+
+  @override
+  String sessionsDelivered(String n) {
+    return '$n جلسات منجزة';
+  }
+
+  @override
+  String opsGreeting(String name) {
+    return 'العمليات، $name';
+  }
+
+  @override
+  String get onAirLabel => 'على الهواء';
+
+  @override
+  String roomsPeople(String rooms, String people) {
+    return '$rooms غرف · $people شخصًا';
+  }
+
+  @override
+  String get sessionsToday => 'جلسات اليوم';
+
+  @override
+  String get activeBatches => 'دفعات نشطة';
+
+  @override
+  String get revenueMonth => 'إيراد الشهر';
+
+  @override
+  String get seatsFilled => 'المقاعد المشغولة';
+
+  @override
+  String get needsYou => 'بانتظارك';
+
+  @override
+  String get noAlerts => 'لا شيء يحتاج قرارًا الآن.';
+
+  @override
+  String get liveMonitorTitle => 'على الهواء الآن';
+
+  @override
+  String autoRefresh(String s) {
+    return 'تحديث تلقائي $s ث';
+  }
+
+  @override
+  String liveN(String n) {
+    return '$n مباشر';
+  }
+
+  @override
+  String get joinSilently => 'انضم بصمت';
+
+  @override
+  String get noLiveRooms => 'لا غرف على الهواء.';
+
+  @override
+  String participantsN(String n) {
+    return '$n شخصًا';
+  }
+
+  @override
+  String get recordingOn => 'يُسجَّل';
+
+  @override
+  String get batchesTitle => 'الدفعات';
+
+  @override
+  String get seatsLabel => 'مقاعد';
+
+  @override
+  String get nextSession => 'الجلسة التالية';
+
+  @override
+  String get teacherLabel => 'المعلّم';
+
+  @override
+  String sessionsRun(String done, String total) {
+    return 'انعقدت $done من $total جلسات';
+  }
+
+  @override
+  String get transfersToVerify => 'تحويلات للتحقق';
+
+  @override
+  String get payoutRuns => 'دفعات المستحقات';
+
+  @override
+  String get noTransfers => 'لا تحويلات بانتظار التحقق.';
+
+  @override
+  String get noPayoutRuns => 'لا دفعات مستحقات بعد.';
+
+  @override
+  String transferTitle(String ref) {
+    return 'التحويل $ref';
+  }
+
+  @override
+  String get receiptPreview => 'معاينة الإيصال';
+
+  @override
+  String get openFullSize => 'افتح بالحجم الكامل';
+
+  @override
+  String get noReceipt => 'لم يُرفع إيصال بعد.';
+
+  @override
+  String get studentLabel => 'الطالب';
+
+  @override
+  String get batchLabel => 'الدفعة';
+
+  @override
+  String get expected => 'المتوقع';
+
+  @override
+  String get receivedStatement => 'المستلم (كشف البنك، درهم)';
+
+  @override
+  String get rejectReason => 'سبب الرفض (عند الرفض)';
+
+  @override
+  String get reasonShort => 'المبلغ ناقص';
+
+  @override
+  String get reasonReference => 'المرجع مفقود';
+
+  @override
+  String get reasonUnreadable => 'الإيصال غير مقروء';
+
+  @override
+  String get reasonNotReceived => 'لم يصل بعد';
+
+  @override
+  String get reject => 'رفض';
+
+  @override
+  String get approve => 'موافقة';
+
+  @override
+  String get decline => 'رفض الطلب';
+
+  @override
+  String get approveEnroll => 'وافق وسجّل';
+
+  @override
+  String get requestNewReceipt => 'اطلب إيصالًا جديدًا';
+
+  @override
+  String get reviewDone => 'حُفظ القرار.';
+
+  @override
+  String payoutRunTitle(String period) {
+    return 'دفعة المستحقات · $period';
+  }
+
+  @override
+  String get awaitingApproval => 'بانتظار الموافقة';
+
+  @override
+  String totalTeachers(String n) {
+    return 'الإجمالي · $n معلّمين';
+  }
+
+  @override
+  String heldNote(String n) {
+    return '$n معلّقة: الحساب البنكي غير موثّق أو أقل من الحد الأدنى.';
+  }
+
+  @override
+  String approvePayouts(String n, String amount) {
+    return 'وافق على $n دفعات · $amount';
+  }
+
+  @override
+  String get downloadFile => 'نزّل ملف التحويل البنكي';
+
+  @override
+  String get runApproved => 'تمت الموافقة على الدفعة.';
+
+  @override
+  String get held => 'معلّقة';
+
+  @override
+  String get ready => 'جاهزة';
+
+  @override
+  String get paidLabel => 'مدفوعة';
+
+  @override
+  String get carriedOver => 'مُرحّلة';
+
+  @override
+  String alertTransfersToVerify(String n) {
+    return '$n تحويلات بنكية بانتظار التحقق';
+  }
+
+  @override
+  String alertSeatHoldsExpiring(String n) {
+    return '$n حجوزات مقاعد تنتهي خلال 24 ساعة';
+  }
+
+  @override
+  String alertTeacherBankUnverified(String n) {
+    return '$n بيانات بنكية لمعلمين بانتظار التحقق';
+  }
+
+  @override
+  String alertPayoutsHeld(String n) {
+    return '$n مستحقات معلّقة';
+  }
+
+  @override
+  String rescheduleRequestTitle(String teacher, String slate) {
+    return '$teacher يطلب نقل $slate';
+  }
+
+  @override
+  String get newPayoutRun => 'دفعة مستحقات جديدة';
+
+  @override
+  String get myRescheduleRequests => 'طلباتي';
+
+  @override
+  String get requestPending => 'قيد المراجعة';
+
+  @override
+  String get requestApproved => 'تمت الموافقة';
+
+  @override
+  String get requestDeclined => 'مرفوض';
+
+  @override
+  String get videoDevMode =>
+      'الفيديو متوقف في هذه البيئة (LiveKit غير مُعدّ). الدردشة ورفع اليد ما زالا يعملان.';
+}

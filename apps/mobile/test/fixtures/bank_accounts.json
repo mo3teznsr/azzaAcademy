@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "id": "bank_enbd",
+      "bankName": "Emirates NBD",
+      "accountName": "[COMPANY LEGAL NAME]",
+      "iban": "AE07•••••••••••••••3456",
+      "swift": "EBILAEAD",
+      "branch": "Dubai Mall",
+      "instructions": "Put your order reference (AZ-…) in the transfer notes.",
+      "currency": "AED",
+      "active": true,
+      "sortOrder": 0,
+      "createdAt": "2026-11-02T09:32:19.346Z",
+      "updatedAt": "2026-11-02T10:35:33.500Z"
+    },
+    {
+      "id": "bank_adcb",
+      "bankName": "ADCB",
+      "accountName": "[COMPANY LEGAL NAME]",
+      "iban": "AE46•••••••••••••••9012",
+      "swift": "ADCBAEAA",
+      "branch": "Abu Dhabi Main",
+      "instructions": "Put your order reference (AZ-…) in the transfer notes.",
+      "currency": "AED",
+      "active": true,
+      "sortOrder": 1,
+      "createdAt": "2026-11-02T09:32:19.354Z",
+      "updatedAt": "2026-11-02T10:35:33.503Z"
+    },
+    {
+      "id": "bank_fab",
+      "bankName": "First Abu Dhabi Bank",
+      "accountName": "[COMPANY LEGAL NAME]",
+      "iban": "AE33•••••••••••••••2101",
+      "swift": "NBADAEAA",
+      "branch": "Khalifa Street",
+      "instructions": "Put your order reference (AZ-…) in the transfer notes.",
+      "currency": "AED",
+      "active": true,
+      "sortOrder": 2,
+      "createdAt": "2026-11-02T09:32:19.356Z",
+      "updatedAt": "2026-11-02T10:35:33.503Z"
+    }
+  ]
+}

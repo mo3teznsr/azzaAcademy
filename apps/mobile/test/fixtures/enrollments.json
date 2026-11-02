@@ -1,0 +1,67 @@
+{
+  "items": [
+    {
+      "id": "cmvz28m07003e8vv1q566taaa",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "status": "ACTIVE",
+      "createdAt": "2026-10-05T09:30:00.000Z",
+      "updatedAt": "2026-11-02T09:32:19.687Z",
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "status": "RUNNING",
+        "language": "AR",
+        "timezone": "Asia/Dubai",
+        "startsOn": "2026-11-10T15:00:00.000Z",
+        "endsOn": "2026-12-17T16:30:00.000Z",
+        "capacity": 24,
+        "course": {
+          "id": "cmvz28ls400028vv1nbzu7jlh",
+          "slug": "product-design-foundations",
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات",
+          "coverStyle": "sun",
+          "category": "Design"
+        },
+        "teacher": {
+          "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+          "name": "Lina Haddad",
+          "image": null
+        },
+        "schedule": {
+          "weekdays": [
+            2,
+            4
+          ],
+          "startTime": "19:00",
+          "durationMin": 90,
+          "sessionCount": 12
+        }
+      },
+      "latestOrder": {
+        "id": "cmvz28m0a003f8vv1avrsl7za",
+        "reference": "AZ-B07-30101",
+        "status": "PAID",
+        "method": "STRIPE",
+        "totalFils": 92400,
+        "expiresAt": null,
+        "createdAt": "2026-10-05T09:00:00.000Z"
+      },
+      "nextSession": {
+        "id": "cmvz28lxs001g8vv1nps51dgi",
+        "number": 5,
+        "title": "Information architecture",
+        "startsAt": "2026-11-24T15:00:00.000Z",
+        "endsAt": "2026-11-24T16:30:00.000Z",
+        "status": "SCHEDULED"
+      },
+      "progress": {
+        "sessionsDone": 4,
+        "sessionsTotal": 12,
+        "sessionsAttended": 4,
+        "percent": 33
+      }
+    }
+  ]
+}

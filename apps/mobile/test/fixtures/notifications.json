@@ -1,0 +1,84 @@
+{
+  "items": [
+    {
+      "id": "675fbca6-e1ec-4b83-a838-5c9e3978d71f",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "type": "TRANSFER_INSTRUCTIONS",
+      "title": "Seat held · Product Design Foundations B08",
+      "body": "Transfer AED 924.00 with reference AZ-B08-25580 before Wed 4 Nov at 15:36",
+      "data": {
+        "orderId": "cmvz6o59v0004cvv19xsrl878",
+        "reference": "AZ-B08-25580"
+      },
+      "readAt": null,
+      "createdAt": "2026-11-02T11:36:23.013Z"
+    },
+    {
+      "id": "2ee6f2b3-6e52-4ec7-a4a2-990805fd3bed",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "type": "ENROLLED",
+      "title": "You’re enrolled · Product Design Foundations B08",
+      "body": "First session Mon 7 Dec at 19:00",
+      "data": {
+        "batchId": "cmvz28lyo001o8vv1zjrdlig9",
+        "enrollmentId": "cmvz3x0gi0000lov1hkkgkumm"
+      },
+      "readAt": null,
+      "createdAt": "2026-11-02T10:20:15.053Z"
+    },
+    {
+      "id": "cd516c1c-c123-4af6-9f77-99cda7f2acb9",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "type": "TRANSFER_INSTRUCTIONS",
+      "title": "Seat held · Product Design Foundations B08",
+      "body": "Transfer AED 924.00 with reference AZ-B08-89788 before Wed 4 Nov at 14:19",
+      "data": {
+        "orderId": "cmvz3x0ot0001lov1ulc49r61",
+        "reference": "AZ-B08-89788"
+      },
+      "readAt": null,
+      "createdAt": "2026-11-02T10:19:18.220Z"
+    },
+    {
+      "id": "cmvz2cx1g0001ccv1y66xp4q9",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "type": "RECORDING_READY",
+      "title": "Recording ready · Problem framing",
+      "body": "Product Design Foundations B07 S03",
+      "data": {
+        "sessionId": "cmvz28lxs001e8vv1oyl6h7kc"
+      },
+      "readAt": null,
+      "createdAt": "2026-11-02T09:35:40.612Z"
+    },
+    {
+      "id": "cmvz2cx1g0002ccv1kxuslfm2",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "type": "SUBMISSION_GRADED",
+      "title": "New assignment",
+      "body": "Sketch 3 directions for the onboarding screen",
+      "data": {
+        "batchId": "cmvz28lxn001a8vv1yak5nlw5"
+      },
+      "readAt": null,
+      "createdAt": "2026-11-02T09:35:40.612Z"
+    },
+    {
+      "id": "cmvz2cx1g0000ccv11exugqs9",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "type": "ENROLLED",
+      "title": "You’re enrolled · Product Design Foundations B07",
+      "body": "First session Tue 10 Nov, 19:00",
+      "data": {
+        "batchId": "cmvz28lxn001a8vv1yak5nlw5"
+      },
+      "readAt": "2026-10-05T10:00:00.000Z",
+      "createdAt": "2026-10-05T09:31:00.000Z"
+    }
+  ],
+  "total": 6,
+  "page": 1,
+  "pageSize": 20,
+  "pageCount": 1,
+  "unread": 5
+}

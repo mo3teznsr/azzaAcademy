@@ -1,0 +1,13 @@
+{
+  "bankDetails": {
+    "id": "cmvz28m46009u8vv1xaxgtbtq",
+    "userId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+    "bankName": "Emirates NBD",
+    "accountHolder": "Lina Haddad",
+    "iban": "AE120260001015555555501",
+    "swift": "EBILAEAD",
+    "verified": true,
+    "verifiedAt": "2026-10-01T09:00:00.000Z",
+    "updatedAt": "2026-11-02T09:32:19.830Z"
+  }
+}

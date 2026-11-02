@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "LOBBY_NOT_OPEN",
+    "message": "The lobby opens 15 minutes before the session starts",
+    "details": {
+      "opensAt": "2026-11-24T14:45:00.000Z"
+    }
+  }
+}

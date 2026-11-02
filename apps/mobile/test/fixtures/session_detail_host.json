@@ -1,0 +1,49 @@
+{
+  "id": "cmvz28lxs001g8vv1nps51dgi",
+  "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+  "number": 5,
+  "title": "Information architecture",
+  "agenda": null,
+  "notes": null,
+  "startsAt": "2026-11-24T15:00:00.000Z",
+  "endsAt": "2026-11-24T16:30:00.000Z",
+  "status": "SCHEDULED",
+  "movedFrom": null,
+  "moveReason": null,
+  "hostId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+  "roomName": "b07-s05-97fca2d9",
+  "startedAt": null,
+  "endedAt": null,
+  "recordingUrl": null,
+  "egressId": null,
+  "createdAt": "2026-11-02T09:32:19.595Z",
+  "updatedAt": "2026-11-02T09:32:19.595Z",
+  "host": {
+    "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+    "name": "Lina Haddad",
+    "image": null
+  },
+  "materials": [],
+  "assignments": [],
+  "batch": {
+    "id": "cmvz28lxn001a8vv1yak5nlw5",
+    "code": "B07",
+    "teacherId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+    "timezone": "Asia/Dubai",
+    "language": "AR",
+    "status": "RUNNING",
+    "course": {
+      "id": "cmvz28ls400028vv1nbzu7jlh",
+      "slug": "product-design-foundations",
+      "titleEn": "Product Design Foundations",
+      "titleAr": "أساسيات تصميم المنتجات",
+      "coverStyle": "sun"
+    },
+    "teacher": {
+      "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "name": "Lina Haddad",
+      "image": null
+    }
+  },
+  "myRole": "host"
+}

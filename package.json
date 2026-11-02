@@ -1,0 +1,11 @@
+{
+  "name": "azza",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:api": "bun --cwd apps/api run dev",
+    "dev:web": "bun --cwd apps/web run dev",
+    "typecheck": "bun --cwd packages/shared run typecheck && bun --cwd apps/api run typecheck && bun --cwd apps/web run typecheck",
+    "test": "bun --cwd apps/api test"
+  }
+}

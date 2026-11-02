@@ -1,0 +1,257 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-code);
+  --font-heading: var(--font-display);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-cream: var(--cream);
+  --color-cream-2: var(--cream-2);
+  --color-cream-line: var(--cream-line);
+  --color-ivory: var(--ivory);
+  --color-sun: var(--sun);
+  --color-sky: var(--sky);
+  --color-sage: var(--sage);
+  --color-peach: var(--peach);
+  --color-onair: var(--onair);
+  --color-stone: var(--stone);
+  --color-stone-2: var(--stone-2);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-line: var(--danger-line);
+  --color-danger-fg: var(--danger-fg);
+  --ease-expo: var(--ease-out-expo);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ---------- Azza theme tokens (Main.dc.html) ---------- */
+:root {
+  --ink: #121110;
+  --ink-2: #1c1a18;
+  --ink-3: #24211e;
+  --line: #2e2b27;
+  --line-2: #3a3631;
+  --cream: #f5efe4;
+  --cream-2: #e8e0d3;
+  --cream-line: #d9d0c2;
+  --ivory: #fbf8f2;
+  --sun: #ffd24a;
+  --sky: #bfd8f2;
+  --sage: #cfe3c9;
+  --peach: #ffc7a6;
+  --onair: #ff5a36;
+  --stone: #a39b90;
+  --stone-2: #6b645b;
+  --danger-bg: #2a1410;
+  --danger-line: #5a2a20;
+  --danger-fg: #ff9c85;
+
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: var(--font-inter-tight), "Inter Tight", system-ui, sans-serif;
+  --font-code: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* shadcn semantic tokens — ink ground (student / teacher) */
+  --background: var(--ink);
+  --foreground: var(--ivory);
+  --card: var(--ink-2);
+  --card-foreground: var(--ivory);
+  --popover: var(--ink-2);
+  --popover-foreground: var(--ivory);
+  --primary: var(--ivory);
+  --primary-foreground: var(--ink);
+  --secondary: var(--line);
+  --secondary-foreground: var(--ivory);
+  --muted: var(--ink-2);
+  --muted-foreground: var(--stone);
+  --accent: var(--line);
+  --accent-foreground: var(--ivory);
+  --destructive: var(--danger-fg);
+  --border: var(--line);
+  --input: var(--line-2);
+  --ring: var(--sun);
+  --chart-1: var(--sun);
+  --chart-2: var(--sky);
+  --chart-3: var(--sage);
+  --chart-4: var(--peach);
+  --chart-5: var(--onair);
+  --radius: 0.75rem;
+  --sidebar: var(--ink);
+  --sidebar-foreground: var(--ivory);
+  --sidebar-primary: var(--ivory);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent: var(--ink-2);
+  --sidebar-accent-foreground: var(--ivory);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--sun);
+  color-scheme: dark;
+}
+
+/* Admin: cream ground. Applied to <body data-theme="cream"> so portals inherit it. */
+[data-theme="cream"],
+.theme-cream {
+  --background: var(--cream);
+  --foreground: var(--ink);
+  --card: var(--ivory);
+  --card-foreground: var(--ink);
+  --popover: var(--ivory);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--ivory);
+  --secondary: var(--cream-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--cream-2);
+  --muted-foreground: var(--stone-2);
+  --accent: var(--cream-2);
+  --accent-foreground: var(--ink);
+  --destructive: #b3361c;
+  --border: var(--cream-line);
+  --input: var(--cream-line);
+  --ring: var(--ink);
+  color-scheme: light;
+}
+
+/* Restore ink tokens locally (admin sidebar) */
+.theme-ink {
+  --background: var(--ink);
+  --foreground: var(--ivory);
+  --card: var(--ink-2);
+  --card-foreground: var(--ivory);
+  --primary: var(--ivory);
+  --primary-foreground: var(--ink);
+  --muted: var(--ink-2);
+  --muted-foreground: var(--stone);
+  --accent: var(--line);
+  --accent-foreground: var(--ivory);
+  --border: var(--line);
+  --input: var(--line-2);
+  --ring: var(--sun);
+  color-scheme: dark;
+}
+
+/* Arabic type pairing: Readex Pro display, IBM Plex Sans Arabic body (i18n-00-system) */
+html[lang="ar"] {
+  --font-display: var(--font-readex), "Readex Pro", var(--font-bricolage), sans-serif;
+  --font-body: var(--font-plex-arabic), "IBM Plex Sans Arabic", var(--font-inter-tight), sans-serif;
+}
+html[lang="ar"] body {
+  line-height: 1.7;
+}
+html[lang="ar"] .font-display {
+  letter-spacing: 0;
+  line-height: 1.15;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    text-underline-offset: 3px;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.035em;
+  }
+  /* JetBrains Mono caps label */
+  .label-mono {
+    font-family: var(--font-code);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .timecode {
+    font-family: var(--font-code);
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  .link-sun {
+    color: var(--sun);
+    font-weight: 600;
+  }
+  .link-sun:hover {
+    color: #ffe48a;
+  }
+  [data-theme="cream"] .link-sun,
+  .theme-cream .link-sun {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+}
+
+@keyframes signal-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  70% { opacity: 0; transform: scale(1.35); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+.signal-arc-live {
+  transform-origin: center;
+  animation: signal-pulse 1.8s var(--ease-out-expo) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .signal-arc-live { animation: none; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

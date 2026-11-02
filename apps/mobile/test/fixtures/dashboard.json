@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-02",
+  "liveRooms": 0,
+  "sessionsToday": {
+    "count": 0,
+    "items": []
+  },
+  "activeBatches": 6,
+  "seats": {
+    "held": 49,
+    "capacity": 116,
+    "filledPercent": 42
+  },
+  "revenueMonth": {
+    "grossFils": 0,
+    "refundedFils": 0,
+    "vatFils": 0,
+    "netFils": 0,
+    "orders": 0
+  },
+  "alerts": [
+    {
+      "type": "TRANSFERS_TO_VERIFY",
+      "severity": "warning",
+      "count": 1
+    },
+    {
+      "type": "TEACHER_BANK_UNVERIFIED",
+      "severity": "warning",
+      "count": 1
+    }
+  ]
+}

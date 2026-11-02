@@ -1,0 +1,23 @@
+import type { CheckoutInput } from '@azza/shared';
+import { http, items, request } from './client';
+import type { BankAccount, CheckoutResult, Items, Order, FxRates, Quote } from './types';
+
+type Started = Exclude<CheckoutResult, { waitlisted: true }>;
+
+export const checkoutApi = {
+  fxRates: () => http.get<FxRates>('/api/v1/fx-rates'),
+  bankAccounts: () => items(http.get<Items<BankAccount>>('/api/v1/bank-accounts')),
+  quote: (input: CheckoutInput) => http.post<Quote>('/api/v1/checkout/quote', input),
+  checkout: (input: CheckoutInput) => http.post<CheckoutResult>('/api/v1/checkout', input),
+  order: (id: string) => http.get<Order>(`/api/v1/orders/${id}`),
+  uploadReceipt: (id: string, receiptUrl: string) => http.post<Order>(`/api/v1/orders/${id}/receipt`, { receiptUrl }),
+  /** Multipart upload of the receipt file (image/PDF ≤ 10 MB); the API stores it and moves the order to VERIFYING. */
+  uploadReceiptFile: (id: string, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request<Order>(`/api/v1/orders/${id}/receipt/file`, { method: 'POST', form });
+  },
+};
+
+export const isWaitlisted = (r: CheckoutResult): r is Extract<CheckoutResult, { waitlisted: true }> => r.waitlisted;
+export const isStripeResult = (r: CheckoutResult): r is Extract<Started, { clientSecret: string }> => !r.waitlisted && 'clientSecret' in r;

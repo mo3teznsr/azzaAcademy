@@ -1,0 +1,182 @@
+{
+  "summary": {
+    "earnedThisMonthFils": 394236,
+    "scheduledRestOfMonthFils": 376080,
+    "availableFils": 0,
+    "pendingFils": 394236,
+    "lifetimePaidFils": 0,
+    "nextPayout": {
+      "expectedOn": "2026-12-05",
+      "estimatedFils": 197118
+    }
+  },
+  "batches": [
+    {
+      "batchId": "cmvz28lyo001o8vv1zjrdlig9",
+      "code": "B08",
+      "status": "ENROLLING",
+      "course": {
+        "id": "cmvz28ls400028vv1nbzu7jlh",
+        "titleEn": "Product Design Foundations",
+        "titleAr": "أساسيات تصميم المنتجات"
+      },
+      "startsOn": "2026-12-07T15:00:00.000Z",
+      "endsOn": "2027-01-13T16:30:00.000Z",
+      "activeStudents": 3,
+      "sessionCount": 12,
+      "sessionsDelivered": 0,
+      "grossFils": 277200,
+      "refundsFils": 0,
+      "vatFils": 13200,
+      "feesFils": 8340,
+      "netRevenueFils": 255660,
+      "perSessionFils": 12783,
+      "earnedFils": 0,
+      "projectedTotalFils": 153396
+    },
+    {
+      "batchId": "cmvz28lz500228vv1s71jxk36",
+      "code": "B09",
+      "status": "ENROLLING",
+      "course": {
+        "id": "cmvz28ls400028vv1nbzu7jlh",
+        "titleEn": "Product Design Foundations",
+        "titleAr": "أساسيات تصميم المنتجات"
+      },
+      "startsOn": "2026-11-14T06:00:00.000Z",
+      "endsOn": "2026-12-20T07:30:00.000Z",
+      "activeStudents": 7,
+      "sessionCount": 12,
+      "sessionsDelivered": 0,
+      "grossFils": 646800,
+      "refundsFils": 0,
+      "vatFils": 30800,
+      "feesFils": 19460,
+      "netRevenueFils": 596540,
+      "perSessionFils": 29827,
+      "earnedFils": 0,
+      "projectedTotalFils": 357924
+    },
+    {
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "code": "B07",
+      "status": "RUNNING",
+      "course": {
+        "id": "cmvz28ls400028vv1nbzu7jlh",
+        "titleEn": "Product Design Foundations",
+        "titleAr": "أساسيات تصميم المنتجات"
+      },
+      "startsOn": "2026-11-10T15:00:00.000Z",
+      "endsOn": "2026-12-17T16:30:00.000Z",
+      "activeStudents": 23,
+      "sessionCount": 12,
+      "sessionsDelivered": 4,
+      "grossFils": 2125200,
+      "refundsFils": 0,
+      "vatFils": 101200,
+      "feesFils": 52820,
+      "netRevenueFils": 1971180,
+      "perSessionFils": 98559,
+      "earnedFils": 394236,
+      "projectedTotalFils": 1182708
+    }
+  ],
+  "ledger": [
+    {
+      "id": "cmvz28m42009r8vv1se5yhhax",
+      "kind": "SESSION",
+      "amountFils": 98559,
+      "status": "PENDING",
+      "availableAt": "2026-12-03T16:30:00.000Z",
+      "createdAt": "2026-11-02T09:32:19.826Z",
+      "note": null,
+      "payoutId": null,
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "course": {
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات"
+        }
+      },
+      "session": {
+        "id": "cmvz28lxs001f8vv1vgglmsof",
+        "number": 4,
+        "title": "Sketching & ideation",
+        "endedAt": "2026-11-19T16:30:00.000Z"
+      }
+    },
+    {
+      "id": "cmvz28m3t008u8vv1l0nk5c0k",
+      "kind": "SESSION",
+      "amountFils": 98559,
+      "status": "PENDING",
+      "availableAt": "2026-12-01T16:30:00.000Z",
+      "createdAt": "2026-11-02T09:32:19.817Z",
+      "note": null,
+      "payoutId": null,
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "course": {
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات"
+        }
+      },
+      "session": {
+        "id": "cmvz28lxs001e8vv1oyl6h7kc",
+        "number": 3,
+        "title": "Problem framing",
+        "endedAt": "2026-11-17T16:30:00.000Z"
+      }
+    },
+    {
+      "id": "cmvz28m3j007x8vv1ln9bswxe",
+      "kind": "SESSION",
+      "amountFils": 98559,
+      "status": "PENDING",
+      "availableAt": "2026-11-26T16:30:00.000Z",
+      "createdAt": "2026-11-02T09:32:19.807Z",
+      "note": null,
+      "payoutId": null,
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "course": {
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات"
+        }
+      },
+      "session": {
+        "id": "cmvz28lxs001d8vv112jmw08l",
+        "number": 2,
+        "title": "Research & interviews",
+        "endedAt": "2026-11-12T16:30:00.000Z"
+      }
+    },
+    {
+      "id": "cmvz28m3800708vv1cmjt8ml9",
+      "kind": "SESSION",
+      "amountFils": 98559,
+      "status": "PENDING",
+      "availableAt": "2026-11-24T16:30:00.000Z",
+      "createdAt": "2026-11-02T09:32:19.796Z",
+      "note": null,
+      "payoutId": null,
+      "batch": {
+        "id": "cmvz28lxn001a8vv1yak5nlw5",
+        "code": "B07",
+        "course": {
+          "titleEn": "Product Design Foundations",
+          "titleAr": "أساسيات تصميم المنتجات"
+        }
+      },
+      "session": {
+        "id": "cmvz28lxs001c8vv1ifukn527",
+        "number": 1,
+        "title": "Seeing like a designer",
+        "endedAt": "2026-11-10T16:30:00.000Z"
+      }
+    }
+  ]
+}

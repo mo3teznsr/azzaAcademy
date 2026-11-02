@@ -1,0 +1,14 @@
+{
+  "name": "Sara Kamal",
+  "email": "sara@azza.test",
+  "emailVerified": true,
+  "image": null,
+  "createdAt": "2026-11-02T09:32:17.993Z",
+  "updatedAt": "2026-11-02T10:35:33.475Z",
+  "role": "STUDENT",
+  "locale": "en",
+  "timezone": "Asia/Dubai",
+  "displayCurrency": "AED",
+  "phone": "+971501234567",
+  "id": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA"
+}

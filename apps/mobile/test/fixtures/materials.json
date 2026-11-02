@@ -1,0 +1,60 @@
+{
+  "items": [
+    {
+      "id": "cmvz28m2t006q8vv1rf74rrc5",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "sessionId": "cmvz28lxs001c8vv1ifukn527",
+      "title": "S01 slides · Seeing like a designer",
+      "url": "https://files.azza.test/b07/s1.pdf",
+      "kind": "SLIDES",
+      "createdAt": "2026-11-02T09:32:19.781Z",
+      "session": {
+        "id": "cmvz28lxs001c8vv1ifukn527",
+        "number": 1,
+        "title": "Seeing like a designer"
+      }
+    },
+    {
+      "id": "cmvz28m3d007n8vv1872f3dhs",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "sessionId": "cmvz28lxs001d8vv112jmw08l",
+      "title": "S02 slides · Research & interviews",
+      "url": "https://files.azza.test/b07/s2.pdf",
+      "kind": "SLIDES",
+      "createdAt": "2026-11-02T09:32:19.801Z",
+      "session": {
+        "id": "cmvz28lxs001d8vv112jmw08l",
+        "number": 2,
+        "title": "Research & interviews"
+      }
+    },
+    {
+      "id": "cmvz28m3n008k8vv1wmewle0u",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "sessionId": "cmvz28lxs001e8vv1oyl6h7kc",
+      "title": "S03 slides · Problem framing",
+      "url": "https://files.azza.test/b07/s3.pdf",
+      "kind": "SLIDES",
+      "createdAt": "2026-11-02T09:32:19.811Z",
+      "session": {
+        "id": "cmvz28lxs001e8vv1oyl6h7kc",
+        "number": 3,
+        "title": "Problem framing"
+      }
+    },
+    {
+      "id": "cmvz28m3w009h8vv103749y5p",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "sessionId": "cmvz28lxs001f8vv1vgglmsof",
+      "title": "S04 slides · Sketching & ideation",
+      "url": "https://files.azza.test/b07/s4.pdf",
+      "kind": "SLIDES",
+      "createdAt": "2026-11-02T09:32:19.820Z",
+      "session": {
+        "id": "cmvz28lxs001f8vv1vgglmsof",
+        "number": 4,
+        "title": "Sketching & ideation"
+      }
+    }
+  ]
+}

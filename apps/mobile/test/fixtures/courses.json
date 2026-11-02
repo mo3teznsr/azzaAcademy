@@ -1,0 +1,356 @@
+{
+  "items": [
+    {
+      "id": "cmvz28luc000h8vv14xxe1a6k",
+      "slug": "watercolour-l1",
+      "titleEn": "Watercolour L1",
+      "titleAr": "الألوان المائية - المستوى 1",
+      "descriptionEn": "Washes, layering and loose botanicals.",
+      "descriptionAr": null,
+      "category": "Art",
+      "level": "BEGINNER",
+      "coverStyle": "peach",
+      "priceFils": 54000,
+      "status": "PUBLISHED",
+      "createdAt": "2026-11-02T09:32:19.476Z",
+      "updatedAt": "2026-11-02T10:35:33.539Z",
+      "modules": [
+        {
+          "id": "cmvz28lus00148vv14vyapc10",
+          "courseId": "cmvz28luc000h8vv14xxe1a6k",
+          "order": 0,
+          "titleEn": "Materials",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lus00158vv1782hnqf9",
+          "courseId": "cmvz28luc000h8vv14xxe1a6k",
+          "order": 1,
+          "titleEn": "Flat & graded washes",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lus00168vv19qc47xq6",
+          "courseId": "cmvz28luc000h8vv14xxe1a6k",
+          "order": 2,
+          "titleEn": "Wet-in-wet",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lus00178vv1h41fkhlf",
+          "courseId": "cmvz28luc000h8vv14xxe1a6k",
+          "order": 3,
+          "titleEn": "Layering",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lus00188vv1ngsjdapu",
+          "courseId": "cmvz28luc000h8vv14xxe1a6k",
+          "order": 4,
+          "titleEn": "Botanicals",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lus00198vv10a73wmyb",
+          "courseId": "cmvz28luc000h8vv14xxe1a6k",
+          "order": 5,
+          "titleEn": "Final piece",
+          "titleAr": null
+        }
+      ]
+    },
+    {
+      "id": "cmvz28lu7000g8vv1dywrjq44",
+      "slug": "python-for-data-l2",
+      "titleEn": "Python for Data L2",
+      "titleAr": "بايثون للبيانات - المستوى 2",
+      "descriptionEn": "pandas, plotting and a real dataset project.",
+      "descriptionAr": null,
+      "category": "Data",
+      "level": "INTERMEDIATE",
+      "coverStyle": "sky",
+      "priceFils": 120000,
+      "status": "PUBLISHED",
+      "createdAt": "2026-11-02T09:32:19.471Z",
+      "updatedAt": "2026-11-02T10:35:33.536Z",
+      "modules": [
+        {
+          "id": "cmvz28lun000s8vv12n4ftqj4",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 0,
+          "titleEn": "pandas refresher",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun000t8vv1nbn7o9at",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 1,
+          "titleEn": "Cleaning",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun000u8vv1yowxl5t3",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 2,
+          "titleEn": "Joins",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun000v8vv1zlz8awtz",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 3,
+          "titleEn": "Group-by",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun000w8vv1egtr20bh",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 4,
+          "titleEn": "Time series",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun000x8vv1unhjtjke",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 5,
+          "titleEn": "Plotting",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun000y8vv1t2pqzcbo",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 6,
+          "titleEn": "Stats basics",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun000z8vv1pbhuwdih",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 7,
+          "titleEn": "APIs",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun00108vv19x8dwgj7",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 8,
+          "titleEn": "Notebooks",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun00118vv1v65tfmh7",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 9,
+          "titleEn": "Project I",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun00128vv1wlbkfa1l",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 10,
+          "titleEn": "Project II",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lun00138vv17hpl8uog",
+          "courseId": "cmvz28lu7000g8vv1dywrjq44",
+          "order": 11,
+          "titleEn": "Demo day",
+          "titleAr": null
+        }
+      ]
+    },
+    {
+      "id": "cmvz28lu2000f8vv19n5z08gg",
+      "slug": "spoken-arabic-a1",
+      "titleEn": "Spoken Arabic A1",
+      "titleAr": "العربية المحكية A1",
+      "descriptionEn": "Gulf Arabic for everyday conversations.",
+      "descriptionAr": null,
+      "category": "Languages",
+      "level": "BEGINNER",
+      "coverStyle": "sage",
+      "priceFils": 65000,
+      "status": "PUBLISHED",
+      "createdAt": "2026-11-02T09:32:19.466Z",
+      "updatedAt": "2026-11-02T10:35:33.534Z",
+      "modules": [
+        {
+          "id": "cmvz28lui000i8vv12u5da236",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 0,
+          "titleEn": "Greetings",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000j8vv1u7a4oryn",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 1,
+          "titleEn": "Numbers & time",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000k8vv1uwr4vup0",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 2,
+          "titleEn": "Family",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000l8vv1j6y5zar2",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 3,
+          "titleEn": "At the market",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000m8vv15i0rzqxd",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 4,
+          "titleEn": "Directions",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000n8vv1956z0c6j",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 5,
+          "titleEn": "Food",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000o8vv1bljww965",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 6,
+          "titleEn": "Work",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000p8vv1bukpo7wn",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 7,
+          "titleEn": "Weekend plans",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000q8vv1gkhh1ez3",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 8,
+          "titleEn": "Health",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28lui000r8vv15ybutw3o",
+          "courseId": "cmvz28lu2000f8vv19n5z08gg",
+          "order": 9,
+          "titleEn": "Review",
+          "titleAr": null
+        }
+      ]
+    },
+    {
+      "id": "cmvz28ls400028vv1nbzu7jlh",
+      "slug": "product-design-foundations",
+      "titleEn": "Product Design Foundations",
+      "titleAr": "أساسيات تصميم المنتجات",
+      "descriptionEn": "Twelve live sessions from research to a portfolio-ready case study.",
+      "descriptionAr": null,
+      "category": "Design",
+      "level": "BEGINNER",
+      "coverStyle": "sun",
+      "priceFils": 88000,
+      "status": "PUBLISHED",
+      "createdAt": "2026-11-02T09:32:19.396Z",
+      "updatedAt": "2026-11-02T10:35:33.530Z",
+      "modules": [
+        {
+          "id": "cmvz28ls800038vv1zux7mf9r",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 0,
+          "titleEn": "Seeing like a designer",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls800048vv15mokcfjy",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 1,
+          "titleEn": "Research & interviews",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls800058vv18f29zt4p",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 2,
+          "titleEn": "Problem framing",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls800068vv1tq7i1tv8",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 3,
+          "titleEn": "Sketching & ideation",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls800078vv15d3gnrte",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 4,
+          "titleEn": "Information architecture",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls800088vv1g4lyaz6c",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 5,
+          "titleEn": "Wireframes",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls800098vv1ayji0047",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 6,
+          "titleEn": "Visual hierarchy",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls8000a8vv1ou9ptt8s",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 7,
+          "titleEn": "Typography & colour",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls8000b8vv13sjcavcy",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 8,
+          "titleEn": "Components & systems",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls8000c8vv1f6vbihnk",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 9,
+          "titleEn": "Prototyping",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls8000d8vv11fxjsfc7",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 10,
+          "titleEn": "Usability testing",
+          "titleAr": null
+        },
+        {
+          "id": "cmvz28ls8000e8vv12gufj8os",
+          "courseId": "cmvz28ls400028vv1nbzu7jlh",
+          "order": 11,
+          "titleEn": "Portfolio & critique",
+          "titleAr": null
+        }
+      ]
+    }
+  ],
+  "total": 4,
+  "page": 1,
+  "pageSize": 50,
+  "pageCount": 1
+}

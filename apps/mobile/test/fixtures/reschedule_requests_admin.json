@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "id": "cmvz6gq9w0002cvv1zqggq7r0",
+      "sessionId": "cmvz28lxs001g8vv1nps51dgi",
+      "requestedById": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "startsAt": "2026-11-25T15:00:00.000Z",
+      "endsAt": "2026-11-25T16:30:00.000Z",
+      "reason": "Conference travel",
+      "status": "PENDING",
+      "decidedById": null,
+      "decidedAt": null,
+      "decisionNote": null,
+      "createdAt": "2026-11-02T11:30:36.932Z",
+      "updatedAt": "2026-11-02T11:30:36.932Z",
+      "requestedBy": {
+        "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+        "name": "Lina Haddad",
+        "image": null
+      },
+      "decidedBy": null,
+      "session": {
+        "id": "cmvz28lxs001g8vv1nps51dgi",
+        "number": 5,
+        "title": "Information architecture",
+        "status": "SCHEDULED",
+        "startsAt": "2026-11-24T15:00:00.000Z",
+        "endsAt": "2026-11-24T16:30:00.000Z",
+        "batch": {
+          "id": "cmvz28lxn001a8vv1yak5nlw5",
+          "code": "B07",
+          "timezone": "Asia/Dubai",
+          "course": {
+            "id": "cmvz28ls400028vv1nbzu7jlh",
+            "titleEn": "Product Design Foundations",
+            "titleAr": "أساسيات تصميم المنتجات"
+          },
+          "teacher": {
+            "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+            "name": "Lina Haddad"
+          }
+        }
+      }
+    }
+  ]
+}

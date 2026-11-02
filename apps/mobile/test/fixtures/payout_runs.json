@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": "cmvz6od800005cvv15j7hdkn9",
+      "periodStart": "2026-10-01T00:00:00.000Z",
+      "periodEnd": "2026-10-31T00:00:00.000Z",
+      "status": "DRAFT",
+      "approvedById": null,
+      "approvedAt": null,
+      "paidAt": null,
+      "createdAt": "2026-11-02T11:36:33.264Z",
+      "_count": {
+        "payouts": 0
+      },
+      "totalFils": 0,
+      "readyFils": 0,
+      "heldCount": 0
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "pageSize": 20,
+  "pageCount": 1
+}

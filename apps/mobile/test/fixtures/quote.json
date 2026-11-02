@@ -1,0 +1,12 @@
+{
+  "subtotalFils": 88000,
+  "discountFils": 0,
+  "vatFils": 4400,
+  "totalFils": 92400,
+  "couponCode": null,
+  "display": {
+    "currency": "SAR",
+    "amount": 943,
+    "rate": 1.0211
+  }
+}

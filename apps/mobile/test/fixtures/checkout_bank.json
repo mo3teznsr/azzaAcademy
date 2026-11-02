@@ -1,0 +1,66 @@
+{
+  "waitlisted": false,
+  "order": {
+    "id": "cmvz6o59v0004cvv19xsrl878",
+    "reference": "AZ-B08-25580",
+    "enrollmentId": "cmvz6o51d0003cvv111b9d14g",
+    "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+    "method": "BANK_TRANSFER",
+    "status": "AWAITING_RECEIPT",
+    "subtotalFils": 88000,
+    "discountFils": 0,
+    "vatFils": 4400,
+    "totalFils": 92400,
+    "receivedFils": null,
+    "refundedFils": 0,
+    "feeFils": 0,
+    "displayCurrency": "SAR",
+    "fxRate": 1.0211,
+    "couponCode": null,
+    "stripePaymentIntentId": null,
+    "bankAccountId": "bank_enbd",
+    "receiptUrl": null,
+    "receiptUploadedAt": null,
+    "expiresAt": "2026-11-04T11:36:22.647Z",
+    "verifiedById": null,
+    "verifiedAt": null,
+    "rejectionReason": null,
+    "paidAt": null,
+    "createdAt": "2026-11-02T11:36:22.964Z"
+  },
+  "enrollment": {
+    "id": "cmvz6o51d0003cvv111b9d14g",
+    "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+    "batchId": "cmvz28lyo001o8vv1zjrdlig9",
+    "status": "AWAITING_TRANSFER",
+    "updatedAt": "2026-11-02T11:36:22.657Z"
+  },
+  "quote": {
+    "subtotalFils": 88000,
+    "discountFils": 0,
+    "vatFils": 4400,
+    "totalFils": 92400,
+    "couponCode": null,
+    "display": {
+      "currency": "SAR",
+      "amount": 943,
+      "rate": 1.0211
+    }
+  },
+  "bankAccount": {
+    "id": "bank_enbd",
+    "bankName": "Emirates NBD",
+    "accountName": "[COMPANY LEGAL NAME]",
+    "iban": "AE070331234567890123456",
+    "swift": "EBILAEAD",
+    "branch": "Dubai Mall",
+    "instructions": "Put your order reference (AZ-…) in the transfer notes.",
+    "currency": "AED",
+    "active": true,
+    "sortOrder": 0,
+    "createdAt": "2026-11-02T09:32:19.346Z",
+    "updatedAt": "2026-11-02T10:35:33.500Z"
+  },
+  "reference": "AZ-B08-25580",
+  "expiresAt": "2026-11-04T11:36:22.647Z"
+}

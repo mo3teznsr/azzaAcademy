@@ -1,0 +1,482 @@
+{
+  "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+  "endedSessions": 4,
+  "averageAttendancePercent": 91,
+  "items": [
+    {
+      "enrollmentId": "cmvz28m1000428vv1zw13ul7s",
+      "enrolledAt": "2026-10-17T09:30:00.000Z",
+      "user": {
+        "id": "ynPOoUwDdjKlMRkkwnm3JgGRBFtcjzWS",
+        "name": "Adam Rahman",
+        "email": "adam.rahman@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 20160,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m18004c8vv179fumi3x",
+      "enrolledAt": "2026-10-22T09:30:00.000Z",
+      "user": {
+        "id": "iz2leIc971VW6XeOHkkhxiaPkkDYN1ri",
+        "name": "Aya Najjar",
+        "email": "aya.najjar@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 3,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001e8vv1oyl6h7kc"
+      ],
+      "secondsAttended": 15480,
+      "attendancePercent": 75
+    },
+    {
+      "enrollmentId": "cmvz28m16004a8vv1ybbz79t7",
+      "enrolledAt": "2026-10-21T09:30:00.000Z",
+      "user": {
+        "id": "vfeylT4sHZkx1YxhQD1yx3RTZLPcSY29",
+        "name": "Bilal Hamdan",
+        "email": "bilal.hamdan@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 3,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 15600,
+      "attendancePercent": 75
+    },
+    {
+      "enrollmentId": "cmvz28m0n003o8vv1c54ei7di",
+      "enrolledAt": "2026-10-10T09:30:00.000Z",
+      "user": {
+        "id": "3onatUajvsWq9XxHBANfuXYBbRw8d8mS",
+        "name": "Dana Khalil",
+        "email": "dana.khalil@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 3,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc"
+      ],
+      "secondsAttended": 15120,
+      "attendancePercent": 75
+    },
+    {
+      "enrollmentId": "cmvz28m1d004i8vv115ts6b0v",
+      "enrolledAt": "2026-10-25T09:30:00.000Z",
+      "user": {
+        "id": "zarmW44PPMmvnPGmCGrZ7AfdmFFqiSEB",
+        "name": "Fadi Kanaan",
+        "email": "fadi.kanaan@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc"
+      ],
+      "secondsAttended": 21360,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m0p003q8vv1pt73u7f8",
+      "enrolledAt": "2026-10-11T09:30:00.000Z",
+      "user": {
+        "id": "h9Rx0oDLoF3RohG0Fs7HAOjsB6wx8kRp",
+        "name": "Faris Odeh",
+        "email": "faris.odeh@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 3,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001d8vv112jmw08l"
+      ],
+      "secondsAttended": 15720,
+      "attendancePercent": 75
+    },
+    {
+      "enrollmentId": "cmvz28m1300468vv13h7fr3pk",
+      "enrolledAt": "2026-10-19T09:30:00.000Z",
+      "user": {
+        "id": "sucpbuevsaSSXz7pmLwTD7zCcdsbTkPb",
+        "name": "Hamza Qasim",
+        "email": "hamza.qasim@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 3,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 15840,
+      "attendancePercent": 75
+    },
+    {
+      "enrollmentId": "cmvz28m0i003k8vv1sgl4kox0",
+      "enrolledAt": "2026-10-08T09:30:00.000Z",
+      "user": {
+        "id": "Mis4IM4AXlyRZZ9cuInkFtCliuwU0qtt",
+        "name": "Hana Mahmoud",
+        "email": "hana.mahmoud@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001d8vv112jmw08l"
+      ],
+      "secondsAttended": 20640,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m1500488vv1yl5ygs1e",
+      "enrolledAt": "2026-10-20T09:30:00.000Z",
+      "user": {
+        "id": "xDlNtj2btX2aq0XBhSCXEWeNitf7azPu",
+        "name": "Joud Darwish",
+        "email": "joud.darwish@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 3,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 15720,
+      "attendancePercent": 75
+    },
+    {
+      "enrollmentId": "cmvz28m0k003m8vv1shv1rnx1",
+      "enrolledAt": "2026-10-09T09:30:00.000Z",
+      "user": {
+        "id": "IwejIL8jIxAuqFxR97TrE7JF2QRGmJcS",
+        "name": "Karim Nasser",
+        "email": "karim.nasser@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc"
+      ],
+      "secondsAttended": 20400,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m19004e8vv1tbyo7wys",
+      "enrolledAt": "2026-10-23T09:30:00.000Z",
+      "user": {
+        "id": "add4pz7HXV85oPVn81yrPfMLw2xJ4dqD",
+        "name": "Khaled Ibrahim",
+        "email": "khaled.ibrahim@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc"
+      ],
+      "secondsAttended": 20400,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m1f004k8vv1eo3n4i0j",
+      "enrolledAt": "2026-10-26T09:30:00.000Z",
+      "user": {
+        "id": "j0r3GiBQPZCzjRUF5cJa89UI2YfwgL7G",
+        "name": "Lara Mikhail",
+        "email": "lara.mikhail@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 21120,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m0d003g8vv1a4g2q3bn",
+      "enrolledAt": "2026-10-06T09:30:00.000Z",
+      "user": {
+        "id": "ewhZz6HHpQ3zig6Y7jRBokFHopCKMpmT",
+        "name": "Layla Hassan",
+        "email": "layla.hassan@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001d8vv112jmw08l"
+      ],
+      "secondsAttended": 21120,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m1200448vv1d8chxar4",
+      "enrolledAt": "2026-10-18T09:30:00.000Z",
+      "user": {
+        "id": "0kYA4k5d5Qi7Vu6cgXRjBOngCnLHkuEO",
+        "name": "Leen Barakat",
+        "email": "leen.barakat@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc"
+      ],
+      "secondsAttended": 21360,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m0s003s8vv1xkzc6c8t",
+      "enrolledAt": "2026-10-12T09:30:00.000Z",
+      "user": {
+        "id": "eCZqMEsbMmMls1Pmyrphoff0D9mfaTpc",
+        "name": "Mariam Saeed",
+        "email": "mariam.saeed@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 3,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 15960,
+      "attendancePercent": 75
+    },
+    {
+      "enrollmentId": "cmvz28m1b004g8vv16vuwzxzz",
+      "enrolledAt": "2026-10-24T09:30:00.000Z",
+      "user": {
+        "id": "JihOEIkwM2FXvZJUa9VyvhjiAjkrvGdH",
+        "name": "Rania Aziz",
+        "email": "rania.aziz@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001e8vv1oyl6h7kc"
+      ],
+      "secondsAttended": 20160,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m0v003w8vv1ynnu77ww",
+      "enrolledAt": "2026-10-14T09:30:00.000Z",
+      "user": {
+        "id": "C3qQ2KgLNimsfo0HuKsm0wM3kn2CzLmk",
+        "name": "Reem Al-Ali",
+        "email": "reem.alali@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 20880,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m0y00408vv1cf5rdyyr",
+      "enrolledAt": "2026-10-16T09:30:00.000Z",
+      "user": {
+        "id": "4Lcdq2CpY8XAE6wcSOXU2JqlKUoRmbc2",
+        "name": "Salma Youssef",
+        "email": "salma.youssef@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 20400,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m1h004m8vv1bfi89avp",
+      "enrolledAt": "2026-10-27T09:30:00.000Z",
+      "user": {
+        "id": "4rJ0NcXdRXyoh5594GcGnL7gQKYCrJAO",
+        "name": "Sami Toukan",
+        "email": "sami.toukan@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001f8vv1vgglmsof"
+      ],
+      "secondsAttended": 20880,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m07003e8vv1q566taaa",
+      "enrolledAt": "2026-10-05T09:30:00.000Z",
+      "user": {
+        "id": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+        "name": "Sara Kamal",
+        "email": "sara@azza.test",
+        "image": null,
+        "phone": "+971501234567",
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001c8vv1ifukn527"
+      ],
+      "secondsAttended": 21360,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m0x003y8vv1kidqm56m",
+      "enrolledAt": "2026-10-15T09:30:00.000Z",
+      "user": {
+        "id": "W8ijMroJ2kFEXbCsKASiULozaGshmCqe",
+        "name": "Tariq Mansour",
+        "email": "tariq.mansour@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001f8vv1vgglmsof"
+      ],
+      "secondsAttended": 20640,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m0g003i8vv1ovhuquka",
+      "enrolledAt": "2026-10-07T09:30:00.000Z",
+      "user": {
+        "id": "t4e5H6idFKP4J8M13IeJUSrycMQqX10l",
+        "name": "Yousef Amin",
+        "email": "yousef.amin@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 4,
+      "attendedSessionIds": [
+        "cmvz28lxs001d8vv112jmw08l",
+        "cmvz28lxs001c8vv1ifukn527",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001f8vv1vgglmsof"
+      ],
+      "secondsAttended": 20880,
+      "attendancePercent": 100
+    },
+    {
+      "enrollmentId": "cmvz28m0t003u8vv1lbjvm7q3",
+      "enrolledAt": "2026-10-13T09:30:00.000Z",
+      "user": {
+        "id": "HVgvFoLaWKffojLEToIhoqEPRI5SuhFA",
+        "name": "Ziad Fawzi",
+        "email": "ziad.fawzi@azza.test",
+        "image": null,
+        "phone": null,
+        "locale": "en"
+      },
+      "sessionsAttended": 3,
+      "attendedSessionIds": [
+        "cmvz28lxs001f8vv1vgglmsof",
+        "cmvz28lxs001e8vv1oyl6h7kc",
+        "cmvz28lxs001d8vv112jmw08l"
+      ],
+      "secondsAttended": 15840,
+      "attendancePercent": 75
+    }
+  ]
+}

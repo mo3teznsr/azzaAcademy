@@ -1,0 +1,61 @@
+{
+  "items": [
+    {
+      "id": "cmvz28m1k004p8vv1pgbo6ypt",
+      "reference": "AZ-B07-48213",
+      "enrollmentId": "cmvz28m1j004o8vv1tgc71vsq",
+      "userId": "adMjO7BVy4T2GFqP3mHqkQJC9WupFm0U",
+      "method": "BANK_TRANSFER",
+      "status": "VERIFYING",
+      "subtotalFils": 88000,
+      "discountFils": 0,
+      "vatFils": 4400,
+      "totalFils": 92400,
+      "receivedFils": null,
+      "refundedFils": 0,
+      "feeFils": 0,
+      "displayCurrency": "AED",
+      "fxRate": 1,
+      "couponCode": null,
+      "stripePaymentIntentId": null,
+      "bankAccountId": "bank_enbd",
+      "receiptUrl": "https://files.azza.test/receipts/AZ-B07-48213.jpg",
+      "receiptUploadedAt": "2026-11-01T16:12:00.000Z",
+      "expiresAt": "2026-11-03T14:00:00.000Z",
+      "verifiedById": null,
+      "verifiedAt": null,
+      "rejectionReason": null,
+      "paidAt": null,
+      "createdAt": "2026-11-01T14:00:00.000Z",
+      "updatedAt": "2026-11-02T09:33:49.813Z",
+      "user": {
+        "id": "adMjO7BVy4T2GFqP3mHqkQJC9WupFm0U",
+        "name": "Nadia Shams",
+        "email": "nadia.shams@azza.test"
+      },
+      "bankAccount": {
+        "id": "bank_enbd",
+        "bankName": "Emirates NBD",
+        "iban": "AE070331234567890123456"
+      },
+      "verifiedBy": null,
+      "enrollment": {
+        "id": "cmvz28m1j004o8vv1tgc71vsq",
+        "status": "VERIFYING",
+        "batch": {
+          "id": "cmvz28lxn001a8vv1yak5nlw5",
+          "code": "B07",
+          "course": {
+            "id": "cmvz28ls400028vv1nbzu7jlh",
+            "titleEn": "Product Design Foundations",
+            "titleAr": "أساسيات تصميم المنتجات"
+          }
+        }
+      }
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "pageSize": 20,
+  "pageCount": 1
+}

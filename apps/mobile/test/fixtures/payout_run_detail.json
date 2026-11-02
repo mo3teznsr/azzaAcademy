@@ -1,0 +1,17 @@
+{
+  "id": "cmvz6od800005cvv15j7hdkn9",
+  "periodStart": "2026-10-01T00:00:00.000Z",
+  "periodEnd": "2026-10-31T00:00:00.000Z",
+  "status": "DRAFT",
+  "approvedById": null,
+  "approvedAt": null,
+  "paidAt": null,
+  "createdAt": "2026-11-02T11:36:33.264Z",
+  "payouts": [],
+  "totals": {
+    "totalFils": 0,
+    "readyFils": 0,
+    "held": 0,
+    "carriedOver": 0
+  }
+}

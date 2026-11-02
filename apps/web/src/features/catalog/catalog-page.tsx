@@ -1,0 +1,246 @@
+'use client';
+
+import Link from 'next/link';
+import { useDeferredValue, useMemo, useState } from 'react';
+import { ArrowDown, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Accordion } from './faq';
+import { CourseCover } from '@/components/brand/course-cover';
+import { SignalMark } from '@/components/brand/signal-mark';
+import { BatchStatusChip } from '@/components/brand/status-chip';
+import { EmptyState, ErrorState, LoadingGrid } from '@/components/brand/states';
+import { useI18n } from '@/lib/i18n/provider';
+import { useMoney } from '@/lib/money';
+import { batchPriceFils, describeRule } from '@/lib/schedule';
+import { gmtOffset } from '@/lib/i18n/format';
+import type { BatchSummary, Course } from '@/lib/api/types';
+import { useCatalogCourses, useLiveNow, usePublicBatches } from './use-catalog';
+
+export function CatalogPage() {
+  const { t } = useI18n();
+  return (
+    <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-24 px-4 sm:px-6 lg:px-10">
+      <Hero />
+      <HowItWorks />
+      <Catalog />
+      <StartingSoon />
+      <Faq />
+      <span className="sr-only">{t.meta.description}</span>
+    </div>
+  );
+}
+
+function Hero() {
+  const { t, f, fill } = useI18n();
+  const live = useLiveNow();
+  const n = live.data?.liveSessions ?? 0;
+  return (
+    <section className="grid items-end gap-10 pt-10 lg:grid-cols-[1.35fr_1fr]">
+      <div>
+        <div className="label-mono mb-4 flex items-center gap-2 text-onair">
+          <SignalMark size={18} /> {t.nav.public.findBatch}
+          {n > 0 && (
+            <span className="ms-2 rounded-full bg-onair px-2.5 py-0.5 text-ink" role="status">
+              ● {fill(t.catalog.liveNow, { n: f.number(n), p: f.number(live.data?.participants ?? 0) })}
+            </span>
+          )}
+        </div>
+        <h1 className="font-display text-[clamp(64px,11vw,180px)] font-extrabold leading-[0.82]">
+          <span className="block">{t.catalog.titleA}</span>
+          <span className="block">
+            <span className="font-light">{t.catalog.titleB}</span> {t.catalog.titleC}
+          </span>
+        </h1>
+      </div>
+      <div className="flex flex-col gap-6 pb-4">
+        <p className="max-w-md text-lg leading-relaxed text-stone">{t.catalog.body}</p>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild size="lg">
+            <a href="#catalog">
+              {t.catalog.browse} <ArrowDown />
+            </a>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <a href="#starting">{t.catalog.seeMonth}</a>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorks() {
+  const { t, f } = useI18n();
+  return (
+    <section id="how" aria-labelledby="how-title" className="flex flex-col gap-6">
+      <h2 id="how-title" className="label-mono text-stone">
+        {t.catalog.howTitle}
+      </h2>
+      <ol className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line md:grid-cols-3">
+        {t.catalog.steps.map((s, i) => (
+          <li key={s.word} className="flex flex-col gap-3 bg-ink p-7">
+            <span className="timecode text-sm text-stone">{f.number(i + 1).padStart(2, f.number(0))}</span>
+            <b className="font-display text-5xl font-extrabold">{s.word}</b>
+            <span className="text-stone">{s.text}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function Catalog() {
+  const { t } = useI18n();
+  const [q, setQ] = useState('');
+  const [category, setCategory] = useState<string>('');
+  const deferredQ = useDeferredValue(q);
+  const courses = useCatalogCourses({ q: deferredQ || undefined });
+  const batches = usePublicBatches();
+
+  const categories = useMemo(() => {
+    const set = new Set((courses.data?.items ?? []).map((c) => c.category));
+    return [...set].sort();
+  }, [courses.data]);
+  const items = (courses.data?.items ?? []).filter((c) => !category || c.category === category);
+
+  return (
+    <section id="catalog" aria-labelledby="catalog-title" className="flex scroll-mt-8 flex-col gap-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h2 id="catalog-title" className="font-display text-[clamp(44px,6vw,72px)] font-extrabold leading-[0.9]">
+          {t.catalog.catalogTitle}
+        </h2>
+        <label className="flex h-12 w-full max-w-sm items-center gap-2.5 rounded-full border border-line bg-card px-4 text-stone">
+          <Search className="size-5" />
+          <span className="sr-only">{t.catalog.searchPlaceholder}</span>
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t.catalog.searchPlaceholder}
+            className="min-w-0 flex-1 bg-transparent font-medium text-ivory outline-none placeholder:text-stone"
+          />
+        </label>
+      </div>
+      {categories.length > 1 && (
+        <ToggleGroup type="single" value={category || 'all'} onValueChange={(v) => setCategory(v === 'all' || !v ? '' : v)} className="flex flex-wrap justify-start gap-2">
+          {['all', ...categories].map((c) => (
+            <ToggleGroupItem key={c} value={c} className="h-9 rounded-full border border-line px-4 text-sm data-[state=on]:border-ivory data-[state=on]:bg-ivory data-[state=on]:text-ink">
+              {c === 'all' ? t.catalog.allCategories : c}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      )}
+      {courses.isPending ? (
+        <LoadingGrid count={6} height={380} />
+      ) : courses.isError ? (
+        <ErrorState error={courses.error} onRetry={() => void courses.refetch()} />
+      ) : items.length === 0 ? (
+        <EmptyState
+          title={t.catalog.emptyTitle}
+          body={t.catalog.emptyBody}
+          action={q || category ? { label: t.catalog.clearFilters, onClick: () => (setQ(''), setCategory('')) } : undefined}
+        />
+      ) : (
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-5">
+          {items.map((c) => (
+            <li key={c.id}>
+              <CourseCard course={c} batches={batches.byCourse.get(c.id) ?? []} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function CourseCard({ course, batches }: { course: Course; batches: BatchSummary[] }) {
+  const { t, f, pick } = useI18n();
+  const money = useMoney();
+  const title = pick(course.titleEn, course.titleAr);
+  const next = batches.find((b) => b.status === 'ENROLLING') ?? batches[0];
+  const minPrice = batches.length ? Math.min(...batches.map(batchPriceFils)) : course.priceFils;
+  return (
+    <Link href={`/courses/${course.slug}`} className="group flex h-full flex-col gap-4 rounded-[20px] bg-card p-3 no-underline transition-transform duration-300 ease-(--ease-expo) hover:-translate-y-1">
+      <div className="relative">
+        <CourseCover course={course} className="h-56 transition-transform duration-500 ease-(--ease-expo)" />
+        <span className="label-mono absolute end-3 top-3 rounded-full bg-ink px-2.5 py-1 text-ivory">{f.plural(batches.length, t.catalog.batches)}</span>
+      </div>
+      <div className="flex flex-1 flex-col gap-2 px-2 pb-2">
+        <b className="text-lg leading-tight text-ivory">{title.text}</b>
+        {title.fallback && <span className="label-mono text-stone">{t.common.englishOnly}</span>}
+        <span className="text-sm text-stone">
+          {t.status.level[course.level]} · {f.plural(course.modules.length || (next?.schedule?.sessionCount ?? 0), t.common.sessions)}
+        </span>
+        <div className="mt-auto flex items-end justify-between gap-2 border-t border-line pt-3 text-sm">
+          <span className="text-stone">
+            <span className="label-mono block">{t.catalog.nextBatch}</span>
+            <span className="text-ivory">{next ? `${next.code} · ${f.dayMonth(next.startsOn, next.timezone)}` : t.catalog.noUpcoming}</span>
+          </span>
+          <span className="text-end text-stone">
+            {t.catalog.from} <b className="block text-base text-ivory">{money.display(minPrice)}</b>
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function StartingSoon() {
+  const { t, f, fill, pick } = useI18n();
+  const batches = usePublicBatches();
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const items = (batches.data?.items ?? []).filter((b) => b.status === 'ENROLLING').slice(0, 8);
+  return (
+    <section id="starting" aria-labelledby="starting-title" className="flex scroll-mt-8 flex-col gap-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="starting-title" className="font-display text-[40px] font-extrabold leading-none">
+          {t.catalog.startingTitle}
+        </h2>
+        <span className="label-mono text-stone">{fill(t.catalog.timesShown, { tz: gmtOffset(tz) })}</span>
+      </div>
+      {batches.isPending ? (
+        <LoadingGrid count={4} height={180} />
+      ) : batches.isError ? (
+        <ErrorState error={batches.error} onRetry={() => void batches.refetch()} />
+      ) : items.length === 0 ? (
+        <EmptyState title={t.catalog.noStarting} />
+      ) : (
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-4">
+          {items.map((b) => (
+            <li key={b.id} className="flex flex-col gap-3 rounded-2xl border border-line p-5">
+              <div className="flex items-center justify-between">
+                <b className="font-display text-3xl font-extrabold" dir="ltr">
+                  {b.code}
+                </b>
+                <BatchStatusChip status={b.status} taken={b._count?.enrollments} capacity={b.capacity} />
+              </div>
+              <b>{pick(b.course.titleEn, b.course.titleAr).text}</b>
+              <span className="font-display text-lg">{describeRule(b, f)}</span>
+              <span className="text-sm text-stone">
+                {f.dayMonth(b.startsOn, b.timezone)} → {f.dayMonth(b.endsOn, b.timezone)} · {t.status.sessionLanguage[b.language]}
+              </span>
+              <Link href={`/courses/${b.course.slug}?batch=${b.id}`} className="link-sun mt-auto text-sm">
+                {t.catalog.viewBatch}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function Faq() {
+  const { t } = useI18n();
+  return (
+    <section aria-labelledby="faq-title" className="grid gap-10 lg:grid-cols-[1fr_1.4fr]">
+      <h2 id="faq-title" className="font-display text-[clamp(48px,7vw,96px)] font-extrabold leading-[0.85]">
+        {t.catalog.faqA}
+        <br />
+        <span className="font-light">{t.catalog.faqB}</span>
+      </h2>
+      <Accordion items={t.catalog.faq} />
+    </section>
+  );
+}

@@ -1,0 +1,330 @@
+{
+  "sessionId": "cmvz28lxs001f8vv1vgglmsof",
+  "total": 23,
+  "present": 21,
+  "percent": 91,
+  "items": [
+    {
+      "user": {
+        "id": "ynPOoUwDdjKlMRkkwnm3JgGRBFtcjzWS",
+        "name": "Adam Rahman",
+        "email": "adam.rahman@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": "LATE",
+      "firstJoinedAt": "2026-11-19T15:06:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5040,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "iz2leIc971VW6XeOHkkhxiaPkkDYN1ri",
+        "name": "Aya Najjar",
+        "email": "aya.najjar@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:04:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5160,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "vfeylT4sHZkx1YxhQD1yx3RTZLPcSY29",
+        "name": "Bilal Hamdan",
+        "email": "bilal.hamdan@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:03:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5220,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "3onatUajvsWq9XxHBANfuXYBbRw8d8mS",
+        "name": "Dana Khalil",
+        "email": "dana.khalil@azza.test",
+        "image": null
+      },
+      "attended": false,
+      "mark": null,
+      "firstJoinedAt": null,
+      "lastLeftAt": null,
+      "seconds": 0,
+      "joins": 0
+    },
+    {
+      "user": {
+        "id": "zarmW44PPMmvnPGmCGrZ7AfdmFFqiSEB",
+        "name": "Fadi Kanaan",
+        "email": "fadi.kanaan@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:01:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5340,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "h9Rx0oDLoF3RohG0Fs7HAOjsB6wx8kRp",
+        "name": "Faris Odeh",
+        "email": "faris.odeh@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:06:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5040,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "sucpbuevsaSSXz7pmLwTD7zCcdsbTkPb",
+        "name": "Hamza Qasim",
+        "email": "hamza.qasim@azza.test",
+        "image": null
+      },
+      "attended": false,
+      "mark": null,
+      "firstJoinedAt": null,
+      "lastLeftAt": null,
+      "seconds": 0,
+      "joins": 0
+    },
+    {
+      "user": {
+        "id": "Mis4IM4AXlyRZZ9cuInkFtCliuwU0qtt",
+        "name": "Hana Mahmoud",
+        "email": "hana.mahmoud@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:04:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5160,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "xDlNtj2btX2aq0XBhSCXEWeNitf7azPu",
+        "name": "Joud Darwish",
+        "email": "joud.darwish@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:02:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5280,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "IwejIL8jIxAuqFxR97TrE7JF2QRGmJcS",
+        "name": "Karim Nasser",
+        "email": "karim.nasser@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:05:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5100,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "add4pz7HXV85oPVn81yrPfMLw2xJ4dqD",
+        "name": "Khaled Ibrahim",
+        "email": "khaled.ibrahim@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:05:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5100,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "j0r3GiBQPZCzjRUF5cJa89UI2YfwgL7G",
+        "name": "Lara Mikhail",
+        "email": "lara.mikhail@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:02:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5280,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "ewhZz6HHpQ3zig6Y7jRBokFHopCKMpmT",
+        "name": "Layla Hassan",
+        "email": "layla.hassan@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:02:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5280,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "0kYA4k5d5Qi7Vu6cgXRjBOngCnLHkuEO",
+        "name": "Leen Barakat",
+        "email": "leen.barakat@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:01:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5340,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "eCZqMEsbMmMls1Pmyrphoff0D9mfaTpc",
+        "name": "Mariam Saeed",
+        "email": "mariam.saeed@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:01:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5340,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "JihOEIkwM2FXvZJUa9VyvhjiAjkrvGdH",
+        "name": "Rania Aziz",
+        "email": "rania.aziz@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:06:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5040,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "C3qQ2KgLNimsfo0HuKsm0wM3kn2CzLmk",
+        "name": "Reem Al-Ali",
+        "email": "reem.alali@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:03:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5220,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "4Lcdq2CpY8XAE6wcSOXU2JqlKUoRmbc2",
+        "name": "Salma Youssef",
+        "email": "salma.youssef@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:05:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5100,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "4rJ0NcXdRXyoh5594GcGnL7gQKYCrJAO",
+        "name": "Sami Toukan",
+        "email": "sami.toukan@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:03:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5220,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+        "name": "Sara Kamal",
+        "email": "sara@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:01:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5340,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "W8ijMroJ2kFEXbCsKASiULozaGshmCqe",
+        "name": "Tariq Mansour",
+        "email": "tariq.mansour@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:04:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5160,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "t4e5H6idFKP4J8M13IeJUSrycMQqX10l",
+        "name": "Yousef Amin",
+        "email": "yousef.amin@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:03:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5220,
+      "joins": 1
+    },
+    {
+      "user": {
+        "id": "HVgvFoLaWKffojLEToIhoqEPRI5SuhFA",
+        "name": "Ziad Fawzi",
+        "email": "ziad.fawzi@azza.test",
+        "image": null
+      },
+      "attended": true,
+      "mark": null,
+      "firstJoinedAt": "2026-11-19T15:02:00.000Z",
+      "lastLeftAt": "2026-11-19T16:30:00.000Z",
+      "seconds": 5280,
+      "joins": 1
+    }
+  ]
+}

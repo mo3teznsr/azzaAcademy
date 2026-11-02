@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "id": "cmvz28m43009s8vv10m9mqogr",
+      "batchId": "cmvz28lxn001a8vv1yak5nlw5",
+      "sessionId": "cmvz28lxs001f8vv1vgglmsof",
+      "title": "Sketch 3 directions for the onboarding screen",
+      "description": "Upload a photo or Figma link with three distinct sketches.",
+      "dueAt": "2026-11-24T14:00:00.000Z",
+      "maxScore": 100,
+      "createdAt": "2026-11-02T09:32:19.827Z",
+      "session": {
+        "id": "cmvz28lxs001f8vv1vgglmsof",
+        "number": 4,
+        "title": "Sketching & ideation"
+      },
+      "submissionCount": 1,
+      "mySubmission": {
+        "id": "cmvz28m44009t8vv1843uwtm7",
+        "assignmentId": "cmvz28m43009s8vv10m9mqogr",
+        "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+        "url": "https://figma.com/file/sara-onboarding",
+        "text": null,
+        "score": null,
+        "feedback": null,
+        "submittedAt": "2026-11-20T02:30:00.000Z",
+        "gradedAt": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "id": "cmvz28m3x009i8vv19vknyb20",
+      "sessionId": "cmvz28lxs001f8vv1vgglmsof",
+      "userId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "body": "مرحباً جميعاً! Welcome back 👋",
+      "pinned": false,
+      "createdAt": "2026-11-19T15:03:00.000Z",
+      "user": {
+        "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+        "name": "Lina Haddad",
+        "role": "TEACHER",
+        "image": null
+      }
+    },
+    {
+      "id": "cmvz28m3x009j8vv1kzifvzvb",
+      "sessionId": "cmvz28lxs001f8vv1vgglmsof",
+      "userId": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+      "body": "Can you share the slides after class?",
+      "pinned": false,
+      "createdAt": "2026-11-19T15:40:00.000Z",
+      "user": {
+        "id": "pY3HEDYaVZuKCGkCScfkPEqHwMdyv6UA",
+        "name": "Sara Kamal",
+        "role": "STUDENT",
+        "image": null
+      }
+    },
+    {
+      "id": "cmvz28m3x009k8vv1ko8ajsft",
+      "sessionId": "cmvz28lxs001f8vv1vgglmsof",
+      "userId": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+      "body": "Yes — they are in Materials already.",
+      "pinned": false,
+      "createdAt": "2026-11-19T15:41:00.000Z",
+      "user": {
+        "id": "xCnV3iSwNArxmd0p1z2Y0PTWMgY0DJLm",
+        "name": "Lina Haddad",
+        "role": "TEACHER",
+        "image": null
+      }
+    }
+  ]
+}
