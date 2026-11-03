@@ -10,6 +10,7 @@ import 'media_image.dart';
 import 'signal_mark.dart';
 
 export 'media_image.dart';
+export 'motion.dart';
 export 'signal_mark.dart';
 export 'states.dart';
 

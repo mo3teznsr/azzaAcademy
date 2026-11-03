@@ -9,6 +9,7 @@ import type { EnrollmentLifecycle } from './enrollment-lifecycle';
 import type { EnrollmentStateMachine } from './enrollment-state';
 import type { FxService } from './fx.service';
 import type { PaymentsRepository, SaleBatch } from './payments.repository';
+import { COUPON_REFUSAL_MESSAGES, couponRefusal } from './coupon-eligibility';
 import { PriceCalculator, type Quote } from './price-calculator';
 import type { ReferenceGenerator } from './reference-generator';
 import { waitlistRefusal, type WaitlistRefusal } from './waitlist-policy';
@@ -45,22 +46,32 @@ export class CheckoutService {
     return batch;
   }
 
-  async quote(input: Pick<CheckoutInput, 'batchId' | 'couponCode' | 'displayCurrency'>, batch?: SaleBatch): Promise<Quote> {
+  /** Prices a batch for an (optional) student; refuses an inapplicable coupon with `COUPON_INVALID` + `details.reason`. */
+  async quote(input: Pick<CheckoutInput, 'batchId' | 'couponCode' | 'displayCurrency'>, batch?: SaleBatch, userId?: string | null): Promise<Quote> {
     const b = batch ?? (await this.sellableBatch(input.batchId));
+    const priceFils = PriceCalculator.basePrice(b.priceFils, b.coursePriceFils);
     let coupon = null;
     if (input.couponCode) {
       coupon = await this.repo.findCoupon(input.couponCode);
-      if (!coupon) throw new BusinessRuleError('Coupon not found', 'COUPON_INVALID', { reason: 'NOT_FOUND' });
-      const problem = PriceCalculator.couponProblem(coupon, this.lifecycle.now());
-      if (problem) throw new BusinessRuleError('This coupon cannot be used', 'COUPON_INVALID', { reason: problem });
+      if (!coupon) throw new BusinessRuleError(COUPON_REFUSAL_MESSAGES.NOT_FOUND, 'COUPON_INVALID', { reason: 'NOT_FOUND' });
+      const reason = couponRefusal(coupon, {
+        now: this.lifecycle.now(),
+        courseId: b.courseId,
+        batchId: b.id,
+        subtotalFils: priceFils,
+        userUses: userId ? await this.repo.couponUsesBy(coupon.id, coupon.code, userId) : null,
+      });
+      if (reason) {
+        throw new BusinessRuleError(COUPON_REFUSAL_MESSAGES[reason], 'COUPON_INVALID', {
+          reason,
+          ...(reason === 'BELOW_MINIMUM' ? { minOrderFils: coupon.minOrderFils, subtotalFils: priceFils } : {}),
+          ...(reason === 'PER_USER_LIMIT' ? { perUserLimit: coupon.perUserLimit } : {}),
+          ...(reason === 'NOT_STARTED' ? { startsOn: coupon.startsOn } : {}),
+        });
+      }
     }
     const displayCurrency = input.displayCurrency ?? 'AED';
-    return this.prices.quote({
-      priceFils: PriceCalculator.basePrice(b.priceFils, b.coursePriceFils),
-      coupon,
-      displayCurrency,
-      fxRate: await this.fx.rateFor(displayCurrency),
-    });
+    return this.prices.quote({ priceFils, coupon, displayCurrency, fxRate: await this.fx.rateFor(displayCurrency) });
   }
 
   async checkout(userId: string, input: CheckoutInput) {
@@ -84,7 +95,7 @@ export class CheckoutService {
       return { waitlisted: true as const, enrollment: await this.addToWaitlist(userId, batch, existing?.status ?? null) };
     }
 
-    const quote = await this.quote(input, batch);
+    const quote = await this.quote(input, batch, userId);
     this.machine.assert(existing?.status ?? null, strategy.pendingEnrollmentStatus);
     const reference = await this.newReference(batch.code);
     const now = this.lifecycle.now();
@@ -208,7 +219,7 @@ export class CheckoutService {
         receivedFils: order.totalFils,
         feeFils: evt.feeFils ?? 0,
       });
-      if (order.couponCode) await this.repo.redeemCoupon(order.couponCode);
+      if (order.couponCode) await this.repo.redeemCoupon(order);
       await this.lifecycle.activate(order.enrollmentId);
       this.lifecycle.orderUpdated(paid);
       return { handled: true };

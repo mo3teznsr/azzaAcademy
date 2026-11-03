@@ -14,6 +14,8 @@ import '../../catalog/domain/catalog_models.dart';
 import '../../learn/data/learn_repository.dart';
 import '../../me/data/me_repository.dart';
 import '../../me/domain/me_models.dart';
+import '../../waitlist/data/waitlist_repository.dart';
+import '../../waitlist/presentation/waitlist_section.dart';
 
 String greeting(AppLocalizations l, String name, DateTime now) {
   if (now.hour < 12) return l.greetingMorning(name);
@@ -38,6 +40,7 @@ class StudentHomeScreen extends ConsumerWidget {
       ref.invalidate(enrollmentsProvider);
       ref.invalidate(upcomingScheduleProvider);
       ref.invalidate(recordingsProvider);
+      ref.invalidate(waitlistProvider);
       await ref.read(enrollmentsProvider.future);
     }
 
@@ -79,12 +82,14 @@ class StudentHomeScreen extends ConsumerWidget {
                     action: l.exploreCta,
                     onAction: () => context.go(Routes.studentExplore),
                   ),
+                  const WaitlistSection(),
                 ] else ...[
                   SectionHeader(l.myBatches, action: l.seeAll, onAction: () => context.go(Routes.studentSchedule)),
-                  for (final e in [...active, ...pending]) ...[
-                    _BatchTile(enrollment: e, fmt: f, now: now),
+                  for (final (i, e) in [...active, ...pending].indexed) ...[
+                    FadeSlideIn(index: i, child: _BatchTile(enrollment: e, fmt: f, now: now)),
                     const SizedBox(height: 10),
                   ],
+                  const WaitlistSection(),
                   const _ContinueWatching(),
                 ],
               ],

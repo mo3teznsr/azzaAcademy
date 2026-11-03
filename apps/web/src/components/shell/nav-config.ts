@@ -1,5 +1,8 @@
 import {
+  Award,
   BadgeDollarSign,
+  ChartColumn,
+  SquareCheck,
   BookOpen,
   CalendarDays,
   ClipboardList,
@@ -42,6 +45,7 @@ export const studentNav = (t: Dictionary): NavGroup[] => [
       { href: '/schedule', label: t.nav.student.schedule, icon: CalendarDays },
       { href: '/library', label: t.nav.student.library, icon: Library },
       { href: '/assignments', label: t.nav.student.assignments, icon: ClipboardList },
+      { href: '/certificates', label: t.nav.student.certificates, icon: Award },
       { href: '/settings', label: t.nav.student.settings, icon: Settings },
     ],
   },
@@ -51,6 +55,7 @@ export const teacherNav = (t: Dictionary): NavGroup[] => [
   {
     items: [
       { href: '/studio', label: t.nav.teacher.studio, icon: Radio, exact: true },
+      { href: '/studio/grading', label: t.nav.teacher.grading, icon: SquareCheck },
       { href: '/studio/earnings', label: t.nav.teacher.earnings, icon: Wallet },
       { href: '/studio/settings', label: t.nav.teacher.settings, icon: Settings },
     ],
@@ -61,6 +66,7 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
   {
     items: [
       { href: '/admin', label: t.nav.admin.dashboard, icon: LayoutDashboard, exact: true },
+      { href: '/admin/reports', label: t.nav.admin.reports, icon: ChartColumn },
       { href: '/admin/courses', label: t.nav.admin.courses, icon: BookOpen },
       { href: '/admin/batches', label: t.nav.admin.batches, icon: Layers },
       { href: '/admin/live', label: t.nav.admin.live, icon: Radio, badge: 'live' },

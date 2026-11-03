@@ -21,7 +21,12 @@ const { auth, services } = container;
 
 // ───────────────────────── users ─────────────────────────
 
-async function ensureUser(name: string, email: string, role: Role, extra: { locale?: string; phone?: string; image?: string } = {}) {
+async function ensureUser(
+  name: string,
+  email: string,
+  role: Role,
+  extra: { locale?: string; phone?: string; image?: string; headline?: string; bio?: string } = {},
+) {
   let user = await db.user.findUnique({ where: { email } });
   if (!user) {
     await auth.api.signUpEmail({ body: { name, email, password: PASSWORD } });
@@ -29,7 +34,16 @@ async function ensureUser(name: string, email: string, role: Role, extra: { loca
   }
   return db.user.update({
     where: { id: user.id },
-    data: { role, emailVerified: true, timezone: 'Asia/Dubai', locale: extra.locale ?? 'en', phone: extra.phone, ...(extra.image && { image: extra.image }) },
+    data: {
+      role,
+      emailVerified: true,
+      timezone: 'Asia/Dubai',
+      locale: extra.locale ?? 'en',
+      phone: extra.phone,
+      ...(extra.image && { image: extra.image }),
+      ...(extra.headline && { headline: extra.headline }),
+      ...(extra.bio && { bio: extra.bio }),
+    },
   });
 }
 
@@ -118,7 +132,7 @@ async function ensureBatch(args: {
   durationMin: number;
   sessionCount: number;
   startsOn: string;
-  status: 'ENROLLING' | 'RUNNING' | 'FULL';
+  status: 'ENROLLING' | 'RUNNING' | 'FULL' | 'COMPLETED';
 }) {
   const existing = await db.batch.findUnique({ where: { courseId_code: { courseId: args.courseId, code: args.code } } });
   if (existing) return existing;
@@ -197,10 +211,28 @@ async function ensurePaidEnrollment(args: {
 async function main() {
   console.info('Seeding users…');
   const nour = await ensureUser('Nour Adel', 'admin@azza.test', 'ADMIN');
-  const lina = await ensureUser('Lina Haddad', 'lina@azza.test', 'TEACHER', { locale: 'ar', image: '/media/teachers/lina-haddad.jpg' });
-  const omar = await ensureUser('Omar Saleh', 'omar@azza.test', 'TEACHER', { locale: 'ar', image: '/media/teachers/omar-saleh.jpg' });
-  const maya = await ensureUser('Maya Chen', 'maya@azza.test', 'TEACHER', { image: '/media/teachers/maya-chen.jpg' });
-  const tomas = await ensureUser('Tomás Rivera', 'tomas@azza.test', 'TEACHER', { image: '/media/teachers/tomas-rivera.jpg' });
+  const lina = await ensureUser('Lina Haddad', 'lina@azza.test', 'TEACHER', {
+    locale: 'ar',
+    image: '/media/teachers/lina-haddad.jpg',
+    headline: 'Product designer',
+    bio: 'Product designer with ten years of work on mobile and web apps. Teaches research, wireframing and visual design through weekly hands-on projects.',
+  });
+  const omar = await ensureUser('Omar Saleh', 'omar@azza.test', 'TEACHER', {
+    locale: 'ar',
+    image: '/media/teachers/omar-saleh.jpg',
+    headline: 'Arabic language teacher',
+    bio: 'Teaches Gulf Arabic to adult beginners. Classes focus on everyday conversation, listening and pronunciation.',
+  });
+  const maya = await ensureUser('Maya Chen', 'maya@azza.test', 'TEACHER', {
+    image: '/media/teachers/maya-chen.jpg',
+    headline: 'Illustrator and watercolour painter',
+    bio: 'Illustrator working mainly in watercolour. Teaches washes, layering and botanical painting in small groups.',
+  });
+  const tomas = await ensureUser('Tomás Rivera', 'tomas@azza.test', 'TEACHER', {
+    image: '/media/teachers/tomas-rivera.jpg',
+    headline: 'Data analyst',
+    bio: 'Data analyst using Python and pandas day to day. Teaches data cleaning, analysis and plotting with real datasets.',
+  });
   const sara = await ensureUser('Sara Kamal', 'sara@azza.test', 'STUDENT', { phone: '+971501234567' });
   const others = [];
   for (const name of STUDENT_NAMES) others.push(await ensureUser(name, emailFor(name), 'STUDENT'));
@@ -227,11 +259,17 @@ async function main() {
   const seededCourses = [];
   for (const c of COURSES) seededCourses.push(await ensureCourse(c)); // sequential: nested writes must not share a connection
   const [pdf, arabic, python, watercolour] = seededCourses;
+  const earlybird = { percentOff: 10, courseId: pdf!.id, perUserLimit: 1, maxRedemptions: 50, startsOn: new Date('2026-10-01T00:00:00Z'), expiresOn: new Date('2026-12-31T00:00:00Z') };
+  await db.coupon.upsert({ where: { code: 'EARLYBIRD' }, create: { code: 'EARLYBIRD', ...earlybird }, update: { courseId: pdf!.id } });
   const b07 = await ensureBatch({ courseId: pdf!.id, code: 'B07', teacherId: lina.id, capacity: 24, language: 'AR', weekdays: [2, 4], startTime: '19:00', durationMin: 90, sessionCount: 12, startsOn: '2026-11-10', status: 'RUNNING' });
   const b08 = await ensureBatch({ courseId: pdf!.id, code: 'B08', teacherId: lina.id, capacity: 24, language: 'EN', weekdays: [1, 3], startTime: '19:00', durationMin: 90, sessionCount: 12, startsOn: '2026-12-07', status: 'ENROLLING' });
   const b09 = await ensureBatch({ courseId: pdf!.id, code: 'B09', teacherId: lina.id, capacity: 20, language: 'EN', weekdays: [6, 0], startTime: '10:00', durationMin: 90, sessionCount: 12, startsOn: '2026-11-14', status: 'ENROLLING' });
   const arB01 = await ensureBatch({ courseId: arabic!.id, code: 'B01', teacherId: omar.id, capacity: 16, language: 'AR', weekdays: [0, 2], startTime: '20:00', durationMin: 60, sessionCount: 10, startsOn: '2026-11-15', status: 'ENROLLING' });
   const pyB01 = await ensureBatch({ courseId: python!.id, code: 'B01', teacherId: tomas.id, capacity: 20, language: 'EN', weekdays: [1, 3], startTime: '18:00', durationMin: 120, sessionCount: 12, startsOn: '2026-11-16', status: 'ENROLLING' });
+  // B06: a finished cohort (Sep–Oct) so certificates, completion and the previous report period have data
+  const b06 = await ensureBatch({ courseId: pdf!.id, code: 'B06', teacherId: lina.id, capacity: 12, language: 'EN', weekdays: [2, 4], startTime: '19:00', durationMin: 90, sessionCount: 12, startsOn: '2026-09-01', status: 'COMPLETED' });
+  // Arabic B02: a small FULL batch with a waitlist (Sara is second in line)
+  const arB02 = await ensureBatch({ courseId: arabic!.id, code: 'B02', teacherId: omar.id, capacity: 4, language: 'AR', weekdays: [1, 3], startTime: '20:00', durationMin: 60, sessionCount: 10, startsOn: '2026-11-23', status: 'FULL' });
   const wcB01 = await ensureBatch({ courseId: watercolour!.id, code: 'B01', teacherId: maya.id, capacity: 12, language: 'EN', weekdays: [6], startTime: '11:00', durationMin: 120, sessionCount: 6, startsOn: '2026-11-14', status: 'ENROLLING' });
 
   console.info('Seeding enrollments & orders…');
@@ -304,6 +342,66 @@ async function main() {
       method: 'STRIPE',
       paidAt: new Date(Date.UTC(2026, 9, 28 + i, 12, 0)),
     });
+  }
+
+  // B06 (COMPLETED): Sara + 7 classmates, paid in August
+  const b06Students = [sara, ...others.slice(0, 7)];
+  for (const [i, student] of b06Students.entries()) {
+    await ensurePaidEnrollment({
+      userId: student.id,
+      batchId: b06.id,
+      priceFils: pdf!.priceFils,
+      reference: `AZ-B06-${String(20_101 + i * 113)}`,
+      method: 'STRIPE',
+      paidAt: new Date(Date.UTC(2026, 7, 18 + i, 10, 0)),
+    });
+  }
+
+  // Arabic B02 (FULL, 4/4): four paid seats, then two people waiting — Lara first, Sara second
+  for (let i = 0; i < 4; i++) {
+    await ensurePaidEnrollment({
+      userId: others[14 + i]!.id,
+      batchId: arB02.id,
+      priceFils: arabic!.priceFils,
+      reference: `AZ-B02-${String(70_100 + i * 9)}`,
+      method: 'STRIPE',
+      paidAt: new Date(Date.UTC(2026, 9, 25 + i, 12, 0)),
+    });
+  }
+  for (const [student, joinedAt] of [
+    [others[20]!, new Date('2026-10-30T08:00:00Z')],
+    [sara, new Date('2026-11-01T18:30:00Z')],
+  ] as const) {
+    await db.enrollment.upsert({
+      where: { userId_batchId: { userId: student.id, batchId: arB02.id } },
+      create: { userId: student.id, batchId: arB02.id, status: 'WAITLISTED', createdAt: joinedAt },
+      update: {},
+    });
+  }
+
+  console.info('Seeding the finished B06 cohort…');
+  const b06Sessions = await db.liveSession.findMany({ where: { batchId: b06.id }, orderBy: { number: 'asc' } });
+  for (const s of b06Sessions) {
+    await db.liveSession.update({
+      where: { id: s.id },
+      // every 4th session started 8 min late (on-time rate in reports)
+      data: { status: 'ENDED', startedAt: addMinutes(s.startsAt, s.number % 4 === 0 ? 8 : 1), endedAt: s.endsAt },
+    });
+    if ((await db.attendance.count({ where: { sessionId: s.id } })) === 0) {
+      const rows = b06Students
+        .filter((_, i) => {
+          if (i === 0) return s.number !== 5; // Sara: 11 of 12 → certificate
+          if (i === 7) return s.number % 2 === 0 || s.number < 3; // Mariam: 7 of 12 → no certificate
+          return (i + s.number) % 7 !== 0; // the rest: 10–11 of 12
+        })
+        .map((student, i) => {
+          const joinedAt = addMinutes(s.startsAt, (i % 5) + 1);
+          return { sessionId: s.id, userId: student.id, joinedAt, leftAt: s.endsAt, seconds: Math.round((s.endsAt.getTime() - joinedAt.getTime()) / 1000) };
+        });
+      rows.push({ sessionId: s.id, userId: lina.id, joinedAt: s.startsAt, leftAt: s.endsAt, seconds: 90 * 60 });
+      await db.attendance.createMany({ data: rows });
+    }
+    await services.payouts.accrueForSession(s.id);
   }
 
   console.info('Seeding delivered sessions S01–S04…');

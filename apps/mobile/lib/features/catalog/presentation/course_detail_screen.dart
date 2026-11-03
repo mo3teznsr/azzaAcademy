@@ -53,20 +53,33 @@ class CourseDetailScreen extends ConsumerWidget {
                 StatusChip(label: l.certificate, look: ChipLook.outline, color: p.muted),
               ]),
               for (final teacher in teachers.values) ...[
-                const SizedBox(height: 18),
-                Row(children: [
-                  InitialsAvatar(teacher.name, color: coverColor(c.coverStyle), imageUrl: teacher.image),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(teacher.name, style: t.titleSmall),
-                      Text(
-                        l.teaches(list.where((b) => b.teacher?.id == teacher.id).map((b) => b.code).join(', ')),
-                        style: t.bodySmall,
-                      ),
-                    ]),
+                const SizedBox(height: 10),
+                Semantics(
+                  button: true,
+                  hint: l.teacherViewProfile,
+                  child: InkWell(
+                    key: Key('teacher-row-${teacher.id}'),
+                    borderRadius: BorderRadius.circular(AzzaSpace.radiusSm),
+                    onTap: () => context.push(Routes.teacher(teacher.id)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(children: [
+                        InitialsAvatar(teacher.name, color: coverColor(c.coverStyle), imageUrl: teacher.image),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(teacher.name, style: t.titleSmall),
+                            Text(
+                              l.teaches(list.where((b) => b.teacher?.id == teacher.id).map((b) => b.code).join(', ')),
+                              style: t.bodySmall,
+                            ),
+                          ]),
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: p.muted),
+                      ]),
+                    ),
                   ),
-                ]),
+                ),
               ],
               if (outcomes.isNotEmpty) ...[
                 SectionHeader(l.outcomesTitle),

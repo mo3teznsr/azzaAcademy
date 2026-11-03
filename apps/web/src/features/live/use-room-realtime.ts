@@ -51,3 +51,27 @@ export function useRoomRealtime(sessionId: string, onStatus?: (e: SessionStatusE
   const messages = [...(history.data ?? []), ...live].filter((m) => (seen.has(m.id) ? false : (seen.add(m.id), true)));
   return { messages, hands, send, raise, lower, historyError: history.error };
 }
+
+/**
+ * Just the `session:status` feed, for the lobby (before LiveKit): joins the session's socket room
+ * so a student waiting for the host hears the moment it goes live.
+ */
+export function useSessionStatusFeed(sessionId: string, enabled: boolean, onStatus: (e: SessionStatusEvent) => void) {
+  useEffect(() => {
+    if (!enabled) return;
+    const s = getSocket();
+    const join = () => s.emit(SOCKET_EVENTS.JOIN_SESSION, { sessionId });
+    join();
+    s.on('connect', join);
+    return () => {
+      s.off('connect', join);
+    };
+  }, [sessionId, enabled]);
+  useSocketEvent<SessionStatusEvent>(
+    SOCKET_EVENTS.SESSION_STATUS,
+    (e) => {
+      if (e.sessionId === sessionId) onStatus(e);
+    },
+    enabled,
+  );
+}

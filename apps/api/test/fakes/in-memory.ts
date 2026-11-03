@@ -115,9 +115,17 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   async findCoupon(code: string) {
     return this.coupons.find((c) => c.code === code.toUpperCase()) ?? null;
   }
-  async redeemCoupon(code: string) {
-    const c = this.coupons.find((x) => x.code === code.toUpperCase());
-    if (c) c.redemptions++;
+  redemptions: Array<{ couponId: string; userId: string; orderId: string; discountFils: number }> = [];
+  async couponUsesBy(couponId: string, code: string, userId: string) {
+    const paid = this.redemptions.filter((r) => r.couponId === couponId && r.userId === userId).length;
+    const open = this.orders.filter((o) => o.userId === userId && o.couponCode === code.toUpperCase() && OPEN_ORDER_STATUSES.includes(o.status)).length;
+    return paid + open;
+  }
+  async redeemCoupon(order: Pick<OrderRecord, 'id' | 'userId' | 'couponCode' | 'discountFils'>) {
+    const c = this.coupons.find((x) => x.code === order.couponCode?.toUpperCase());
+    if (!c || this.redemptions.some((r) => r.orderId === order.id)) return;
+    this.redemptions.push({ couponId: c.id, userId: order.userId, orderId: order.id, discountFils: order.discountFils });
+    c.redemptions++;
   }
   async findBankAccount(id: string) {
     return this.bankAccounts.find((b) => b.id === id) ?? null;

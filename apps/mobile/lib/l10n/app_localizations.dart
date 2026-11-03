@@ -1496,6 +1496,186 @@ abstract class AppLocalizations {
   /// **'Video isn\'t available for this session yet.'**
   String get liveUnavailable;
 
+  /// No description provided for @edgeWaitingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{host} hasn\'t started yet'**
+  String edgeWaitingTitle(String host);
+
+  /// No description provided for @edgeWaitingSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually starts within 5 min · you\'ll join automatically'**
+  String get edgeWaitingSub;
+
+  /// No description provided for @edgeLiveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Live now'**
+  String get edgeLiveNow;
+
+  /// No description provided for @edgePermTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera or microphone blocked'**
+  String get edgePermTitle;
+
+  /// No description provided for @edgePermBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Azza can\'t use your camera or microphone, so the class can\'t see or hear you.'**
+  String get edgePermBody;
+
+  /// No description provided for @edgePermStepsIos.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings → Azza → turn on Camera and Microphone, then come back.'**
+  String get edgePermStepsIos;
+
+  /// No description provided for @edgePermStepsAndroid.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings → Apps → Azza → Permissions → allow Camera and Microphone, then come back.'**
+  String get edgePermStepsAndroid;
+
+  /// No description provided for @edgePermMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find a camera or microphone on this device.'**
+  String get edgePermMissing;
+
+  /// No description provided for @edgePermBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Another app is using your camera or microphone. Close it and try again.'**
+  String get edgePermBusy;
+
+  /// No description provided for @edgeOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get edgeOpenSettings;
+
+  /// No description provided for @edgeTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get edgeTryAgain;
+
+  /// No description provided for @edgeJoinAudioOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Join with audio only'**
+  String get edgeJoinAudioOnly;
+
+  /// No description provided for @edgeJoinListenOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Join to listen only'**
+  String get edgeJoinListenOnly;
+
+  /// No description provided for @edgeReconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnecting… your video paused, audio kept'**
+  String get edgeReconnecting;
+
+  /// No description provided for @edgeLostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection lost'**
+  String get edgeLostTitle;
+
+  /// No description provided for @edgeLostBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t get you back in automatically. Your seat is still yours.'**
+  String get edgeLostBody;
+
+  /// No description provided for @edgeRejoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejoin'**
+  String get edgeRejoin;
+
+  /// No description provided for @edgeRoomFullTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Room is at {n}/{max}'**
+  String edgeRoomFullTitle(String n, String max);
+
+  /// No description provided for @edgeRoomFullGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'This room is full'**
+  String get edgeRoomFullGeneric;
+
+  /// No description provided for @edgeRoomFullBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A seat frees up as soon as someone leaves. Try again in a minute, or catch the recording after class.'**
+  String get edgeRoomFullBody;
+
+  /// No description provided for @edgeCancelledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{s} cancelled by {teacher}'**
+  String edgeCancelledTitle(String s, String teacher);
+
+  /// No description provided for @edgeCancelledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It won\'t count against your attendance. Your schedule shows what\'s next.'**
+  String get edgeCancelledBody;
+
+  /// No description provided for @edgeMovedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{s} moved to {when}'**
+  String edgeMovedTitle(String s, String when);
+
+  /// No description provided for @edgeMovedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It was {was}. Times are in your time zone ({tz}).'**
+  String edgeMovedBody(String was, String tz);
+
+  /// No description provided for @edgeEndedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This session has ended'**
+  String get edgeEndedTitle;
+
+  /// No description provided for @edgeEndedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The recording appears in your learning once it\'s ready.'**
+  String get edgeEndedBody;
+
+  /// No description provided for @edgeNotEnrolledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re not in this batch'**
+  String get edgeNotEnrolledTitle;
+
+  /// No description provided for @edgeNotEnrolledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You need an active enrollment in this batch to join.'**
+  String get edgeNotEnrolledBody;
+
+  /// No description provided for @edgeBackToSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to schedule'**
+  String get edgeBackToSchedule;
+
+  /// No description provided for @edgeWaitingButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the host…'**
+  String get edgeWaitingButton;
+
   /// No description provided for @wrapTitle.
   ///
   /// In en, this message translates to:
@@ -2635,6 +2815,318 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Video is off in this environment (LiveKit isn\'t configured). Chat and raised hands still work.'**
   String get videoDevMode;
+
+  /// No description provided for @certificatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get certificatesTitle;
+
+  /// No description provided for @certificatesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No certificates yet'**
+  String get certificatesEmptyTitle;
+
+  /// No description provided for @certificatesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Attend at least 80% of a batch\'s sessions and your certificate appears here when the batch ends.'**
+  String get certificatesEmptyBody;
+
+  /// No description provided for @certificatesEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned'**
+  String get certificatesEarned;
+
+  /// No description provided for @certificatesInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get certificatesInProgress;
+
+  /// No description provided for @certificateAttended.
+  ///
+  /// In en, this message translates to:
+  /// **'Attended {attended}/{total}'**
+  String certificateAttended(String attended, String total);
+
+  /// No description provided for @certificateWithTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'with {name}'**
+  String certificateWithTeacher(String name);
+
+  /// No description provided for @certificateSessionsNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} more sessions needed'**
+  String certificateSessionsNeeded(String n);
+
+  /// No description provided for @certificateOneSessionNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'1 more session needed'**
+  String get certificateOneSessionNeeded;
+
+  /// No description provided for @certificateRequirementMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance met — your certificate is issued when the batch ends.'**
+  String get certificateRequirementMet;
+
+  /// No description provided for @certificateUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough sessions left to reach 80% in this batch.'**
+  String get certificateUnreachable;
+
+  /// No description provided for @certificateAttendedOfRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'{attended} of {required} sessions to earn it'**
+  String certificateAttendedOfRequired(String attended, String required);
+
+  /// No description provided for @certificateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get certificateNew;
+
+  /// No description provided for @certificateOfCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate of completion'**
+  String get certificateOfCompletion;
+
+  /// No description provided for @certificateAwardedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Awarded to'**
+  String get certificateAwardedTo;
+
+  /// No description provided for @certificateForCompleting.
+  ///
+  /// In en, this message translates to:
+  /// **'for completing'**
+  String get certificateForCompleting;
+
+  /// No description provided for @certificateBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch'**
+  String get certificateBatch;
+
+  /// No description provided for @certificateTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get certificateTeacher;
+
+  /// No description provided for @certificateIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued'**
+  String get certificateIssued;
+
+  /// No description provided for @certificateDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get certificateDates;
+
+  /// No description provided for @certificateVerifyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify code'**
+  String get certificateVerifyCode;
+
+  /// No description provided for @certificateShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get certificateShare;
+
+  /// No description provided for @certificateLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification link copied'**
+  String get certificateLinkCopied;
+
+  /// No description provided for @certificateCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course complete.'**
+  String get certificateCompleteTitle;
+
+  /// No description provided for @certificateCompleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You attended {attended} of {total} live sessions.'**
+  String certificateCompleteBody(String attended, String total);
+
+  /// No description provided for @certificateVerifyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone can check it at {url}'**
+  String certificateVerifyHint(String url);
+
+  /// No description provided for @waitlistPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'{position} in line · of {total}'**
+  String waitlistPosition(String position, String total);
+
+  /// No description provided for @waitlistNextInLine.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re next in line'**
+  String get waitlistNextInLine;
+
+  /// No description provided for @startsOnDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts {date}'**
+  String startsOnDate(String date);
+
+  /// No description provided for @waitlistJoinedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined {date}'**
+  String waitlistJoinedOn(String date);
+
+  /// No description provided for @waitlistWhatNext.
+  ///
+  /// In en, this message translates to:
+  /// **'What happens next'**
+  String get waitlistWhatNext;
+
+  /// No description provided for @waitlistStepSeat.
+  ///
+  /// In en, this message translates to:
+  /// **'When a seat frees up, it goes to the first person in line.'**
+  String get waitlistStepSeat;
+
+  /// No description provided for @waitlistStepNotify.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll notify and email you the moment it\'s yours.'**
+  String get waitlistStepNotify;
+
+  /// No description provided for @waitlistStepHold.
+  ///
+  /// In en, this message translates to:
+  /// **'You then have 24 hours to check out before the seat moves on.'**
+  String get waitlistStepHold;
+
+  /// No description provided for @waitlistNoCharge.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is charged while you wait.'**
+  String get waitlistNoCharge;
+
+  /// No description provided for @waitlistLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave waitlist'**
+  String get waitlistLeave;
+
+  /// No description provided for @waitlistLeaveConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the waitlist?'**
+  String get waitlistLeaveConfirmTitle;
+
+  /// No description provided for @waitlistLeaveConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll lose your place for {batch}. If you rejoin later, you\'ll start at the back of the line.'**
+  String waitlistLeaveConfirmBody(String batch);
+
+  /// No description provided for @waitlistStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay in line'**
+  String get waitlistStay;
+
+  /// No description provided for @waitlistLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You left the waitlist'**
+  String get waitlistLeft;
+
+  /// No description provided for @waitlistSeatOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'A seat opened for you'**
+  String get waitlistSeatOpen;
+
+  /// No description provided for @waitlistHeldFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Held for you · {time}'**
+  String waitlistHeldFor(String time);
+
+  /// No description provided for @waitlistHoldExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The hold has expired'**
+  String get waitlistHoldExpired;
+
+  /// No description provided for @waitlistClaimSeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim seat'**
+  String get waitlistClaimSeat;
+
+  /// No description provided for @teacherAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get teacherAbout;
+
+  /// No description provided for @teacherTeachesIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaches in'**
+  String get teacherTeachesIn;
+
+  /// No description provided for @teacherCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get teacherCourses;
+
+  /// No description provided for @teacherUpcomingBatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming batches'**
+  String get teacherUpcomingBatches;
+
+  /// No description provided for @teacherViewProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'View profile'**
+  String get teacherViewProfile;
+
+  /// No description provided for @teacherBatchFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get teacherBatchFull;
+
+  /// No description provided for @certificateAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get certificateAttendance;
+
+  /// No description provided for @waitlistOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'of {total}'**
+  String waitlistOfTotal(String total);
 }
 
 class _AppLocalizationsDelegate

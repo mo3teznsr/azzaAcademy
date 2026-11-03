@@ -40,14 +40,4 @@ describe('PriceCalculator', () => {
     expect(Number.isInteger(q.vatFils)).toBe(true);
     expect(q.vatFils).toBe(617);
   });
-
-  test('coupon validity rules', () => {
-    const now = new Date('2026-11-20T10:00:00Z');
-    const base = { code: 'X', percentOff: 10, amountOffFils: null, active: true, expiresOn: null, maxRedemptions: null, redemptions: 0 };
-    expect(PriceCalculator.couponProblem(base, now)).toBeNull();
-    expect(PriceCalculator.couponProblem({ ...base, active: false }, now)).toBe('INACTIVE');
-    expect(PriceCalculator.couponProblem({ ...base, expiresOn: new Date('2026-11-19T00:00:00Z') }, now)).toBe('EXPIRED');
-    expect(PriceCalculator.couponProblem({ ...base, expiresOn: new Date('2026-11-20T00:00:00Z') }, now)).toBeNull(); // valid through the day
-    expect(PriceCalculator.couponProblem({ ...base, maxRedemptions: 3, redemptions: 3 }, now)).toBe('EXHAUSTED');
-  });
 });

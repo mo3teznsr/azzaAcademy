@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
 
+import '../domain/live_edge.dart';
 import '../domain/live_models.dart';
 
 /// View-model of one person in the room, independent of the SDK.
@@ -52,12 +53,53 @@ abstract class VideoRoomService extends ChangeNotifier {
   Future<void> setCam(bool on);
   Widget renderVideo(LiveParticipant p, {bool cover = true});
   Future<CameraPreviewHandle?> startPreview();
+
+  /// LiveKit gave up reconnecting (or the link dropped for a reason that isn't ours) → offer Rejoin.
+  bool get connectionLost => false;
+
+  /// Last camera/mic failure while in the room (e.g. permission denied); `null` when fine.
+  MediaFailure? get mediaFailure => null;
+  void clearMediaFailure() {}
+
+  /// Why the last [startPreview] returned `null`.
+  MediaFailure? get previewFailure => null;
+
+  /// Opens and immediately closes the microphone to learn whether it's allowed.
+  Future<MediaFailure?> probeMicrophone() async => null;
 }
+
+/// A LiveKit disconnect we didn't ask for and the server didn't mean as final.
+bool disconnectIsLoss(lk.DisconnectReason? reason) => switch (reason) {
+      lk.DisconnectReason.clientInitiated ||
+      lk.DisconnectReason.roomDeleted ||
+      lk.DisconnectReason.participantRemoved ||
+      lk.DisconnectReason.duplicateIdentity =>
+        false,
+      _ => true,
+    };
 
 class LiveKitVideoRoomService extends VideoRoomService {
   lk.Room? _room;
   lk.EventsListener<lk.RoomEvent>? _listener;
   bool _reconnecting = false;
+  bool _lost = false;
+  MediaFailure? _mediaFailure;
+  MediaFailure? _previewFailure;
+
+  @override
+  bool get connectionLost => _lost;
+
+  @override
+  MediaFailure? get mediaFailure => _mediaFailure;
+
+  @override
+  void clearMediaFailure() {
+    _mediaFailure = null;
+    notifyListeners();
+  }
+
+  @override
+  MediaFailure? get previewFailure => _previewFailure;
 
   @override
   bool get connected => _room?.connectionState == lk.ConnectionState.connected;
@@ -75,6 +117,8 @@ class LiveKitVideoRoomService extends VideoRoomService {
   Future<void> connect(JoinGrant grant, {bool micOn = true, bool camOn = true}) async {
     final room = lk.Room(roomOptions: const lk.RoomOptions(adaptiveStream: true, dynacast: true));
     _room = room;
+    _lost = false;
+    _reconnecting = false;
     _listener = room.createListener()
       ..on<lk.RoomReconnectingEvent>((_) {
         _reconnecting = true;
@@ -88,13 +132,19 @@ class LiveKitVideoRoomService extends VideoRoomService {
         _reconnecting = false;
         notifyListeners();
       })
+      ..on<lk.RoomDisconnectedEvent>((e) {
+        _reconnecting = false;
+        if (disconnectIsLoss(e.reason)) _lost = true;
+        notifyListeners();
+      })
       ..on<lk.RoomEvent>((_) => notifyListeners());
     room.addListener(notifyListeners);
     await room.connect(grant.serverUrl, grant.token);
     final local = room.localParticipant;
     if (local != null && grant.role != LiveRole.observer) {
-      await local.setMicrophoneEnabled(micOn);
-      await local.setCameraEnabled(camOn);
+      // A blocked device must not cost the student the room: join without it and say why.
+      await _guard(() => local.setMicrophoneEnabled(micOn));
+      await _guard(() => local.setCameraEnabled(camOn));
     }
     notifyListeners();
   }
@@ -112,15 +162,25 @@ class LiveKitVideoRoomService extends VideoRoomService {
     }
   }
 
+  Future<void> _guard(Future<void> Function() op) async {
+    try {
+      await op();
+    } catch (e) {
+      _mediaFailure = classifyMediaError(e);
+    }
+  }
+
   @override
   Future<void> setMic(bool on) async {
-    await _room?.localParticipant?.setMicrophoneEnabled(on);
+    final local = _room?.localParticipant;
+    if (local != null) await _guard(() => local.setMicrophoneEnabled(on));
     notifyListeners();
   }
 
   @override
   Future<void> setCam(bool on) async {
-    await _room?.localParticipant?.setCameraEnabled(on);
+    final local = _room?.localParticipant;
+    if (local != null) await _guard(() => local.setCameraEnabled(on));
     notifyListeners();
   }
 
@@ -178,11 +238,25 @@ class LiveKitVideoRoomService extends VideoRoomService {
 
   @override
   Future<CameraPreviewHandle?> startPreview() async {
+    _previewFailure = null;
     try {
       final track = await lk.LocalVideoTrack.createCameraTrack();
       return _LiveKitPreview(track);
-    } catch (_) {
+    } catch (e) {
+      _previewFailure = classifyMediaError(e);
       return null;
+    }
+  }
+
+  @override
+  Future<MediaFailure?> probeMicrophone() async {
+    try {
+      final track = await lk.LocalAudioTrack.create();
+      await track.stop();
+      await track.dispose();
+      return null;
+    } catch (e) {
+      return classifyMediaError(e);
     }
   }
 

@@ -12,6 +12,7 @@ export interface SaleBatch {
   priceFils: number | null;
   timezone: string;
   teacherId: string;
+  courseId: string;
   courseTitle: string;
   coursePriceFils: number;
   firstSessionAt: Date | null;
@@ -127,7 +128,10 @@ export interface PaymentsRepository {
   staleOrders(now: Date): Promise<OrderRecord[]>;
 
   findCoupon(code: string): Promise<CouponRecord | null>;
-  redeemCoupon(code: string): Promise<void>;
+  /** Paid redemptions plus the student's still-open orders carrying this coupon. */
+  couponUsesBy(couponId: string, code: string, userId: string): Promise<number>;
+  /** Records the redemption of a PAID order (idempotent per order). */
+  redeemCoupon(order: Pick<OrderRecord, 'id' | 'userId' | 'couponCode' | 'discountFils'>): Promise<void>;
 
   findBankAccount(id: string): Promise<BankAccountRecord | null>;
   firstActiveBankAccount(): Promise<BankAccountRecord | null>;
@@ -186,13 +190,13 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
         priceFils: true,
         timezone: true,
         teacherId: true,
-        course: { select: { titleEn: true, priceFils: true } },
+        course: { select: { id: true, titleEn: true, priceFils: true } },
         sessions: { where: { status: { not: 'CANCELLED' } }, orderBy: { startsAt: 'asc' }, take: 1, select: { startsAt: true } },
       },
     });
     if (!b) return null;
     const { course, sessions, ...rest } = b;
-    return { ...rest, courseTitle: course.titleEn, coursePriceFils: course.priceFils, firstSessionAt: sessions[0]?.startsAt ?? null };
+    return { ...rest, courseId: course.id, courseTitle: course.titleEn, coursePriceFils: course.priceFils, firstSessionAt: sessions[0]?.startsAt ?? null };
   }
 
   heldSeats(batchId: string, excludeUserId?: string) {
@@ -279,12 +283,41 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
   async findCoupon(code: string) {
     return this.db.coupon.findUnique({
       where: { code: code.toUpperCase() },
-      select: { id: true, code: true, percentOff: true, amountOffFils: true, active: true, expiresOn: true, maxRedemptions: true, redemptions: true },
+      select: {
+        id: true,
+        code: true,
+        percentOff: true,
+        amountOffFils: true,
+        active: true,
+        startsOn: true,
+        expiresOn: true,
+        maxRedemptions: true,
+        redemptions: true,
+        perUserLimit: true,
+        minOrderFils: true,
+        courseId: true,
+        batchId: true,
+      },
     });
   }
 
-  async redeemCoupon(code: string) {
-    await this.db.coupon.updateMany({ where: { code: code.toUpperCase() }, data: { redemptions: { increment: 1 } } });
+  async couponUsesBy(couponId: string, code: string, userId: string) {
+    const [paid, open] = await Promise.all([
+      this.db.couponRedemption.count({ where: { couponId, userId } }),
+      this.db.order.count({ where: { userId, couponCode: code.toUpperCase(), status: { in: OPEN_ORDER_STATUSES } } }),
+    ]);
+    return paid + open;
+  }
+
+  async redeemCoupon(order: Pick<OrderRecord, 'id' | 'userId' | 'couponCode' | 'discountFils'>) {
+    if (!order.couponCode) return;
+    const coupon = await this.db.coupon.findUnique({ where: { code: order.couponCode.toUpperCase() }, select: { id: true } });
+    if (!coupon) return;
+    if (await this.db.couponRedemption.findUnique({ where: { orderId: order.id }, select: { id: true } })) return;
+    await this.db.$transaction([
+      this.db.couponRedemption.create({ data: { couponId: coupon.id, userId: order.userId, orderId: order.id, discountFils: order.discountFils } }),
+      this.db.coupon.update({ where: { id: coupon.id }, data: { redemptions: { increment: 1 } } }),
+    ]);
   }
 
   findBankAccount(id: string) {

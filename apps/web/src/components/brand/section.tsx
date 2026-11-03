@@ -35,7 +35,7 @@ export function StatTile({ label, value, sub, tone = 'default', className }: { l
       )}
     >
       <span className={cn('label-mono flex items-center gap-1.5', tone === 'live' ? 'text-onair' : tone === 'ink' ? 'text-stone' : 'text-muted-foreground')}>
-        {tone === 'live' && <span className="size-[7px] rounded-full bg-onair" aria-hidden />}
+        {tone === 'live' && <span className="onair" aria-hidden />}
         {label}
       </span>
       <div className="font-display text-[44px] font-extrabold leading-none">{value}</div>

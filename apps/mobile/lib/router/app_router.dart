@@ -17,6 +17,8 @@ import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/auth/presentation/verify_email_screen.dart';
 import '../features/catalog/presentation/batch_picker_screen.dart';
+import '../features/certificates/presentation/certificate_detail_screen.dart';
+import '../features/certificates/presentation/certificates_screen.dart';
 import '../features/catalog/presentation/batch_schedule_screen.dart';
 import '../features/catalog/presentation/course_detail_screen.dart';
 import '../features/catalog/presentation/explore_screen.dart';
@@ -44,6 +46,7 @@ import '../features/teacher/presentation/roster_screen.dart';
 import '../features/teacher/presentation/session_prep_screen.dart';
 import '../features/teacher/presentation/teacher_batches_screen.dart';
 import '../features/teacher/presentation/teacher_today_screen.dart';
+import '../features/teachers/presentation/teacher_profile_screen.dart';
 import 'redirect.dart';
 import 'role_shell.dart';
 import 'routes.dart';
@@ -120,6 +123,10 @@ List<RouteBase> buildRoutes() => [
         _route('enrolled', (s) => EnrolledScreen(orderId: s.pathParameters['id']!)),
       ]),
       _route(Routes.myOrders, (_) => const MyOrdersScreen()),
+      _route(Routes.certificates, (_) => const CertificatesScreen(), routes: [
+        _route(':code', (s) => CertificateDetailScreen(code: s.pathParameters['code']!)),
+      ]),
+      _route('/teachers/:id', (s) => TeacherProfileScreen(teacherId: s.pathParameters['id']!)),
       _route('/sessions/:id/lobby', (s) => LobbyScreen(sessionId: s.pathParameters['id']!)),
       _route('/sessions/:id/live', (s) => LiveRoomScreen(sessionId: s.pathParameters['id']!, options: s.extra as JoinOptions?)),
       _route('/sessions/:id/after', (s) => AfterSessionScreen(sessionId: s.pathParameters['id']!)),

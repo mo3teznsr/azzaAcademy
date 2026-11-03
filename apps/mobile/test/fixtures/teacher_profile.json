@@ -1,0 +1,15 @@
+{
+  "id": "u_lina",
+  "name": "Lina Haddad",
+  "image": "/media/teachers/lina.jpg",
+  "headline": "Product designer, 12 years shipping at scale",
+  "bio": "Lina leads design critiques that argue for the user.",
+  "languages": ["EN", "AR", "EN"],
+  "courses": [
+    { "id": "c_pdf", "slug": "product-design-foundations", "titleEn": "Product Design Foundations", "titleAr": "أساسيات تصميم المنتجات", "coverImageUrl": "/media/courses/product-design-foundations.jpg", "category": "Design" }
+  ],
+  "upcomingBatches": [
+    { "id": "b_b09", "code": "B09", "courseId": "c_pdf", "courseTitle": "Product Design Foundations", "courseTitleAr": "أساسيات تصميم المنتجات", "courseSlug": "product-design-foundations", "language": "AR", "timezone": "Asia/Dubai", "startsOn": "2027-01-12T00:00:00.000Z", "scheduleSummary": "Tue & Thu · 19:00 · 12 sessions", "seatsLeft": 9, "status": "ENROLLING", "priceFils": 88000 },
+    { "id": "b_b08", "code": "B08", "courseId": "c_pdf", "courseTitle": "Product Design Foundations", "courseTitleAr": "أساسيات تصميم المنتجات", "courseSlug": "product-design-foundations", "language": "EN", "timezone": "Asia/Dubai", "startsOn": "2026-11-24T00:00:00.000Z", "scheduleSummary": "Mon & Wed · 20:00 · 12 sessions", "seatsLeft": 0, "status": "FULL", "priceFils": 92000 }
+  ]
+}

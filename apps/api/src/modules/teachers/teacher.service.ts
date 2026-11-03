@@ -1,0 +1,40 @@
+import { NotFoundError } from '../../core/errors';
+import { scheduleSummary } from './schedule-summary';
+import type { TeacherRepository } from './teacher.repository';
+
+export class TeacherService {
+  constructor(private readonly repo: TeacherRepository) {}
+
+  /** `GET /teachers/:id` — public profile. 404 unless the user is a (non-banned) teacher. */
+  async profile(id: string) {
+    const teacher = await this.repo.findTeacher(id);
+    if (!teacher) throw new NotFoundError('Teacher', id);
+    const batches = await this.repo.publicBatches(id);
+    const upcoming = batches.filter((b) => b.status === 'ENROLLING' || b.status === 'FULL');
+    const held = await this.repo.heldSeats(upcoming.map((b) => b.id));
+
+    const courses = [...new Map(batches.map((b) => [b.course.id, b.course])).values()].map(({ priceFils: _p, ...c }) => c);
+    const languages = [...new Set(batches.map((b) => b.language))].sort();
+
+    return {
+      ...teacher,
+      languages,
+      courses,
+      upcomingBatches: upcoming.map((b) => ({
+        id: b.id,
+        code: b.code,
+        courseId: b.course.id,
+        courseTitle: b.course.titleEn,
+        courseTitleAr: b.course.titleAr,
+        courseSlug: b.course.slug,
+        language: b.language,
+        timezone: b.timezone,
+        startsOn: b.startsOn,
+        scheduleSummary: scheduleSummary(b.schedule),
+        seatsLeft: Math.max(0, b.capacity - (held.get(b.id) ?? 0)),
+        status: b.status,
+        priceFils: b.priceFils ?? b.course.priceFils,
+      })),
+    };
+  }
+}

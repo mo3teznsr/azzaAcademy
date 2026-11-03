@@ -62,6 +62,22 @@ class Fmt {
   String aed(int fils) => Money.aed(fils, arabicDigits: arabicDigits);
   String money(int fils, DisplayCurrency c, double rate) => Money.display(fils, c, rate, arabicDigits: arabicDigits);
   String n(Object v) => '$v'.digits(arabicDigits);
+
+  /// Queue position: `3rd` in English, plain (locale digits) in Arabic.
+  String ordinal(int n) => locale == AppLocale.ar ? this.n(n) : ordinalEn(n);
+
+  static String ordinalEn(int n) {
+    final mod100 = n % 100;
+    final suffix = (mod100 >= 11 && mod100 <= 13)
+        ? 'th'
+        : switch (n % 10) {
+            1 => 'st',
+            2 => 'nd',
+            3 => 'rd',
+            _ => 'th',
+          };
+    return '$n$suffix';
+  }
 }
 
 final fmtProvider = Provider<Fmt>(

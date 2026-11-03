@@ -15,7 +15,7 @@ export function meRoutes(me: MeService, notifications: NotificationService, cale
   return new Hono<AppEnv>()
     .use('*', requireAuth)
     .get('/', async (c) => c.json(await me.profile(currentUser(c).id)))
-    .patch('/', validate('json', updateProfileInput), async (c) => c.json(await me.updateProfile(currentUser(c).id, c.req.valid('json'))))
+    .patch('/', validate('json', updateProfileInput), async (c) => c.json(await me.updateProfile(currentUser(c), c.req.valid('json'))))
     .post('/devices', validate('json', registerDeviceInput), async (c) =>
       c.json(await me.registerDevice(currentUser(c).id, c.req.valid('json')), 201),
     )

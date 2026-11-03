@@ -70,6 +70,7 @@ class ProfileScreen extends ConsumerWidget {
             SectionHeader(l.account),
             if (user.role == Role.student) ...[
               row(l.myOrders, '', icon: Icons.receipt_long_outlined, onTap: () => context.push(Routes.myOrders)),
+              row(l.certificatesTitle, '', icon: Icons.workspace_premium_outlined, onTap: () => context.push(Routes.certificates)),
               row(l.assignments, '', icon: Icons.assignment_outlined, onTap: () => context.push(Routes.assignments)),
             ],
             if (user.role == Role.teacher)

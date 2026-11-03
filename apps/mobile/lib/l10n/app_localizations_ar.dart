@@ -796,6 +796,113 @@ class AppLocalizationsAr extends AppLocalizations {
   String get liveUnavailable => 'الفيديو غير متاح لهذه الجلسة بعد.';
 
   @override
+  String edgeWaitingTitle(String host) {
+    return 'لم تبدأ الجلسة بعد مع $host';
+  }
+
+  @override
+  String get edgeWaitingSub => 'تبدأ عادةً خلال ٥ دقائق · ستنضم تلقائيًا';
+
+  @override
+  String get edgeLiveNow => 'مباشر الآن';
+
+  @override
+  String get edgePermTitle => 'الكاميرا أو الميكروفون محظوران';
+
+  @override
+  String get edgePermBody =>
+      'لا يستطيع أزّا استخدام الكاميرا أو الميكروفون، لذا لا يراك الصف ولا يسمعك.';
+
+  @override
+  String get edgePermStepsIos =>
+      'افتح الإعدادات ← أزّا ← فعّل الكاميرا والميكروفون، ثم عُد.';
+
+  @override
+  String get edgePermStepsAndroid =>
+      'افتح الإعدادات ← التطبيقات ← أزّا ← الأذونات ← اسمح بالكاميرا والميكروفون، ثم عُد.';
+
+  @override
+  String get edgePermMissing => 'لم نجد كاميرا أو ميكروفونًا على هذا الجهاز.';
+
+  @override
+  String get edgePermBusy =>
+      'تطبيق آخر يستخدم الكاميرا أو الميكروفون. أغلقه وحاول مجددًا.';
+
+  @override
+  String get edgeOpenSettings => 'افتح الإعدادات';
+
+  @override
+  String get edgeTryAgain => 'حاول مجددًا';
+
+  @override
+  String get edgeJoinAudioOnly => 'انضم بالصوت فقط';
+
+  @override
+  String get edgeJoinListenOnly => 'انضم للاستماع فقط';
+
+  @override
+  String get edgeReconnecting =>
+      'جارٍ إعادة الاتصال… توقف الفيديو مؤقتًا وبقي الصوت';
+
+  @override
+  String get edgeLostTitle => 'انقطع الاتصال';
+
+  @override
+  String get edgeLostBody => 'تعذّرت إعادتك تلقائيًا. مقعدك ما زال محجوزًا.';
+
+  @override
+  String get edgeRejoin => 'أعد الانضمام';
+
+  @override
+  String edgeRoomFullTitle(String n, String max) {
+    return 'الغرفة ممتلئة $n/$max';
+  }
+
+  @override
+  String get edgeRoomFullGeneric => 'هذه الغرفة ممتلئة';
+
+  @override
+  String get edgeRoomFullBody =>
+      'يتوفر مقعد بمجرد مغادرة أحدهم. حاول بعد دقيقة، أو شاهد التسجيل بعد الحصة.';
+
+  @override
+  String edgeCancelledTitle(String s, String teacher) {
+    return 'أُلغيت $s من قِبل $teacher';
+  }
+
+  @override
+  String get edgeCancelledBody => 'لن تُحتسب ضد حضورك. يعرض جدولك ما التالي.';
+
+  @override
+  String edgeMovedTitle(String s, String when) {
+    return 'نُقلت $s إلى $when';
+  }
+
+  @override
+  String edgeMovedBody(String was, String tz) {
+    return 'كانت $was. الأوقات بتوقيتك المحلي ($tz).';
+  }
+
+  @override
+  String get edgeEndedTitle => 'انتهت هذه الجلسة';
+
+  @override
+  String get edgeEndedBody => 'يظهر التسجيل في صفحة تعلّمك عندما يصبح جاهزًا.';
+
+  @override
+  String get edgeNotEnrolledTitle => 'لست مسجّلًا في هذه الدفعة';
+
+  @override
+  String get edgeNotEnrolledBody =>
+      'تحتاج إلى تسجيل نشط في هذه الدفعة للانضمام.';
+
+  @override
+  String get edgeBackToSchedule => 'العودة إلى الجدول';
+
+  @override
+  String get edgeWaitingButton => 'بانتظار المضيف…';
+
+  @override
   String get wrapTitle => 'انتهى التصوير.';
 
   @override
@@ -1432,4 +1539,190 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get videoDevMode =>
       'الفيديو متوقف في هذه البيئة (LiveKit غير مُعدّ). الدردشة ورفع اليد ما زالا يعملان.';
+
+  @override
+  String get certificatesTitle => 'الشهادات';
+
+  @override
+  String get certificatesEmptyTitle => 'لا شهادات بعد';
+
+  @override
+  String get certificatesEmptyBody =>
+      'احضر 80٪ على الأقل من جلسات الدفعة، وستظهر شهادتك هنا عند انتهائها.';
+
+  @override
+  String get certificatesEarned => 'المكتسبة';
+
+  @override
+  String get certificatesInProgress => 'قيد التقدّم';
+
+  @override
+  String certificateAttended(String attended, String total) {
+    return 'الحضور $attended/$total';
+  }
+
+  @override
+  String certificateWithTeacher(String name) {
+    return 'مع $name';
+  }
+
+  @override
+  String certificateSessionsNeeded(String n) {
+    return 'يلزم حضور $n جلسات أخرى';
+  }
+
+  @override
+  String get certificateOneSessionNeeded => 'يلزم حضور جلسة واحدة أخرى';
+
+  @override
+  String get certificateRequirementMet =>
+      'اكتمل الحضور المطلوب — تصدر شهادتك عند انتهاء الدفعة.';
+
+  @override
+  String get certificateUnreachable =>
+      'لم تعد الجلسات المتبقية كافية لبلوغ 80٪ في هذه الدفعة.';
+
+  @override
+  String certificateAttendedOfRequired(String attended, String required) {
+    return '$attended من $required جلسة مطلوبة للحصول عليها';
+  }
+
+  @override
+  String get certificateNew => 'جديدة';
+
+  @override
+  String get certificateOfCompletion => 'شهادة إتمام';
+
+  @override
+  String get certificateAwardedTo => 'تُمنح إلى';
+
+  @override
+  String get certificateForCompleting => 'لإتمام دورة';
+
+  @override
+  String get certificateBatch => 'الدفعة';
+
+  @override
+  String get certificateTeacher => 'المدرّس';
+
+  @override
+  String get certificateIssued => 'تاريخ الإصدار';
+
+  @override
+  String get certificateDates => 'المدة';
+
+  @override
+  String get certificateVerifyCode => 'رمز التحقق';
+
+  @override
+  String get certificateShare => 'مشاركة';
+
+  @override
+  String get certificateLinkCopied => 'تم نسخ رابط التحقق';
+
+  @override
+  String get certificateCompleteTitle => 'اكتملت الدورة.';
+
+  @override
+  String certificateCompleteBody(String attended, String total) {
+    return 'حضرت $attended من $total جلسة مباشرة.';
+  }
+
+  @override
+  String certificateVerifyHint(String url) {
+    return 'يمكن لأي شخص التحقق منها عبر $url';
+  }
+
+  @override
+  String waitlistPosition(String position, String total) {
+    return 'رقم $position في الدور · من $total';
+  }
+
+  @override
+  String get waitlistNextInLine => 'أنت التالي في الدور';
+
+  @override
+  String startsOnDate(String date) {
+    return 'تبدأ $date';
+  }
+
+  @override
+  String waitlistJoinedOn(String date) {
+    return 'انضممت في $date';
+  }
+
+  @override
+  String get waitlistWhatNext => 'ماذا يحدث بعد ذلك';
+
+  @override
+  String get waitlistStepSeat =>
+      'عندما يتوفر مقعد، يُعرض على أول شخص في الدور.';
+
+  @override
+  String get waitlistStepNotify =>
+      'سنرسل لك إشعارًا وبريدًا إلكترونيًا فور أن يصبح المقعد لك.';
+
+  @override
+  String get waitlistStepHold =>
+      'سيكون أمامك 24 ساعة لإتمام الدفع قبل أن ينتقل المقعد إلى التالي.';
+
+  @override
+  String get waitlistNoCharge => 'لا يُخصم أي مبلغ أثناء الانتظار.';
+
+  @override
+  String get waitlistLeave => 'مغادرة قائمة الانتظار';
+
+  @override
+  String get waitlistLeaveConfirmTitle => 'مغادرة قائمة الانتظار؟';
+
+  @override
+  String waitlistLeaveConfirmBody(String batch) {
+    return 'ستفقد مكانك في $batch. وإذا انضممت لاحقًا فستبدأ من آخر الدور.';
+  }
+
+  @override
+  String get waitlistStay => 'البقاء في الدور';
+
+  @override
+  String get waitlistLeft => 'غادرت قائمة الانتظار';
+
+  @override
+  String get waitlistSeatOpen => 'توفّر مقعد لك';
+
+  @override
+  String waitlistHeldFor(String time) {
+    return 'محجوز لك · $time';
+  }
+
+  @override
+  String get waitlistHoldExpired => 'انتهت مدة الحجز';
+
+  @override
+  String get waitlistClaimSeat => 'احجز المقعد';
+
+  @override
+  String get teacherAbout => 'نبذة';
+
+  @override
+  String get teacherTeachesIn => 'يدرّس باللغة';
+
+  @override
+  String get teacherCourses => 'الدورات';
+
+  @override
+  String get teacherUpcomingBatches => 'الدفعات القادمة';
+
+  @override
+  String get teacherViewProfile => 'عرض الملف الشخصي';
+
+  @override
+  String get teacherBatchFull => 'مكتملة';
+
+  @override
+  String get certificateAttendance => 'الحضور';
+
+  @override
+  String waitlistOfTotal(String total) {
+    return 'من $total';
+  }
 }

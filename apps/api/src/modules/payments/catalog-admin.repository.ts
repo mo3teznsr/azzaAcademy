@@ -17,15 +17,66 @@ export class PrismaBankAccountRepository {
   }
 }
 
+export interface CouponData {
+  percentOff: number | null;
+  amountOffFils: number | null;
+  maxRedemptions: number | null;
+  perUserLimit: number | null;
+  minOrderFils: number | null;
+  startsOn: Date | null;
+  expiresOn: Date | null;
+  courseId: string | null;
+  batchId: string | null;
+  stackable: boolean;
+  active: boolean;
+}
+
+const couponScope = {
+  course: { select: { id: true, titleEn: true, titleAr: true } },
+  batch: { select: { id: true, code: true, course: { select: { id: true, titleEn: true, titleAr: true } } } },
+} as const;
+
 export class PrismaCouponRepository {
   constructor(private readonly db: Db) {}
   list() {
-    return this.db.coupon.findMany({ orderBy: { createdAt: 'desc' } });
+    return this.db.coupon.findMany({ orderBy: { createdAt: 'desc' }, include: couponScope });
+  }
+  find(id: string) {
+    return this.db.coupon.findUnique({ where: { id }, include: couponScope });
   }
   findByCode(code: string) {
     return this.db.coupon.findUnique({ where: { code } });
   }
-  create(data: { code: string; percentOff?: number; amountOffFils?: number; maxRedemptions?: number; expiresOn?: Date }) {
-    return this.db.coupon.create({ data });
+  create(data: CouponData & { code: string }) {
+    return this.db.coupon.create({ data, include: couponScope });
+  }
+  update(id: string, data: CouponData) {
+    return this.db.coupon.update({ where: { id }, data, include: couponScope });
+  }
+  courseExists(id: string) {
+    return this.db.course.count({ where: { id } }).then((n) => n > 0);
+  }
+  batchExists(id: string) {
+    return this.db.batch.count({ where: { id } }).then((n) => n > 0);
+  }
+  usage(couponId: string) {
+    return this.db.couponRedemption.findMany({
+      where: { couponId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        discountFils: true,
+        createdAt: true,
+        user: { select: { id: true, name: true, email: true } },
+        order: {
+          select: {
+            id: true,
+            reference: true,
+            totalFils: true,
+            enrollment: { select: { batch: { select: { id: true, code: true, course: { select: { titleEn: true, titleAr: true } } } } } },
+          },
+        },
+      },
+    });
   }
 }

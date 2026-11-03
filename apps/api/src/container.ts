@@ -51,6 +51,14 @@ import { PrismaPaymentsRepository } from './modules/payments/payments.repository
 import { PriceCalculator } from './modules/payments/price-calculator';
 import { ReceiptUploadService } from './modules/payments/receipt-upload.service';
 import { ReferenceGenerator } from './modules/payments/reference-generator';
+import { CertificateCodeGenerator } from './modules/certificates/certificate-code';
+import { PrismaCertificateRepository } from './modules/certificates/certificate.repository';
+import { CertificateService } from './modules/certificates/certificate.service';
+import { WaitlistQueries } from './modules/payments/waitlist.queries';
+import { PrismaReportRepository } from './modules/reports/report.repository';
+import { ReportService } from './modules/reports/report.service';
+import { PrismaTeacherRepository } from './modules/teachers/teacher.repository';
+import { TeacherService } from './modules/teachers/teacher.service';
 import { PrismaStatsRepository } from './modules/stats/stats.repository';
 import { StatsService } from './modules/stats/stats.service';
 import { EarningsCalculator } from './modules/payouts/earnings-calculator';
@@ -184,6 +192,10 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     bankAccounts: new BankAccountService(new PrismaBankAccountRepository(db)),
     coupons: new CouponService(new PrismaCouponRepository(db)),
     orders: new OrderQueries(db),
+    waitlist: new WaitlistQueries(db),
+    certificates: new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator()),
+    reports: new ReportService(new PrismaReportRepository(db), clock),
+    teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock),
     admin: new AdminService(new PrismaAdminRepository(db), new BetterAuthUserProvisioner(auth, invites, config.WEB_URL), video, clock),
   };

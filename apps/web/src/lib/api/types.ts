@@ -430,6 +430,8 @@ export type CheckoutResult =
   | { waitlisted: false; order: CreatedOrder; enrollment: EnrollmentRecord; quote: Quote; bankAccount: BankAccount; reference: string; expiresAt: ISODate }
   | { waitlisted: true; enrollment: EnrollmentRecord };
 
+export type CouponStatus = 'ACTIVE' | 'SCHEDULED' | 'EXPIRED' | 'PAUSED' | 'EXHAUSTED';
+
 export interface Coupon {
   id: string;
   code: string;
@@ -437,9 +439,33 @@ export interface Coupon {
   amountOffFils: number | null;
   maxRedemptions: number | null;
   redemptions: number;
+  perUserLimit: number | null;
+  minOrderFils: number | null;
+  startsOn: ISODate | null;
   expiresOn: ISODate | null;
+  /** Pause switch. */
   active: boolean;
+  stackable: boolean;
+  courseId: string | null;
+  batchId: string | null;
+  course: { id: string; titleEn: string; titleAr: string | null } | null;
+  batch: { id: string; code: string; course: { id: string; titleEn: string; titleAr: string | null } } | null;
+  /** Derived server-side. */
+  status: CouponStatus;
   createdAt: ISODate;
+}
+
+export interface CouponUsage {
+  coupon: { id: string; code: string; redemptions: number; maxRedemptions: number | null };
+  totalDiscountFils: number;
+  items: Array<{
+    id: string;
+    createdAt: ISODate;
+    discountFils: number;
+    student: { id: string; name: string; email: string };
+    order: { id: string; reference: string; totalFils: number };
+    batch: { id: string; code: string; courseTitleEn: string; courseTitleAr: string | null };
+  }>;
 }
 
 // ---------- Earnings & payouts ----------
@@ -631,4 +657,150 @@ export interface LiveNow {
 export interface CalendarFeed {
   url: string;
   webcalUrl: string;
+}
+
+// ---------- Certificates ----------
+export type CertificateCourse = Pick<Course, 'id' | 'slug' | 'titleEn' | 'titleAr' | 'coverImageUrl'>;
+
+/** GET /me/certificates item — attendance frozen at issue. */
+export interface Certificate {
+  id: string;
+  code: string;
+  issuedAt: ISODate;
+  attended: number;
+  total: number;
+  batchId: string;
+  batchCode: string;
+  course: CertificateCourse;
+  courseTitle: string;
+  teacherName: string;
+  startsOn: ISODate;
+  endsOn: ISODate;
+}
+
+/** ACTIVE batch that is not over yet: `required` sessions to attend, `needed` still to attend. */
+export interface CertificateProgress {
+  batchId: string;
+  batchCode: string;
+  course: CertificateCourse;
+  courseTitle: string;
+  teacherName: string;
+  startsOn: ISODate;
+  endsOn: ISODate;
+  attended: number;
+  total: number;
+  required: number;
+  needed: number;
+  sessionsEnded: number;
+  reachable: boolean;
+}
+
+export interface MyCertificates {
+  items: Certificate[];
+  inProgress: CertificateProgress[];
+}
+
+/** GET /certificates/:code (public). */
+export interface CertificateVerification extends Omit<Certificate, 'id'> {
+  valid: true;
+  holderName: string;
+}
+
+// ---------- Public teacher profile ----------
+export interface TeacherProfileBatch {
+  id: string;
+  code: string;
+  courseId: string;
+  courseTitle: string;
+  courseTitleAr: string | null;
+  courseSlug: string;
+  language: SessionLanguage;
+  timezone: string;
+  startsOn: ISODate;
+  /** "Tue & Thu · 19:00 · 12 sessions" (English, from the API). */
+  scheduleSummary: string;
+  seatsLeft: number;
+  status: Extract<BatchStatus, 'ENROLLING' | 'FULL'>;
+  priceFils: number;
+}
+
+/** GET /teachers/:id (public). */
+export interface TeacherProfile {
+  id: string;
+  name: string;
+  image: string | null;
+  headline: string | null;
+  bio: string | null;
+  languages: SessionLanguage[];
+  courses: Array<CertificateCourse & { category: string }>;
+  upcomingBatches: TeacherProfileBatch[];
+}
+
+// ---------- Waitlist ----------
+export interface WaitlistEntry {
+  enrollmentId: string;
+  joinedAt: ISODate;
+  batchId: string;
+  batchCode: string;
+  batchStatus: BatchStatus;
+  startsOn: ISODate;
+  course: CertificateCourse;
+  courseTitle: string;
+  /** 1-based place in line. */
+  position: number;
+  total: number;
+}
+
+/** A seat offered from the waitlist: check out before `holdExpiresAt`. */
+export interface WaitlistPromotion {
+  enrollmentId: string;
+  batchId: string;
+  batchCode: string;
+  batchStatus: BatchStatus;
+  startsOn: ISODate;
+  course: CertificateCourse;
+  courseTitle: string;
+  promotedAt: ISODate;
+  holdExpiresAt: ISODate;
+}
+
+/** GET /me/waitlist */
+export interface MyWaitlist {
+  items: WaitlistEntry[];
+  promoted: WaitlistPromotion[];
+}
+
+// ---------- Admin reports ----------
+export interface ReportKpis {
+  revenueFils: number;
+  newEnrollments: number;
+  /** 0–1 */
+  fillRate: number;
+  attendanceRate: number;
+  completionRate: number;
+  refundsFils: number;
+}
+
+/** GET /admin/reports?from&to */
+export interface AdminReport {
+  range: { from: string; to: string; days: number; timezone: string };
+  previousRange: { from: string; to: string; days: number };
+  kpis: ReportKpis;
+  previous: ReportKpis;
+  revenueByCourse: Array<{ courseId: string; title: string; revenueFils: number }>;
+  batches: Array<{
+    id: string;
+    code: string;
+    courseId: string;
+    courseTitle: string;
+    teacherId: string;
+    teacherName: string;
+    capacity: number;
+    seatsHeld: number;
+    status: BatchStatus;
+    waitlistCount: number;
+  }>;
+  attendanceBatch: { id: string; code: string; courseTitle: string } | null;
+  attendanceBySession: Array<{ number: number; rate: number }>;
+  teachers: Array<{ id: string; name: string; sessionsRun: number; avgAttendance: number; onTimeStartRate: number }>;
 }

@@ -10,6 +10,8 @@ const userSelect = {
   locale: true,
   timezone: true,
   image: true,
+  headline: true,
+  bio: true,
   banned: true,
   emailVerified: true,
   createdAt: true,
@@ -79,7 +81,7 @@ export class PrismaAdminRepository {
     return this.db.user.findUnique({ where: { id }, select: userSelect });
   }
 
-  updateUser(id: string, data: { name?: string; role?: Role; banned?: boolean }) {
+  updateUser(id: string, data: { name?: string; role?: Role; banned?: boolean; headline?: string | null; bio?: string | null }) {
     return this.db.user.update({ where: { id }, data, select: userSelect });
   }
 

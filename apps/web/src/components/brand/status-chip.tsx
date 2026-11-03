@@ -35,7 +35,8 @@ const TONES: Record<ChipTone, string> = {
 };
 
 /** Pill status chip — JetBrains Mono caps (Main.dc.html §06). */
-export function Chip({ tone = 'outline', dot, children, className }: { tone?: ChipTone; dot?: boolean; children: React.ReactNode; className?: string }) {
+/** `live` turns the dot into the on-air ping (defaults to on for the onair tone). */
+export function Chip({ tone = 'outline', dot, live, children, className }: { tone?: ChipTone; dot?: boolean; live?: boolean; children: React.ReactNode; className?: string }) {
   return (
     <span
       className={cn(
@@ -44,7 +45,7 @@ export function Chip({ tone = 'outline', dot, children, className }: { tone?: Ch
         className,
       )}
     >
-      {dot && <span aria-hidden className="size-1.5 rounded-full bg-current" />}
+      {dot && ((live ?? tone === 'onair') ? <span aria-hidden className="onair size-1.5" /> : <span aria-hidden className="size-1.5 rounded-full bg-current" />)}
       {children}
     </span>
   );

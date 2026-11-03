@@ -9,6 +9,7 @@ import {
   reviewTransferInput,
   transferListQuery,
   updateBankAccountInput,
+  updateCouponInput,
   uploadReceiptInput,
   type OrderStatus,
 } from '@azza/shared';
@@ -23,6 +24,7 @@ import type { FinanceAdminService } from './finance-admin.service';
 import type { FxService } from './fx.service';
 import type { OrderQueries } from './order.queries';
 import type { ReceiptUploadService } from './receipt-upload.service';
+import type { WaitlistQueries } from './waitlist.queries';
 
 export interface PaymentServices {
   checkout: CheckoutService;
@@ -31,6 +33,7 @@ export interface PaymentServices {
   bankAccounts: BankAccountService;
   coupons: CouponService;
   orders: OrderQueries;
+  waitlist: WaitlistQueries;
   receipts: ReceiptUploadService;
 }
 
@@ -39,7 +42,9 @@ export function paymentRoutes(s: PaymentServices) {
   return new Hono<AppEnv>()
     .get('/fx-rates', async (c) => c.json(await s.fx.rates()))
     .get('/bank-accounts', async (c) => c.json(await s.bankAccounts.list(c.get('user')?.role ?? null)))
-    .post('/checkout/quote', validate('json', checkoutInput), async (c) => c.json(await s.checkout.quote(c.req.valid('json'))))
+    .post('/checkout/quote', validate('json', checkoutInput), async (c) =>
+      c.json(await s.checkout.quote(c.req.valid('json'), undefined, c.get('user')?.id ?? null)),
+    )
     .post('/checkout', requireAuth, validate('json', checkoutInput), async (c) => {
       const result = await s.checkout.checkout(currentUser(c).id, c.req.valid('json'));
       return c.json(result, result.waitlisted ? 202 : 201);
@@ -61,7 +66,8 @@ export function paymentRoutes(s: PaymentServices) {
       });
       return c.json(order);
     })
-    .get('/me/orders', requireAuth, async (c) => c.json({ items: await s.orders.mine(currentUser(c).id) }));
+    .get('/me/orders', requireAuth, async (c) => c.json({ items: await s.orders.mine(currentUser(c).id) }))
+    .get('/me/waitlist', requireAuth, async (c) => c.json(await s.waitlist.mine(currentUser(c).id)));
 }
 
 const REVIEW_QUEUE: OrderStatus[] = ['VERIFYING', 'AMOUNT_MISMATCH'];
@@ -100,5 +106,7 @@ export function adminFinanceRoutes(s: PaymentServices) {
       return c.json(await s.fx.set(currency, ratePerAed));
     })
     .get('/coupons', async (c) => c.json(await s.coupons.list()))
-    .post('/coupons', validate('json', couponInput), async (c) => c.json(await s.coupons.create(c.req.valid('json')), 201));
+    .post('/coupons', validate('json', couponInput), async (c) => c.json(await s.coupons.create(c.req.valid('json')), 201))
+    .patch('/coupons/:id', validate('json', updateCouponInput), async (c) => c.json(await s.coupons.update(c.req.param('id'), c.req.valid('json'))))
+    .get('/coupons/:id/usage', async (c) => c.json(await s.coupons.usage(c.req.param('id'))));
 }

@@ -89,9 +89,9 @@ function CourseView({ course }: { course: Course }) {
             <div className="flex items-center gap-3">
               <InitialsAvatar name={teacher.name} src={teacher.image} size={48} />
               <div>
-                <b className="block">
+                <Link href={`/teachers/${teacher.id}`} className="block font-bold text-ivory underline-offset-4 hover:underline">
                   <bdi>{teacher.name}</bdi>
-                </b>
+                </Link>
                 <span className="text-sm text-stone">{t.course.leadTeacher}</span>
               </div>
             </div>

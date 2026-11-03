@@ -1,5 +1,5 @@
 import type { DateRangeQuery, RegisterDeviceInput, Role, UpdateProfileInput } from '@azza/shared';
-import { NotFoundError } from '../../core/errors';
+import { ForbiddenError, NotFoundError } from '../../core/errors';
 import type { Clock } from '../../core/ports';
 import { addDays, isoDay, addHours } from '../../core/time';
 import type { MeRepository } from './me.repository';
@@ -17,8 +17,12 @@ export class MeService {
     return { ...user, counts: await this.repo.counts(userId, now, addHours(now, 24 * 7)) };
   }
 
-  updateProfile(userId: string, input: UpdateProfileInput) {
-    return this.repo.updateProfile(userId, input);
+  /** `headline`/`bio` feed the public teacher profile, so only teachers (and admins) may set them. */
+  updateProfile(user: { id: string; role: Role }, input: UpdateProfileInput) {
+    if (user.role === 'STUDENT' && (input.headline !== undefined || input.bio !== undefined)) {
+      throw new ForbiddenError('Only teachers have a public profile');
+    }
+    return this.repo.updateProfile(user.id, input);
   }
 
   registerDevice(userId: string, input: RegisterDeviceInput) {

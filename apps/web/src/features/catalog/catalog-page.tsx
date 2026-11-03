@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useDeferredValue, useMemo, useState } from 'react';
-import { ArrowDown, Search } from 'lucide-react';
+import { useDeferredValue, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { ArrowDown, ArrowRight, Pause, Play, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Accordion } from './faq';
@@ -14,6 +14,7 @@ import { EmptyState, ErrorState, LoadingGrid } from '@/components/brand/states';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
 import { batchPriceFils, describeRule } from '@/lib/schedule';
+import { useAuth } from '@/lib/auth/use-auth';
 import { gmtOffset } from '@/lib/i18n/format';
 import type { BatchSummary, Course } from '@/lib/api/types';
 import { useCatalogCourses, useLiveNow, usePublicBatches } from './use-catalog';
@@ -22,11 +23,17 @@ export function CatalogPage() {
   const { t } = useI18n();
   return (
     <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-24 px-4 sm:px-6 lg:px-10">
-      <Hero />
+      <div className="flex flex-col gap-4">
+        <OnAirStrip />
+        <Hero />
+        <StartMarquee />
+      </div>
       <HowItWorks />
       <Catalog />
       <StartingSoon />
+      <Pricing />
       <Faq />
+      <FinalCta />
       <span className="sr-only">{t.meta.description}</span>
     </div>
   );
@@ -52,16 +59,13 @@ function Hero() {
         <div className="label-mono mb-4 flex items-center gap-2 text-onair">
           <SignalMark size={18} /> {t.nav.public.findBatch}
           {n > 0 && (
-            <span className="ms-2 rounded-full bg-onair px-2.5 py-0.5 text-ink" role="status">
-              ● {fill(t.catalog.liveNow, { n: f.number(n), p: f.number(live.data?.participants ?? 0) })}
+            <span className="ms-2 inline-flex items-center gap-1.5 rounded-full bg-onair px-2.5 py-0.5 text-ink" role="status">
+              <span aria-hidden className="onair" /> {fill(t.catalog.liveNow, { n: f.number(n), p: f.number(live.data?.participants ?? 0) })}
             </span>
           )}
         </div>
         <h1 className="font-display text-[clamp(64px,11vw,180px)] font-extrabold leading-[0.82]">
-          <span className="block">{t.catalog.titleA}</span>
-          <span className="block">
-            <span className="font-light">{t.catalog.titleB}</span> {t.catalog.titleC}
-          </span>
+          <RiseWords lines={[[{ text: t.catalog.titleA }], [{ text: t.catalog.titleB, className: 'font-light' }, { text: t.catalog.titleC }]]} />
         </h1>
       </div>
       <div className="flex flex-col gap-6 pb-4">
@@ -252,6 +256,170 @@ function Faq() {
         <span className="font-light">{t.catalog.faqB}</span>
       </h2>
       <Accordion items={t.catalog.faq} />
+    </section>
+  );
+}
+
+/** Splits each line into words that rise in one after another (reduced motion: static). */
+function RiseWords({ lines }: { lines: Array<Array<{ text: string; className?: string }>> }) {
+  let i = 0;
+  return (
+    <>
+      {lines.map((parts, li) => (
+        <span key={li} className="block">
+          {parts.flatMap((part, pi) => {
+            const words = part.text.split(/\s+/).filter(Boolean);
+            return words.map((w, wi) => {
+              const n = i++;
+              const node: ReactNode = (
+                <span key={`${pi}-${wi}`} className={`rise inline-block ${part.className ?? ''}`} style={{ '--i': n } as CSSProperties}>
+                  {w}
+                </span>
+              );
+              return wi === words.length - 1 && pi === parts.length - 1 ? [node] : [node, ' '];
+            });
+          })}
+        </span>
+      ))}
+    </>
+  );
+}
+
+/** Public "on air now" strip — hidden when nothing is live. */
+function OnAirStrip() {
+  const { t, f, fill } = useI18n();
+  const live = useLiveNow();
+  const n = live.data?.liveSessions ?? 0;
+  if (n <= 0) return null;
+  return (
+    <section aria-label={t.landing.onAirNow} className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-full bg-onair px-5 py-2.5 text-ink" role="status">
+      <span className="label-mono flex items-center gap-2 font-semibold">
+        <span aria-hidden className="onair" /> {t.landing.onAirNow}
+      </span>
+      <b className="font-display text-lg">{f.plural(n, t.landing.onAirSessions)}</b>
+      <span className="text-sm">{fill(t.landing.onAirLearners, { n: f.number(live.data?.participants ?? 0) })}</span>
+    </section>
+  );
+}
+
+/** Upcoming batch start dates, scrolling. A real toggle pauses it; hover/focus also holds it. */
+function StartMarquee() {
+  const { t, f, fill, pick } = useI18n();
+  const batches = usePublicBatches();
+  const [paused, setPaused] = useState(false);
+  const items = useMemo(
+    () => [...(batches.data?.items ?? [])].filter((b) => b.status === 'ENROLLING').sort((a, b) => a.startsOn.localeCompare(b.startsOn)).slice(0, 12),
+    [batches.data],
+  );
+  if (items.length === 0) return null;
+  return (
+    <section aria-label={t.landing.marqueeLabel} className="marquee flex items-center gap-3 border-y border-line py-2.5" data-paused={paused}>
+      <button
+        type="button"
+        aria-pressed={paused}
+        aria-label={t.landing.pauseScrolling}
+        onClick={() => setPaused((p) => !p)}
+        className="press grid size-11 shrink-0 place-items-center rounded-full border border-line text-stone hover:text-ivory aria-pressed:bg-ivory aria-pressed:text-ink"
+      >
+        {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
+      </button>
+      <div className="min-w-0 flex-1 overflow-hidden motion-reduce:overflow-x-auto">
+        <ul className="marquee-track flex w-max items-center">
+          {[...items, ...items].map((b, k) => {
+            const dup = k >= items.length;
+            return (
+              <li key={`${b.id}-${k}`} aria-hidden={dup || undefined} className={dup ? 'motion-reduce:hidden' : undefined}>
+                <Link
+                  href={`/courses/${b.course.slug}?batch=${b.id}`}
+                  tabIndex={dup ? -1 : undefined}
+                  className="flex min-h-11 items-center gap-3 px-5 text-sm whitespace-nowrap text-stone no-underline hover:text-ivory"
+                >
+                  <b className="font-display text-lg text-ivory" dir="ltr">
+                    {b.code}
+                  </b>
+                  <span>{pick(b.course.titleEn, b.course.titleAr).text}</span>
+                  <span className="label-mono text-sun">{fill(t.landing.starts, { d: f.dayMonth(b.startsOn, b.timezone) })}</span>
+                  <span aria-hidden className="text-line-2">
+                    /
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function Pricing() {
+  const { t, fill } = useI18n();
+  const money = useMoney();
+  const batches = usePublicBatches();
+  const open = (batches.data?.items ?? []).filter((b) => b.status === 'ENROLLING');
+  const min = open.length ? Math.min(...open.map(batchPriceFils)) : null;
+  const price = (fils: number | null) => (fils === null ? '—' : money.aed(fils));
+  const plans = [
+    { key: 'full', plan: t.landing.plans.full, amount: fill(t.landing.plans.full.price, { p: price(min) }), featured: true },
+    { key: 'bank', plan: t.landing.plans.bank, amount: fill(t.landing.plans.bank.price, { p: price(min) }), featured: false },
+  ];
+  return (
+    <section id="pricing" aria-labelledby="pricing-title" className="flex scroll-mt-8 flex-col gap-8">
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+        <div>
+          <span className="label-mono text-stone">{t.landing.pricingKicker}</span>
+          <h2 id="pricing-title" className="mt-3 font-display text-[clamp(48px,7vw,96px)] font-extrabold leading-[0.85]">
+            {t.landing.pricingTitleA}
+            <br />
+            <span className="font-light">{t.landing.pricingTitleB}</span>
+          </h2>
+        </div>
+        <p className="max-w-md text-stone">
+          {t.landing.pricingBody} {min !== null && <span className="block pt-2 text-sm">{t.landing.pricingFrom}</span>}
+        </p>
+      </div>
+      <ul className="grid gap-4 md:grid-cols-2">
+        {plans.map(({ key, plan, amount, featured }) => (
+          <li key={key} className={featured ? 'flex flex-col gap-4 rounded-[24px] bg-ivory p-6 text-ink' : 'flex flex-col gap-4 rounded-[24px] border border-line p-6'}>
+            <span className={featured ? 'label-mono text-stone-2' : 'label-mono text-stone'}>{plan.name}</span>
+            <b className="font-display text-4xl font-extrabold leading-none">{amount}</b>
+            <p className={featured ? 'text-sm text-stone-2' : 'text-sm text-stone'}>{plan.note}</p>
+          </li>
+        ))}
+      </ul>
+      <Button asChild size="lg" className="self-start">
+        <a href="#catalog">
+          {t.landing.pricingCta} <ArrowRight className="rtl:rotate-180" />
+        </a>
+      </Button>
+    </section>
+  );
+}
+
+function FinalCta() {
+  const { t } = useI18n();
+  const { user } = useAuth();
+  return (
+    <section aria-labelledby="final-title" className="relative isolate -mx-4 grid gap-8 overflow-hidden rounded-[28px] px-6 py-16 sm:mx-0 sm:px-10 lg:grid-cols-[1.3fr_1fr] lg:items-end lg:py-24">
+      <Image src="/images/scenes/onboarding.jpg" alt="" fill sizes="100vw" className="-z-20 object-cover rtl:-scale-x-100" />
+      <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-r from-ink via-ink/75 to-ink/20 rtl:bg-linear-to-l" />
+      <h2 id="final-title" className="font-display text-[clamp(56px,9vw,140px)] font-extrabold leading-[0.82]">
+        <span className="block">{t.landing.finalTitleA}</span>
+        <span className="block font-light">{t.landing.finalTitleB}</span>
+      </h2>
+      <div className="flex flex-col gap-6">
+        <p className="max-w-md text-lg text-cream-2">{t.landing.finalBody}</p>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild size="lg" variant="sun">
+            <a href="#catalog">{t.landing.finalPrimary}</a>
+          </Button>
+          {!user && (
+            <Button asChild size="lg" variant="outline">
+              <Link href="/sign-up">{t.landing.finalSecondary}</Link>
+            </Button>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

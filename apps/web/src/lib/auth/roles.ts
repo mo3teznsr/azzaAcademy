@@ -9,7 +9,7 @@ export const ROLE_HOME: Record<Role, string> = {
 
 export const homeFor = (role: string | null | undefined): string => ROLE_HOME[(role as Role) ?? 'STUDENT'] ?? '/learn';
 
-const STUDENT_PREFIXES = ['/learn', '/schedule', '/library', '/assignments', '/checkout', '/orders', '/live', '/settings'];
+const STUDENT_PREFIXES = ['/learn', '/schedule', '/library', '/assignments', '/checkout', '/orders', '/live', '/settings', '/certificates'];
 
 /** Which roles may open a given path. `null` = public. */
 export function rolesForPath(pathname: string): Role[] | null {

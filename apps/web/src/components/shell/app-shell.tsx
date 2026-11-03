@@ -31,7 +31,7 @@ function LiveBadge() {
   const n = q.data?.items.length ?? 0;
   if (!n) return null;
   return (
-    <Chip tone="onair" className="ms-auto">
+    <Chip tone="onair" dot className="ms-auto">
       {n}
     </Chip>
   );

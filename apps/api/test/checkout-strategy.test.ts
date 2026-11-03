@@ -22,7 +22,7 @@ const registry = new CheckoutStrategyRegistry([stripe, bank]);
 
 const ctx = (bankAccountId?: string): CheckoutContext => ({
   user: { id: 'sara', name: 'Sara', email: 'sara@azza.test', locale: 'en', timezone: 'Asia/Dubai' },
-  batch: { id: 'b08', code: 'B08', status: 'ENROLLING', capacity: 24, waitlistEnabled: true, priceFils: null, timezone: 'Asia/Dubai', teacherId: 'lina', courseTitle: 'Product Design Foundations', coursePriceFils: 88_000, firstSessionAt: null },
+  batch: { id: 'b08', code: 'B08', status: 'ENROLLING', capacity: 24, waitlistEnabled: true, priceFils: null, timezone: 'Asia/Dubai', teacherId: 'lina', courseId: 'pdf', courseTitle: 'Product Design Foundations', coursePriceFils: 88_000, firstSessionAt: null },
   quote: new PriceCalculator(5).quote({ priceFils: 88_000 }),
   reference: 'AZ-B08-12345',
   input: { batchId: 'b08', method: bankAccountId ? 'BANK_TRANSFER' : 'STRIPE', displayCurrency: 'AED', bankAccountId },

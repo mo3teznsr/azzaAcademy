@@ -131,6 +131,9 @@ model User {
   timezone        String    @default("Asia/Dubai")
   displayCurrency String    @default("AED")
   phone           String?
+  /// Public teacher profile (`GET /teachers/:id`); set by the teacher or an admin.
+  headline        String?
+  bio             String?
   banned          Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -154,6 +157,8 @@ model User {
   attendanceMarks AttendanceMark[]  @relation("AttendanceMarkStudent")
   rescheduleRequests RescheduleRequest[] @relation("RescheduleRequester")
   rescheduleDecisions RescheduleRequest[] @relation("RescheduleDecider")
+  certificates  Certificate[]
+  couponRedemptions CouponRedemption[]
 
   @@map("user")
 }
@@ -227,6 +232,7 @@ model Course {
 
   modules CourseModule[]
   batches Batch[]
+  coupons Coupon[]
 
   @@index([status, category])
 }
@@ -269,6 +275,8 @@ model Batch {
   materials   Material[]
   assignments Assignment[]
   earnings    Earning[]
+  certificates Certificate[]
+  coupons     Coupon[]
 
   @@unique([courseId, code])
   @@index([teacherId, status])
@@ -374,6 +382,7 @@ model Order {
   paidAt                DateTime?
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
+  couponRedemption      CouponRedemption?
 
   @@index([status, method])
 }
@@ -410,8 +419,38 @@ model Coupon {
   maxRedemptions Int?
   redemptions    Int       @default(0)
   expiresOn      DateTime?
+  /// Pause switch — a paused coupon is refused at checkout.
   active         Boolean   @default(true)
+  /// First valid day (inclusive). null = valid immediately.
+  startsOn       DateTime?
+  /// Max paid uses per student. null = unlimited.
+  perUserLimit   Int?
+  /// Minimum order subtotal (before discount). null = no minimum.
+  minOrderFils   Int?
+  /// Stored only — one coupon per order today.
+  stackable      Boolean   @default(false)
+  /// Scope: at most one of courseId / batchId. Both null = every course.
+  courseId       String?
+  course         Course?   @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  batchId        String?
+  batch          Batch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
   createdAt      DateTime  @default(now())
+  usages         CouponRedemption[]
+}
+
+/// One row per paid order that used a coupon (written when the order is PAID).
+model CouponRedemption {
+  id           String   @id @default(cuid())
+  couponId     String
+  coupon       Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId      String   @unique
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  discountFils Int
+  createdAt    DateTime @default(now())
+
+  @@index([couponId, userId])
 }
 
 // ───────────────────────── Live classroom ─────────────────────────
@@ -536,6 +575,21 @@ model Submission {
   gradedAt     DateTime?
 
   @@unique([assignmentId, userId])
+}
+
+/// Completion certificate, issued once per (student, batch) when the eligibility rule passes. `code` is public (verify page).
+model Certificate {
+  id       String   @id @default(cuid())
+  code     String   @unique
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  batchId  String
+  batch    Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  attended Int
+  total    Int
+  issuedAt DateTime @default(now())
+
+  @@unique([userId, batchId])
 }
 
 // ───────────────────────── Earnings & payouts ─────────────────────────

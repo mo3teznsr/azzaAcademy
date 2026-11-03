@@ -9,6 +9,7 @@ import '../../../core/realtime/socket_events.dart';
 import '../../../core/utils/json.dart';
 import '../data/session_repository.dart';
 import '../data/video_room_service.dart';
+import '../domain/live_edge.dart';
 import '../domain/live_models.dart';
 
 enum RoomPhase { joining, live, ended, failed }
@@ -44,10 +45,21 @@ class LiveRoomController extends ChangeNotifier {
   StreamSubscription<bool>? _connSub;
   bool _disposed = false;
 
+  bool rejoining = false;
+  bool _micPref = true;
+  bool _camPref = true;
+
   bool get isHost => grant?.isHost ?? false;
   bool get reconnecting => video.reconnecting || socketDown;
 
+  /// LiveKit dropped us for good; the room screen offers Rejoin.
+  bool get connectionLost => video.connectionLost && phase == RoomPhase.live;
+  LinkState get link => linkState(reconnecting: reconnecting && !rejoining, lost: connectionLost && !rejoining);
+  MediaFailure? get mediaFailure => video.mediaFailure;
+
   Future<void> join({bool micOn = true, bool camOn = true}) async {
+    _micPref = micOn;
+    _camPref = camOn;
     phase = RoomPhase.joining;
     error = null;
     _notify();
@@ -118,6 +130,37 @@ class LiveRoomController extends ChangeNotifier {
       }));
   }
 
+  /// New token + new LiveKit connection; chat/socket wiring stays as is.
+  Future<void> rejoin() async {
+    if (rejoining) return;
+    rejoining = true;
+    _notify();
+    try {
+      await video.disconnect();
+      final g = await sessions.join(sessionId);
+      grant = g;
+      if (g.videoAvailable) await video.connect(g, micOn: _micPref, camOn: _camPref);
+    } catch (e) {
+      error = AppException.from(e);
+      phase = RoomPhase.failed;
+    }
+    rejoining = false;
+    _notify();
+  }
+
+  /// "Join with audio only" / "listen only" after a blocked device.
+  Future<void> continueWithout({bool camera = true, bool microphone = false}) async {
+    video.clearMediaFailure();
+    if (camera) {
+      _camPref = false;
+      await video.setCam(false);
+    }
+    if (microphone) {
+      _micPref = false;
+      await video.setMic(false);
+    }
+  }
+
   void sendChat(String body) {
     final text = body.trim();
     if (text.isEmpty) return;
@@ -139,8 +182,15 @@ class LiveRoomController extends ChangeNotifier {
     _notify();
   }
 
-  Future<void> toggleMic() => video.setMic(!video.micOn);
-  Future<void> toggleCam() => video.setCam(!video.camOn);
+  Future<void> toggleMic() {
+    _micPref = !video.micOn;
+    return video.setMic(_micPref);
+  }
+
+  Future<void> toggleCam() {
+    _camPref = !video.camOn;
+    return video.setCam(_camPref);
+  }
 
   Future<void> allowSpeak(String userId) async {
     await sessions.allowSpeak(sessionId, userId);

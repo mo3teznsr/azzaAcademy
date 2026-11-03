@@ -1,6 +1,6 @@
 import type { CreateCourseInput, CourseLevel, CourseStatus, UpdateCourseInput } from '@azza/shared';
 import { http } from './client';
-import type { Course, LiveNow, Paged } from './types';
+import type { CertificateVerification, Course, LiveNow, Paged, TeacherProfile } from './types';
 
 export interface CourseListParams {
   page?: number;
@@ -18,4 +18,8 @@ export const coursesApi = {
   update: (id: string, input: UpdateCourseInput) => http.patch<Course>(`/api/v1/courses/${id}`, input),
   /** Public "live now" counter for the marketing pages. */
   liveNow: () => http.get<LiveNow>('/api/v1/stats/live'),
+  /** Public teacher profile (404 unless the user is an active teacher). */
+  teacher: (id: string) => http.get<TeacherProfile>(`/api/v1/teachers/${encodeURIComponent(id)}`),
+  /** Public certificate check (code is case-insensitive; 404 when unknown). */
+  verifyCertificate: (code: string) => http.get<CertificateVerification>(`/api/v1/certificates/${encodeURIComponent(code)}`),
 };

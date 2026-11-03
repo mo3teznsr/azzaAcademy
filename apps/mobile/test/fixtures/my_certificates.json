@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "id": "cert_1",
+      "code": "AZ-CERT-7Q4K",
+      "issuedAt": "2026-10-30T18:00:00.000Z",
+      "attended": 11,
+      "total": 12,
+      "batchId": "b_b05",
+      "batchCode": "B05",
+      "course": { "id": "c_pdf", "slug": "product-design-foundations", "titleEn": "Product Design Foundations", "titleAr": "أساسيات تصميم المنتجات", "coverImageUrl": "/media/courses/product-design-foundations.jpg" },
+      "courseTitle": "Product Design Foundations",
+      "teacherName": "Lina Haddad",
+      "startsOn": "2026-08-04T00:00:00.000Z",
+      "endsOn": "2026-09-10T00:00:00.000Z"
+    },
+    {
+      "id": "cert_0",
+      "code": "AZ-CERT-M2XR",
+      "issuedAt": "2026-06-01T18:00:00.000Z",
+      "attended": 8,
+      "total": 10,
+      "batchId": "b_a02",
+      "batchCode": "A02",
+      "course": { "id": "c_ar", "slug": "spoken-arabic-a1", "titleEn": "Spoken Arabic A1", "titleAr": null, "coverImageUrl": null },
+      "courseTitle": "Spoken Arabic A1",
+      "teacherName": "Omar Saleh",
+      "startsOn": "2026-04-01T00:00:00.000Z",
+      "endsOn": "2026-05-30T00:00:00.000Z"
+    }
+  ],
+  "inProgress": [
+    {
+      "batchId": "b_b07",
+      "batchCode": "B07",
+      "course": { "id": "c_pdf", "slug": "product-design-foundations", "titleEn": "Product Design Foundations", "titleAr": "أساسيات تصميم المنتجات", "coverImageUrl": null },
+      "courseTitle": "Product Design Foundations",
+      "teacherName": "Lina Haddad",
+      "startsOn": "2026-10-13T00:00:00.000Z",
+      "endsOn": "2026-11-19T00:00:00.000Z",
+      "attended": 4,
+      "total": 12,
+      "required": 10,
+      "needed": 6,
+      "sessionsEnded": 4,
+      "reachable": true
+    },
+    {
+      "batchId": "b_c01",
+      "batchCode": "C01",
+      "course": { "id": "c_copy", "slug": "copywriting", "titleEn": "Copywriting", "coverImageUrl": null },
+      "courseTitle": "Copywriting",
+      "teacherName": "Nadia Faris",
+      "startsOn": "2026-09-01T00:00:00.000Z",
+      "endsOn": "2026-11-10T00:00:00.000Z",
+      "attended": 2,
+      "total": 10,
+      "required": 8,
+      "needed": 6,
+      "sessionsEnded": 8,
+      "reachable": false
+    }
+  ]
+}

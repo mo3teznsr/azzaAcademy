@@ -3,9 +3,9 @@
 import '@livekit/components-styles';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ConnectionState, Track } from 'livekit-client';
+import { Track } from 'livekit-client';
 import {
   LiveKitRoom,
   RoomAudioRenderer,
@@ -46,12 +46,29 @@ import { cn } from '@/lib/utils';
 import { ChatPanel } from './chat-panel';
 import { FeedbackCard } from './feedback-card';
 import { Stage } from './stage';
-import { useRoomRealtime, type HandEntry } from './use-room-realtime';
+import { useRoomRealtime, useSessionStatusFeed, type HandEntry } from './use-room-realtime';
+import { ConnectionBanner, ConnectionLost, EdgeScreen, PermissionHelp, SelfPreview, SignalPortrait, WaitingForHost } from './edge-screens';
+import {
+  edgeFromJoinError,
+  edgeFromSession,
+  isConnectionLoss,
+  isTerminalEdge,
+  linkBanner,
+  mediaBlockFrom,
+  mediaBlockFromFailure,
+  type LiveEdge,
+  type MediaBlock,
+} from './live-edge';
 
 type Mode = 'student' | 'host';
 
 export function LiveRoomScreen({ sessionId, mode }: { sessionId: string; mode: Mode }) {
-  const q = useQuery({ queryKey: qk.session(sessionId), queryFn: () => sessionsApi.get(sessionId) });
+  const q = useQuery({
+    queryKey: qk.session(sessionId),
+    queryFn: () => sessionsApi.get(sessionId),
+    // Students waiting for the host: poll as a fallback to the session:status push.
+    refetchInterval: (query) => (mode === 'student' && query.state.data?.status === 'SCHEDULED' ? 15_000 : false),
+  });
   if (q.isPending)
     return (
       <div className="mx-auto max-w-3xl p-6">
@@ -70,13 +87,10 @@ export function LiveRoomScreen({ sessionId, mode }: { sessionId: string; mode: M
 function joinErrorMessage(err: unknown, { t, f }: Pick<ReturnType<typeof useI18n>, 't' | 'f'>) {
   if (err instanceof ApiError) {
     if (err.isNetwork) return t.common.networkError;
-    if (err.isForbidden) return t.live.notEnrolled;
     if (err.code === 'LOBBY_NOT_OPEN') {
       const opensAt = (err.details as { opensAt?: string } | undefined)?.opensAt;
       return opensAt ? `${t.live.lobbyClosed} (${f.time(opensAt)})` : t.live.lobbyClosed;
     }
-    if (err.code === 'SESSION_ENDED') return t.live.ended;
-    if (err.code === 'SESSION_CANCELLED') return t.status.session.CANCELLED;
     return err.message;
   }
   return t.live.joinError;
@@ -84,15 +98,66 @@ function joinErrorMessage(err: unknown, { t, f }: Pick<ReturnType<typeof useI18n
 
 function Room({ session, mode }: { session: SessionDetail; mode: Mode }) {
   const { t, f, pick } = useI18n();
+  const { user } = useAuth();
   const router = useRouter();
+  const qc = useQueryClient();
+  const now = useNow(5_000);
   const [ticket, setTicket] = useState<JoinTicket | null>(null);
   const [left, setLeft] = useState(session.status === 'ENDED');
-  const join = useMutation({ mutationFn: () => sessionsApi.join(session.id), onSuccess: setTicket });
+  const [lost, setLost] = useState(false);
+  const [fatal, setFatal] = useState<LiveEdge | null>(null);
+  const [pushedStatus, setPushedStatus] = useState<SessionDetail['status'] | null>(null);
+  const [mic, setMic] = useState(true);
+  const [cam, setCam] = useState(true);
+  const [previewBlock, setPreviewBlock] = useState<MediaBlock | null>(null);
+  const [roomBlock, setRoomBlock] = useState<MediaBlock | null>(null);
+  /** Set while we tear the LiveKit room down ourselves, so its disconnect isn't read as "left". */
+  const closing = useRef(false);
+  const waited = useRef(false);
+  // Stable: LiveKit's usePreviewTracks re-creates the tracks whenever this callback changes.
+  const onPreviewError = useCallback((err: Error) => setPreviewBlock(mediaBlockFrom(err)), []);
+
+  const join = useMutation({
+    mutationFn: () => sessionsApi.join(session.id),
+    onSuccess: (tk) => {
+      closing.current = false;
+      setFatal(null);
+      setLost(false);
+      setTicket(tk);
+    },
+  });
+  const { mutate: joinNow, isIdle: joinIdle } = join;
+  const isHost = mode === 'host';
+  const status = pushedStatus ?? session.status;
+  const host = session.host ?? session.batch.teacher;
   const code = slate(session.batch.code, session.number);
   const course = pick(session.batch.course.titleEn, session.batch.course.titleAr).text;
 
+  // Status pushes (session:status) while we wait in the lobby; polling in LiveRoomScreen is the fallback.
+  useSessionStatusFeed(session.id, !ticket, (e) => {
+    setPushedStatus(e.status);
+    void qc.invalidateQueries({ queryKey: qk.session(session.id) });
+  });
+
+  const sessionEdge = edgeFromSession({ ...session, status }, now, isHost);
+  const joinEdge = join.error ? edgeFromJoinError(join.error, session) : null;
+  const edge = fatal ?? (isTerminalEdge(joinEdge) ? joinEdge : null) ?? (isTerminalEdge(sessionEdge) ? sessionEdge : null);
+  const waiting = !ticket && sessionEdge?.kind === 'waiting';
+
+  // Auto-continue: a student who waited for the host joins as soon as the session goes live.
+  useEffect(() => {
+    if (waiting) {
+      waited.current = true;
+      return;
+    }
+    if (waited.current && status === 'LIVE' && !ticket && joinIdle) {
+      waited.current = false;
+      joinNow();
+    }
+  }, [waiting, status, ticket, joinIdle, joinNow]);
+
   if (left) {
-    if (mode === 'host')
+    if (isHost)
       return (
         <div className="grid min-h-dvh place-items-center p-6">
           <div className="flex flex-col items-center gap-4 text-center">
@@ -111,37 +176,109 @@ function Room({ session, mode }: { session: SessionDetail; mode: Mode }) {
     );
   }
 
+  if (edge && isTerminalEdge(edge) && !(isHost && edge.kind === 'roomFull')) {
+    const retry = () => {
+      setFatal(null);
+      join.reset();
+      joinNow();
+    };
+    return <EdgeScreen edge={edge} session={session} onRetry={retry} retrying={join.isPending} />;
+  }
+
+  if (lost && !ticket) return <ConnectionLost onRejoin={() => joinNow()} pending={join.isPending} />;
+
   if (!ticket || !ticket.serverUrl) {
+    const lobbyNotOpen = sessionEdge?.kind === 'lobbyNotOpen' ? sessionEdge : null;
+    const canJoin = isHost || status === 'LIVE';
     return (
-      <div className="grid min-h-dvh place-items-center p-6">
-        <div className="flex w-full max-w-2xl flex-col gap-6 rounded-[28px] border border-line bg-card p-8">
+      <div className="grid min-h-dvh place-items-center p-4 sm:p-6">
+        <div className="flex w-full max-w-4xl flex-col gap-6 rounded-[28px] border border-line bg-card p-5 sm:p-8">
           <div className="flex items-center justify-between gap-3">
             <span className="label-mono text-muted-foreground" dir="ltr">
               {code}
             </span>
-            <Chip tone={session.status === 'LIVE' ? 'onair' : 'sky'} dot={session.status === 'LIVE'}>
-              {t.status.session[session.status]}
+            <Chip tone={status === 'LIVE' ? 'onair' : 'sky'} dot={status === 'LIVE'}>
+              {status === 'LIVE' ? t.live.edge.liveNow : t.status.session[status]}
             </Chip>
           </div>
           <div>
             <span className="label-mono text-muted-foreground">{t.live.lobbyTitle}</span>
-            <h1 className="mt-2 font-display text-[clamp(40px,6vw,64px)] font-extrabold leading-[0.9]">{session.title}</h1>
+            <h1 className="mt-2 font-display text-[clamp(36px,6vw,64px)] font-extrabold leading-[0.9]">{session.title}</h1>
             <p className="mt-3 text-muted-foreground">
               {course} · {f.dateLong(session.startsAt)} · {f.time(session.startsAt)}–{f.time(session.endsAt)}
             </p>
           </div>
-          {session.status !== 'LIVE' && (
-            <div className="flex items-center gap-3 rounded-[14px] border border-line bg-ink p-3.5 text-sm">
-              <span className="size-2 rounded-full bg-sun" aria-hidden />
-              {mode === 'host' ? t.studio.host.notLive : t.live.lobbyWaiting.replace('{host}', session.batch.teacher.name)}
+          <div className="grid items-center gap-6 md:grid-cols-2">
+            <div className="order-2 md:order-1">
+              {isHost ? (
+                status !== 'LIVE' && (
+                  <div className="flex items-center gap-3 rounded-[14px] border border-line bg-ink p-3.5 text-sm">
+                    <span className="size-2 rounded-full bg-sun" aria-hidden />
+                    {t.studio.host.notLive}
+                  </div>
+                )
+              ) : status === 'LIVE' ? (
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <SignalPortrait person={host} live size={96} />
+                  <Chip tone="onair" dot>
+                    {t.live.edge.liveNow}
+                  </Chip>
+                </div>
+              ) : (
+                <WaitingForHost host={host} opensAt={lobbyNotOpen?.opensAt} />
+              )}
             </div>
+            <div className="order-1 md:order-2">
+              <SelfPreview
+                name={user?.name ?? ''}
+                mic={mic}
+                cam={cam}
+                onMic={(on) => {
+                  setPreviewBlock(null);
+                  setMic(on);
+                }}
+                onCam={(on) => {
+                  setPreviewBlock(null);
+                  setCam(on);
+                }}
+                onError={onPreviewError}
+              />
+            </div>
+          </div>
+          {previewBlock && (
+            <PermissionHelp
+              block={previewBlock}
+              onRetry={() => {
+                setPreviewBlock(null);
+                setMic(true);
+                setCam(true);
+              }}
+              onAudioOnly={
+                cam
+                  ? () => {
+                      setPreviewBlock(null);
+                      setCam(false);
+                      setMic(true);
+                    }
+                  : undefined
+              }
+              onListenOnly={() => {
+                setPreviewBlock(null);
+                setCam(false);
+                setMic(false);
+              }}
+            />
           )}
-          {join.isError && <ErrorState compact error={new ApiError(422, '', joinErrorMessage(join.error, { t, f }))} />}
+          {join.isError && !isTerminalEdge(joinEdge) && (
+            <ErrorState compact error={new ApiError(422, '', joinErrorMessage(join.error, { t, f }))} />
+          )}
           {ticket && !ticket.serverUrl && <p className="text-sm text-peach">{t.live.videoUnavailable}</p>}
           <div className="flex flex-wrap gap-3">
-            <Button size="lg" variant={mode === 'host' ? 'sun' : 'onair'} onClick={() => join.mutate()} disabled={join.isPending}>
-              <Radio /> {join.isPending ? t.live.connecting : t.live.join}
-            </Button>
+            {canJoin && (
+              <Button size="lg" variant={isHost ? 'sun' : 'onair'} onClick={() => joinNow()} disabled={join.isPending}>
+                <Radio /> {join.isPending ? t.live.connecting : t.live.join}
+              </Button>
+            )}
             <Button variant="ghost" size="lg" onClick={() => router.back()}>
               {t.common.back}
             </Button>
@@ -151,25 +288,53 @@ function Room({ session, mode }: { session: SessionDetail; mode: Mode }) {
     );
   }
 
+  const publish = ticket.role !== 'observer' && ticket.canPublish;
   return (
     <LiveKitRoom
       serverUrl={ticket.serverUrl}
       token={ticket.token}
       connect
-      audio={ticket.role === 'host'}
-      video={false}
+      audio={publish && mic}
+      video={publish && cam}
       data-lk-theme="default"
       className="flex h-dvh flex-col bg-ink"
-      onDisconnected={() => setLeft(true)}
-      onError={(e) => toast.error(e.message)}
+      onDisconnected={(reason) => {
+        if (closing.current) return;
+        if (isConnectionLoss(reason)) {
+          closing.current = true;
+          setLost(true);
+          setTicket(null);
+        } else setLeft(true);
+      }}
+      onError={(e) => {
+        const mapped = edgeFromJoinError(e, session);
+        if (mapped.kind === 'roomFull') {
+          closing.current = true;
+          setFatal(mapped);
+          setTicket(null);
+        } else toast.error(e.message);
+      }}
+      onMediaDeviceFailure={(failure) => setRoomBlock(mediaBlockFromFailure(failure))}
     >
-      <InRoom session={session} ticket={ticket} onEnded={() => setLeft(true)} />
+      <InRoom session={session} ticket={ticket} onEnded={() => setLeft(true)} block={roomBlock} onDismissBlock={() => setRoomBlock(null)} />
       <RoomAudioRenderer />
     </LiveKitRoom>
   );
 }
 
-function InRoom({ session, ticket, onEnded }: { session: SessionDetail; ticket: JoinTicket; onEnded: () => void }) {
+function InRoom({
+  session,
+  ticket,
+  onEnded,
+  block,
+  onDismissBlock,
+}: {
+  session: SessionDetail;
+  ticket: JoinTicket;
+  onEnded: () => void;
+  block: MediaBlock | null;
+  onDismissBlock: () => void;
+}) {
   const { t, f, fill } = useI18n();
   const { user } = useAuth();
   const room = useRoomContext();
@@ -228,15 +393,25 @@ function InRoom({ session, ticket, onEnded }: { session: SessionDetail; ticket: 
         <span className="ms-auto text-sm text-muted-foreground">{fill(t.live.inRoom, { n: f.number(participants.length) })}</span>
         {isHost && <Chip tone="sun">{t.studio.host.youAreHost}</Chip>}
       </header>
-      {state === ConnectionState.Reconnecting && (
-        <div role="status" className="bg-peach px-4 py-2 text-sm font-semibold text-ink">
-          {t.live.reconnecting}
-        </div>
-      )}
-      {state === ConnectionState.Connecting && (
-        <div role="status" className="px-4 py-2 text-sm text-muted-foreground">
-          {t.live.connecting}
-        </div>
+      <ConnectionBanner state={linkBanner(state)} />
+      {block && (
+        <PermissionHelp
+          className="mx-3 mt-3"
+          block={block}
+          onRetry={() => {
+            onDismissBlock();
+            void room.localParticipant.setMicrophoneEnabled(true).catch(() => undefined);
+          }}
+          onAudioOnly={() => {
+            onDismissBlock();
+            void room.localParticipant.setCameraEnabled(false);
+          }}
+          onListenOnly={() => {
+            onDismissBlock();
+            void room.localParticipant.setCameraEnabled(false);
+            void room.localParticipant.setMicrophoneEnabled(false);
+          }}
+        />
       )}
       <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:flex-row">
         <div className="flex min-h-[40dvh] min-w-0 flex-1 flex-col">

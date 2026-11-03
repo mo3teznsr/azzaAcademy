@@ -36,12 +36,13 @@ function setup(capacity = 2) {
     priceFils: null,
     timezone: 'Asia/Dubai',
     teacherId: 'lina',
+    courseId: 'pdf',
     courseTitle: 'Product Design Foundations',
     coursePriceFils: 88_000,
     firstSessionAt: new Date('2026-12-01T14:00:00Z'),
   });
   repo.bankAccounts.push({ id: 'enbd', bankName: 'Emirates NBD', accountName: 'Co', iban: 'AE000000000000000000001', swift: 'EBILAEAD', branch: null, instructions: null, currency: 'AED', active: true, sortOrder: 0 });
-  repo.coupons.push({ id: 'c1', code: 'WELCOME10', percentOff: 10, amountOffFils: null, active: true, expiresOn: null, maxRedemptions: 5, redemptions: 0 });
+  repo.coupons.push({ id: 'c1', code: 'WELCOME10', percentOff: 10, amountOffFils: null, active: true, startsOn: null, expiresOn: null, maxRedemptions: 5, redemptions: 0, perUserLimit: 1, minOrderFils: null, courseId: 'pdf', batchId: null });
 
   const machine = new EnrollmentStateMachine();
   const lifecycle = new EnrollmentLifecycle(repo, machine, notifier, new RecordingBroadcaster(), clock, 'http://web.test');
@@ -164,6 +165,28 @@ describe('enrollment lifecycle', () => {
     expect(repo.coupons[0]!.redemptions).toBe(1);
     expect((await repo.findOrder(res.order.id))!.feeFils).toBe(2_500);
     expect(notifier.types().filter((t) => t === 'ENROLLED')).toHaveLength(1);
+  });
+
+  test('coupon redemption is recorded per student and enforces the per-student limit', async () => {
+    const res = await checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED', couponCode: 'WELCOME10' });
+    if (res.waitlisted) throw new Error();
+    await checkout.handlePaymentEvent({ type: 'payment.succeeded', paymentIntentId: res.order.stripePaymentIntentId! });
+    expect(repo.redemptions).toEqual([{ couponId: 'c1', userId: 'sara', orderId: res.order.id, discountFils: 8_800 }]);
+    await expect(checkout.quote({ batchId: 'b08', couponCode: 'WELCOME10', displayCurrency: 'AED' }, undefined, 'sara')).rejects.toMatchObject({
+      code: 'COUPON_INVALID',
+      details: { reason: 'PER_USER_LIMIT' },
+    });
+    // anonymous quotes and other students are unaffected
+    expect((await checkout.quote({ batchId: 'b08', couponCode: 'WELCOME10', displayCurrency: 'AED' })).discountFils).toBe(8_800);
+    expect((await checkout.quote({ batchId: 'b08', couponCode: 'WELCOME10', displayCurrency: 'AED' }, undefined, 'maya')).discountFils).toBe(8_800);
+  });
+
+  test('a coupon scoped to another course is refused with WRONG_COURSE', async () => {
+    repo.coupons[0]!.courseId = 'python';
+    await expect(checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED', couponCode: 'WELCOME10' })).rejects.toMatchObject({
+      code: 'COUPON_INVALID',
+      details: { reason: 'WRONG_COURSE' },
+    });
   });
 
   test('cannot check out twice while an order is open, nor when already active', async () => {

@@ -5,6 +5,7 @@ import 'package:azza/features/catalog/domain/catalog_models.dart';
 import 'package:azza/features/home/presentation/student_home_screen.dart';
 import 'package:azza/features/learn/data/learn_repository.dart';
 import 'package:azza/features/me/data/me_repository.dart';
+import 'package:azza/features/waitlist/data/waitlist_repository.dart';
 import 'package:azza/features/me/domain/me_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,6 +57,7 @@ void main() {
           currentUserProvider.overrideWithValue(student),
           meRepositoryProvider.overrideWithValue(me),
           learnRepositoryProvider.overrideWithValue(FakeLearnRepository()),
+          waitlistRepositoryProvider.overrideWithValue(FakeWaitlistRepository()),
         ],
       );
 

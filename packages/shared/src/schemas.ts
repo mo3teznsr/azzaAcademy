@@ -29,12 +29,19 @@ export const paginationQuery = z.object({
 export type PaginationQuery = z.infer<typeof paginationQuery>;
 
 // ---------- Users ----------
+const publicProfileFields = {
+  headline: z.string().trim().max(120).nullable().optional(),
+  bio: z.string().trim().max(2000).nullable().optional(),
+};
+
 export const updateProfileInput = z.object({
   name: z.string().min(2).max(80).optional(),
   locale: z.enum(LOCALES).optional(),
   timezone: ianaTimezone.optional(),
   displayCurrency: z.enum(DISPLAY_CURRENCIES).optional(),
   phone: z.string().max(32).optional(),
+  /** Public teacher profile (`GET /teachers/:id`) — TEACHER/ADMIN only; `null` clears. */
+  ...publicProfileFields,
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileInput>;
 
@@ -212,13 +219,41 @@ export const fxRateInput = z.object({
   ratePerAed: z.number().positive(),
 });
 
+/**
+ * Coupon rules. Exactly one of percentOff / amountOffAed; at most one of courseId / batchId
+ * (neither = every course). Dates are calendar days: valid from `startsOn` through `expiresOn`.
+ */
 export const couponInput = z.object({
   code: z.string().regex(/^[A-Z0-9-]{3,20}$/),
   percentOff: z.number().int().min(1).max(100).optional(),
   amountOffAed: z.number().positive().optional(),
   maxRedemptions: z.number().int().positive().optional(),
+  perUserLimit: z.number().int().positive().optional(),
+  minOrderAed: z.number().positive().optional(),
+  startsOn: isoDate.optional(),
   expiresOn: isoDate.optional(),
+  courseId: id.optional(),
+  batchId: id.optional(),
+  stackable: z.boolean().default(false),
+  active: z.boolean().default(true),
 });
+export type CouponInput = z.infer<typeof couponInput>;
+
+/** PATCH: every rule is optional; `null` clears a limit, a date or the scope. The code is immutable. */
+export const updateCouponInput = z.object({
+  percentOff: z.number().int().min(1).max(100).nullable().optional(),
+  amountOffAed: z.number().positive().nullable().optional(),
+  maxRedemptions: z.number().int().positive().nullable().optional(),
+  perUserLimit: z.number().int().positive().nullable().optional(),
+  minOrderAed: z.number().positive().nullable().optional(),
+  startsOn: isoDate.nullable().optional(),
+  expiresOn: isoDate.nullable().optional(),
+  courseId: id.nullable().optional(),
+  batchId: id.nullable().optional(),
+  stackable: z.boolean().optional(),
+  active: z.boolean().optional(),
+});
+export type UpdateCouponInput = z.infer<typeof updateCouponInput>;
 
 // ---------- Payouts ----------
 export const teacherBankDetailsInput = z.object({
@@ -294,8 +329,16 @@ export const adminUpdateUserInput = z.object({
   name: z.string().min(2).optional(),
   role: z.enum(ROLES).optional(),
   banned: z.boolean().optional(),
+  ...publicProfileFields,
 });
 export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserInput>;
 
 export const updateBankAccountInput = bankAccountInput.partial();
 export type UpdateBankAccountInput = z.infer<typeof updateBankAccountInput>;
+
+/** GET /admin/reports — inclusive local days (Asia/Dubai); default the last 30 days. */
+export const reportQuery = z.object({
+  from: isoDate.optional(),
+  to: isoDate.optional(),
+});
+export type ReportQuery = z.infer<typeof reportQuery>;

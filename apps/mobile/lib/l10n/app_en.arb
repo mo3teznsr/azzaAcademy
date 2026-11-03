@@ -544,6 +544,83 @@
   "noHands": "No hands raised.",
   "onlyYou": "Only you are here so far.",
   "liveUnavailable": "Video isn't available for this session yet.",
+  "edgeWaitingTitle": "{host} hasn't started yet",
+  "@edgeWaitingTitle": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "edgeWaitingSub": "Usually starts within 5 min · you'll join automatically",
+  "edgeLiveNow": "Live now",
+  "edgePermTitle": "Camera or microphone blocked",
+  "edgePermBody": "Azza can't use your camera or microphone, so the class can't see or hear you.",
+  "edgePermStepsIos": "Open Settings → Azza → turn on Camera and Microphone, then come back.",
+  "edgePermStepsAndroid": "Open Settings → Apps → Azza → Permissions → allow Camera and Microphone, then come back.",
+  "edgePermMissing": "We couldn't find a camera or microphone on this device.",
+  "edgePermBusy": "Another app is using your camera or microphone. Close it and try again.",
+  "edgeOpenSettings": "Open Settings",
+  "edgeTryAgain": "Try again",
+  "edgeJoinAudioOnly": "Join with audio only",
+  "edgeJoinListenOnly": "Join to listen only",
+  "edgeReconnecting": "Reconnecting… your video paused, audio kept",
+  "edgeLostTitle": "Connection lost",
+  "edgeLostBody": "We couldn't get you back in automatically. Your seat is still yours.",
+  "edgeRejoin": "Rejoin",
+  "edgeRoomFullTitle": "Room is at {n}/{max}",
+  "@edgeRoomFullTitle": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "edgeRoomFullGeneric": "This room is full",
+  "edgeRoomFullBody": "A seat frees up as soon as someone leaves. Try again in a minute, or catch the recording after class.",
+  "edgeCancelledTitle": "{s} cancelled by {teacher}",
+  "@edgeCancelledTitle": {
+    "placeholders": {
+      "s": {
+        "type": "String"
+      },
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
+  "edgeCancelledBody": "It won't count against your attendance. Your schedule shows what's next.",
+  "edgeMovedTitle": "{s} moved to {when}",
+  "@edgeMovedTitle": {
+    "placeholders": {
+      "s": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "edgeMovedBody": "It was {was}. Times are in your time zone ({tz}).",
+  "@edgeMovedBody": {
+    "placeholders": {
+      "was": {
+        "type": "String"
+      },
+      "tz": {
+        "type": "String"
+      }
+    }
+  },
+  "edgeEndedTitle": "This session has ended",
+  "edgeEndedBody": "The recording appears in your learning once it's ready.",
+  "edgeNotEnrolledTitle": "You're not in this batch",
+  "edgeNotEnrolledBody": "You need an active enrollment in this batch to join.",
+  "edgeBackToSchedule": "Back to schedule",
+  "edgeWaitingButton": "Waiting for the host…",
   "wrapTitle": "That's a wrap.",
   "endedStayed": "Ended {time} · you stayed {min} min",
   "@endedStayed": {
@@ -975,5 +1052,153 @@
   "requestPending": "Pending",
   "requestApproved": "Approved",
   "requestDeclined": "Declined",
-  "videoDevMode": "Video is off in this environment (LiveKit isn't configured). Chat and raised hands still work."
+  "videoDevMode": "Video is off in this environment (LiveKit isn't configured). Chat and raised hands still work.",
+  "certificatesTitle": "Certificates",
+  "certificatesEmptyTitle": "No certificates yet",
+  "certificatesEmptyBody": "Attend at least 80% of a batch's sessions and your certificate appears here when the batch ends.",
+  "certificatesEarned": "Earned",
+  "certificatesInProgress": "In progress",
+  "certificateAttended": "Attended {attended}/{total}",
+  "@certificateAttended": {
+    "placeholders": {
+      "attended": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "certificateWithTeacher": "with {name}",
+  "@certificateWithTeacher": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "certificateSessionsNeeded": "{n} more sessions needed",
+  "@certificateSessionsNeeded": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "certificateOneSessionNeeded": "1 more session needed",
+  "certificateRequirementMet": "Attendance met — your certificate is issued when the batch ends.",
+  "certificateUnreachable": "Not enough sessions left to reach 80% in this batch.",
+  "certificateAttendedOfRequired": "{attended} of {required} sessions to earn it",
+  "@certificateAttendedOfRequired": {
+    "placeholders": {
+      "attended": {
+        "type": "String"
+      },
+      "required": {
+        "type": "String"
+      }
+    }
+  },
+  "certificateNew": "New",
+  "certificateOfCompletion": "Certificate of completion",
+  "certificateAwardedTo": "Awarded to",
+  "certificateForCompleting": "for completing",
+  "certificateBatch": "Batch",
+  "certificateTeacher": "Teacher",
+  "certificateIssued": "Issued",
+  "certificateDates": "Dates",
+  "certificateVerifyCode": "Verify code",
+  "certificateShare": "Share",
+  "certificateLinkCopied": "Verification link copied",
+  "certificateCompleteTitle": "Course complete.",
+  "certificateCompleteBody": "You attended {attended} of {total} live sessions.",
+  "@certificateCompleteBody": {
+    "placeholders": {
+      "attended": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "certificateVerifyHint": "Anyone can check it at {url}",
+  "@certificateVerifyHint": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "waitlistPosition": "{position} in line · of {total}",
+  "@waitlistPosition": {
+    "placeholders": {
+      "position": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "waitlistNextInLine": "You're next in line",
+  "startsOnDate": "Starts {date}",
+  "@startsOnDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "waitlistJoinedOn": "Joined {date}",
+  "@waitlistJoinedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "waitlistWhatNext": "What happens next",
+  "waitlistStepSeat": "When a seat frees up, it goes to the first person in line.",
+  "waitlistStepNotify": "We'll notify and email you the moment it's yours.",
+  "waitlistStepHold": "You then have 24 hours to check out before the seat moves on.",
+  "waitlistNoCharge": "Nothing is charged while you wait.",
+  "waitlistLeave": "Leave waitlist",
+  "waitlistLeaveConfirmTitle": "Leave the waitlist?",
+  "waitlistLeaveConfirmBody": "You'll lose your place for {batch}. If you rejoin later, you'll start at the back of the line.",
+  "@waitlistLeaveConfirmBody": {
+    "placeholders": {
+      "batch": {
+        "type": "String"
+      }
+    }
+  },
+  "waitlistStay": "Stay in line",
+  "waitlistLeft": "You left the waitlist",
+  "waitlistSeatOpen": "A seat opened for you",
+  "waitlistHeldFor": "Held for you · {time}",
+  "@waitlistHeldFor": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "waitlistHoldExpired": "The hold has expired",
+  "waitlistClaimSeat": "Claim seat",
+  "teacherAbout": "About",
+  "teacherTeachesIn": "Teaches in",
+  "teacherCourses": "Courses",
+  "teacherUpcomingBatches": "Upcoming batches",
+  "teacherViewProfile": "View profile",
+  "teacherBatchFull": "Full",
+  "certificateAttendance": "Attendance",
+  "waitlistOfTotal": "of {total}",
+  "@waitlistOfTotal": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  }
 }

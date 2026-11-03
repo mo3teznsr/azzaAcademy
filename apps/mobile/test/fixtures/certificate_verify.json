@@ -1,0 +1,15 @@
+{
+  "valid": true,
+  "code": "AZ-CERT-7Q4K",
+  "issuedAt": "2026-10-30T18:00:00.000Z",
+  "attended": 11,
+  "total": 12,
+  "batchId": "b_b05",
+  "batchCode": "B05",
+  "course": { "id": "c_pdf", "slug": "product-design-foundations", "titleEn": "Product Design Foundations", "titleAr": "أساسيات تصميم المنتجات", "coverImageUrl": "/media/courses/product-design-foundations.jpg" },
+  "courseTitle": "Product Design Foundations",
+  "teacherName": "Lina Haddad",
+  "startsOn": "2026-08-04T00:00:00.000Z",
+  "endsOn": "2026-09-10T00:00:00.000Z",
+  "holderName": "Sara Kamal"
+}

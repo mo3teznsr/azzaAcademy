@@ -7,6 +7,7 @@ import 'package:azza/features/auth/domain/app_user.dart';
 import 'package:azza/features/catalog/data/catalog_repository.dart';
 import 'package:azza/features/learn/data/learn_repository.dart';
 import 'package:azza/features/me/data/me_repository.dart';
+import 'package:azza/features/waitlist/data/waitlist_repository.dart';
 import 'package:azza/router/app_router.dart';
 import 'package:azza/router/routes.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ Future<GoRouter> bootApp(WidgetTester tester, AppUser? user, {bool onboarded = t
       authRepositoryProvider.overrideWithValue(FakeAuthRepository(user)),
       meRepositoryProvider.overrideWithValue(FakeMeRepository()),
       learnRepositoryProvider.overrideWithValue(FakeLearnRepository()),
+      waitlistRepositoryProvider.overrideWithValue(FakeWaitlistRepository()),
       catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
       adminRepositoryProvider.overrideWithValue(FakeAdminRepository()),
       realtimeClientProvider.overrideWithValue(FakeRealtimeClient()),

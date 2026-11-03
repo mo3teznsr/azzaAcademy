@@ -91,7 +91,11 @@ class _LiveMonitorScreenState extends ConsumerState<LiveMonitorScreen> {
                             const SizedBox(width: 8),
                             if (r.quality != null) MonoLabel(r.quality!, color: r.hasIssue ? AzzaColors.warnDeep : null),
                             const Spacer(),
-                            if (r.recording) MonoLabel('● ${l.recordingOn}', color: AzzaColors.onAir),
+                            if (r.recording) ...[
+                              const PulsingDot(size: 7),
+                              const SizedBox(width: 2),
+                              MonoLabel(l.recordingOn, color: AzzaColors.onAir),
+                            ],
                           ]),
                           const SizedBox(height: 8),
                           Text(r.courseTitle.isEmpty ? r.title : r.courseTitle, style: t.titleSmall),

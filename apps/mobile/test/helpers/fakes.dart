@@ -15,6 +15,12 @@ import 'package:azza/features/checkout/domain/checkout_models.dart';
 import 'package:azza/features/learn/data/learn_repository.dart';
 import 'package:azza/features/me/data/me_repository.dart';
 import 'package:azza/features/me/domain/me_models.dart';
+import 'package:azza/features/certificates/data/certificates_repository.dart';
+import 'package:azza/features/certificates/domain/certificate_models.dart';
+import 'package:azza/features/teachers/data/teachers_repository.dart';
+import 'package:azza/features/teachers/domain/teacher_models.dart';
+import 'package:azza/features/waitlist/data/waitlist_repository.dart';
+import 'package:azza/features/waitlist/domain/waitlist_models.dart';
 
 const student = AppUser(id: 'u-s', name: 'Sara Kamal', email: 'sara@example.com', role: Role.student);
 const teacher = AppUser(id: 'u-t', name: 'Lina Haddad', email: 'lina@example.com', role: Role.teacher);
@@ -183,4 +189,39 @@ class FakeRealtimeClient implements RealtimeClient {
   bool get isConnected => true;
   @override
   void Function() on(String event, void Function(Map<String, dynamic> payload) handler) => () {};
+}
+
+class FakeWaitlistRepository implements WaitlistRepository {
+  FakeWaitlistRepository([this.overview = const WaitlistOverview()]);
+  WaitlistOverview overview;
+  final List<String> left = [];
+
+  @override
+  Future<WaitlistOverview> mine() async => overview;
+
+  @override
+  Future<void> leave(String batchId) async {
+    left.add(batchId);
+    overview = overview.without(batchId);
+  }
+}
+
+class FakeCertificatesRepository implements CertificatesRepository {
+  FakeCertificatesRepository([this.overview = const CertificatesOverview()]);
+  final CertificatesOverview overview;
+
+  @override
+  Future<CertificatesOverview> mine() async => overview;
+
+  @override
+  Future<Certificate> verify(String code) async =>
+      overview.items.firstWhere((c) => c.code == code, orElse: () => throw const AppException('NOT_FOUND', 'Certificate not found'));
+}
+
+class FakeTeachersRepository implements TeachersRepository {
+  FakeTeachersRepository(this.profile);
+  final TeacherProfile profile;
+
+  @override
+  Future<TeacherProfile> teacher(String id) async => profile;
 }

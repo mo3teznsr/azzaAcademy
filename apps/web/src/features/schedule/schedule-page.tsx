@@ -202,9 +202,7 @@ function DayDetail({ s }: { s: ScheduleItem }) {
       )}
       {state === 'ENDED' && s.recordingUrl && (
         <Button asChild variant="outline">
-          <a href={s.recordingUrl} target="_blank" rel="noreferrer">
-            {t.schedule.watch}
-          </a>
+          <Link href={`/library/${s.id}`}>{t.schedule.watch}</Link>
         </Button>
       )}
     </div>

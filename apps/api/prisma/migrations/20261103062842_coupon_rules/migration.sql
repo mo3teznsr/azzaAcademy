@@ -1,0 +1,40 @@
+-- AlterTable
+ALTER TABLE "Coupon" ADD COLUMN     "batchId" TEXT,
+ADD COLUMN     "courseId" TEXT,
+ADD COLUMN     "minOrderFils" INTEGER,
+ADD COLUMN     "perUserLimit" INTEGER,
+ADD COLUMN     "stackable" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "startsOn" TIMESTAMP(3);
+
+-- CreateTable
+CREATE TABLE "CouponRedemption" (
+    "id" TEXT NOT NULL,
+    "couponId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "orderId" TEXT NOT NULL,
+    "discountFils" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "CouponRedemption_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "CouponRedemption_orderId_key" ON "CouponRedemption"("orderId");
+
+-- CreateIndex
+CREATE INDEX "CouponRedemption_couponId_userId_idx" ON "CouponRedemption"("couponId", "userId");
+
+-- AddForeignKey
+ALTER TABLE "Coupon" ADD CONSTRAINT "Coupon_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Coupon" ADD CONSTRAINT "Coupon_batchId_fkey" FOREIGN KEY ("batchId") REFERENCES "Batch"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CouponRedemption" ADD CONSTRAINT "CouponRedemption_couponId_fkey" FOREIGN KEY ("couponId") REFERENCES "Coupon"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CouponRedemption" ADD CONSTRAINT "CouponRedemption_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CouponRedemption" ADD CONSTRAINT "CouponRedemption_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;

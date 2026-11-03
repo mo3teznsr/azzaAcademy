@@ -8,6 +8,8 @@ import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/network/app_exception.dart';
 import '../../../core/prefs/app_prefs.dart';
+import '../../../core/providers.dart';
+import '../../../core/realtime/socket_events.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
@@ -15,7 +17,9 @@ import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/session_repository.dart';
 import '../data/video_room_service.dart';
+import '../domain/live_edge.dart';
 import '../domain/live_models.dart';
+import 'live_edge_view.dart';
 import 'live_room_screen.dart';
 
 /// Pre-join lobby (student) / host lobby (teacher): camera preview, device toggles, join or go live.
@@ -34,21 +38,61 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   bool _cam = true;
   bool _record = true;
   bool _busy = false;
+  MediaFailure? _camFailure;
+  MediaFailure? _micFailure;
+  bool _helpDismissed = false;
+
+  /// Waiting for the host: socket push + polling fallback, then auto-continue once live.
+  Timer? _poll;
+  void Function()? _statusUnsub;
+  bool _waited = false;
+  bool _autoEntered = false;
 
   @override
   void initState() {
     super.initState();
     unawaited(_startPreview());
+    if (ref.read(currentUserProvider)?.role != Role.teacher) _watchStatus();
+  }
+
+  void _refresh() => ref.invalidate(sessionDetailProvider(widget.sessionId));
+
+  void _watchStatus() {
+    final rt = ref.read(realtimeClientProvider);
+    unawaited(rt.connect().then((_) => rt.emit(SocketEvents.joinSession, {'sessionId': widget.sessionId})).catchError((_) {}));
+    _statusUnsub = rt.on(SocketEvents.sessionStatus, (p) {
+      if (p['sessionId'] == widget.sessionId && mounted) _refresh();
+    });
+    _poll = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted && _waited && !_autoEntered) _refresh();
+    });
   }
 
   Future<void> _startPreview() async {
     _previewService = ref.read(videoRoomServiceFactoryProvider)();
-    final preview = await _previewService!.startPreview();
+    final service = _previewService!;
+    final preview = _cam ? await service.startPreview() : null;
+    final camFailure = _cam && preview == null ? service.previewFailure : null;
+    final micFailure = _mic ? await service.probeMicrophone() : null;
     if (!mounted) {
       await preview?.dispose();
       return;
     }
-    setState(() => _preview = preview);
+    setState(() {
+      _preview = preview;
+      _camFailure = camFailure;
+      _micFailure = micFailure;
+      _helpDismissed = false;
+    });
+  }
+
+  Future<void> _retryPreview() async {
+    await _stopPreview();
+    setState(() {
+      _mic = true;
+      _cam = true;
+    });
+    await _startPreview();
   }
 
   Future<void> _stopPreview() async {
@@ -61,6 +105,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
   @override
   void dispose() {
+    _poll?.cancel();
+    _statusUnsub?.call();
     unawaited(_stopPreview());
     super.dispose();
   }
@@ -103,6 +149,17 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
             interval: const Duration(seconds: 15),
             builder: (context, now) {
               final open = s.lobbyOpen(now);
+              final edge = edgeForSession(s, now, isHost: host);
+              if (edge != null && edge.terminal) return LiveEdgeView(edge: edge, detail: d);
+              final waiting = edge?.kind == LiveEdgeKind.waiting;
+              if (waiting) _waited = true;
+              if (!host && s.status == SessionStatus.live && _waited && !_autoEntered) {
+                _autoEntered = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) unawaited(_enter(d, host: false));
+                });
+              }
+              final failure = _camFailure ?? _micFailure;
               return ListView(
                 padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
                 children: [
@@ -112,6 +169,18 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                   DisplayText(s.title, size: 32),
                   Text(s.course(locale), style: t.bodySmall),
                   const SizedBox(height: 16),
+                  if (!host && waiting) ...[
+                    WaitingForHost(host: d.batch?.teacher),
+                    const SizedBox(height: 16),
+                  ],
+                  if (!host && s.status == SessionStatus.live) ...[
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      const PulsingDot(size: 7),
+                      const SizedBox(width: 6),
+                      MonoLabel(l.edgeLiveNow, color: AzzaColors.onAir),
+                    ]),
+                    const SizedBox(height: 12),
+                  ],
                   AspectRatio(
                     aspectRatio: 3 / 4,
                     child: ClipRRect(
@@ -135,6 +204,24 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                       child: _Toggle(icon: _cam ? Icons.videocam_rounded : Icons.videocam_off_rounded, label: l.camera, on: _cam, onTap: () => setState(() => _cam = !_cam)),
                     ),
                   ]),
+                  if (failure != null && !_helpDismissed) ...[
+                    const SizedBox(height: 12),
+                    PermissionHelp(
+                      failure: failure,
+                      onRetry: () => unawaited(_retryPreview()),
+                      onAudioOnly: _camFailure != null && _micFailure == null
+                          ? () => setState(() {
+                                _cam = false;
+                                _helpDismissed = true;
+                              })
+                          : null,
+                      onListenOnly: () => setState(() {
+                        _cam = false;
+                        _mic = false;
+                        _helpDismissed = true;
+                      }),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Row(children: [
                     Icon(Icons.network_check_rounded, size: 18, color: p.muted),
@@ -165,7 +252,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           );
         },
       ),
-      bottomNavigationBar: detail.hasValue
+      bottomNavigationBar: detail.hasValue && !(edgeForSession(detail.requireValue.session, DateTime.now(), isHost: host)?.terminal ?? false)
           ? BottomActionBar(children: [
               if (host)
                 FilledButton.icon(
@@ -176,9 +263,13 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                 )
               else
                 FilledButton.icon(
-                  onPressed: _busy || !detail.requireValue.session.lobbyOpen(DateTime.now()) ? null : () => _enter(detail.requireValue, host: false),
+                  onPressed: _busy || detail.requireValue.session.status != SessionStatus.live ? null : () => _enter(detail.requireValue, host: false),
                   icon: const Icon(Icons.sensors_rounded),
-                  label: Text(l.joinAs(user?.firstName ?? '')),
+                  label: Text(
+                    detail.requireValue.session.status != SessionStatus.live && detail.requireValue.session.lobbyOpen(DateTime.now())
+                        ? l.edgeWaitingButton
+                        : l.joinAs(user?.firstName ?? ''),
+                  ),
                 ),
               if (host) ...[
                 const SizedBox(height: 8),

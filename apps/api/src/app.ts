@@ -9,6 +9,7 @@ import { sessionMiddleware } from './http/middleware';
 import type { AppEnv } from './http/types';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { batchRoutes } from './modules/batches/batch.routes';
+import { certificateRoutes } from './modules/certificates/certificate.routes';
 import { contentRoutes } from './modules/content/content.routes';
 import { courseRoutes } from './modules/courses/course.routes';
 import { meRoutes } from './modules/me/me.routes';
@@ -17,7 +18,9 @@ import { adminPayoutRoutes, teacherPayoutRoutes } from './modules/payouts/payout
 import { sessionRoutes } from './modules/sessions/session.routes';
 import { rescheduleRequestRoutes } from './modules/sessions/reschedule-request.routes';
 import { calendarFeedRoutes } from './modules/me/calendar.routes';
+import { adminReportRoutes } from './modules/reports/report.routes';
 import { statsRoutes } from './modules/stats/stats.routes';
+import { teacherRoutes } from './modules/teachers/teacher.routes';
 import { webhookRoutes } from './modules/webhooks/webhook.routes';
 
 /** `apps/api/public/media/` regardless of the process cwd. */
@@ -72,11 +75,14 @@ export function createApp(container: Container) {
     .route('/sessions', sessionRoutes(services.sessions))
     .route('/reschedule-requests', rescheduleRequestRoutes(services.rescheduleRequests))
     .route('/teacher', teacherPayoutRoutes(services.payouts))
+    .route('/teachers', teacherRoutes(services.teachers))
     .route('/admin', adminRoutes(services.admin, container.platformSettings))
     .route('/admin', adminFinanceRoutes(services))
     .route('/admin', adminPayoutRoutes(services.payouts))
+    .route('/admin', adminReportRoutes(services.reports))
     .route('/', paymentRoutes(services))
-    .route('/', contentRoutes(services.content));
+    .route('/', contentRoutes(services.content))
+    .route('/', certificateRoutes(services.certificates));
 
   app.route('/api/v1', api);
   return app;

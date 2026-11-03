@@ -1,10 +1,12 @@
-import type { AdminCreateUserInput, BankAccountInput, ReviewTransferInput, Role } from '@azza/shared';
+import type { AdminCreateUserInput, BankAccountInput, CouponInput, ReviewTransferInput, Role, UpdateCouponInput } from '@azza/shared';
 import { API_URL, http, items, request } from './client';
 import type {
   AdminDashboard,
+  AdminReport,
   AdminUser,
   BankAccount,
   Coupon,
+  CouponUsage,
   FxRates,
   Items,
   LiveRooms,
@@ -17,6 +19,8 @@ import type {
 
 export const adminApi = {
   dashboard: () => http.get<AdminDashboard>('/api/v1/admin/dashboard'),
+  /** Inclusive `YYYY-MM-DD` days in Asia/Dubai; defaults to the last 30 days. */
+  reports: (p: { from?: string; to?: string } = {}) => http.get<AdminReport>('/api/v1/admin/reports', { ...p }),
   settings: () => http.get<PlatformSettings>('/api/v1/admin/settings'),
   liveRooms: () => http.get<LiveRooms>('/api/v1/admin/live-rooms'),
 
@@ -40,8 +44,9 @@ export const adminApi = {
   setFxRate: (input: { currency: 'SAR' | 'QAR' | 'USD'; ratePerAed: number }) => http.put<FxRates>('/api/v1/admin/fx-rates', input),
 
   coupons: () => items(http.get<Items<Coupon>>('/api/v1/admin/coupons')),
-  createCoupon: (input: { code: string; percentOff?: number; amountOffAed?: number; maxRedemptions?: number; expiresOn?: string }) =>
-    http.post<Coupon>('/api/v1/admin/coupons', input),
+  createCoupon: (input: CouponInput) => http.post<Coupon>('/api/v1/admin/coupons', input),
+  updateCoupon: (id: string, input: UpdateCouponInput) => http.patch<Coupon>(`/api/v1/admin/coupons/${id}`, input),
+  couponUsage: (id: string) => http.get<CouponUsage>(`/api/v1/admin/coupons/${id}/usage`),
 
   payoutRuns: (p: { page?: number; pageSize?: number } = {}) => http.get<Paged<PayoutRun>>('/api/v1/admin/payout-runs', { ...p }),
   payoutRun: (id: string) => http.get<PayoutRunDetail>(`/api/v1/admin/payout-runs/${id}`),

@@ -246,11 +246,21 @@ function Checkout({ batch }: { batch: BatchDetail }) {
   );
 }
 
+/** `COUPON_INVALID` → the same error with a localised message for its `details.reason` (null for any other error). */
+function couponError(error: unknown, messages: Record<string, string>, withAmount: (template: string, fils: number) => string): ApiError | null {
+  if (!(error instanceof ApiError) || error.code !== 'COUPON_INVALID') return null;
+  const details = (error.details ?? {}) as { reason?: string; minOrderFils?: number };
+  const template = details.reason ? messages[details.reason] : undefined;
+  if (!template) return null;
+  const message = details.minOrderFils != null ? withAmount(template, details.minOrderFils) : template;
+  return new ApiError(error.status, error.code, message, error.details);
+}
+
 function Summary({ quote, pending, error }: { quote: Quote | undefined; pending: boolean; error: unknown }) {
   const { t, f, fill } = useI18n();
   const money = useMoney();
   if (pending) return <LoadingBlock rows={3} height={28} />;
-  if (error || !quote) return <ErrorState compact error={error ?? new Error(t.checkout.quoteError)} />;
+  if (error || !quote) return <ErrorState compact error={couponError(error, t.checkout.couponErrors, (template, fils) => fill(template, { amount: money.aed(fils) })) ?? error ?? new Error(t.checkout.quoteError)} />;
   const rows: Array<[string, number]> = [[t.checkout.subtotal, quote.subtotalFils]];
   if (quote.discountFils) rows.push([t.checkout.discount, -quote.discountFils]);
   if (quote.vatFils) rows.push([t.checkout.vat, quote.vatFils]);

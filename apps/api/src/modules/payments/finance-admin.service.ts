@@ -65,7 +65,7 @@ export class FinanceAdminService {
         paidAt: now,
         rejectionReason: null,
       });
-      if (order.couponCode) await this.repo.redeemCoupon(order.couponCode);
+      if (order.couponCode) await this.repo.redeemCoupon(order);
       await this.lifecycle.activate(enrollment.id);
       this.lifecycle.orderUpdated(paid);
       return paid;

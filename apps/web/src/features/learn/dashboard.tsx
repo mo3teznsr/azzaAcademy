@@ -17,6 +17,7 @@ import { sessionCode, timecode } from '@/lib/i18n/format';
 import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
 import { useNow } from '@/lib/use-now';
 import { useEnrollments, useMyAssignments, useMySchedule, useRecordings } from './hooks';
+import { WaitlistPanel } from '../waitlist/waitlist-panel';
 
 export function LearnDashboard() {
   const [range] = useState(() => {
@@ -45,12 +46,14 @@ export function LearnDashboard() {
         <EmptyState title={t.learn.emptyTitle} body={t.learn.emptyBody} action={{ label: t.learn.browse, href: '/#catalog' }} />
       )}
 
+      <WaitlistPanel />
+
       <section aria-labelledby="batches" className="flex flex-col gap-4">
         <SectionHeader title={<span id="batches">{t.learn.myBatches}</span>} size="lg" href="/#catalog" linkLabel={t.learn.findAnother} />
         <QueryView query={enrollments} loading={<LoadingBlock rows={2} height={200} />} empty={<EmptyState title={t.learn.emptyTitle} action={{ label: t.learn.browse, href: '/#catalog' }} />}>
           {(list) => (
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-4">
-              {list.map((e) => (
+              {list.filter((e) => e.status !== 'WAITLISTED').map((e) => (
                 <EnrolledBatchCard key={e.id} enrollment={e} />
               ))}
             </div>
@@ -108,7 +111,7 @@ function OnAirHero({ session }: { session: ScheduleItem }) {
     <section aria-labelledby="onair" className="relative flex flex-wrap items-end justify-between gap-8 overflow-hidden rounded-[28px] bg-onair p-[clamp(1.5rem,3vw,2.75rem)] text-ink">
       <div className="flex min-w-0 flex-[1_1_480px] flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2.5">
-          <Chip tone="ink" dot className="text-onair">
+          <Chip tone="ink" dot live className="text-onair">
             {t.learn.onAirChip}
           </Chip>
           <span className="label-mono">
@@ -150,7 +153,7 @@ function OnAirHero({ session }: { session: ScheduleItem }) {
 }
 
 function NextTakeHero({ session }: { session: ScheduleItem }) {
-  const { t, f, fill, pick } = useI18n();
+  const { t, f, fill, pick, locale } = useI18n();
   const now = useNow();
   const secs = (new Date(session.startsAt).getTime() - now) / 1000;
   const lobbyOpen = secs <= 15 * 60;
@@ -171,7 +174,11 @@ function NextTakeHero({ session }: { session: ScheduleItem }) {
       </div>
       <div className="flex flex-[0_1_320px] flex-col items-start gap-3.5">
         <span className="label-mono text-muted-foreground">{t.learn.startsIn}</span>
-        <span className="timecode text-[clamp(2.5rem,4vw,3.5rem)] leading-none text-sun">{timecode(Math.max(0, secs))}</span>
+        <span className="timecode text-[clamp(2.5rem,4vw,3.5rem)] leading-none text-sun">
+          {secs >= 86400
+            ? new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(Math.round(secs / 86400), 'day')
+            : timecode(Math.max(0, secs))}
+        </span>
         {lobbyOpen ? (
           <Button asChild variant="onair" size="lg">
             <Link href={`/live/${session.id}`}>
@@ -285,7 +292,7 @@ function RecentRecordings() {
           <ul className="flex flex-col gap-2">
             {list.slice(0, 4).map((r) => (
               <li key={r.id}>
-                <a href={r.recordingUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-[14px] bg-card p-3 no-underline hover:bg-line">
+                <Link href={`/library/${r.id}`} className="flex items-center gap-3 rounded-[14px] bg-card p-3 no-underline hover:bg-line">
                   <CourseCover course={r.batch.course} size="sm" showMeta={false} className="h-14 w-20 shrink-0 p-2 text-[10px] [&>span]:text-base" />
                   <div className="min-w-0">
                     <b className="block truncate text-[15px] text-foreground">{r.title}</b>
@@ -296,7 +303,7 @@ function RecentRecordings() {
                       · {f.dayMonth(r.startsAt)} · {pick(r.batch.course.titleEn, r.batch.course.titleAr).text}
                     </span>
                   </div>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

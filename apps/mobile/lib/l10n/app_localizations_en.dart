@@ -801,6 +801,117 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveUnavailable => 'Video isn\'t available for this session yet.';
 
   @override
+  String edgeWaitingTitle(String host) {
+    return '$host hasn\'t started yet';
+  }
+
+  @override
+  String get edgeWaitingSub =>
+      'Usually starts within 5 min · you\'ll join automatically';
+
+  @override
+  String get edgeLiveNow => 'Live now';
+
+  @override
+  String get edgePermTitle => 'Camera or microphone blocked';
+
+  @override
+  String get edgePermBody =>
+      'Azza can\'t use your camera or microphone, so the class can\'t see or hear you.';
+
+  @override
+  String get edgePermStepsIos =>
+      'Open Settings → Azza → turn on Camera and Microphone, then come back.';
+
+  @override
+  String get edgePermStepsAndroid =>
+      'Open Settings → Apps → Azza → Permissions → allow Camera and Microphone, then come back.';
+
+  @override
+  String get edgePermMissing =>
+      'We couldn\'t find a camera or microphone on this device.';
+
+  @override
+  String get edgePermBusy =>
+      'Another app is using your camera or microphone. Close it and try again.';
+
+  @override
+  String get edgeOpenSettings => 'Open Settings';
+
+  @override
+  String get edgeTryAgain => 'Try again';
+
+  @override
+  String get edgeJoinAudioOnly => 'Join with audio only';
+
+  @override
+  String get edgeJoinListenOnly => 'Join to listen only';
+
+  @override
+  String get edgeReconnecting => 'Reconnecting… your video paused, audio kept';
+
+  @override
+  String get edgeLostTitle => 'Connection lost';
+
+  @override
+  String get edgeLostBody =>
+      'We couldn\'t get you back in automatically. Your seat is still yours.';
+
+  @override
+  String get edgeRejoin => 'Rejoin';
+
+  @override
+  String edgeRoomFullTitle(String n, String max) {
+    return 'Room is at $n/$max';
+  }
+
+  @override
+  String get edgeRoomFullGeneric => 'This room is full';
+
+  @override
+  String get edgeRoomFullBody =>
+      'A seat frees up as soon as someone leaves. Try again in a minute, or catch the recording after class.';
+
+  @override
+  String edgeCancelledTitle(String s, String teacher) {
+    return '$s cancelled by $teacher';
+  }
+
+  @override
+  String get edgeCancelledBody =>
+      'It won\'t count against your attendance. Your schedule shows what\'s next.';
+
+  @override
+  String edgeMovedTitle(String s, String when) {
+    return '$s moved to $when';
+  }
+
+  @override
+  String edgeMovedBody(String was, String tz) {
+    return 'It was $was. Times are in your time zone ($tz).';
+  }
+
+  @override
+  String get edgeEndedTitle => 'This session has ended';
+
+  @override
+  String get edgeEndedBody =>
+      'The recording appears in your learning once it\'s ready.';
+
+  @override
+  String get edgeNotEnrolledTitle => 'You\'re not in this batch';
+
+  @override
+  String get edgeNotEnrolledBody =>
+      'You need an active enrollment in this batch to join.';
+
+  @override
+  String get edgeBackToSchedule => 'Back to schedule';
+
+  @override
+  String get edgeWaitingButton => 'Waiting for the host…';
+
+  @override
   String get wrapTitle => 'That\'s a wrap.';
 
   @override
@@ -1438,4 +1549,190 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get videoDevMode =>
       'Video is off in this environment (LiveKit isn\'t configured). Chat and raised hands still work.';
+
+  @override
+  String get certificatesTitle => 'Certificates';
+
+  @override
+  String get certificatesEmptyTitle => 'No certificates yet';
+
+  @override
+  String get certificatesEmptyBody =>
+      'Attend at least 80% of a batch\'s sessions and your certificate appears here when the batch ends.';
+
+  @override
+  String get certificatesEarned => 'Earned';
+
+  @override
+  String get certificatesInProgress => 'In progress';
+
+  @override
+  String certificateAttended(String attended, String total) {
+    return 'Attended $attended/$total';
+  }
+
+  @override
+  String certificateWithTeacher(String name) {
+    return 'with $name';
+  }
+
+  @override
+  String certificateSessionsNeeded(String n) {
+    return '$n more sessions needed';
+  }
+
+  @override
+  String get certificateOneSessionNeeded => '1 more session needed';
+
+  @override
+  String get certificateRequirementMet =>
+      'Attendance met — your certificate is issued when the batch ends.';
+
+  @override
+  String get certificateUnreachable =>
+      'Not enough sessions left to reach 80% in this batch.';
+
+  @override
+  String certificateAttendedOfRequired(String attended, String required) {
+    return '$attended of $required sessions to earn it';
+  }
+
+  @override
+  String get certificateNew => 'New';
+
+  @override
+  String get certificateOfCompletion => 'Certificate of completion';
+
+  @override
+  String get certificateAwardedTo => 'Awarded to';
+
+  @override
+  String get certificateForCompleting => 'for completing';
+
+  @override
+  String get certificateBatch => 'Batch';
+
+  @override
+  String get certificateTeacher => 'Teacher';
+
+  @override
+  String get certificateIssued => 'Issued';
+
+  @override
+  String get certificateDates => 'Dates';
+
+  @override
+  String get certificateVerifyCode => 'Verify code';
+
+  @override
+  String get certificateShare => 'Share';
+
+  @override
+  String get certificateLinkCopied => 'Verification link copied';
+
+  @override
+  String get certificateCompleteTitle => 'Course complete.';
+
+  @override
+  String certificateCompleteBody(String attended, String total) {
+    return 'You attended $attended of $total live sessions.';
+  }
+
+  @override
+  String certificateVerifyHint(String url) {
+    return 'Anyone can check it at $url';
+  }
+
+  @override
+  String waitlistPosition(String position, String total) {
+    return '$position in line · of $total';
+  }
+
+  @override
+  String get waitlistNextInLine => 'You\'re next in line';
+
+  @override
+  String startsOnDate(String date) {
+    return 'Starts $date';
+  }
+
+  @override
+  String waitlistJoinedOn(String date) {
+    return 'Joined $date';
+  }
+
+  @override
+  String get waitlistWhatNext => 'What happens next';
+
+  @override
+  String get waitlistStepSeat =>
+      'When a seat frees up, it goes to the first person in line.';
+
+  @override
+  String get waitlistStepNotify =>
+      'We\'ll notify and email you the moment it\'s yours.';
+
+  @override
+  String get waitlistStepHold =>
+      'You then have 24 hours to check out before the seat moves on.';
+
+  @override
+  String get waitlistNoCharge => 'Nothing is charged while you wait.';
+
+  @override
+  String get waitlistLeave => 'Leave waitlist';
+
+  @override
+  String get waitlistLeaveConfirmTitle => 'Leave the waitlist?';
+
+  @override
+  String waitlistLeaveConfirmBody(String batch) {
+    return 'You\'ll lose your place for $batch. If you rejoin later, you\'ll start at the back of the line.';
+  }
+
+  @override
+  String get waitlistStay => 'Stay in line';
+
+  @override
+  String get waitlistLeft => 'You left the waitlist';
+
+  @override
+  String get waitlistSeatOpen => 'A seat opened for you';
+
+  @override
+  String waitlistHeldFor(String time) {
+    return 'Held for you · $time';
+  }
+
+  @override
+  String get waitlistHoldExpired => 'The hold has expired';
+
+  @override
+  String get waitlistClaimSeat => 'Claim seat';
+
+  @override
+  String get teacherAbout => 'About';
+
+  @override
+  String get teacherTeachesIn => 'Teaches in';
+
+  @override
+  String get teacherCourses => 'Courses';
+
+  @override
+  String get teacherUpcomingBatches => 'Upcoming batches';
+
+  @override
+  String get teacherViewProfile => 'View profile';
+
+  @override
+  String get teacherBatchFull => 'Full';
+
+  @override
+  String get certificateAttendance => 'Attendance';
+
+  @override
+  String waitlistOfTotal(String total) {
+    return 'of $total';
+  }
 }

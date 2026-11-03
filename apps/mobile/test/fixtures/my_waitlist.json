@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "enrollmentId": "e_w1",
+      "joinedAt": "2026-10-28T09:00:00.000Z",
+      "batchId": "b_b08",
+      "batchCode": "B08",
+      "batchStatus": "FULL",
+      "startsOn": "2026-11-24T00:00:00.000Z",
+      "course": { "id": "c_pdf", "slug": "product-design-foundations", "titleEn": "Product Design Foundations", "titleAr": "أساسيات تصميم المنتجات", "coverImageUrl": null },
+      "courseTitle": "Product Design Foundations",
+      "position": 3,
+      "total": 7
+    },
+    {
+      "enrollmentId": "e_w2",
+      "joinedAt": "2026-10-20T09:00:00.000Z",
+      "batchId": "b_d02",
+      "batchCode": "D02",
+      "batchStatus": "FULL",
+      "startsOn": "2026-12-01T00:00:00.000Z",
+      "course": { "id": "c_data", "slug": "data-storytelling", "titleEn": "Data Storytelling", "coverImageUrl": null },
+      "courseTitle": "Data Storytelling",
+      "position": 1,
+      "total": 2
+    }
+  ],
+  "promoted": [
+    {
+      "enrollmentId": "e_p1",
+      "batchId": "b_c02",
+      "batchCode": "C02",
+      "batchStatus": "FULL",
+      "startsOn": "2026-11-17T00:00:00.000Z",
+      "course": { "id": "c_copy", "slug": "copywriting", "titleEn": "Copywriting", "coverImageUrl": null },
+      "courseTitle": "Copywriting",
+      "promotedAt": "2026-11-03T06:00:00.000Z",
+      "holdExpiresAt": "2026-11-04T06:00:00.000Z"
+    }
+  ]
+}

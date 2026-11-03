@@ -47,6 +47,9 @@ abstract final class Routes {
   static String bankTransfer(String orderId) => '/orders/$orderId/bank-transfer';
   static String enrolled(String orderId) => '/orders/$orderId/enrolled';
   static const myOrders = '/me/orders';
+  static const certificates = '/me/certificates';
+  static String certificate(String code) => '/me/certificates/${Uri.encodeComponent(code)}';
+  static String teacher(String id) => '/teachers/$id';
   static String lobby(String sessionId) => '/sessions/$sessionId/lobby';
   static String liveRoom(String sessionId) => '/sessions/$sessionId/live';
   static String afterSession(String sessionId) => '/sessions/$sessionId/after';

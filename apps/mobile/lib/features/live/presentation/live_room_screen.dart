@@ -14,8 +14,10 @@ import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/session_repository.dart';
 import '../data/video_room_service.dart';
+import '../domain/live_edge.dart';
 import '../domain/live_models.dart';
 import 'chat_people_sheet.dart';
+import 'live_edge_view.dart';
 import 'live_room_controller.dart';
 
 @immutable
@@ -133,10 +135,16 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
           builder: (context, _) {
             if (_c.phase == RoomPhase.joining) return const LoadingState();
             if (_c.phase == RoomPhase.failed) {
+              final detail = ref.read(sessionDetailProvider(widget.sessionId)).value;
+              final edge = edgeForJoinError(_c.error!, session: detail?.session, capacity: detail?.batch?.capacity);
               return SafeArea(
                 child: Column(children: [
                   Align(alignment: AlignmentDirectional.centerStart, child: CloseButton(onPressed: () => context.pop())),
-                  Expanded(child: ErrorState(error: _c.error!, onRetry: () => _c.join())),
+                  Expanded(
+                    child: edge.terminal
+                        ? LiveEdgeView(edge: edge, detail: detail, onRetry: () => _c.join())
+                        : ErrorState(error: _c.error!, onRetry: () => _c.join()),
+                  ),
                 ]),
               );
             }
@@ -172,30 +180,23 @@ class _RoomBody extends StatelessWidget {
         child: Row(children: [
           const StatusChip(label: 'Live', color: AzzaColors.onAir, textColor: AzzaColors.ink, live: true),
           const SizedBox(width: 8),
+          const PulsingDot(size: 7),
+          const SizedBox(width: 2),
           Ticker(builder: (_, now) => MonoLabel('${l.rec} ${Fmt.timecode(now.difference(c.startedAt ?? now))}', color: AzzaColors.ivory)),
           const Spacer(),
           MonoLabel('${l.inRoom('$count')}${c.hands.isNotEmpty ? ' · ✋ ${c.hands.length}' : ''}', color: AzzaColors.muted),
         ]),
       ),
-      AnimatedSize(
-        duration: AzzaMotion.quick,
-        child: c.reconnecting
-            ? Container(
-                key: const Key('reconnecting-banner'),
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: AzzaColors.peach, borderRadius: BorderRadius.circular(14)),
-                child: Row(children: [
-                  const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AzzaColors.ink)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text('${l.reconnecting} ${l.reconnectingBody}', style: const TextStyle(color: AzzaColors.ink)),
-                  ),
-                ]),
-              )
-            : const SizedBox(width: double.infinity),
-      ),
+      ConnectionBanner(state: c.link, onRejoin: c.rejoin, rejoining: c.rejoining),
+      if (c.mediaFailure != null && !observer)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: PermissionHelp(
+            failure: c.mediaFailure!,
+            onAudioOnly: video.micOn ? () => c.continueWithout(camera: true) : null,
+            onListenOnly: () => c.continueWithout(camera: true, microphone: true),
+          ),
+        ),
       // ── speaker view
       Expanded(
         child: Padding(

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Download, Play } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -45,10 +46,10 @@ export function LibraryPage() {
               const durationMin = r.endedAt ? Math.round((new Date(r.endedAt).getTime() - new Date(r.startsAt).getTime()) / 60000) : 0;
               return (
               <li key={r.id}>
-                <a href={r.recordingUrl} target="_blank" rel="noreferrer" className="group flex flex-col gap-3 no-underline">
+                <Link href={`/library/${r.id}`} className="group flex flex-col gap-3 no-underline">
                   <div className="relative">
                     <CourseCover course={r.batch.course} size="md" className="h-40" />
-                    <span className="absolute inset-0 grid place-items-center opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="absolute inset-0 grid place-items-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                       <span className="grid size-14 place-items-center rounded-full bg-ink text-ivory">
                         <Play />
                       </span>
@@ -61,7 +62,7 @@ export function LibraryPage() {
                     </bdi>{' '}
                     · {f.dayMonth(r.startsAt)} {durationMin > 0 ? `· ${f.number(durationMin)} min` : ''} · {pick(r.batch.course.titleEn, r.batch.course.titleAr).text}
                   </span>
-                </a>
+                </Link>
               </li>
               );
             })}

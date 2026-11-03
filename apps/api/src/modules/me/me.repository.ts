@@ -12,6 +12,8 @@ const profileSelect = {
   timezone: true,
   displayCurrency: true,
   phone: true,
+  headline: true,
+  bio: true,
   createdAt: true,
 } as const;
 
