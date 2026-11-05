@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
@@ -29,7 +29,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       await ref.read(authRepositoryProvider).sendVerificationEmail(widget.email);
       setState(() => _canResendAt = DateTime.now().add(const Duration(seconds: 30)));
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     }
   }
 
@@ -66,7 +66,14 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                   else
                     MonoLabel(l.resendIn(Fmt.timecode(left).substring(3))),
                   const Spacer(),
-                  TextButton(onPressed: () => context.go(Routes.signUp), child: Text(l.changeEmail)),
+                  TextButton(
+                    // Signed in already: sign out first, or the router bounces sign-up straight back home.
+                    onPressed: () async {
+                      await ref.read(authControllerProvider.notifier).signOut();
+                      if (context.mounted) context.go(Routes.signUp);
+                    },
+                    child: Text(l.changeEmail),
+                  ),
                 ],
               );
             },

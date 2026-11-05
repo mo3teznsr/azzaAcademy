@@ -5,7 +5,7 @@ import { rooms } from '../infrastructure/realtime/realtime';
 import type { SessionService } from '../modules/sessions/session.service';
 import type { Role } from '@azza/shared';
 
-type SocketUser = { id: string; name: string; role: Role };
+type SocketUser = { id: string; name: string; email?: string; role: Role };
 type Ack = (res: SocketAck) => void;
 
 const fail = (err: unknown): SocketAck => {

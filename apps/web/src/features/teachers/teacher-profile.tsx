@@ -44,14 +44,14 @@ function ProfileView({ p }: { p: Profile }) {
       <section aria-labelledby="teacher-name" className="grid items-end gap-8 pt-6 md:grid-cols-[auto_1fr]">
         <InitialsAvatar name={p.name} src={p.image} size={176} className="rise rounded-[32px] text-5xl" />
         <div className="flex min-w-0 flex-col gap-4">
-          <span className="label-mono text-stone">{t.teacherProfile.kicker}</span>
+          <span className="label-mono text-muted-foreground">{t.teacherProfile.kicker}</span>
           <h1 id="teacher-name" className="rise font-display text-[clamp(56px,9vw,128px)] leading-[0.85] font-extrabold" style={{ '--i': 1 } as React.CSSProperties}>
             <bdi>{p.name}</bdi>
           </h1>
-          {p.headline && <p className="max-w-2xl text-xl text-cream-2">{p.headline}</p>}
+          {p.headline && <p className="max-w-2xl text-xl text-soft-foreground">{p.headline}</p>}
           {p.languages.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="label-mono text-stone">{t.teacherProfile.languages}</span>
+              <span className="label-mono text-muted-foreground">{t.teacherProfile.languages}</span>
               {p.languages.map((l) => (
                 <Chip key={l} tone="ivory">
                   {t.status.sessionLanguage[l]}
@@ -64,7 +64,7 @@ function ProfileView({ p }: { p: Profile }) {
 
       {p.bio && (
         <section aria-labelledby="about" className="grid gap-6 lg:grid-cols-[1fr_2fr]">
-          <h2 id="about" className="label-mono text-stone">
+          <h2 id="about" className="label-mono text-muted-foreground">
             {t.teacherProfile.about}
           </h2>
           <p className="max-w-3xl text-lg leading-relaxed whitespace-pre-line">{p.bio}</p>
@@ -76,16 +76,19 @@ function ProfileView({ p }: { p: Profile }) {
           {t.teacherProfile.courses}
         </h2>
         {p.courses.length === 0 ? (
-          <p className="text-stone">{t.teacherProfile.noCourses}</p>
+          <p className="text-muted-foreground">{t.teacherProfile.noCourses}</p>
         ) : (
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-4">
             {p.courses.map((c, i) => (
               <li key={c.id}>
                 <Link href={`/courses/${c.slug}`} className="group flex flex-col gap-3 rounded-[20px] bg-card p-3 text-foreground no-underline">
-                  <CourseCover course={{ ...c, coverStyle: STYLES[i % STYLES.length] }} className="h-48" />
+                  <CourseCover course={{ ...c, coverStyle: STYLES[i % STYLES.length] }} showMeta={false} className="h-48" />
                   <span className="flex items-center justify-between gap-2 px-2 pb-2">
-                    <b className="text-lg leading-tight">{pick(c.titleEn, c.titleAr).text}</b>
-                    <ArrowRight className="size-5 shrink-0 text-sun transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" aria-hidden />
+                    <span className="flex min-w-0 flex-col gap-1">
+                      <span className="label-mono text-muted-foreground">{c.category}</span>
+                      <b className="text-lg leading-tight">{pick(c.titleEn, c.titleAr).text}</b>
+                    </span>
+                    <ArrowRight className="size-5 shrink-0 text-sun-fg transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" aria-hidden />
                   </span>
                 </Link>
               </li>
@@ -99,27 +102,27 @@ function ProfileView({ p }: { p: Profile }) {
           {t.teacherProfile.upcoming}
         </h2>
         {p.upcomingBatches.length === 0 ? (
-          <p className="text-stone">{t.teacherProfile.noUpcoming}</p>
+          <p className="text-muted-foreground">{t.teacherProfile.noUpcoming}</p>
         ) : (
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-4">
             {p.upcomingBatches.map((b) => (
-              <li key={b.id} className="flex flex-col gap-3 rounded-2xl border border-line p-5">
+              <li key={b.id} className="flex flex-col gap-3 rounded-2xl border border-border p-5">
                 <div className="flex items-center justify-between gap-2">
                   <b className="font-display text-3xl font-extrabold" dir="ltr">
                     {b.code}
                   </b>
                   {b.status === 'FULL' || b.seatsLeft <= 0 ? <Chip tone="peach">{t.teacherProfile.full}</Chip> : <Chip tone="sage">{fill(t.common.seatsLeft, { n: f.number(b.seatsLeft) })}</Chip>}
                 </div>
-                <Link href={`/courses/${b.courseSlug}`} className="font-bold text-ivory no-underline hover:underline">
+                <Link href={`/courses/${b.courseSlug}`} className="font-bold text-foreground no-underline hover:underline">
                   {pick(b.courseTitle, b.courseTitleAr).text}
                 </Link>
                 <span className="font-display text-lg">
                   <bdi dir="ltr">{b.scheduleSummary}</bdi>
                 </span>
-                <span className="text-sm text-stone">
+                <span className="text-sm text-muted-foreground">
                   {fill(t.teacherProfile.starts, { d: f.dayMonth(b.startsOn, b.timezone) })} · {t.status.sessionLanguage[b.language]}
                 </span>
-                <div className="mt-auto flex items-end justify-between gap-2 border-t border-line pt-3">
+                <div className="mt-auto flex items-end justify-between gap-2 border-t border-border pt-3">
                   <b className="text-lg">{money.aed(b.priceFils)}</b>
                   <Link href={`/courses/${b.courseSlug}?batch=${b.id}`} className="link-sun inline-flex min-h-11 items-center text-sm">
                     {t.teacherProfile.viewBatch}

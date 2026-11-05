@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/providers.dart';
 import '../../../core/realtime/socket_events.dart';
@@ -121,7 +121,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
       if (!mounted) return;
       context.pushReplacement(Routes.liveRoom(widget.sessionId), extra: JoinOptions(micOn: _mic, camOn: _cam, record: _record));
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

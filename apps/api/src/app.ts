@@ -48,7 +48,13 @@ export function createApp(container: Container) {
   // Webhooks are registered before the session middleware: they authenticate by signature, not by user.
   app.route(
     '/api/webhooks',
-    webhookRoutes({ payments: adapters.payments, video: adapters.video, checkout: services.checkout, sessions: services.sessions }),
+    webhookRoutes({
+      payments: adapters.payments,
+      video: adapters.video,
+      checkout: services.checkout,
+      sessions: services.sessions,
+      appleIap: services.appleIap,
+    }),
   );
   // Public, token-signed ICS feed (calendar apps send no cookies).
   app.route('/api/calendar', calendarFeedRoutes(services.calendar));

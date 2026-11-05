@@ -13,7 +13,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     <main className="grid min-h-[60dvh] place-items-center p-6 text-center">
       <div className="flex flex-col items-center gap-4">
         <h1 className="font-display text-5xl font-extrabold">{t.common.errorTitle}</h1>
-        <p className="text-stone">{t.common.errorBody}</p>
+        <p className="text-muted-foreground">{t.common.errorBody}</p>
         <Button onClick={reset}>{t.common.retry}</Button>
       </div>
     </main>

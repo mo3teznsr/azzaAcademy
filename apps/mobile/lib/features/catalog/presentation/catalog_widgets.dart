@@ -30,64 +30,60 @@ String scheduleLabel(Fmt f, ScheduleRule rule, {DateTime? sample}) {
   return '$days · ${f.time(start)}–${f.time(end)}';
 }
 
-/// Course cover: the film-set photo under an ink scrim with the title on top and a section-colour
-/// strip (Components.dc.html), or the typographic cover — giant type on a section colour — without one.
+/// Course cover: the film-set photo shown clean — no scrim, no text on it; callers put the title
+/// beneath. Without a photo it falls back to the typographic cover (giant type on a section colour).
 class CourseCover extends StatelessWidget {
-  const CourseCover({super.key, required this.course, required this.locale, this.height = 180, this.compact = false});
+  const CourseCover({
+    super.key,
+    required this.course,
+    required this.locale,
+    this.height = 180,
+    this.compact = false,
+    this.radius = AzzaSpace.radius,
+  });
   final Course course;
   final AppLocale locale;
   final double height;
   final bool compact;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final photo = course.coverImageUrl != null;
-    final ink = photo ? AzzaColors.ivory : AzzaColors.ink;
-    final text = Padding(
+    final typographic = Padding(
       padding: EdgeInsets.all(compact ? 14 : 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MonoLabel('${course.category} · ${l.levelN('${course.level.number}')}', color: ink),
+          MonoLabel('${course.category} · ${l.levelN('${course.level.number}')}', color: AzzaColors.ink),
           const Spacer(),
           Text(
             course.title(locale),
             maxLines: compact ? 2 : 3,
             overflow: TextOverflow.ellipsis,
-            style: AzzaFonts.display(arabic: locale.isRtl, size: compact ? 24 : 40, weight: FontWeight.w800, color: ink),
+            style: AzzaFonts.display(arabic: locale.isRtl, size: compact ? 24 : 40, weight: FontWeight.w800, color: AzzaColors.ink),
           ),
         ],
       ),
     );
-    final flat = ColoredBox(color: coverColor(course.coverStyle));
+    final flat = ColoredBox(color: coverColor(course.coverStyle), child: typographic);
     return Container(
       height: height,
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(color: photo ? AzzaColors.ink : coverColor(course.coverStyle), borderRadius: BorderRadius.circular(AzzaSpace.radius)),
-      child: !photo
-          ? text
-          : Stack(
-              fit: StackFit.expand,
-              children: [
-                MediaImage(course.coverImageUrl, fallback: flat),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [AzzaColors.ink, Color(0x73121110), Color(0x0D121110)],
-                      stops: [0, 0.55, 1],
-                    ),
-                  ),
-                ),
-                Align(alignment: Alignment.topCenter, child: SizedBox(height: 4, width: double.infinity, child: flat)),
-                text,
-              ],
-            ),
+      decoration: BoxDecoration(color: coverColor(course.coverStyle), borderRadius: BorderRadius.circular(radius)),
+      child: course.coverImageUrl == null ? typographic : MediaImage(course.coverImageUrl, fallback: flat),
     );
   }
+}
+
+/// Category · level line that sits under a cover.
+class CourseMetaLine extends StatelessWidget {
+  const CourseMetaLine({super.key, required this.course});
+  final Course course;
+
+  @override
+  Widget build(BuildContext context) => MonoLabel('${course.category} · ${context.l10n.levelN('${course.level.number}')}');
 }
 
 /// One call-sheet row: slate, time, title, subtitle, status.

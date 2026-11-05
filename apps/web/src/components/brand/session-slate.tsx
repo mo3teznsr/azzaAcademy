@@ -28,7 +28,7 @@ export function SessionSlate({
       className={cn(
         'flex items-center gap-3.5 rounded-[14px] p-3.5',
         live ? 'bg-onair text-ink' : 'bg-card',
-        state === 'MOVED' && 'border border-dashed border-peach bg-transparent',
+        state === 'MOVED' && 'border border-dashed border-peach-fg bg-transparent',
         state === 'CANCELLED' && 'opacity-60',
         className,
       )}
@@ -41,7 +41,7 @@ export function SessionSlate({
       </div>
       <div className="min-w-0 flex-1">
         <b className={cn('block truncate text-[15px]', state === 'CANCELLED' && 'line-through')}>{title}</b>
-        {sub && <div className={cn('text-[13px]', live ? 'text-ink' : state === 'MOVED' ? 'text-peach' : 'text-muted-foreground')}>{sub}</div>}
+        {sub && <div className={cn('text-[13px]', live ? 'text-ink' : state === 'MOVED' ? 'text-peach-fg' : 'text-muted-foreground')}>{sub}</div>}
       </div>
       {trailing && <div className="shrink-0">{trailing}</div>}
     </div>

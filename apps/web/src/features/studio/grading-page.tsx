@@ -143,7 +143,7 @@ export function GradingPage() {
               </span>
               <ToggleGroup type="single" value={status} onValueChange={(v) => v && setStatus(v as StatusFilter)} aria-labelledby="grade-status" className="flex flex-wrap justify-start gap-2">
                 {(['ungraded', 'late', 'graded', 'all'] as const).map((k) => (
-                  <ToggleGroupItem key={k} value={k} className="h-11 rounded-full border border-line px-4 text-sm data-[state=on]:border-ivory data-[state=on]:bg-ivory data-[state=on]:text-ink">
+                  <ToggleGroupItem key={k} value={k} className="h-11 rounded-full border border-border px-4 text-sm data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                     {t.grading.filters[k]}
                   </ToggleGroupItem>
                 ))}
@@ -170,7 +170,7 @@ export function GradingPage() {
                           onClick={() => setSelectedId(s.id)}
                           className={cn(
                             'press flex w-full items-center gap-3 rounded-[14px] p-3 text-start',
-                            active ? 'bg-ivory text-ink' : 'bg-card hover:bg-line',
+                            active ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent',
                           )}
                         >
                           <InitialsAvatar name={s.user?.name ?? '?'} src={s.user?.image} size={36} />
@@ -178,7 +178,7 @@ export function GradingPage() {
                             <b className="block truncate text-[15px]">
                               <bdi>{s.user?.name ?? '—'}</bdi>
                             </b>
-                            <span className={cn('block truncate text-[13px]', active ? 'text-stone-2' : 'text-muted-foreground')}>
+                            <span className={cn('block truncate text-[13px]', active ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
                               <bdi dir="ltr">{i.batch.code}</bdi> · {i.assignment.title}
                             </span>
                           </span>
@@ -188,7 +188,7 @@ export function GradingPage() {
                             ) : i.late ? (
                               <Chip tone="dashedPeach">{t.grading.late}</Chip>
                             ) : null}
-                            <span className={cn('text-[12px]', active ? 'text-stone-2' : 'text-muted-foreground')}>{f.dayMonth(s.submittedAt)}</span>
+                            <span className={cn('text-[12px]', active ? 'text-primary-foreground/70' : 'text-muted-foreground')}>{f.dayMonth(s.submittedAt)}</span>
                           </span>
                         </button>
                       </li>

@@ -81,6 +81,9 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
     const o: OrderRecord = {
       ...data,
       id: this.id('ord'),
+      appleTransactionId: null,
+      appleOriginalTransactionId: null,
+      appleEnvironment: null,
       receivedFils: null,
       refundedFils: 0,
       feeFils: 0,
@@ -100,6 +103,19 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   }
   async findOrderByPaymentIntent(pi: string) {
     return this.orders.find((o) => o.stripePaymentIntentId === pi) ?? null;
+  }
+  async findOrderByAppleTransaction(transactionId: string) {
+    return this.orders.find((o) => o.appleTransactionId === transactionId) ?? null;
+  }
+  async findOrderByAppleToken(token: string) {
+    return this.orders.find((o) => o.appleAppAccountToken === token.toLowerCase()) ?? null;
+  }
+  async latestUnpaidAppleOrder(userId: string, productId: string) {
+    return (
+      this.orders
+        .filter((o) => o.userId === userId && o.method === 'APPLE_IAP' && o.appleProductId === productId && o.status !== 'PAID' && o.status !== 'REFUNDED')
+        .at(-1) ?? null
+    );
   }
   async openOrderFor(enrollmentId: string) {
     return this.orders.find((o) => o.enrollmentId === enrollmentId && OPEN_ORDER_STATUSES.includes(o.status)) ?? null;

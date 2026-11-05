@@ -19,9 +19,9 @@ function CopyValue({ value, label }: { value: string; label: string }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-ink px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-xl bg-background px-4 py-3">
       <div className="min-w-0">
-        <span className="label-mono block text-stone">{label}</span>
+        <span className="label-mono block text-muted-foreground">{label}</span>
         <b className="font-mono text-lg" dir="ltr">
           {value}
         </b>
@@ -72,7 +72,7 @@ export function BankTransferDetails({
     <div className="flex flex-col gap-4">
       <h3 className="font-display text-2xl font-extrabold">{t.checkout.bankTitle}</h3>
       {bankAccount && (
-        <div className="rounded-2xl border border-line p-4">
+        <div className="rounded-2xl border border-border p-4">
           <b className="block text-lg">{bankAccount.bankName}</b>
           <span className="text-sm text-muted-foreground">
             {bankAccount.accountName}
@@ -96,7 +96,7 @@ export function BankTransferDetails({
         </p>
       )}
       <form
-        className="flex flex-col gap-3 rounded-2xl border border-dashed border-line-2 p-4"
+        className="flex flex-col gap-3 rounded-2xl border border-dashed border-line-strong p-4"
         onSubmit={(e) => {
           if (!useLink) {
             e.preventDefault();

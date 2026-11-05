@@ -36,7 +36,7 @@ Future<void> pumpScreen(
     retry: (_, _) => null,
     overrides: [sharedPreferencesProvider.overrideWithValue(p), ...overrides],
     child: MaterialApp(
-      theme: AzzaTheme.build(ThemeVariant.studentInk),
+      theme: AzzaTheme.build(ThemeVariant.student),
       locale: const Locale('en'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: localizationDelegates,

@@ -3,11 +3,12 @@ import { cn } from '@/lib/utils';
 
 export type SignalState = 'scheduled' | 'starting' | 'live' | 'ended';
 
+// The -fg accents equal the raw accents on ink and darken on cream, so the mark stays visible in light mode.
 const COLOR: Record<SignalState, string> = {
-  scheduled: 'var(--sky)',
-  starting: 'var(--sun)',
-  live: 'var(--onair)',
-  ended: 'var(--stone)',
+  scheduled: 'var(--sky-fg)',
+  starting: 'var(--sun-fg)',
+  live: 'var(--onair-fg)',
+  ended: 'var(--muted-foreground)',
 };
 
 /** The "signal" motif: a dot with two arcs. Arcs pulse only while a room is live. */
@@ -48,7 +49,7 @@ export function Logo({ href = '/', className, suffix }: { href?: string; classNa
       <span className="font-display text-2xl font-extrabold" dir="ltr">
         azza
       </span>
-      {suffix && <span className="label-mono text-stone ms-auto">{suffix}</span>}
+      {suffix && <span className="label-mono text-muted-foreground ms-auto">{suffix}</span>}
     </Link>
   );
 }

@@ -36,7 +36,7 @@ export function BatchCard({
       aria-pressed={onSelect ? !!selected : undefined}
       className={cn(
         'flex w-full flex-col gap-3.5 rounded-2xl border bg-card p-5 text-start transition-colors duration-200',
-        selected ? 'border-ivory' : 'border-transparent hover:border-line-2',
+        selected ? 'border-foreground' : 'border-transparent hover:border-line-strong',
         className,
       )}
     >
@@ -56,7 +56,7 @@ export function BatchCard({
           {t.status.sessionLanguage[batch.language]} · <bdi dir="ltr">{gmtOffset(batch.timezone)}</bdi>
         </span>
       </div>
-      <div className="h-1 rounded bg-line" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={fill(t.course.seatsOf, { n: taken, c: batch.capacity })}>
+      <div className="h-1 rounded bg-secondary" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={fill(t.course.seatsOf, { n: taken, c: batch.capacity })}>
         <div className="h-1 rounded bg-sage" style={{ width: `${pct}%` }} />
       </div>
       <div className="flex items-center justify-between gap-2">

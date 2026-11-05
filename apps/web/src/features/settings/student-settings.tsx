@@ -10,6 +10,7 @@ import { meApi, itemsOf } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
+import { ThemeSegmented } from '@/components/brand/theme-switcher';
 import { ProfileForm } from './profile-form';
 
 export function StudentSettings() {
@@ -20,6 +21,11 @@ export function StudentSettings() {
     <>
       <PageTitle title={t.settings.title} />
       <ProfileForm />
+      <Panel aria-labelledby="appearance-title">
+        <SectionHeader title={<span id="appearance-title">{t.settings.appearance}</span>} />
+        <ThemeSegmented labelledBy="appearance-title" className="self-start" />
+        <p className="text-sm text-muted-foreground">{t.settings.appearanceNote}</p>
+      </Panel>
       <Panel aria-labelledby="orders" id="orders">
         <SectionHeader title={<span id="orders-title">{t.settings.orders}</span>} />
         <QueryView query={orders} loading={<LoadingBlock rows={2} />} empty={<p className="text-sm text-muted-foreground">{t.settings.noOrders}</p>}>
@@ -53,6 +59,13 @@ export function StudentSettings() {
             </Table>
           )}
         </QueryView>
+      </Panel>
+      <Panel aria-labelledby="delete-account-title">
+        <SectionHeader title={<span id="delete-account-title">{t.legal.footer.deleteAccount}</span>} />
+        <p className="text-sm text-muted-foreground">{t.legal.deletion.intro}</p>
+        <Link href="/account/delete" className="link-sun self-start text-sm">
+          {t.legal.deletion.button}
+        </Link>
       </Panel>
     </>
   );

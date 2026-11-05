@@ -49,7 +49,7 @@ function PlayerView({ s }: { s: SessionDetail }) {
       {src ? (
         <VideoPlayer src={src} title={s.title} />
       ) : (
-        <section aria-labelledby="processing" className="grid aspect-video place-items-center rounded-[24px] border border-dashed border-line-2 bg-ink-2 p-8 text-center" role="status">
+        <section aria-labelledby="processing" className="grid aspect-video place-items-center rounded-[24px] border border-dashed border-line-strong bg-card p-8 text-center" role="status">
           <div className="flex max-w-md flex-col items-center gap-3">
             <SignalMark state="starting" size={44} />
             <h2 id="processing" className="font-display text-3xl font-extrabold">
@@ -167,7 +167,7 @@ function VideoPlayer({ src, title }: { src: string; title: string }) {
       {failed && (
         <div className="absolute inset-x-4 top-4 flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-danger-line bg-danger-bg p-3 text-sm text-danger-fg" role="alert">
           {t.common.errorBody}
-          <a href={src} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-ivory">
+          <a href={src} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-foreground underline">
             <Download className="size-4" aria-hidden /> {t.common.download}
           </a>
         </div>
@@ -247,7 +247,7 @@ function NextSession({ s }: { s: SessionDetail }) {
             </Link>
           ) : next.status === 'LIVE' ? (
             <Link href={`/live/${next.id}`} className="link-sun inline-flex min-h-11 items-center gap-2 text-sm">
-              <span aria-hidden className="onair text-onair" /> {t.learn.joinLive}
+              <span aria-hidden className="onair text-onair-fg" /> {t.learn.joinLive}
             </Link>
           ) : (
             <span className="text-sm text-muted-foreground">{fill(t.player.liveOn, { d: `${f.date(next.startsAt)} · ${f.time(next.startsAt)}` })}</span>
@@ -275,7 +275,7 @@ function BatchMaterials({ batchId, sessionId }: { batchId: string; sessionId: st
         <ul className="flex flex-col gap-2">
           {list.map((m) => (
             <li key={m.id}>
-              <a href={m.url} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-3 rounded-[14px] bg-card p-3.5 text-foreground no-underline hover:bg-line">
+              <a href={m.url} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-3 rounded-[14px] bg-card p-3.5 text-foreground no-underline hover:bg-accent">
                 <span className="label-mono w-16 shrink-0 text-muted-foreground">{t.status.material[m.kind]}</span>
                 <b className="min-w-0 flex-1 truncate">{m.title}</b>
                 {m.session && (
@@ -283,7 +283,7 @@ function BatchMaterials({ batchId, sessionId }: { batchId: string; sessionId: st
                     {sessionCode(m.session.number)}
                   </span>
                 )}
-                <Download className="size-4 text-sun" aria-hidden />
+                <Download className="size-4 text-sun-fg" aria-hidden />
               </a>
             </li>
           ))}

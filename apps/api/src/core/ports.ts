@@ -103,3 +103,30 @@ export interface FileStorage {
   /** `null` when the key is unknown or malformed. */
   read(key: string): Promise<{ bytes: Uint8Array; contentType: string } | null>;
 }
+
+/** A StoreKit 2 transaction whose JWS signature, certificate chain, bundle id and environment were verified. */
+export interface AppleTransaction {
+  transactionId: string;
+  originalTransactionId: string;
+  productId: string;
+  environment: 'Production' | 'Sandbox';
+  /** UUID the app passed to StoreKit at purchase (`appAccountToken`) — we issue one per order. */
+  appAccountToken: string | null;
+  purchaseDate: Date | null;
+  /** Price in milliunits of `currency` (e.g. 924000 = 924.00), when Apple includes it. */
+  priceMilliunits: number | null;
+  currency: string | null;
+  revocationDate: Date | null;
+}
+/** App Store Server Notification V2, verified. */
+export interface AppleNotification {
+  notificationUUID: string;
+  notificationType: string;
+  subtype: string | null;
+  environment: 'Production' | 'Sandbox';
+  transaction: AppleTransaction | null;
+}
+export interface AppleSignedDataVerifier {
+  verifyTransaction(signedTransaction: string): Promise<AppleTransaction>;
+  verifyNotification(signedPayload: string): Promise<AppleNotification>;
+}

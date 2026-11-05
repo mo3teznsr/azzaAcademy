@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
@@ -107,7 +107,7 @@ class _AssignmentCardState extends ConsumerState<_AssignmentCard> {
       ref.invalidate(assignmentsProvider(widget.batchId));
       if (mounted) showToast(context, context.l10n.submittedOk);
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -135,9 +135,9 @@ class _AssignmentCardState extends ConsumerState<_AssignmentCard> {
         if (a.feedback != null) ...[const SizedBox(height: 8), Text(a.feedback!, style: t.bodyMedium)],
         if (a.state == AssignmentState.due) ...[
           const SizedBox(height: 12),
-          TextField(controller: _link, keyboardType: TextInputType.url, decoration: InputDecoration(labelText: l.linkLabel)),
+          TextField(controller: _link, keyboardType: TextInputType.url, decoration: fieldDecoration(label: l.linkLabel, icon: Icons.link_rounded, action: ClearFieldButton(controller: _link))),
           const SizedBox(height: 8),
-          TextField(controller: _text, maxLines: 3, minLines: 1, decoration: InputDecoration(labelText: l.textLabel)),
+          TextField(controller: _text, maxLines: 3, minLines: 1, decoration: fieldDecoration(label: l.textLabel, icon: Icons.notes_rounded)),
           const SizedBox(height: 12),
           FilledButton(onPressed: _busy ? null : _submit, child: Text(l.submitAssignment)),
         ],

@@ -26,7 +26,7 @@ export function VerifyPage({ code }: { code?: string }) {
   return (
     <div className="mx-auto flex w-full max-w-[960px] flex-col gap-10 px-4 sm:px-6">
       <header>
-        <span className="label-mono text-stone">{t.verify.title}</span>
+        <span className="label-mono text-muted-foreground">{t.verify.title}</span>
         {code && (
           <h1 className="mt-2 font-mono text-[clamp(28px,5vw,44px)] tracking-[0.1em]" dir="ltr">
             {code.toUpperCase()}
@@ -43,13 +43,13 @@ export function VerifyPage({ code }: { code?: string }) {
       ) : q.isPending ? (
         <LoadingBlock rows={1} height={320} />
       ) : notFound ? (
-        <section aria-labelledby="nf" className="flex flex-col gap-6 rounded-[24px] border border-dashed border-line-2 p-8" role="alert">
+        <section aria-labelledby="nf" className="flex flex-col gap-6 rounded-[24px] border border-dashed border-line-strong p-8" role="alert">
           <SignalMark state="ended" size={40} />
           <div>
             <h2 id="nf" className="font-display text-4xl font-extrabold">
               {t.verify.notFoundTitle}
             </h2>
-            <p className="mt-2 text-stone">{t.verify.notFoundBody}</p>
+            <p className="mt-2 text-muted-foreground">{t.verify.notFoundBody}</p>
           </div>
           <CodeForm initial={code} />
         </section>
@@ -74,7 +74,7 @@ function ValidCard({ c }: { c: CertificateVerification }) {
     [t.verify.issued, f.dateLong(c.issuedAt)],
   ];
   return (
-    <section aria-labelledby="valid" className="rise flex flex-col gap-8 rounded-[28px] bg-ivory p-[clamp(1.5rem,4vw,3rem)] text-ink">
+    <section aria-labelledby="valid" className="theme-cream rise flex flex-col gap-8 rounded-[28px] bg-ivory p-[clamp(1.5rem,4vw,3rem)] text-ink light:border light:border-border">
       <div className="flex flex-wrap items-center gap-3">
         <span className="inline-flex h-8 items-center gap-2 rounded-full bg-sage px-3 font-mono text-xs font-semibold tracking-[0.06em] uppercase">
           <BadgeCheck className="size-4" aria-hidden /> {t.verify.valid}

@@ -10,7 +10,10 @@ import 'package:azza/features/auth/data/auth_repository.dart';
 import 'package:azza/features/auth/domain/app_user.dart';
 import 'package:azza/features/catalog/data/catalog_repository.dart';
 import 'package:azza/features/catalog/domain/catalog_models.dart';
+import 'package:azza/features/checkout/data/app_store_gateway.dart';
+import 'package:azza/features/checkout/data/apple_iap_repository.dart';
 import 'package:azza/features/checkout/data/checkout_repository.dart';
+import 'package:azza/features/checkout/domain/apple_iap.dart';
 import 'package:azza/features/checkout/domain/checkout_models.dart';
 import 'package:azza/features/learn/data/learn_repository.dart';
 import 'package:azza/features/me/data/me_repository.dart';
@@ -22,7 +25,7 @@ import 'package:azza/features/teachers/domain/teacher_models.dart';
 import 'package:azza/features/waitlist/data/waitlist_repository.dart';
 import 'package:azza/features/waitlist/domain/waitlist_models.dart';
 
-const student = AppUser(id: 'u-s', name: 'Sara Kamal', email: 'sara@example.com', role: Role.student);
+const student = AppUser(id: 'u-s', name: 'Sara Kamal', email: 'sara@example.com', role: Role.student, image: '/media/avatars/sara.jpg');
 const teacher = AppUser(id: 'u-t', name: 'Lina Haddad', email: 'lina@example.com', role: Role.teacher);
 const admin = AppUser(id: 'u-a', name: 'Nour Adel', email: 'nour@example.com', role: Role.admin);
 
@@ -44,6 +47,13 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> sendVerificationEmail(String email) async {}
+
+  @override
+  Future<void> requestPasswordReset(String email, {required String redirectTo}) async => resetRequests.add(email);
+  final resetRequests = <String>[];
+
+  @override
+  Future<void> changePassword({required String current, required String next}) async {}
 }
 
 class FakeMeRepository implements MeRepository {
@@ -67,6 +77,18 @@ class FakeMeRepository implements MeRepository {
 
   @override
   Future<void> markAllNotificationsRead() async {}
+
+  @override
+  Future<void> deleteAccount() async => deleteCalls++;
+
+  @override
+  Future<AppUser> uploadAvatar(List<int> jpegBytes) async {
+    uploads++;
+    return avatarUser ?? student.copyWithImage('/media/avatars/test.jpg');
+  }
+  int uploads = 0;
+  AppUser? avatarUser;
+  int deleteCalls = 0;
 
   @override
   Future<void> markNotificationRead(String id) async {}
@@ -139,6 +161,46 @@ class FakeCheckoutRepository implements CheckoutRepository {
   Future<List<Order>> myOrders() async => [current];
   @override
   Future<Quote> quote(CheckoutRequest request) async => Quote(subtotalFils: current.totalFils, totalFils: current.totalFils);
+}
+
+/// `POST /payments/apple/verify`: answers with [result] (or throws [error]) and records each call.
+class FakeAppleIapRepository implements AppleIapRepository {
+  FakeAppleIapRepository({this.result, this.error});
+  Order? result;
+  Object? error;
+  final List<({String? orderId, String signedTransaction})> calls = [];
+
+  @override
+  Future<Order> verify({String? orderId, required String signedTransaction}) async {
+    calls.add((orderId: orderId, signedTransaction: signedTransaction));
+    if (error != null) throw error!;
+    return result!;
+  }
+}
+
+/// StoreKit stand-in: [products] by id, purchases pushed with [emit], finished transactions recorded.
+class FakeAppStoreGateway implements AppStoreGateway {
+  FakeAppStoreGateway({this.products = const {}, this.pendingUnfinished = const []});
+  final Map<String, StoreProduct> products;
+  List<StorePurchase> pendingUnfinished;
+  final _purchases = StreamController<List<StorePurchase>>.broadcast();
+  final List<(String, String)> bought = [];
+  final List<StorePurchase> finished = [];
+
+  void emit(List<StorePurchase> list) => _purchases.add(list);
+
+  @override
+  Future<bool> available() async => true;
+  @override
+  Future<StoreProduct?> product(String productId) async => products[productId];
+  @override
+  Future<void> buy(String productId, {required String appAccountToken}) async => bought.add((productId, appAccountToken));
+  @override
+  Stream<List<StorePurchase>> get purchases => _purchases.stream;
+  @override
+  Future<List<StorePurchase>> unfinished() async => pendingUnfinished;
+  @override
+  Future<void> finish(StorePurchase purchase) async => finished.add(purchase);
 }
 
 class FakeReceiptPicker implements ReceiptPicker {

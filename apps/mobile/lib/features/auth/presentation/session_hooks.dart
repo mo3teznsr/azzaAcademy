@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/push/push_service.dart';
+import '../../checkout/presentation/apple_purchase_coordinator.dart';
 import '../../me/data/me_repository.dart';
 import '../domain/app_user.dart';
 import 'auth_controller.dart';
@@ -13,7 +14,8 @@ import 'auth_controller.dart';
 /// - Sign-up: save the language/timezone/currency chosen during onboarding to the new profile (`PATCH /me`).
 /// - Sign-in / restore: the account's saved profile wins — adopt its locale and display currency locally,
 ///   so one person's device choices are never written into another account signing in on the same phone.
-/// - Both: register the FCM token at `POST /me/devices` (when push is configured).
+/// - Both: register the FCM token at `POST /me/devices` (when push is configured), and on iOS start the App Store
+///   transaction listener, which re-posts purchases left unfinished by a killed app (needs the session).
 List<Override> productionSessionHooks() => [
       postSignUpHookProvider.overrideWith((ref) => (AppUser user) async {
             final me = ref.read(meRepositoryProvider);
@@ -27,6 +29,7 @@ List<Override> productionSessionHooks() => [
                   .updateProfile(locale: locale, timezone: onboarding.timezone, displayCurrency: currency)
                   .then<void>((_) {}, onError: (_) {}));
             }
+            unawaited(ref.read(appleIapCoordinatorProvider).start());
             await _registerDevice(ref, user);
           }),
       postSignInHookProvider.overrideWith((ref) => (AppUser user) async {
@@ -34,6 +37,7 @@ List<Override> productionSessionHooks() => [
             if (ref.read(displayCurrencyProvider) != user.displayCurrency) {
               await ref.read(displayCurrencyProvider.notifier).set(user.displayCurrency);
             }
+            unawaited(ref.read(appleIapCoordinatorProvider).start());
             await _registerDevice(ref, user);
           }),
       preSignOutHookProvider.overrideWith((ref) => (AppUser user) async {
@@ -47,6 +51,8 @@ List<Override> productionSessionHooks() => [
 Future<void> _registerDevice(Ref ref, AppUser user) async {
   final push = ref.read(pushServiceProvider);
   if (!push.enabled) return;
+  // Asked only once someone is signed in and knows what the app is for — not on first launch.
+  if (!await push.requestPermission()) return;
   final me = ref.read(meRepositoryProvider);
   final token = await push.token();
   if (token != null) await me.registerDevice(token, push.platform);

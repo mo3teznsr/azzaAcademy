@@ -3,16 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
+import '../../../core/network/error_text.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../data/checkout_repository.dart';
+import '../domain/apple_iap.dart';
 import '../domain/checkout_models.dart';
 
-/// Card payment via Stripe Payment Sheet (Apple Pay / Google Pay / card, 3-D Secure), charged in AED.
+/// Card payment via Stripe Payment Sheet (Google Pay / card, 3-D Secure), charged in AED. Android/web only.
 class CardPaymentScreen extends ConsumerStatefulWidget {
   const CardPaymentScreen({super.key, required this.orderId, this.clientSecret});
   final String orderId;
@@ -41,7 +42,7 @@ class _CardPaymentScreenState extends ConsumerState<CardPaymentScreen> {
         showToast(context, l.paymentCancelled);
       }
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -83,14 +84,13 @@ class _CardPaymentScreenState extends ConsumerState<CardPaymentScreen> {
                 ]),
               ),
               const SizedBox(height: 20),
+              // Android only (the route is closed on iOS, which pays through In-App Purchase).
               Row(children: [
-                const Icon(Icons.apple_rounded),
-                const SizedBox(width: 8),
-                const Text('Apple Pay'),
-                const SizedBox(width: 20),
-                const Icon(Icons.g_mobiledata_rounded, size: 30),
-                const Text('Google Pay'),
-                const SizedBox(width: 20),
+                if (!usesAppStorePayments) ...[
+                  const Icon(Icons.g_mobiledata_rounded, size: 30),
+                  const Text('Google Pay'),
+                  const SizedBox(width: 20),
+                ],
                 const Icon(Icons.credit_card_rounded),
               ]),
               const SizedBox(height: 20),

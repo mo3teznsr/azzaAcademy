@@ -38,7 +38,7 @@ export function ForgotForm() {
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
           {error && <FormBanner tone="error">{error}</FormBanner>}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email" className="text-[13px] text-stone">
+            <Label htmlFor="email" className="text-[13px] text-muted-foreground">
               {t.auth.signIn.email}
             </Label>
             <Input id="email" type="email" dir="ltr" autoComplete="email" aria-invalid={!!errors.email} {...form.register('email')} />

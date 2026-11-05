@@ -97,7 +97,7 @@ void main() {
     await settle(tester);
 
     expect(find.text('Something went off-air.'), findsOneWidget);
-    expect(find.text('No connection to Azza. Check your network.'), findsOneWidget);
+    expect(find.text('No connection to Azza. Check your network and try again.'), findsOneWidget);
 
     me
       ..error = null

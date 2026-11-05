@@ -140,7 +140,7 @@ function WaitingCard({ w, coverStyle }: { w: WaitlistEntry; coverStyle?: string 
           {course}
         </Link>
         <p className="flex items-center gap-2 font-display text-xl">
-          <Hourglass className="size-4 text-peach" aria-hidden />
+          <Hourglass className="size-4 text-peach-fg" aria-hidden />
           {fill(t.waitlist.position, { pos: ordinal(w.position), total: f.number(w.total) })}
         </p>
         <span className="text-[13px] text-muted-foreground">

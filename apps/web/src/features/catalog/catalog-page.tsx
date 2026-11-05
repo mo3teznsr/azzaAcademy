@@ -44,19 +44,9 @@ function Hero() {
   const live = useLiveNow();
   const n = live.data?.liveSessions ?? 0;
   return (
-    <section className="relative isolate -mx-4 mt-6 grid items-end gap-10 overflow-hidden rounded-[28px] px-6 pb-8 pt-40 sm:-mx-0 sm:px-10 lg:grid-cols-[1.35fr_1fr] lg:pt-56">
-      {/* The empty dark side of the photo sits behind the headline; mirrored in RTL so it stays on the reading start. */}
-      <Image
-        src="/images/scenes/hero.jpg"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="-z-20 object-cover object-[70%_center] rtl:-scale-x-100"
-      />
-      <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-ink via-ink/60 to-ink/10" />
+    <section className="mt-6 flex flex-col gap-8">
       <div>
-        <div className="label-mono mb-4 flex items-center gap-2 text-onair">
+        <div className="label-mono mb-4 flex flex-wrap items-center gap-2 text-onair-fg">
           <SignalMark size={18} /> {t.nav.public.findBatch}
           {n > 0 && (
             <span className="ms-2 inline-flex items-center gap-1.5 rounded-full bg-onair px-2.5 py-0.5 text-ink" role="status">
@@ -68,17 +58,23 @@ function Hero() {
           <RiseWords lines={[[{ text: t.catalog.titleA }], [{ text: t.catalog.titleB, className: 'font-light' }, { text: t.catalog.titleC }]]} />
         </h1>
       </div>
-      <div className="flex flex-col gap-6 pb-4">
-        <p className="max-w-md text-lg leading-relaxed text-stone">{t.catalog.body}</p>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild size="lg">
-            <a href="#catalog">
-              {t.catalog.browse} <ArrowDown />
-            </a>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <a href="#starting">{t.catalog.seeMonth}</a>
-          </Button>
+      {/* The photo stands on its own — no scrim, no type on it; the copy sits beside it. */}
+      <div className="grid items-end gap-8 lg:grid-cols-[1.6fr_1fr]">
+        <div className="relative aspect-[16/10] overflow-hidden rounded-[28px] bg-muted lg:aspect-[16/9]">
+          <Image src="/images/scenes/hero.jpg" alt="" fill priority sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover object-[70%_center]" />
+        </div>
+        <div className="flex flex-col gap-6 pb-2">
+          <p className="max-w-md text-lg leading-relaxed text-muted-foreground">{t.catalog.body}</p>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild size="lg">
+              <a href="#catalog">
+                {t.catalog.browse} <ArrowDown />
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <a href="#starting">{t.catalog.seeMonth}</a>
+            </Button>
+          </div>
         </div>
       </div>
     </section>
@@ -89,15 +85,15 @@ function HowItWorks() {
   const { t, f } = useI18n();
   return (
     <section id="how" aria-labelledby="how-title" className="flex flex-col gap-6">
-      <h2 id="how-title" className="label-mono text-stone">
+      <h2 id="how-title" className="label-mono text-muted-foreground">
         {t.catalog.howTitle}
       </h2>
-      <ol className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line md:grid-cols-3">
+      <ol className="grid gap-px overflow-hidden rounded-[20px] border border-border bg-border md:grid-cols-3">
         {t.catalog.steps.map((s, i) => (
-          <li key={s.word} className="flex flex-col gap-3 bg-ink p-7">
-            <span className="timecode text-sm text-stone">{f.number(i + 1).padStart(2, f.number(0))}</span>
+          <li key={s.word} className="flex flex-col gap-3 bg-background p-7">
+            <span className="timecode text-sm text-muted-foreground">{f.number(i + 1).padStart(2, f.number(0))}</span>
             <b className="font-display text-5xl font-extrabold">{s.word}</b>
-            <span className="text-stone">{s.text}</span>
+            <span className="text-muted-foreground">{s.text}</span>
           </li>
         ))}
       </ol>
@@ -125,7 +121,7 @@ function Catalog() {
         <h2 id="catalog-title" className="font-display text-[clamp(44px,6vw,72px)] font-extrabold leading-[0.9]">
           {t.catalog.catalogTitle}
         </h2>
-        <label className="flex h-12 w-full max-w-sm items-center gap-2.5 rounded-full border border-line bg-card px-4 text-stone">
+        <label className="flex h-12 w-full max-w-sm items-center gap-2.5 rounded-full border border-border bg-card px-4 text-muted-foreground">
           <Search className="size-5" />
           <span className="sr-only">{t.catalog.searchPlaceholder}</span>
           <input
@@ -133,14 +129,14 @@ function Catalog() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t.catalog.searchPlaceholder}
-            className="min-w-0 flex-1 bg-transparent font-medium text-ivory outline-none placeholder:text-stone"
+            className="min-w-0 flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground"
           />
         </label>
       </div>
       {categories.length > 1 && (
         <ToggleGroup type="single" value={category || 'all'} onValueChange={(v) => setCategory(v === 'all' || !v ? '' : v)} className="flex flex-wrap justify-start gap-2">
           {['all', ...categories].map((c) => (
-            <ToggleGroupItem key={c} value={c} className="h-9 rounded-full border border-line px-4 text-sm data-[state=on]:border-ivory data-[state=on]:bg-ivory data-[state=on]:text-ink">
+            <ToggleGroupItem key={c} value={c} className="h-9 rounded-full border border-border px-4 text-sm data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
               {c === 'all' ? t.catalog.allCategories : c}
             </ToggleGroupItem>
           ))}
@@ -177,23 +173,24 @@ function CourseCard({ course, batches }: { course: Course; batches: BatchSummary
   const minPrice = batches.length ? Math.min(...batches.map(batchPriceFils)) : course.priceFils;
   return (
     <Link href={`/courses/${course.slug}`} className="group flex h-full flex-col gap-4 rounded-[20px] bg-card p-3 no-underline transition-transform duration-300 ease-(--ease-expo) hover:-translate-y-1">
-      <div className="relative">
-        <CourseCover course={course} className="h-56 transition-transform duration-500 ease-(--ease-expo)" />
-        <span className="label-mono absolute end-3 top-3 rounded-full bg-ink px-2.5 py-1 text-ivory">{f.plural(batches.length, t.catalog.batches)}</span>
-      </div>
+      <CourseCover course={course} showMeta={false} className="h-56" />
       <div className="flex flex-1 flex-col gap-2 px-2 pb-2">
-        <b className="text-lg leading-tight text-ivory">{title.text}</b>
-        {title.fallback && <span className="label-mono text-stone">{t.common.englishOnly}</span>}
-        <span className="text-sm text-stone">
+        <div className="flex items-center justify-between gap-2">
+          <span className="label-mono truncate text-muted-foreground">{course.category}</span>
+          <span className="label-mono shrink-0 rounded-full border border-border px-2.5 py-1 text-muted-foreground">{f.plural(batches.length, t.catalog.batches)}</span>
+        </div>
+        <b className="text-lg leading-tight text-foreground">{title.text}</b>
+        {title.fallback && <span className="label-mono text-muted-foreground">{t.common.englishOnly}</span>}
+        <span className="text-sm text-muted-foreground">
           {t.status.level[course.level]} · {f.plural(course.modules.length || (next?.schedule?.sessionCount ?? 0), t.common.sessions)}
         </span>
-        <div className="mt-auto flex items-end justify-between gap-2 border-t border-line pt-3 text-sm">
-          <span className="text-stone">
+        <div className="mt-auto flex items-end justify-between gap-2 border-t border-border pt-3 text-sm">
+          <span className="text-muted-foreground">
             <span className="label-mono block">{t.catalog.nextBatch}</span>
-            <span className="text-ivory">{next ? `${next.code} · ${f.dayMonth(next.startsOn, next.timezone)}` : t.catalog.noUpcoming}</span>
+            <span className="text-foreground">{next ? `${next.code} · ${f.dayMonth(next.startsOn, next.timezone)}` : t.catalog.noUpcoming}</span>
           </span>
-          <span className="text-end text-stone">
-            {t.catalog.from} <b className="block text-base text-ivory">{money.display(minPrice)}</b>
+          <span className="text-end text-muted-foreground">
+            {t.catalog.from} <b className="block text-base text-foreground">{money.display(minPrice)}</b>
           </span>
         </div>
       </div>
@@ -212,7 +209,7 @@ function StartingSoon() {
         <h2 id="starting-title" className="font-display text-[40px] font-extrabold leading-none">
           {t.catalog.startingTitle}
         </h2>
-        <span className="label-mono text-stone">{fill(t.catalog.timesShown, { tz: gmtOffset(tz) })}</span>
+        <span className="label-mono text-muted-foreground">{fill(t.catalog.timesShown, { tz: gmtOffset(tz) })}</span>
       </div>
       {batches.isPending ? (
         <LoadingGrid count={4} height={180} />
@@ -223,7 +220,7 @@ function StartingSoon() {
       ) : (
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-4">
           {items.map((b) => (
-            <li key={b.id} className="flex flex-col gap-3 rounded-2xl border border-line p-5">
+            <li key={b.id} className="flex flex-col gap-3 rounded-2xl border border-border p-5">
               <div className="flex items-center justify-between">
                 <b className="font-display text-3xl font-extrabold" dir="ltr">
                   {b.code}
@@ -232,7 +229,7 @@ function StartingSoon() {
               </div>
               <b>{pick(b.course.titleEn, b.course.titleAr).text}</b>
               <span className="font-display text-lg">{describeRule(b, f)}</span>
-              <span className="text-sm text-stone">
+              <span className="text-sm text-muted-foreground">
                 {f.dayMonth(b.startsOn, b.timezone)} → {f.dayMonth(b.endsOn, b.timezone)} · {t.status.sessionLanguage[b.language]}
               </span>
               <Link href={`/courses/${b.course.slug}?batch=${b.id}`} className="link-sun mt-auto text-sm">
@@ -313,13 +310,13 @@ function StartMarquee() {
   );
   if (items.length === 0) return null;
   return (
-    <section aria-label={t.landing.marqueeLabel} className="marquee flex items-center gap-3 border-y border-line py-2.5" data-paused={paused}>
+    <section aria-label={t.landing.marqueeLabel} className="marquee flex items-center gap-3 border-y border-border py-2.5" data-paused={paused}>
       <button
         type="button"
         aria-pressed={paused}
         aria-label={t.landing.pauseScrolling}
         onClick={() => setPaused((p) => !p)}
-        className="press grid size-11 shrink-0 place-items-center rounded-full border border-line text-stone hover:text-ivory aria-pressed:bg-ivory aria-pressed:text-ink"
+        className="press grid size-11 shrink-0 place-items-center rounded-full border border-border text-muted-foreground hover:text-foreground aria-pressed:bg-primary aria-pressed:text-primary-foreground"
       >
         {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
       </button>
@@ -332,14 +329,14 @@ function StartMarquee() {
                 <Link
                   href={`/courses/${b.course.slug}?batch=${b.id}`}
                   tabIndex={dup ? -1 : undefined}
-                  className="flex min-h-11 items-center gap-3 px-5 text-sm whitespace-nowrap text-stone no-underline hover:text-ivory"
+                  className="flex min-h-11 items-center gap-3 px-5 text-sm whitespace-nowrap text-muted-foreground no-underline hover:text-foreground"
                 >
-                  <b className="font-display text-lg text-ivory" dir="ltr">
+                  <b className="font-display text-lg text-foreground" dir="ltr">
                     {b.code}
                   </b>
                   <span>{pick(b.course.titleEn, b.course.titleAr).text}</span>
-                  <span className="label-mono text-sun">{fill(t.landing.starts, { d: f.dayMonth(b.startsOn, b.timezone) })}</span>
-                  <span aria-hidden className="text-line-2">
+                  <span className="label-mono text-sun-fg">{fill(t.landing.starts, { d: f.dayMonth(b.startsOn, b.timezone) })}</span>
+                  <span aria-hidden className="text-line-strong">
                     /
                   </span>
                 </Link>
@@ -367,23 +364,23 @@ function Pricing() {
     <section id="pricing" aria-labelledby="pricing-title" className="flex scroll-mt-8 flex-col gap-8">
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
         <div>
-          <span className="label-mono text-stone">{t.landing.pricingKicker}</span>
+          <span className="label-mono text-muted-foreground">{t.landing.pricingKicker}</span>
           <h2 id="pricing-title" className="mt-3 font-display text-[clamp(48px,7vw,96px)] font-extrabold leading-[0.85]">
             {t.landing.pricingTitleA}
             <br />
             <span className="font-light">{t.landing.pricingTitleB}</span>
           </h2>
         </div>
-        <p className="max-w-md text-stone">
+        <p className="max-w-md text-muted-foreground">
           {t.landing.pricingBody} {min !== null && <span className="block pt-2 text-sm">{t.landing.pricingFrom}</span>}
         </p>
       </div>
       <ul className="grid gap-4 md:grid-cols-2">
         {plans.map(({ key, plan, amount, featured }) => (
-          <li key={key} className={featured ? 'flex flex-col gap-4 rounded-[24px] bg-ivory p-6 text-ink' : 'flex flex-col gap-4 rounded-[24px] border border-line p-6'}>
-            <span className={featured ? 'label-mono text-stone-2' : 'label-mono text-stone'}>{plan.name}</span>
+          <li key={key} className={featured ? 'flex flex-col gap-4 rounded-[24px] bg-ivory p-6 text-ink light:bg-ink light:text-ivory' : 'flex flex-col gap-4 rounded-[24px] border border-border p-6'}>
+            <span className={featured ? 'label-mono text-stone-2 light:text-stone' : 'label-mono text-muted-foreground'}>{plan.name}</span>
             <b className="font-display text-4xl font-extrabold leading-none">{amount}</b>
-            <p className={featured ? 'text-sm text-stone-2' : 'text-sm text-stone'}>{plan.note}</p>
+            <p className={featured ? 'text-sm text-stone-2 light:text-stone' : 'text-sm text-muted-foreground'}>{plan.note}</p>
           </li>
         ))}
       </ul>
@@ -400,15 +397,13 @@ function FinalCta() {
   const { t } = useI18n();
   const { user } = useAuth();
   return (
-    <section aria-labelledby="final-title" className="relative isolate -mx-4 grid gap-8 overflow-hidden rounded-[28px] px-6 py-16 sm:mx-0 sm:px-10 lg:grid-cols-[1.3fr_1fr] lg:items-end lg:py-24">
-      <Image src="/images/scenes/onboarding.jpg" alt="" fill sizes="100vw" className="-z-20 object-cover rtl:-scale-x-100" />
-      <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-r from-ink via-ink/75 to-ink/20 rtl:bg-linear-to-l" />
-      <h2 id="final-title" className="font-display text-[clamp(56px,9vw,140px)] font-extrabold leading-[0.82]">
-        <span className="block">{t.landing.finalTitleA}</span>
-        <span className="block font-light">{t.landing.finalTitleB}</span>
-      </h2>
-      <div className="flex flex-col gap-6">
-        <p className="max-w-md text-lg text-cream-2">{t.landing.finalBody}</p>
+    <section aria-labelledby="final-title" className="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+      <div className="flex flex-col gap-8">
+        <h2 id="final-title" className="font-display text-[clamp(56px,8vw,128px)] font-extrabold leading-[0.82]">
+          <span className="block">{t.landing.finalTitleA}</span>
+          <span className="block font-light">{t.landing.finalTitleB}</span>
+        </h2>
+        <p className="max-w-md text-lg text-soft-foreground">{t.landing.finalBody}</p>
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg" variant="sun">
             <a href="#catalog">{t.landing.finalPrimary}</a>
@@ -419,6 +414,9 @@ function FinalCta() {
             </Button>
           )}
         </div>
+      </div>
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-muted">
+        <Image src="/images/scenes/onboarding.jpg" alt="" fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
       </div>
     </section>
   );

@@ -5,6 +5,8 @@ import type { CalendarFeed, Enrollment, Items, Me, MyCertificates, MyWaitlist, N
 export const meApi = {
   get: () => http.get<Me>('/api/v1/me'),
   update: (input: UpdateProfileInput) => http.patch<Me>('/api/v1/me', input),
+  /** Permanent account erasure; 409 `ADMIN_ACCOUNT` | `HAS_ACTIVE_TEACHING` | `HAS_UNPAID_EARNINGS` | `ORDER_IN_PROGRESS`. */
+  deleteAccount: () => http.del<{ ok: true; deleted: true }>('/api/v1/me', { confirm: 'DELETE' }),
   /** Sessions in [from, to) — the `{ from, to, items }` envelope is unwrapped to the list. */
   schedule: (from: string, to: string) => items(http.get<ScheduleResponse>('/api/v1/me/schedule', { from, to })) as Promise<ScheduleItem[]>,
   enrollments: () => items(http.get<Items<Enrollment>>('/api/v1/me/enrollments')),

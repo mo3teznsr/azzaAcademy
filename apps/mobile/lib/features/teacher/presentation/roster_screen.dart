@@ -69,7 +69,7 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
               const SizedBox(height: 16),
               TextField(
                 onChanged: (v) => setState(() => _q = v.trim()),
-                decoration: InputDecoration(prefixIcon: const Icon(Icons.search_rounded), hintText: l.searchStudents),
+                decoration: fieldDecoration(label: l.searchStudents, icon: Icons.search_rounded, labelIsHint: true),
               ),
               const SizedBox(height: 12),
               Wrap(spacing: 8, children: [

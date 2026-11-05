@@ -150,13 +150,13 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
                         return (
                           <TableCell key={s.id} className="text-center">
                             <span
-                              className={cn('inline-block size-3 rounded-sm', a === 'PRESENT' && 'bg-sage', a === 'ABSENT' && 'bg-onair', a === 'UPCOMING' && 'border border-line-2')}
+                              className={cn('inline-block size-3 rounded-sm', a === 'PRESENT' && 'bg-sage', a === 'ABSENT' && 'bg-onair', a === 'UPCOMING' && 'border border-line-strong')}
                               title={a}
                             />
                           </TableCell>
                         );
                       })}
-                      <TableCell className={cn('text-end font-semibold', (r.attendancePercent ?? 100) < 60 && 'text-peach')}>{r.attendancePercent === null ? '—' : f.percent(r.attendancePercent)}</TableCell>
+                      <TableCell className={cn('text-end font-semibold', (r.attendancePercent ?? 100) < 60 && 'text-peach-fg')}>{r.attendancePercent === null ? '—' : f.percent(r.attendancePercent)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

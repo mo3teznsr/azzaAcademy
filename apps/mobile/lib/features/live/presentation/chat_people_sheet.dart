@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
@@ -38,7 +38,7 @@ class _ChatPeopleSheetState extends ConsumerState<ChatPeopleSheet> with SingleTi
     try {
       await run();
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     }
   }
 
@@ -94,18 +94,17 @@ class _ChatPeopleSheetState extends ConsumerState<ChatPeopleSheet> with SingleTi
                   ),
                   Padding(
                     padding: EdgeInsets.fromLTRB(12, 4, 12, 12 + MediaQuery.viewInsetsOf(context).bottom),
-                    child: Row(children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _input,
-                          textInputAction: TextInputAction.send,
-                          onSubmitted: (_) => _send(),
-                          decoration: InputDecoration(hintText: l.messageHint),
-                        ),
+                    child: TextField(
+                      controller: _input,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _send(),
+                      decoration: fieldDecoration(
+                        label: l.messageHint,
+                        icon: Icons.chat_bubble_outline_rounded,
+                        labelIsHint: true,
+                        action: IconButton(tooltip: l.send, onPressed: _send, icon: const Icon(Icons.send_rounded, size: 20)),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton.filled(tooltip: l.send, onPressed: _send, icon: const Icon(Icons.send_rounded)),
-                    ]),
+                    ),
                   ),
                 ]),
                 // ── People

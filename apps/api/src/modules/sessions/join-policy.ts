@@ -25,6 +25,13 @@ export interface JoinDecision {
   hidden: boolean;
 }
 
+/** `session`: the real LiveKit room. `demo`: a private room for an App Review demo account (see DemoReviewers). */
+export type JoinRoom = 'session' | 'demo';
+
+export interface JoinPlan extends JoinDecision {
+  room: JoinRoom;
+}
+
 /** Pure: who may enter a live room, when, and with which LiveKit permissions. */
 export class JoinPolicy {
   /** Classroom role without timing rules (used for chat, history, socket rooms). */
@@ -61,5 +68,23 @@ export class JoinPolicy {
       case 'student':
         return { role, isHost: false, canPublish: ctx.allowedToSpeak ?? false, canPublishData: true, hidden: false };
     }
+  }
+
+  /**
+   * `decide` plus the App Review demo exception. Real users (`demoReviewer` falsy) get exactly `decide`'s answer in
+   * the real room. A demo reviewer who is an ACTIVE student of the batch may enter a SCHEDULED session at any time —
+   * no lobby clock, no host needed — into a private demo room where they can publish (to try camera and mic).
+   * Cancelled/ended sessions, missing enrollment and LIVE sessions (real room, normal student rights) are unchanged.
+   */
+  plan(ctx: JoinContext & { demoReviewer?: boolean }): JoinPlan {
+    if (ctx.demoReviewer && ctx.session.status === 'SCHEDULED' && this.roleFor(ctx) === 'student') {
+      return { role: 'student', isHost: false, canPublish: true, canPublishData: true, hidden: false, room: 'demo' };
+    }
+    return { ...this.decide(ctx), room: 'session' };
+  }
+
+  /** Status a client should see: a demo reviewer's SCHEDULED session reads as LIVE so the app lets them in. */
+  viewStatus(status: SessionStatus, role: ClassroomRole | null, demoReviewer: boolean): SessionStatus {
+    return demoReviewer && role === 'student' && status === 'SCHEDULED' ? 'LIVE' : status;
   }
 }

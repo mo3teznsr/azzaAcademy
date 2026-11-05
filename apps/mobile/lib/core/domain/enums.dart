@@ -116,7 +116,10 @@ enum EnrollmentStatus implements WireEnum {
 
 enum PaymentMethod implements WireEnum {
   stripe('STRIPE'),
-  bankTransfer('BANK_TRANSFER');
+  bankTransfer('BANK_TRANSFER'),
+
+  /// iOS only: Apple In-App Purchase (App Store guideline 3.1.1).
+  appleIap('APPLE_IAP');
 
   const PaymentMethod(this.wire);
   @override

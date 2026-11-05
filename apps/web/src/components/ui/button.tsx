@@ -14,9 +14,9 @@ const buttonVariants = cva(
         outline: "border-input bg-transparent text-foreground hover:bg-accent aria-expanded:bg-accent",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "text-foreground hover:bg-accent aria-expanded:bg-accent",
-        destructive: "border-danger-line bg-danger-bg text-danger-fg hover:bg-[#3a1a14]",
+        destructive: "border-danger-line bg-danger-bg text-danger-fg hover:bg-[#3a1a14] light:hover:bg-[#f7d3c8]",
         ink: "bg-ink text-ivory hover:bg-ink-2",
-        link: "rounded-none px-0 text-sun underline-offset-4 hover:underline in-data-[theme=cream]:text-ink",
+        link: "rounded-none px-0 text-sun-fg underline-offset-4 hover:underline in-data-[theme=cream]:text-ink",
       },
       size: {
         default: "min-h-11 px-5 text-[15px]",

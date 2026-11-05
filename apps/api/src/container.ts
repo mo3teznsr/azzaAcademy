@@ -6,10 +6,11 @@ import { BetterAuthUserProvisioner, InviteRegistry } from './auth/user-provision
 import type { Job } from './jobs/scheduler';
 import type { AppConfig } from './core/config';
 import { fileURLToPath } from 'node:url';
-import type { Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, VideoProvider } from './core/ports';
+import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, VideoProvider } from './core/ports';
 import { systemClock } from './infrastructure/clock';
 import { createDb, type Db } from './infrastructure/db';
 import { ConsoleMailer, NodemailerMailer } from './infrastructure/mail/mailers';
+import { AppStoreSignedDataVerifier } from './infrastructure/payments/apple-store-verifier';
 import { FakePaymentGateway, StripePaymentGateway } from './infrastructure/payments/stripe-gateway';
 import { FirebasePushNotifier, LogPushNotifier } from './infrastructure/push/push-notifiers';
 import { SocketIoBroadcaster } from './infrastructure/realtime/realtime';
@@ -38,6 +39,8 @@ import { PrismaNotificationRepository } from './modules/notifications/notificati
 import { NotificationService } from './modules/notifications/notification.service';
 import { PrismaBankAccountRepository, PrismaCouponRepository } from './modules/payments/catalog-admin.repository';
 import { BankAccountService, CouponService } from './modules/payments/catalog-admin.service';
+import { AppleIapService } from './modules/payments/apple/apple-iap.service';
+import { AppleIapCheckout } from './modules/payments/checkout/apple-iap-checkout';
 import { BankTransferCheckout } from './modules/payments/checkout/bank-transfer-checkout';
 import { CheckoutStrategyRegistry } from './modules/payments/checkout/checkout-strategy';
 import { StripeCheckout } from './modules/payments/checkout/stripe-checkout';
@@ -66,6 +69,7 @@ import { PrismaPayoutRepository } from './modules/payouts/payout.repository';
 import { PayoutService } from './modules/payouts/payout.service';
 import { ClassroomState } from './modules/sessions/classroom-state';
 import { JoinPolicy } from './modules/sessions/join-policy';
+import { DemoReviewers } from './modules/sessions/demo-reviewers';
 import { PrismaSessionRepository } from './modules/sessions/session.repository';
 import { SessionService } from './modules/sessions/session.service';
 import { PrismaRescheduleRequestRepository } from './modules/sessions/reschedule-request.repository';
@@ -78,6 +82,7 @@ export interface Adapters {
   push: PushNotifier;
   video: VideoProvider;
   payments: PaymentGateway;
+  apple: AppleSignedDataVerifier;
   realtime: SocketIoBroadcaster;
   storage: FileStorage;
 }
@@ -107,6 +112,13 @@ export function createAdapters(config: AppConfig): Adapters {
     payments: config.STRIPE_SECRET_KEY
       ? new StripePaymentGateway(config.STRIPE_SECRET_KEY, config.STRIPE_WEBHOOK_SECRET)
       : new FakePaymentGateway(),
+    apple: new AppStoreSignedDataVerifier({
+      bundleId: config.APPLE_BUNDLE_ID,
+      environments: config.appleEnvironments,
+      appAppleId: config.APPLE_APP_APPLE_ID,
+      // OCSP revocation checks of Apple's signing certificates (network) outside dev/test.
+      onlineChecks: config.NODE_ENV === 'production',
+    }),
     realtime: new SocketIoBroadcaster(),
     storage:
       config.S3_BUCKET && config.CLOUDFRONT_URL
@@ -151,6 +163,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     payouts,
     clock,
     rescheduleRequestRepo,
+    DemoReviewers.fromCsv(config.DEMO_REVIEWER_EMAILS),
   );
 
   const machine = new EnrollmentStateMachine();
@@ -159,6 +172,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const strategies = new CheckoutStrategyRegistry([
     new StripeCheckout(payments),
     new BankTransferCheckout(paymentsRepo, notifications, config.BANK_TRANSFER_HOLD_HOURS),
+    new AppleIapCheckout(),
   ]);
   const checkout = new CheckoutService(
     paymentsRepo,
@@ -171,7 +185,9 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     notifications,
   );
 
-  const meService = new MeService(new PrismaMeRepository(db), clock);
+  const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, config.BANK_TRANSFER_HOLD_HOURS);
+
+  const meService = new MeService(new PrismaMeRepository(db), clock, lifecycle, adapters.storage);
   const services = {
     courses: new CourseService(courseRepo),
     batches: new BatchService(batchRepo, courseRepo, new ScheduleGenerator(), access, notifications, clock),
@@ -187,7 +203,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     rescheduleRequests: new RescheduleRequestService(rescheduleRequestRepo, sessions, notifications, clock),
     payouts,
     checkout,
-    finance: new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, config.BANK_TRANSFER_HOLD_HOURS),
+    finance,
+    appleIap: new AppleIapService(paymentsRepo, adapters.apple, checkout, finance),
     fx,
     bankAccounts: new BankAccountService(new PrismaBankAccountRepository(db)),
     coupons: new CouponService(new PrismaCouponRepository(db)),
@@ -216,6 +233,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     },
     integrations: {
       stripe: !!config.STRIPE_SECRET_KEY,
+      appleIap: config.appleEnvironments.length > 0,
       livekit: !!(config.LIVEKIT_API_KEY && config.LIVEKIT_API_SECRET && config.LIVEKIT_URL),
       smtp: !!config.SMTP_HOST,
       push: !!(config.FIREBASE_PROJECT_ID && config.FIREBASE_CLIENT_EMAIL && config.FIREBASE_PRIVATE_KEY),

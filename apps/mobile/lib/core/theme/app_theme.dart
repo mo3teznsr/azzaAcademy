@@ -4,14 +4,11 @@ import 'tokens.dart';
 import 'typography.dart';
 
 abstract final class AzzaTheme {
-  static AzzaPalette paletteFor(ThemeVariant v) => switch (v) {
-        ThemeVariant.studentInk => AzzaPalette.studentInk,
-        ThemeVariant.teacherInk => AzzaPalette.teacherInk,
-        ThemeVariant.adminCream => AzzaPalette.adminCream,
-      };
+  static ThemeData light(ThemeVariant variant, {bool arabic = false}) => build(variant, brightness: Brightness.light, arabic: arabic);
+  static ThemeData dark(ThemeVariant variant, {bool arabic = false}) => build(variant, brightness: Brightness.dark, arabic: arabic);
 
-  static ThemeData build(ThemeVariant variant, {bool arabic = false}) {
-    final p = paletteFor(variant);
+  static ThemeData build(ThemeVariant variant, {Brightness brightness = Brightness.dark, bool arabic = false}) {
+    final p = AzzaPalette.forVariant(variant, brightness);
     final scheme = ColorScheme(
       brightness: p.isDark ? Brightness.dark : Brightness.light,
       primary: p.accent,
@@ -78,6 +75,8 @@ abstract final class AzzaTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         labelStyle: TextStyle(color: p.muted),
         hintStyle: TextStyle(color: p.muted),
+        prefixIconColor: WidgetStateColor.resolveWith((s) => s.contains(WidgetState.focused) ? p.accent : p.muted),
+        suffixIconColor: WidgetStateColor.resolveWith((s) => s.contains(WidgetState.focused) ? p.text : p.muted),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AzzaSpace.radiusSm),
           borderSide: BorderSide(color: p.isDark ? AzzaColors.fieldLine : p.line),

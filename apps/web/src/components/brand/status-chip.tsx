@@ -24,12 +24,14 @@ const TONES: Record<ChipTone, string> = {
   sun: 'bg-sun text-ink',
   sage: 'bg-sage text-ink',
   peach: 'bg-peach text-ink',
-  ivory: 'bg-ivory text-ink',
+  /* Inverted chip: ivory on the ink ground, ink in light mode (admin cream keeps ivory). */
+  ivory: 'bg-ivory text-ink light:bg-ink light:text-ivory',
   onair: 'bg-onair text-ink',
-  outline: 'border border-stone text-stone in-data-[theme=cream]:border-stone-2 in-data-[theme=cream]:text-stone-2',
-  dashed: 'border border-dashed border-stone text-stone in-data-[theme=cream]:border-stone-2 in-data-[theme=cream]:text-stone-2',
-  dashedPeach: 'border border-dashed border-peach text-peach in-data-[theme=cream]:border-[#c56a33] in-data-[theme=cream]:text-[#9a4a1c]',
-  strike: 'border border-line text-stone line-through in-data-[theme=cream]:border-cream-line',
+  outline: 'border border-muted-foreground text-muted-foreground',
+  dashed: 'border border-dashed border-muted-foreground text-muted-foreground',
+  dashedPeach: 'border border-dashed border-peach-fg text-peach-fg',
+  strike: 'border border-border text-muted-foreground line-through',
+  /* Fixed ink chip — sits on accent fills (sun / on-air banners). */
   ink: 'bg-ink text-ivory',
   danger: 'border border-danger-line bg-danger-bg text-danger-fg',
 };

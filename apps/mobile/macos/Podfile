@@ -1,0 +1,56 @@
+platform :osx, '10.15'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'ephemeral', 'Flutter-Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure \"flutter pub get\" is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Flutter-Generated.xcconfig, then run \"flutter pub get\""
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_macos_podfile_setup
+
+target 'Runner' do
+  use_frameworks!
+
+  flutter_install_all_macos_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+
+# WebRTC-SDK sometimes lands in Pods/ as an empty, nested folder (no WebRTC.xcframework), which breaks the build
+# with "'WebRTC/WebRTC.h' file not found". Repair it from the CocoaPods cache after every install.
+def repair_webrtc_pod
+  dir = File.join(__dir__, 'Pods', 'WebRTC-SDK')
+  return if !Dir.exist?(dir) || Dir.exist?(File.join(dir, 'WebRTC.xcframework'))
+  cached = Dir.glob(File.expand_path('~/Library/Caches/CocoaPods/Pods/Release/WebRTC-SDK/*/WebRTC.xcframework')).max_by { |p| File.mtime(p) }
+  raise '[!] Pods/WebRTC-SDK is empty and no cached WebRTC.xcframework exists: delete Pods/WebRTC-SDK and run pod install' unless cached
+  FileUtils.rm_rf(Dir.glob(File.join(dir, '{*,.DS_Store}')))
+  FileUtils.cp_r(cached, dir)
+  puts "Repaired Pods/WebRTC-SDK from #{cached}"
+end
+
+post_install do |installer|
+  repair_webrtc_pod
+  installer.pods_project.targets.each do |target|
+    flutter_additional_macos_build_settings(target)
+  end
+end

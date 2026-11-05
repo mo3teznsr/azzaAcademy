@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { Logo } from '@/components/brand/signal-mark';
 import { LocaleSwitcher } from '@/components/brand/switchers';
+import { ThemeMenu } from '@/components/brand/theme-switcher';
 import { useI18n } from '@/lib/i18n/provider';
 
 /** Split layout from w-00-auth: editorial left, form right. */
@@ -11,35 +12,40 @@ export function AuthShell({ kicker, title, sub, children }: { kicker: string; ti
   const { t } = useI18n();
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
-      <section className="relative isolate hidden flex-col justify-between overflow-hidden border-e border-line p-12 lg:flex">
-        <Image src="/images/scenes/auth.jpg" alt="" fill priority sizes="55vw" className="-z-20 object-cover object-top opacity-70" />
-        <span aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-ink via-ink/70 to-ink/20" />
+      {/* Editorial side: type first, then the photo on its own — no scrim, no text over it. */}
+      <section className="hidden flex-col gap-10 border-e border-border p-12 lg:flex">
         <Logo />
         <div>
-          <h2 className="font-display text-[clamp(72px,8vw,140px)] font-extrabold leading-[0.82]">
+          <h2 className="font-display text-[clamp(64px,7vw,120px)] font-extrabold leading-[0.82]">
             <span className="block">{t.auth.heroLine1}</span>
             <span className="block font-light">{t.auth.heroLine2}</span>
             <span className="block">
               {t.auth.heroLine3.replace(/\.$/, '')}
-              <span className="text-onair">.</span>
+              <span className="text-onair-fg">.</span>
             </span>
           </h2>
-          <p className="mt-8 max-w-md text-lg text-stone">{t.auth.heroBody}</p>
+          <p className="mt-6 max-w-md text-lg text-muted-foreground">{t.auth.heroBody}</p>
         </div>
-        <span className="label-mono text-stone">B07·S05 · 00:42:17</span>
+        <div className="relative min-h-56 flex-1 overflow-hidden rounded-[24px] bg-muted">
+          <Image src="/images/scenes/auth.jpg" alt="" fill priority sizes="50vw" className="object-cover object-top" />
+        </div>
+        <span className="label-mono text-muted-foreground">B07·S05 · 00:42:17</span>
       </section>
       <section className="flex flex-col p-6 sm:p-12">
         <div className="flex items-center justify-between">
           <span className="lg:hidden">
             <Logo />
           </span>
-          <LocaleSwitcher className="ms-auto" />
+          <div className="ms-auto flex items-center gap-2">
+            <LocaleSwitcher />
+            <ThemeMenu />
+          </div>
         </div>
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-8 py-12">
           <div className="flex flex-col gap-3">
-            <span className="label-mono text-stone">{kicker}</span>
+            <span className="label-mono text-muted-foreground">{kicker}</span>
             <h1 className="font-display text-[56px] font-extrabold leading-[0.9]">{title}</h1>
-            {sub && <p className="text-stone">{sub}</p>}
+            {sub && <p className="text-muted-foreground">{sub}</p>}
           </div>
           {children}
         </div>

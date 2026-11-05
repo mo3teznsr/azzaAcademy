@@ -45,6 +45,7 @@ abstract final class Routes {
   static String order(String id) => '/orders/$id';
   static String cardPayment(String orderId) => '/orders/$orderId/card';
   static String bankTransfer(String orderId) => '/orders/$orderId/bank-transfer';
+  static String applePayment(String orderId) => '/orders/$orderId/app-store';
   static String enrolled(String orderId) => '/orders/$orderId/enrolled';
   static const myOrders = '/me/orders';
   static const certificates = '/me/certificates';
@@ -59,6 +60,8 @@ abstract final class Routes {
   static const assignments = '/assignments';
   static const notifications = '/notifications';
   static const languageSettings = '/settings/language';
+  static const editProfile = '/settings/profile';
+  static const profilePhoto = '/profile-photo';
 
   static const publicPaths = {welcome, interests, signIn, signUp};
 

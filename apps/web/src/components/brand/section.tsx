@@ -18,7 +18,7 @@ export function SectionHeader({ title, href, linkLabel, as: As = 'h2', size = 'm
 
 export function Panel({ children, className, as: As = 'section', ...rest }: { children: ReactNode; className?: string; as?: 'section' | 'div' | 'article' } & React.HTMLAttributes<HTMLElement>) {
   return (
-    <As className={cn('flex min-w-0 flex-col gap-4 rounded-[20px] border border-border p-6 in-data-[theme=cream]:border-transparent in-data-[theme=cream]:bg-card', className)} {...rest}>
+    <As className={cn('flex min-w-0 flex-col gap-4 rounded-[20px] border border-border p-6 in-data-[theme=cream]:border-transparent in-data-[theme=cream]:bg-card light:border-transparent light:bg-card', className)} {...rest}>
       {children}
     </As>
   );

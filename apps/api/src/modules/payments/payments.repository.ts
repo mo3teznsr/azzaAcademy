@@ -44,6 +44,11 @@ export interface OrderRecord {
   fxRate: number;
   couponCode: string | null;
   stripePaymentIntentId: string | null;
+  appleProductId: string | null;
+  appleAppAccountToken: string | null;
+  appleTransactionId: string | null;
+  appleOriginalTransactionId: string | null;
+  appleEnvironment: string | null;
   bankAccountId: string | null;
   receiptUrl: string | null;
   receiptUploadedAt: Date | null;
@@ -70,6 +75,8 @@ export type NewOrder = Pick<
   | 'fxRate'
   | 'couponCode'
   | 'stripePaymentIntentId'
+  | 'appleProductId'
+  | 'appleAppAccountToken'
   | 'bankAccountId'
   | 'expiresAt'
 >;
@@ -122,6 +129,10 @@ export interface PaymentsRepository {
   createOrder(data: NewOrder): Promise<OrderRecord>;
   findOrder(id: string): Promise<OrderRecord | null>;
   findOrderByPaymentIntent(paymentIntentId: string): Promise<OrderRecord | null>;
+  findOrderByAppleTransaction(transactionId: string): Promise<OrderRecord | null>;
+  findOrderByAppleToken(appAccountToken: string): Promise<OrderRecord | null>;
+  /** The student's newest APPLE_IAP order for this product that is not PAID/REFUNDED (fallback when a transaction has no token). */
+  latestUnpaidAppleOrder(userId: string, productId: string): Promise<OrderRecord | null>;
   openOrderFor(enrollmentId: string): Promise<OrderRecord | null>;
   updateOrder(id: string, patch: OrderPatch): Promise<OrderRecord>;
   /** AWAITING_PAYMENT / AWAITING_RECEIPT orders whose hold expired. */
@@ -162,6 +173,11 @@ const orderFields = {
   fxRate: true,
   couponCode: true,
   stripePaymentIntentId: true,
+  appleProductId: true,
+  appleAppAccountToken: true,
+  appleTransactionId: true,
+  appleOriginalTransactionId: true,
+  appleEnvironment: true,
   bankAccountId: true,
   receiptUrl: true,
   receiptUploadedAt: true,
@@ -256,6 +272,25 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
 
   async findOrderByPaymentIntent(paymentIntentId: string) {
     const o = await this.db.order.findUnique({ where: { stripePaymentIntentId: paymentIntentId }, select: orderFields });
+    return o && toOrder(o);
+  }
+
+  async findOrderByAppleTransaction(transactionId: string) {
+    const o = await this.db.order.findUnique({ where: { appleTransactionId: transactionId }, select: orderFields });
+    return o && toOrder(o);
+  }
+
+  async findOrderByAppleToken(appAccountToken: string) {
+    const o = await this.db.order.findUnique({ where: { appleAppAccountToken: appAccountToken.toLowerCase() }, select: orderFields });
+    return o && toOrder(o);
+  }
+
+  async latestUnpaidAppleOrder(userId: string, productId: string) {
+    const o = await this.db.order.findFirst({
+      where: { userId, method: 'APPLE_IAP', appleProductId: productId, status: { notIn: ['PAID', 'REFUNDED'] } },
+      orderBy: { createdAt: 'desc' },
+      select: orderFields,
+    });
     return o && toOrder(o);
   }
 

@@ -159,7 +159,7 @@ function NextTakeHero({ session }: { session: ScheduleItem }) {
   const lobbyOpen = secs <= 15 * 60;
   const course = pick(session.batch.course.titleEn, session.batch.course.titleAr).text;
   return (
-    <section aria-labelledby="nexttake" className="flex flex-wrap items-end justify-between gap-8 rounded-[28px] border border-line bg-card p-[clamp(1.5rem,3vw,2.75rem)]">
+    <section aria-labelledby="nexttake" className="flex flex-wrap items-end justify-between gap-8 rounded-[28px] border border-border bg-card p-[clamp(1.5rem,3vw,2.75rem)]">
       <div className="flex min-w-0 flex-[1_1_480px] flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2.5">
           <Chip tone={lobbyOpen ? 'sun' : 'sky'}>{t.learn.nextTake}</Chip>
@@ -174,7 +174,7 @@ function NextTakeHero({ session }: { session: ScheduleItem }) {
       </div>
       <div className="flex flex-[0_1_320px] flex-col items-start gap-3.5">
         <span className="label-mono text-muted-foreground">{t.learn.startsIn}</span>
-        <span className="timecode text-[clamp(2.5rem,4vw,3.5rem)] leading-none text-sun">
+        <span className="timecode text-[clamp(2.5rem,4vw,3.5rem)] leading-none text-sun-fg">
           {secs >= 86400
             ? new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(Math.round(secs / 86400), 'day')
             : timecode(Math.max(0, secs))}
@@ -205,7 +205,7 @@ function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
   const active = enrollment.status === 'ACTIVE';
   return (
     <article className="flex min-w-0 flex-wrap overflow-hidden rounded-[20px] bg-card">
-      <CourseCover course={b.course} size="sm" className="min-h-[220px] flex-[0_0_168px] rounded-none" />
+      <CourseCover course={b.course} size="sm" showMeta={false} className="min-h-[220px] flex-[0_0_168px] rounded-none" />
       <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-3 p-5">
         <div className="flex items-center justify-between gap-2">
           <b className="font-display text-3xl font-extrabold leading-none" dir="ltr">
@@ -213,7 +213,10 @@ function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
           </b>
           {active ? <Chip tone="ivory">{t.status.batch[b.status]}</Chip> : <EnrollmentStatusChip status={enrollment.status} />}
         </div>
-        <b className="text-base">{pick(b.course.titleEn, b.course.titleAr).text}</b>
+        <div className="flex flex-col gap-1">
+          <span className="label-mono text-muted-foreground">{b.course.category}</span>
+          <b className="text-base">{pick(b.course.titleEn, b.course.titleAr).text}</b>
+        </div>
         <span className="text-[13px] text-muted-foreground">
           {describeRule(b, f)} · <bdi>{b.teacher.name}</bdi>
         </span>
@@ -224,7 +227,7 @@ function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
                 <span>{fill(t.learn.sessionsDone, { a: f.number(done), b: f.number(total) })}</span>
                 {att !== undefined && <span className="text-muted-foreground">{fill(t.learn.attendance, { p: f.percent(att) })}</span>}
               </div>
-              <div className="h-1.5 rounded-md bg-line">
+              <div className="h-1.5 rounded-md bg-secondary">
                 <div className="h-1.5 rounded-md bg-sage" style={{ width: `${pct}%` }} />
               </div>
             </div>
@@ -292,7 +295,7 @@ function RecentRecordings() {
           <ul className="flex flex-col gap-2">
             {list.slice(0, 4).map((r) => (
               <li key={r.id}>
-                <Link href={`/library/${r.id}`} className="flex items-center gap-3 rounded-[14px] bg-card p-3 no-underline hover:bg-line">
+                <Link href={`/library/${r.id}`} className="flex items-center gap-3 rounded-[14px] bg-card p-3 no-underline hover:bg-accent">
                   <CourseCover course={r.batch.course} size="sm" showMeta={false} className="h-14 w-20 shrink-0 p-2 text-[10px] [&>span]:text-base" />
                   <div className="min-w-0">
                     <b className="block truncate text-[15px] text-foreground">{r.title}</b>

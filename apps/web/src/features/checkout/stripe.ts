@@ -12,20 +12,19 @@ export function getStripe(): Promise<Stripe | null> | null {
   return promise;
 }
 
-/** Payment Element appearance tuned to the ink theme. */
-export const stripeAppearance = {
-  theme: 'night' as const,
-  variables: {
-    colorPrimary: '#FFD24A',
-    colorBackground: '#1C1A18',
-    colorText: '#FBF8F2',
-    colorDanger: '#FF9C85',
-    fontFamily: '"Inter Tight", system-ui, sans-serif',
-    borderRadius: '12px',
-    spacingUnit: '4px',
-  },
-  rules: {
-    '.Input': { border: '1px solid #3A3631', padding: '14px' },
-    '.Label': { color: '#A39B90' },
-  },
-};
+const common = { fontFamily: '"Inter Tight", system-ui, sans-serif', borderRadius: '12px', spacingUnit: '4px' };
+
+/** Payment Element appearance tuned to the site theme (the iframe can't read our CSS variables). */
+export function stripeAppearance(theme: 'light' | 'dark') {
+  return theme === 'dark'
+    ? {
+        theme: 'night' as const,
+        variables: { ...common, colorPrimary: '#FFD24A', colorBackground: '#1C1A18', colorText: '#FBF8F2', colorDanger: '#FF9C85' },
+        rules: { '.Input': { border: '1px solid #3A3631', padding: '14px' }, '.Label': { color: '#A39B90' } },
+      }
+    : {
+        theme: 'stripe' as const,
+        variables: { ...common, colorPrimary: '#121110', colorBackground: '#FBF8F2', colorText: '#121110', colorDanger: '#B3361C' },
+        rules: { '.Input': { border: '1px solid #D9D0C2', padding: '14px' }, '.Label': { color: '#6B645B' } },
+      };
+}

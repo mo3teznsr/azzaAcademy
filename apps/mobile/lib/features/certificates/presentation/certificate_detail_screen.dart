@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/prefs/app_prefs.dart';
@@ -33,10 +34,15 @@ class _CertificateDetailScreenState extends ConsumerState<CertificateDetailScree
     if (_isNew) ref.read(seenCertificatesProvider).markSeen(widget.code);
   }
 
+  /// System share sheet with the public verify link; copies it when sharing isn't available.
   Future<void> _share(Certificate c) async {
     final url = ref.read(appConfigProvider).certificateVerifyUrl(c.code);
-    await Clipboard.setData(ClipboardData(text: url));
-    if (mounted) showToast(context, context.l10n.certificateLinkCopied);
+    try {
+      await SharePlus.instance.share(ShareParams(uri: Uri.parse(url), subject: c.courseName(ref.read(localeProvider))));
+    } catch (_) {
+      await Clipboard.setData(ClipboardData(text: url));
+      if (mounted) showToast(context, context.l10n.certificateLinkCopied);
+    }
   }
 
   @override

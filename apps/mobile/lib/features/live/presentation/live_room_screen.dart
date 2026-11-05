@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
@@ -109,7 +109,7 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
     try {
       await _c.endForAll();
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     }
   }
 

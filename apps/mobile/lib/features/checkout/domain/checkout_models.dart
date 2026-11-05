@@ -126,6 +126,8 @@ class Order {
     this.batch,
     this.bankAccount,
     this.student,
+    this.appleProductId,
+    this.appleAppAccountToken,
   });
 
   factory Order.fromJson(Json j) {
@@ -153,6 +155,8 @@ class Order {
       batch: batchJson == null ? null : Batch.fromJson(batchJson),
       bankAccount: objOrNull(j, 'bankAccount') == null ? null : BankAccount.fromJson(obj(j, 'bankAccount')),
       student: userJson == null ? null : PersonRef.fromJson(userJson),
+      appleProductId: strOrNull(j, 'appleProductId'),
+      appleAppAccountToken: strOrNull(j, 'appleAppAccountToken'),
     );
   }
 
@@ -177,6 +181,16 @@ class Order {
   final BankAccount? bankAccount;
   final PersonRef? student;
 
+  /// APPLE_IAP orders: the consumable product to buy and the appAccountToken that ties the purchase to this order.
+  final String? appleProductId;
+  final String? appleAppAccountToken;
+
+  /// An App Store order the student can still pay (a cancelled sheet leaves it AWAITING_PAYMENT).
+  bool get awaitsAppStorePurchase =>
+      method == PaymentMethod.appleIap &&
+      appleProductId != null &&
+      (status == OrderStatus.awaitingPayment || status == OrderStatus.failed);
+
   bool get needsReceipt =>
       method == PaymentMethod.bankTransfer &&
       (status == OrderStatus.awaitingReceipt ||
@@ -187,9 +201,18 @@ class Order {
 
 @immutable
 class CheckoutResult {
-  const CheckoutResult({required this.order, this.waitlisted = false, this.clientSecret, this.bankAccount, this.reference, this.expiresAt});
+  const CheckoutResult({
+    required this.order,
+    this.waitlisted = false,
+    this.clientSecret,
+    this.bankAccount,
+    this.reference,
+    this.expiresAt,
+    this.appleProductId,
+    this.appAccountToken,
+  });
 
-  /// 201 `{ waitlisted: false, order, enrollment, quote, clientSecret | bankAccount+reference+expiresAt }`
+  /// 201 `{ waitlisted: false, order, enrollment, quote, clientSecret | bankAccount+reference+expiresAt | appleProductId+appAccountToken }`
   /// or 202 `{ waitlisted: true, enrollment }` (no order).
   factory CheckoutResult.fromJson(Json j) => CheckoutResult(
         waitlisted: boolean(j, 'waitlisted'),
@@ -198,6 +221,8 @@ class CheckoutResult {
         bankAccount: objOrNull(j, 'bankAccount') == null ? null : BankAccount.fromJson(obj(j, 'bankAccount')),
         reference: strOrNull(j, 'reference'),
         expiresAt: date(j, 'expiresAt'),
+        appleProductId: strOrNull(j, 'appleProductId'),
+        appAccountToken: strOrNull(j, 'appAccountToken'),
       );
 
   final Order order;
@@ -206,6 +231,8 @@ class CheckoutResult {
   final BankAccount? bankAccount;
   final String? reference;
   final DateTime? expiresAt;
+  final String? appleProductId;
+  final String? appAccountToken;
 }
 
 /// A file chosen by the user (receipt).

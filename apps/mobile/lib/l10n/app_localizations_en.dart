@@ -60,9 +60,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get you => 'You';
 
   @override
-  String get comingSoon => 'Coming soon on mobile.';
-
-  @override
   String get navHome => 'Home';
 
   @override
@@ -497,7 +494,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payWith => 'Pay with';
 
   @override
-  String get payCard => 'Card · Apple Pay · Google Pay';
+  String get payCard => 'Card · Google Pay';
 
   @override
   String get payCardSub => 'Instant seat · 3-D Secure';
@@ -1069,15 +1066,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get displayCurrency => 'Display currency';
-
-  @override
-  String get pushLobby => 'Lobby open';
-
-  @override
-  String get pushChanges => 'Schedule changes';
-
-  @override
-  String get pushRecordings => 'Recordings & grades';
 
   @override
   String get editProfile => 'Edit profile';
@@ -1735,4 +1723,265 @@ class AppLocalizationsEn extends AppLocalizations {
   String waitlistOfTotal(String total) {
     return 'of $total';
   }
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'This permanently deletes your profile, enrolments, certificates and messages. Payment records are kept without your name for accounting. This cannot be undone.';
+
+  @override
+  String get deleteAccountTypeHint => 'Type DELETE to confirm';
+
+  @override
+  String get deleteAccountConfirm => 'Delete permanently';
+
+  @override
+  String get deleteAccountFailed =>
+      'Couldn\'t delete the account. Try again or contact support.';
+
+  @override
+  String get deleteAccountTeacher =>
+      'Teachers and admins can\'t delete their account while they have batches. Contact support.';
+
+  @override
+  String get privacyPolicy => 'Privacy policy';
+
+  @override
+  String get termsOfService => 'Terms of service';
+
+  @override
+  String get legal => 'Legal';
+
+  @override
+  String get termsLead => 'By continuing you agree to the';
+
+  @override
+  String get andLabel => 'and';
+
+  @override
+  String get deleteAccountOrderPending =>
+      'A bank transfer for one of your orders is being checked. Try again once it\'s settled.';
+
+  @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get themeSystemHint => 'Match your phone\'s setting';
+
+  @override
+  String get pushNotifications => 'Push notifications';
+
+  @override
+  String get pushOn => 'On';
+
+  @override
+  String get pushOff => 'Off';
+
+  @override
+  String get pushSettingsHint =>
+      'Change notifications in your phone\'s Settings → Apps → Azza.';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get forgotPasswordBody =>
+      'Enter your account email and we\'ll send you a link to choose a new password.';
+
+  @override
+  String get sendResetLink => 'Send reset link';
+
+  @override
+  String get resetLinkSent =>
+      'If that email has an account, a reset link is on its way.';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get errNetwork =>
+      'No connection to Azza. Check your network and try again.';
+
+  @override
+  String get errTimeout => 'Azza took too long to answer. Try again.';
+
+  @override
+  String get errCancelled => 'Cancelled.';
+
+  @override
+  String get errSignedOut => 'Your session ended. Please sign in again.';
+
+  @override
+  String get errForbidden => 'You don\'t have access to this.';
+
+  @override
+  String get errNotFound => 'We couldn\'t find that. It may have been removed.';
+
+  @override
+  String get errBadCredentials => 'That email and password don\'t match.';
+
+  @override
+  String get errEmailTaken =>
+      'An account with this email already exists. Try signing in.';
+
+  @override
+  String get errTooMany => 'Too many attempts. Wait a minute and try again.';
+
+  @override
+  String get errServer =>
+      'Something went wrong on our side. Try again shortly.';
+
+  @override
+  String get errGeneric => 'Something went wrong. Try again.';
+
+  @override
+  String get profileSaved => 'Profile saved.';
+
+  @override
+  String get timezoneHint => 'Session times are shown in this timezone.';
+
+  @override
+  String useDeviceTimezone(String zone) {
+    return 'Use this phone\'s timezone: $zone';
+  }
+
+  @override
+  String get changePassword => 'Change password';
+
+  @override
+  String get currentPassword => 'Current password';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get passwordChanged =>
+      'Password changed. Other devices were signed out.';
+
+  @override
+  String get changePasswordNote =>
+      'Changing your password signs you out on your other devices.';
+
+  @override
+  String get payAppStore => 'App Store';
+
+  @override
+  String get payAppStoreSub => 'In-app purchase, charged to your Apple Account';
+
+  @override
+  String get payWithAppStore => 'Pay with the App Store';
+
+  @override
+  String get appStoreNote =>
+      'Payment is handled by Apple. Your seat is confirmed as soon as the purchase completes.';
+
+  @override
+  String appStoreBuy(String price) {
+    return 'Buy · $price';
+  }
+
+  @override
+  String get appStoreConfirming => 'Confirming your purchase…';
+
+  @override
+  String get appStorePending =>
+      'Waiting for approval. We\'ll enrol you as soon as the App Store confirms the purchase.';
+
+  @override
+  String get appStoreFailed => 'The purchase didn\'t go through.';
+
+  @override
+  String get appStoreUnavailable =>
+      'In-app purchases aren\'t available on this device.';
+
+  @override
+  String get appStoreRetryLater =>
+      'We couldn\'t confirm the purchase yet. It\'s safe — we\'ll retry automatically the next time you open the app.';
+
+  @override
+  String get appStoreRejected =>
+      'We couldn\'t apply this purchase to your order. Contact support — Apple can refund the purchase.';
+
+  @override
+  String get enrolOnWebsite => 'Enrol on our website';
+
+  @override
+  String get enrolOnWebsiteBody =>
+      'This seat isn\'t available as an in-app purchase.';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get accountTitle => 'Account';
+
+  @override
+  String get accountRowHint => 'Photo, password, delete';
+
+  @override
+  String get profileSection => 'Profile';
+
+  @override
+  String get changePhoto => 'Change photo';
+
+  @override
+  String get emailLockedNote =>
+      'Your sign-in email. Contact support to change it.';
+
+  @override
+  String get useThisPhone => 'Use this phone\'s';
+
+  @override
+  String get saveChanges => 'Save changes';
+
+  @override
+  String get currentPasswordRequired => 'Enter your current password.';
+
+  @override
+  String get dangerZone => 'Danger zone';
+
+  @override
+  String get deleteAccountSummary =>
+      'Permanently delete your account, enrolments and certificates. This can\'t be undone.';
+
+  @override
+  String get takePhoto => 'Take a photo';
+
+  @override
+  String get chooseFromLibrary => 'Choose from library';
+
+  @override
+  String get photoPickFailed =>
+      'Couldn\'t open the camera or photos. Check Azza\'s permissions in Settings.';
+
+  @override
+  String get addPhotoTitle => 'Add your photo';
+
+  @override
+  String get addPhotoBody =>
+      'Your teacher sees your photo on the class list and in live sessions, so they know who\'s in the room.';
+
+  @override
+  String get addPhotoTips =>
+      'Use a clear, recent photo of your face. Only your teachers and classmates see it.';
+
+  @override
+  String get addPhotoAction => 'Add photo';
 }

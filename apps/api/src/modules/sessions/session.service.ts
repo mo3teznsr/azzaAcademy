@@ -16,10 +16,12 @@ import { addMinutes, formatInZone } from '../../core/time';
 import { appEmails } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { ClassroomState } from './classroom-state';
+import { DemoReviewers, demoRoomName } from './demo-reviewers';
 import type { ClassroomRole, JoinPolicy } from './join-policy';
 import type { SessionCore, SessionRepository } from './session.repository';
 
-type Actor = { id: string; name: string; role: Role };
+/** `email` identifies App Review demo accounts (DemoReviewers); callers without it are never treated as demo. */
+type Actor = { id: string; name: string; role: Role; email?: string };
 
 /** Persists a host's reschedule request (implemented by PrismaRescheduleRequestRepository). */
 export interface RescheduleRequestLog {
@@ -45,7 +47,17 @@ export class SessionService {
     private readonly earnings: EarningsAccrual,
     private readonly clock: Clock,
     private readonly requests: RescheduleRequestLog,
+    private readonly demo: DemoReviewers = DemoReviewers.none(),
   ) {}
+
+  private isDemo(user: { email?: string }) {
+    return this.demo.isDemo(user.email);
+  }
+
+  /** A demo reviewer in a session that isn't really live: their classroom activity stays private (see `join`). */
+  private inDemoRoom(s: SessionCore, user: { email?: string }) {
+    return s.status !== 'LIVE' && this.isDemo(user);
+  }
 
   // ───────── access ─────────
 
@@ -82,6 +94,11 @@ export class SessionService {
     const s = await this.load(id);
     const myRole = await this.requireRole(s, user, ['host', 'student', 'observer']);
     const detail = await this.repo.findDetail(id);
+    const status = this.policy.viewStatus(s.status, myRole, this.isDemo(user));
+    if (status !== detail!.status) {
+      // App Review demo: present the session as live so the lobby offers "Join" (the stored session is untouched).
+      return { ...detail!, status, startedAt: detail!.startedAt ?? this.clock.now(), myRole };
+    }
     return { ...detail!, myRole };
   }
 
@@ -209,16 +226,42 @@ export class SessionService {
 
   // ───────── live room ─────────
 
+  /**
+   * Issues a LiveKit token for the session room.
+   *
+   * App Review demo accounts (DEMO_REVIEWER_EMAILS) joining a session that is not live get a token for a private
+   * per-reviewer room (`demoRoomName`) instead of the real one. This is the least invasive option: the real session's
+   * status, recording, notifications and attendance are never written — the demo room name matches no LiveSession,
+   * so LiveKit webhooks for it (participant_joined/left, room_finished) are ignored — and other students and the
+   * teacher never see the reviewer. No recording is started for the demo room. When the real session is LIVE the
+   * reviewer joins the real room as an ordinary student. Every other user takes the unchanged `JoinPolicy.decide` path.
+   */
   async join(id: string, user: Actor) {
     const s = await this.load(id);
     const enrollmentStatus = user.role === 'ADMIN' ? null : await this.repo.enrollmentStatus(user.id, s.batchId);
-    const decision = this.policy.decide({
+    const decision = this.policy.plan({
       session: { ...s, batchTeacherId: s.batch.teacherId },
       user,
       enrollmentStatus,
       allowedToSpeak: this.classroom.canSpeak(id, user.id),
       now: this.clock.now(),
+      demoReviewer: this.isDemo(user),
     });
+    if (decision.room === 'demo') {
+      const roomName = demoRoomName(s.roomName, user.id);
+      await this.video.ensureRoom(roomName, { emptyTimeoutSec: 5 * 60, maxParticipants: 2 });
+      const token = await this.video.createJoinToken({
+        roomName,
+        identity: user.id,
+        name: user.name,
+        canPublish: decision.canPublish,
+        canPublishData: decision.canPublishData,
+        isHost: false,
+        hidden: false,
+        metadata: JSON.stringify({ role: decision.role, userRole: user.role, demo: true }),
+      });
+      return { serverUrl: this.video.serverUrl, token, roomName, role: decision.role, canPublish: decision.canPublish, sessionStatus: 'LIVE' as const };
+    }
     await this.video.ensureRoom(s.roomName, { emptyTimeoutSec: 10 * 60, maxParticipants: s.batch.capacity + 10 });
     const token = await this.video.createJoinToken({
       roomName: s.roomName,
@@ -316,6 +359,18 @@ export class SessionService {
     const s = await this.load(sessionId);
     await this.requireRole(s, user, ['host', 'student', 'observer']);
     if (s.status === 'CANCELLED' || s.status === 'ENDED') throw new BusinessRuleError('Chat is closed for this session', 'CHAT_CLOSED');
+    if (this.inDemoRoom(s, user)) {
+      // Demo room: echo to the reviewer only; nothing is stored on, or broadcast to, the real session.
+      const event: ChatMessageEvent = {
+        id: `demo-${this.clock.now().getTime()}`,
+        sessionId,
+        user: { id: user.id, name: user.name, role: user.role },
+        body,
+        createdAt: this.clock.now().toISOString(),
+      };
+      this.realtime.toUser(user.id, SOCKET_EVENTS.CHAT_MESSAGE, event);
+      return event;
+    }
     const msg = await this.repo.createMessage(sessionId, user.id, body);
     const event: ChatMessageEvent = {
       id: msg.id,
@@ -331,6 +386,12 @@ export class SessionService {
   async raiseHand(sessionId: string, user: Actor) {
     const s = await this.load(sessionId);
     await this.requireRole(s, user, ['student']);
+    if (this.inDemoRoom(s, user)) {
+      // Demo room: show the reviewer their own raised hand without touching the real session's queue.
+      const event: HandQueueEvent = { sessionId, queue: [{ userId: user.id, name: user.name, raisedAt: this.clock.now().toISOString() }] };
+      this.realtime.toUser(user.id, SOCKET_EVENTS.HAND_QUEUE, event);
+      return event;
+    }
     this.classroom.raise(sessionId, user, this.clock.now());
     return this.broadcastHands(sessionId);
   }

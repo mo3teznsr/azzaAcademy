@@ -8,7 +8,7 @@ import type { CheckoutStrategyRegistry } from './checkout/checkout-strategy';
 import type { EnrollmentLifecycle } from './enrollment-lifecycle';
 import type { EnrollmentStateMachine } from './enrollment-state';
 import type { FxService } from './fx.service';
-import type { PaymentsRepository, SaleBatch } from './payments.repository';
+import type { OrderPatch, OrderRecord, PaymentsRepository, SaleBatch } from './payments.repository';
 import { COUPON_REFUSAL_MESSAGES, couponRefusal } from './coupon-eligibility';
 import { PriceCalculator, type Quote } from './price-calculator';
 import type { ReferenceGenerator } from './reference-generator';
@@ -116,6 +116,8 @@ export class CheckoutService {
       fxRate: quote.display.rate,
       couponCode: quote.couponCode,
       stripePaymentIntentId: started.stripePaymentIntentId ?? null,
+      appleProductId: started.appleProductId ?? null,
+      appleAppAccountToken: started.appleAppAccountToken ?? null,
       bankAccountId: started.bankAccountId ?? null,
       expiresAt: started.expiresAt,
     });
@@ -205,6 +207,18 @@ export class CheckoutService {
     return updated;
   }
 
+  /**
+   * A gateway confirmed the money (Stripe webhook, verified Apple transaction): order → PAID, coupon redeemed,
+   * enrollment ACTIVE (a late success still activates an expired hold), realtime + enrolled notification.
+   */
+  async confirmPaid(order: OrderRecord, patch: OrderPatch = {}) {
+    const paid = await this.repo.updateOrder(order.id, { status: 'PAID', paidAt: this.lifecycle.now(), receivedFils: order.totalFils, ...patch });
+    if (order.couponCode) await this.repo.redeemCoupon(order);
+    await this.lifecycle.activate(order.enrollmentId);
+    this.lifecycle.orderUpdated(paid);
+    return paid;
+  }
+
   /** Stripe webhook. Idempotent: replays of an already-applied event are no-ops. */
   async handlePaymentEvent(evt: PaymentWebhookEvent) {
     if (evt.type === 'ignored' || !evt.paymentIntentId) return { handled: false };
@@ -213,15 +227,7 @@ export class CheckoutService {
 
     if (evt.type === 'payment.succeeded') {
       if (order.status === 'PAID' || order.status === 'REFUNDED') return { handled: true, duplicate: true };
-      const paid = await this.repo.updateOrder(order.id, {
-        status: 'PAID',
-        paidAt: this.lifecycle.now(),
-        receivedFils: order.totalFils,
-        feeFils: evt.feeFils ?? 0,
-      });
-      if (order.couponCode) await this.repo.redeemCoupon(order);
-      await this.lifecycle.activate(order.enrollmentId);
-      this.lifecycle.orderUpdated(paid);
+      await this.confirmPaid(order, { feeFils: evt.feeFils ?? 0 });
       return { handled: true };
     }
     if (evt.type === 'payment.failed') {

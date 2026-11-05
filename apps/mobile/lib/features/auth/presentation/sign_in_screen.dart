@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
+import '../../../core/providers.dart';
+import '../../../core/utils/links.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
+import '../data/auth_repository.dart';
 import 'auth_controller.dart';
 
 /// Email + password sign-in / sign-up against better-auth.
@@ -24,7 +27,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _busy = false;
-  bool _obscure = true;
   String? _error;
 
   @override
@@ -53,10 +55,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       }
       // The router redirects to the role's home on auth change.
     } catch (e) {
-      if (mounted) setState(() => _error = AppException.from(e).message);
+      if (mounted) setState(() => _error = errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _forgotPassword() async {
+    final sent = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _ResetPasswordSheet(initialEmail: _email.text.trim()),
+    );
+    if (sent == true && mounted) showToast(context, context.l10n.resetLinkSent);
   }
 
   @override
@@ -84,7 +95,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   controller: _name,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.name],
-                  decoration: InputDecoration(labelText: l.fullName),
+                  decoration: fieldDecoration(label: l.fullName, icon: Icons.person_outline_rounded),
                   validator: (v) => (v ?? '').trim().length < 2 ? l.nameTooShort : null,
                 ),
                 const SizedBox(height: 12),
@@ -95,26 +106,23 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
-                decoration: InputDecoration(labelText: l.email),
+                decoration: fieldDecoration(label: l.email, icon: Icons.mail_outline_rounded),
                 validator: (v) => RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch((v ?? '').trim()) ? null : l.invalidEmail,
               ),
               const SizedBox(height: 12),
-              TextFormField(
+              PasswordField(
                 key: const Key('password'),
                 controller: _password,
-                obscureText: _obscure,
-                autofillHints: [up ? AutofillHints.newPassword : AutofillHints.password],
-                onFieldSubmitted: (_) => _submit(),
-                decoration: InputDecoration(
-                  labelText: l.password,
-                  suffixIcon: IconButton(
-                    tooltip: l.password,
-                    icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  ),
-                ),
+                label: l.password,
+                newPassword: up,
+                onSubmitted: (_) => _submit(),
                 validator: (v) => (v ?? '').length < 8 ? l.passwordTooShort : null,
               ),
+              if (!up)
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: TextButton(key: const Key('forgot-password'), onPressed: _forgotPassword, child: Text(l.forgotPassword)),
+                ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Text(_error!, style: t.bodyMedium?.copyWith(color: AzzaColors.peach)),
@@ -131,30 +139,92 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 onPressed: () => context.go(up ? Routes.signIn : Routes.signUp),
                 child: Text(up ? l.haveAccount : l.noAccount),
               ),
-              const SizedBox(height: 16),
-              Row(children: [
-                Expanded(child: Divider(color: p.line)),
-                Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: MonoLabel(l.orLabel)),
-                Expanded(child: Divider(color: p.line)),
-              ]),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: () => showToast(context, l.comingSoon),
-                icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-                label: Text(l.continueGoogle),
-              ),
-              const SizedBox(height: 10),
-              OutlinedButton.icon(
-                onPressed: () => showToast(context, l.comingSoon),
-                icon: const Icon(Icons.apple_rounded),
-                label: Text(l.continueApple),
-              ),
               const SizedBox(height: 20),
-              Text(l.termsNote, style: t.bodySmall, textAlign: TextAlign.center),
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(l.termsLead, style: t.bodySmall),
+                  TextButton(
+                    style: TextButton.styleFrom(minimumSize: const Size(44, 44), padding: const EdgeInsets.symmetric(horizontal: 6)),
+                    onPressed: () => openExternal(context, ref.read(appConfigProvider).termsUrl),
+                    child: Text(l.termsOfService, style: t.bodySmall?.copyWith(decoration: TextDecoration.underline)),
+                  ),
+                  Text(l.andLabel, style: t.bodySmall),
+                  TextButton(
+                    style: TextButton.styleFrom(minimumSize: const Size(44, 44), padding: const EdgeInsets.symmetric(horizontal: 6)),
+                    onPressed: () => openExternal(context, ref.read(appConfigProvider).privacyUrl),
+                    child: Text(l.privacyPolicy, style: t.bodySmall?.copyWith(decoration: TextDecoration.underline)),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// "Forgot password?" sheet: owns its field so it outlives the closing animation.
+class _ResetPasswordSheet extends ConsumerStatefulWidget {
+  const _ResetPasswordSheet({required this.initialEmail});
+  final String initialEmail;
+
+  @override
+  ConsumerState<_ResetPasswordSheet> createState() => _ResetPasswordSheetState();
+}
+
+class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
+  late final _email = TextEditingController(text: widget.initialEmail);
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    final address = _email.text.trim();
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(address)) {
+      return showToast(context, context.l10n.invalidEmail);
+    }
+    setState(() => _busy = true);
+    final web = ref.read(appConfigProvider).webBaseUrl.replaceFirst(RegExp(r'/$'), '');
+    try {
+      await ref.read(authRepositoryProvider).requestPasswordReset(address, redirectTo: '$web/reset-password');
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        showToast(context, errorText(context, e));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, MediaQuery.viewInsetsOf(context).bottom + 24),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        DisplayText(l.forgotPassword, size: 26),
+        const SizedBox(height: 8),
+        Text(l.forgotPasswordBody, style: Theme.of(context).textTheme.bodyMedium),
+        const SizedBox(height: 16),
+        TextField(
+          key: const Key('reset-email'),
+          controller: _email,
+          autofocus: true,
+          keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.email],
+          decoration: fieldDecoration(label: l.email, icon: Icons.mail_outline_rounded, action: ClearFieldButton(controller: _email)),
+          onSubmitted: (_) => _send(),
+        ),
+        const SizedBox(height: 16),
+        FilledButton(key: const Key('reset-send'), onPressed: _busy ? null : _send, child: Text(l.sendResetLink)),
+      ]),
     );
   }
 }

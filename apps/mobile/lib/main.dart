@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -14,6 +15,10 @@ import 'features/auth/presentation/session_hooks.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final config = AppConfig.fromEnvironment();
+  // Store builds must point at the real API: a localhost default would ship a dead app to review.
+  if (kReleaseMode && !config.apiBaseUrl.startsWith('https://')) {
+    throw StateError('Release build needs --dart-define=API_BASE_URL=https://… (got ${config.apiBaseUrl})');
+  }
 
   await initializeDateFormatting();
   final prefs = await SharedPreferences.getInstance();

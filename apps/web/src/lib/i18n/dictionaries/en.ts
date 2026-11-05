@@ -1,3 +1,6 @@
+/** Legal page section: optional lead paragraphs and/or a bullet list. */
+type LegalSection = { heading: string; paragraphs?: string[]; points?: string[] };
+
 /** English dictionary — the source of truth for the shape (ar.ts must match `Dictionary`). */
 const en = {
   meta: { title: 'Azza — Learn live, in batches', description: 'Live cohort courses. Pick a course, pick the batch that fits your week.' },
@@ -40,6 +43,7 @@ const en = {
     markAllRead: 'Mark all read',
     language: 'Language',
     currency: 'Currency',
+    theme: { label: 'Theme', system: 'System', light: 'Light', dark: 'Dark' },
     timezone: 'Timezone',
     actions: 'Actions',
     status: 'Status',
@@ -101,7 +105,7 @@ const en = {
     sessionLanguage: { AR: 'Arabic', EN: 'English' },
     role: { STUDENT: 'Student', TEACHER: 'Teacher', ADMIN: 'Admin' },
     material: { SLIDES: 'Slides', FILE: 'File', LINK: 'Link', VIDEO: 'Video' },
-    method: { STRIPE: 'Card · Stripe', BANK_TRANSFER: 'Bank transfer' },
+    method: { STRIPE: 'Card · Stripe', BANK_TRANSFER: 'Bank transfer', APPLE_IAP: 'App Store (iOS)' },
   },
   nav: {
     public: { courses: 'Courses', startingSoon: 'Starting soon', howItWorks: 'How it works', teachers: 'Teachers', signIn: 'Sign in', findBatch: 'Find a batch', myLearning: 'My learning' },
@@ -643,6 +647,8 @@ const en = {
     appLanguage: 'App language',
     displayCurrency: 'Display currency',
     currencyNote: 'Charges are always in AED. Other currencies are estimates.',
+    appearance: 'Appearance',
+    appearanceNote: 'System follows your device’s light or dark setting. Saved on this browser.',
     timezone: 'Timezone',
     email: 'Email',
     saved: 'Profile saved.',
@@ -1252,6 +1258,252 @@ const en = {
     avgAttendance: 'Avg attendance',
     onTime: 'On-time starts',
     noTeachers: 'No sessions ran in this range.',
+  },
+
+  // LEGAL REVIEW REQUIRED: the privacy policy, terms and deletion copy below are a working draft written
+  // from what the code does. Have a UAE-qualified lawyer review and approve them before launch.
+  legal: {
+    updatedLabel: 'Last updated',
+    updated: '3 November 2026',
+    contents: 'On this page',
+    contact: 'privacy@azza.academy',
+    privacy: {
+      kicker: 'Privacy',
+      title: 'Privacy Policy',
+      intro:
+        'This policy explains what personal data Azza collects when you use our website and apps to join live cohort courses, why we collect it, who we share it with and the choices you have. Azza is operated from the United Arab Emirates and all prices are charged in AED.',
+      sections: [
+        {
+          heading: 'Who we are',
+          paragraphs: [
+            'Azza (“we”, “us”) runs an online platform for live, teacher-led courses taught in small batches. We are the controller of the personal data described here. You can reach us about privacy at privacy@azza.academy.',
+          ],
+        },
+        {
+          heading: 'Data we collect',
+          paragraphs: ['We collect only what we need to run your account, your classes and your payments:'],
+          points: [
+            'Account details: your name, email address, password (stored only as a secure hash), language, timezone, preferred display currency, and optionally your phone number and profile photo.',
+            'Teacher details: for teachers, a public headline and bio, and the bank details we use to pay you.',
+            'Enrollments and payments: the batches you join, your orders (amounts in AED, VAT, discounts and coupon codes, payment status and refunds). Card payments are processed by Stripe; we never see or store your full card number. If you pay by bank transfer, we store the receipt you upload so our team can verify it.',
+            'Live sessions: your audio, video and screen share are streamed in real time through LiveKit when you turn them on. Live sessions are recorded, and recordings are made available to the teacher and students of that batch. We also keep the chat messages you send in a session and any feedback you give.',
+            'Attendance and coursework: when you join and leave each session, attendance marks from your teacher, assignment submissions, grades and the certificates you earn (each certificate has a public verification code).',
+            'Devices: if you allow notifications, a push token for your device (through Google Firebase Cloud Messaging) and its platform.',
+            'Technical data: the IP address and browser or device type of your sign-in sessions, and server logs we use to keep the service secure.',
+          ],
+        },
+        {
+          heading: 'How we use your data',
+          points: [
+            'To create and secure your account and sign you in.',
+            'To enroll you in batches, run live sessions, keep recordings, track attendance and issue certificates.',
+            'To take payments, verify bank transfers, process refunds and keep accounting records.',
+            'To send you service emails and notifications, such as session reminders, schedule changes and receipts.',
+            'To pay teachers for the sessions they teach.',
+            'To prevent fraud and abuse, and to fix problems.',
+            'To understand how the platform is used, using aggregated reports (for example attendance per batch).',
+          ],
+          paragraphs: [
+            'We rely on performing our contract with you, on our legal obligations (for example tax and accounting), on our legitimate interest in running a safe and reliable service, and on your consent for push notifications, which you can turn off at any time in your device settings.',
+          ],
+        },
+        {
+          heading: 'Who we share it with',
+          paragraphs: ['We do not sell your personal data. We share it only with:'],
+          points: [
+            'Stripe, to process card payments and refunds.',
+            'LiveKit, to stream and record live sessions.',
+            'Google (Firebase Cloud Messaging), to deliver push notifications.',
+            'Our hosting, database, file storage and email delivery providers, who store and process data on our behalf.',
+            'The teacher and other students in your batch, who see your name and photo, your audio and video when you turn them on, your chat messages and the session recordings.',
+            'Anyone you give a certificate code to: the verification page shows the holder’s name, course, batch and dates.',
+            'Authorities, when the law requires it.',
+          ],
+        },
+        {
+          heading: 'International transfers',
+          paragraphs: [
+            'Some of our providers process data outside the UAE. When that happens we rely on their contractual and security commitments to protect your data to the standard required by UAE law.',
+          ],
+        },
+        {
+          heading: 'How long we keep it',
+          points: [
+            'Account data: for as long as your account is open.',
+            'Session recordings: for as long as the batch’s recordings library is available to its students, after which they may be removed.',
+            'Payment and accounting records: for the period UAE law requires, even after you delete your account. These records are de-identified when you delete your account.',
+            'Security logs: for a limited period, then deleted.',
+          ],
+        },
+        {
+          heading: 'Your rights',
+          paragraphs: [
+            'Subject to UAE data protection law, you can ask to access, correct or delete your personal data, to restrict or object to how we use it, and to receive a copy of it. You can update most details yourself in Settings, and delete your account at any time (see below). For anything else, email privacy@azza.academy and we will respond within the time the law requires.',
+          ],
+        },
+        {
+          heading: 'Deleting your account',
+          paragraphs: [
+            'You can permanently delete your account in the app (Profile → Delete account) or on the web at /account/delete. Deletion removes your sign-in details, devices, notifications, chat messages, feedback, submissions and certificates, cancels your enrollments and replaces your name and email with an anonymous placeholder. Payment records we must keep for accounting are retained without your name or email.',
+          ],
+        },
+        {
+          heading: 'Children',
+          paragraphs: [
+            'Azza is not directed to children under 13, and we do not knowingly collect their personal data. If you are under 18, use Azza only with the permission of a parent or guardian. If you believe a child under 13 has given us personal data, contact us and we will delete it.',
+          ],
+        },
+        {
+          heading: 'Security',
+          paragraphs: [
+            'We use encryption in transit, hashed passwords, access controls and trusted providers to protect your data. No system is perfectly secure, so please use a strong password and keep it private.',
+          ],
+        },
+        {
+          heading: 'Changes to this policy',
+          paragraphs: ['We may update this policy. If the changes are significant we will tell you by email or in the app before they take effect.'],
+        },
+        {
+          heading: 'Contact',
+          paragraphs: ['Questions or requests: privacy@azza.academy.'],
+        },
+      ] as LegalSection[],
+    },
+    terms: {
+      kicker: 'Terms',
+      title: 'Terms of Service',
+      intro:
+        'These terms govern your use of Azza’s website and apps and your enrollment in our live cohort courses. By creating an account or enrolling in a batch, you agree to them.',
+      sections: [
+        {
+          heading: 'Your account',
+          points: [
+            'Give accurate details and keep them up to date.',
+            'Keep your password private; you are responsible for activity on your account.',
+            'One person per account. Accounts and seats cannot be shared or resold.',
+            'If you are under 18, you may use Azza only with a parent’s or guardian’s permission.',
+          ],
+        },
+        {
+          heading: 'Courses and enrollment',
+          paragraphs: [
+            'Each course runs in batches with a fixed schedule of live sessions and a limited number of seats. Your seat is confirmed once your payment is received and, for bank transfers, verified. Teachers or Azza may occasionally reschedule a session; we will notify you in advance. When a batch is full you may join its waitlist; if a seat opens, we hold it for you for a limited time to check out.',
+          ],
+        },
+        {
+          heading: 'Prices and payments',
+          paragraphs: [
+            'Prices are set and charged in UAE dirhams (AED) and include VAT where it applies. Amounts shown in other currencies are estimates only. You can pay by card through Stripe or by bank transfer; a bank-transfer seat is held for a limited time and confirmed after our team verifies your receipt.',
+          ],
+        },
+        {
+          heading: 'Cancellations and refunds',
+          paragraphs: [
+            'If Azza cancels a batch, you will receive a full refund. If you cancel before the batch’s first session, you are entitled to a full refund. After the first session, refunds are at our discretion and may be partial. Refunds are returned to the original payment method. Contact us to request one.',
+          ],
+        },
+        {
+          heading: 'Conduct in live sessions',
+          points: [
+            'Be respectful to your teacher and classmates. Harassment, hate speech and disruptive behaviour are not allowed.',
+            'Do not share session links, recordings, materials or other students’ personal data outside your batch.',
+            'Do not record, screenshot or rebroadcast sessions yourself.',
+            'Teachers and Azza may mute or remove participants who break these rules.',
+          ],
+        },
+        {
+          heading: 'Recordings',
+          paragraphs: [
+            'Live sessions are recorded so students can catch up. Recordings are available to the teacher and students of the batch for personal study only, and may be removed after the batch’s library period ends. By joining a session you agree to be recorded; you can keep your camera and microphone off and use chat instead.',
+          ],
+        },
+        {
+          heading: 'Content and intellectual property',
+          paragraphs: [
+            'Course content, materials and recordings belong to Azza or its teachers and are licensed to you for personal, non-commercial learning. You keep ownership of what you submit, and give us permission to store and show it to your teacher for grading.',
+          ],
+        },
+        {
+          heading: 'Certificates',
+          paragraphs: [
+            'When you meet a batch’s attendance requirement, we issue a certificate of completion with a public verification code. Certificates confirm attendance and completion only; they are not an accredited qualification. We may revoke a certificate obtained through fraud.',
+          ],
+        },
+        {
+          heading: 'Termination',
+          paragraphs: [
+            'You can delete your account at any time in the app or at /account/delete. We may suspend or close accounts that break these terms or the law. When an account is closed, access to batches, recordings and certificates ends; payment records are kept as described in our Privacy Policy.',
+          ],
+        },
+        {
+          heading: 'Disclaimers and liability',
+          paragraphs: [
+            'We work to keep Azza available and sessions running on time, but the service is provided “as is” and we cannot guarantee it will be uninterrupted. To the extent the law allows, our total liability to you is limited to the amount you paid for the batch concerned.',
+          ],
+        },
+        {
+          heading: 'Governing law',
+          paragraphs: [
+            'These terms are governed by the laws of the United Arab Emirates. Disputes will be subject to the exclusive jurisdiction of the competent courts of the UAE.',
+          ],
+        },
+        {
+          heading: 'Changes',
+          paragraphs: ['We may update these terms. If the changes are significant we will tell you before they take effect; continuing to use Azza means you accept them.'],
+        },
+        {
+          heading: 'Contact',
+          paragraphs: ['Questions about these terms: privacy@azza.academy.'],
+        },
+      ] as LegalSection[],
+    },
+    deletion: {
+      kicker: 'Account',
+      title: 'Delete your Azza account',
+      intro: 'You can permanently delete your Azza account and personal data at any time, from the app or from this page.',
+      inAppTitle: 'In the Azza app',
+      inAppSteps: ['Open the Azza app and sign in.', 'Go to Profile.', 'Tap Delete account.', 'Type DELETE and confirm.'],
+      webTitle: 'On the web',
+      webBody: 'Sign in to your account, then use the button on this page.',
+      removedTitle: 'What we delete',
+      removed: [
+        'Your name, email, phone number, photo and profile.',
+        'Your sign-in sessions, passwords and linked devices (push tokens).',
+        'Notifications, chat messages, session feedback, assignment submissions and certificates.',
+        'Your enrollments and waitlist places are cancelled and your seats are released.',
+      ],
+      keptTitle: 'What we keep',
+      kept: [
+        'Payment and refund records required for accounting, without your name or email.',
+        'Anonymous attendance counts used in batch reports.',
+      ],
+      blockedNote:
+        'Teachers who are still assigned to batches or have unpaid earnings, admins, and students with a bank transfer under review can’t delete their account yet. Email privacy@azza.academy and we will help.',
+      signedOutTitle: 'Signed out',
+      signedOutBody: 'Sign in to delete your account from the web.',
+      signIn: 'Sign in to continue',
+      signedInAs: 'Signed in as {email}',
+      confirmLabel: 'Type DELETE to confirm',
+      confirmWord: 'DELETE',
+      button: 'Delete my account',
+      dialogTitle: 'Delete your account permanently?',
+      dialogBody: 'This can’t be undone. You will lose access to your batches, recordings and certificates, and you will be signed out.',
+      dialogConfirm: 'Delete permanently',
+      deleting: 'Deleting…',
+      done: 'Your account has been deleted. We’re sorry to see you go.',
+      errors: {
+        ADMIN_ACCOUNT: 'Admin accounts can’t be deleted here. Ask another admin to remove your admin role first.',
+        HAS_ACTIVE_TEACHING: 'You are still assigned to batches or upcoming sessions. Ask an admin to reassign them, then try again.',
+        HAS_UNPAID_EARNINGS: 'You have earnings or payouts that aren’t settled yet. Try again after your next payout.',
+        ORDER_IN_PROGRESS: 'One of your bank transfers is being reviewed. Try again once it has been settled.',
+        generic: 'We couldn’t delete your account. Try again, or email privacy@azza.academy.',
+      },
+    },
+    footer: { terms: 'Terms', privacy: 'Privacy', deleteAccount: 'Delete account' },
+    agreePrefix: 'By creating an account you agree to the',
+    agreeTerms: 'Terms of Service',
+    agreeAnd: 'and',
+    agreePrivacy: 'Privacy Policy',
   },
 };
 

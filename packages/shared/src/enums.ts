@@ -33,7 +33,8 @@ export const ENROLLMENT_STATUSES = [
 ] as const;
 export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 
-export const PAYMENT_METHODS = ['STRIPE', 'BANK_TRANSFER'] as const;
+/** APPLE_IAP is the iOS app's only method (App Store guideline 3.1.1); Android and web use STRIPE / BANK_TRANSFER. */
+export const PAYMENT_METHODS = ['STRIPE', 'BANK_TRANSFER', 'APPLE_IAP'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const ORDER_STATUSES = [

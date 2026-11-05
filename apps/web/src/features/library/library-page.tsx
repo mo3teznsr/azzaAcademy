@@ -28,7 +28,7 @@ export function LibraryPage() {
         {batchCodes.length > 1 && (
           <ToggleGroup type="single" value={batch} onValueChange={(v) => setBatch(v || 'all')} className="justify-start gap-2">
             {['all', ...batchCodes].map((c) => (
-              <ToggleGroupItem key={c} value={c} className="h-9 rounded-full border border-line px-4 data-[state=on]:bg-ivory data-[state=on]:text-ink">
+              <ToggleGroupItem key={c} value={c} className="h-9 rounded-full border border-border px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 {c === 'all' ? t.library.allBatches : c}
               </ToggleGroupItem>
             ))}

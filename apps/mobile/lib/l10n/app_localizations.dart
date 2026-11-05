@@ -200,12 +200,6 @@ abstract class AppLocalizations {
   /// **'You'**
   String get you;
 
-  /// No description provided for @comingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon on mobile.'**
-  String get comingSoon;
-
   /// No description provided for @navHome.
   ///
   /// In en, this message translates to:
@@ -971,7 +965,7 @@ abstract class AppLocalizations {
   /// No description provided for @payCard.
   ///
   /// In en, this message translates to:
-  /// **'Card · Apple Pay · Google Pay'**
+  /// **'Card · Google Pay'**
   String get payCard;
 
   /// No description provided for @payCardSub.
@@ -1963,24 +1957,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Display currency'**
   String get displayCurrency;
-
-  /// No description provided for @pushLobby.
-  ///
-  /// In en, this message translates to:
-  /// **'Lobby open'**
-  String get pushLobby;
-
-  /// No description provided for @pushChanges.
-  ///
-  /// In en, this message translates to:
-  /// **'Schedule changes'**
-  String get pushChanges;
-
-  /// No description provided for @pushRecordings.
-  ///
-  /// In en, this message translates to:
-  /// **'Recordings & grades'**
-  String get pushRecordings;
 
   /// No description provided for @editProfile.
   ///
@@ -3127,6 +3103,474 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'of {total}'**
   String waitlistOfTotal(String total);
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes your profile, enrolments, certificates and messages. Payment records are kept without your name for accounting. This cannot be undone.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountTypeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE to confirm'**
+  String get deleteAccountTypeHint;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @deleteAccountFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete the account. Try again or contact support.'**
+  String get deleteAccountFailed;
+
+  /// No description provided for @deleteAccountTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers and admins can\'t delete their account while they have batches. Contact support.'**
+  String get deleteAccountTeacher;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of service'**
+  String get termsOfService;
+
+  /// No description provided for @legal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get legal;
+
+  /// No description provided for @termsLead.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you agree to the'**
+  String get termsLead;
+
+  /// No description provided for @andLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get andLabel;
+
+  /// No description provided for @deleteAccountOrderPending.
+  ///
+  /// In en, this message translates to:
+  /// **'A bank transfer for one of your orders is being checked. Try again once it\'s settled.'**
+  String get deleteAccountOrderPending;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// No description provided for @themeSystemHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Match your phone\'s setting'**
+  String get themeSystemHint;
+
+  /// No description provided for @pushNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notifications'**
+  String get pushNotifications;
+
+  /// No description provided for @pushOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get pushOn;
+
+  /// No description provided for @pushOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get pushOff;
+
+  /// No description provided for @pushSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Change notifications in your phone\'s Settings → Apps → Azza.'**
+  String get pushSettingsHint;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPassword;
+
+  /// No description provided for @forgotPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your account email and we\'ll send you a link to choose a new password.'**
+  String get forgotPasswordBody;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset link'**
+  String get sendResetLink;
+
+  /// No description provided for @resetLinkSent.
+  ///
+  /// In en, this message translates to:
+  /// **'If that email has an account, a reset link is on its way.'**
+  String get resetLinkSent;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @errNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection to Azza. Check your network and try again.'**
+  String get errNetwork;
+
+  /// No description provided for @errTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Azza took too long to answer. Try again.'**
+  String get errTimeout;
+
+  /// No description provided for @errCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled.'**
+  String get errCancelled;
+
+  /// No description provided for @errSignedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session ended. Please sign in again.'**
+  String get errSignedOut;
+
+  /// No description provided for @errForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have access to this.'**
+  String get errForbidden;
+
+  /// No description provided for @errNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find that. It may have been removed.'**
+  String get errNotFound;
+
+  /// No description provided for @errBadCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'That email and password don\'t match.'**
+  String get errBadCredentials;
+
+  /// No description provided for @errEmailTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email already exists. Try signing in.'**
+  String get errEmailTaken;
+
+  /// No description provided for @errTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a minute and try again.'**
+  String get errTooMany;
+
+  /// No description provided for @errServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong on our side. Try again shortly.'**
+  String get errServer;
+
+  /// No description provided for @errGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get errGeneric;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved.'**
+  String get profileSaved;
+
+  /// No description provided for @timezoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Session times are shown in this timezone.'**
+  String get timezoneHint;
+
+  /// No description provided for @useDeviceTimezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this phone\'s timezone: {zone}'**
+  String useDeviceTimezone(String zone);
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get changePassword;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get currentPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPassword;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed. Other devices were signed out.'**
+  String get passwordChanged;
+
+  /// No description provided for @changePasswordNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing your password signs you out on your other devices.'**
+  String get changePasswordNote;
+
+  /// No description provided for @payAppStore.
+  ///
+  /// In en, this message translates to:
+  /// **'App Store'**
+  String get payAppStore;
+
+  /// No description provided for @payAppStoreSub.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app purchase, charged to your Apple Account'**
+  String get payAppStoreSub;
+
+  /// No description provided for @payWithAppStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with the App Store'**
+  String get payWithAppStore;
+
+  /// No description provided for @appStoreNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment is handled by Apple. Your seat is confirmed as soon as the purchase completes.'**
+  String get appStoreNote;
+
+  /// No description provided for @appStoreBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy · {price}'**
+  String appStoreBuy(String price);
+
+  /// No description provided for @appStoreConfirming.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming your purchase…'**
+  String get appStoreConfirming;
+
+  /// No description provided for @appStorePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval. We\'ll enrol you as soon as the App Store confirms the purchase.'**
+  String get appStorePending;
+
+  /// No description provided for @appStoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase didn\'t go through.'**
+  String get appStoreFailed;
+
+  /// No description provided for @appStoreUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app purchases aren\'t available on this device.'**
+  String get appStoreUnavailable;
+
+  /// No description provided for @appStoreRetryLater.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t confirm the purchase yet. It\'s safe — we\'ll retry automatically the next time you open the app.'**
+  String get appStoreRetryLater;
+
+  /// No description provided for @appStoreRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t apply this purchase to your order. Contact support — Apple can refund the purchase.'**
+  String get appStoreRejected;
+
+  /// No description provided for @enrolOnWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrol on our website'**
+  String get enrolOnWebsite;
+
+  /// No description provided for @enrolOnWebsiteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This seat isn\'t available as an in-app purchase.'**
+  String get enrolOnWebsiteBody;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @accountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountTitle;
+
+  /// No description provided for @accountRowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo, password, delete'**
+  String get accountRowHint;
+
+  /// No description provided for @profileSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileSection;
+
+  /// No description provided for @changePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get changePhoto;
+
+  /// No description provided for @emailLockedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in email. Contact support to change it.'**
+  String get emailLockedNote;
+
+  /// No description provided for @useThisPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this phone\'s'**
+  String get useThisPhone;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get saveChanges;
+
+  /// No description provided for @currentPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password.'**
+  String get currentPasswordRequired;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger zone'**
+  String get dangerZone;
+
+  /// No description provided for @deleteAccountSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete your account, enrolments and certificates. This can\'t be undone.'**
+  String get deleteAccountSummary;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get takePhoto;
+
+  /// No description provided for @chooseFromLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from library'**
+  String get chooseFromLibrary;
+
+  /// No description provided for @photoPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the camera or photos. Check Azza\'s permissions in Settings.'**
+  String get photoPickFailed;
+
+  /// No description provided for @addPhotoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your photo'**
+  String get addPhotoTitle;
+
+  /// No description provided for @addPhotoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher sees your photo on the class list and in live sessions, so they know who\'s in the room.'**
+  String get addPhotoBody;
+
+  /// No description provided for @addPhotoTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a clear, recent photo of your face. Only your teachers and classmates see it.'**
+  String get addPhotoTips;
+
+  /// No description provided for @addPhotoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get addPhotoAction;
 }
 
 class _AppLocalizationsDelegate

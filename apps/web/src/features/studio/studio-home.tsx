@@ -105,7 +105,7 @@ export function StudioHome() {
           {(d) => (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-4">
               {d.items.map((b) => (
-                <Link key={b.id} href={`/studio/batches/${b.id}`} className="flex flex-col gap-3 rounded-[20px] bg-card p-5 text-foreground no-underline hover:bg-line">
+                <Link key={b.id} href={`/studio/batches/${b.id}`} className="flex flex-col gap-3 rounded-[20px] bg-card p-5 text-foreground no-underline hover:bg-accent">
                   <div className="flex items-center justify-between">
                     <b className="font-display text-3xl font-extrabold" dir="ltr">
                       {b.code}

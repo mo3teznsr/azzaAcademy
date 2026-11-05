@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../network/error_text.dart';
 import '../l10n/l10n.dart';
-import '../network/app_exception.dart';
 import '../theme/tokens.dart';
 import 'signal_mark.dart';
 
@@ -72,7 +72,7 @@ class ErrorState extends StatelessWidget {
     final l = context.l10n;
     final p = AzzaPalette.of(context);
     final t = Theme.of(context).textTheme;
-    final message = AppException.from(error).message;
+    final message = errorText(context, error);
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),

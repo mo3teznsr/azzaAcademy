@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
+import '../../../core/network/error_text.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/utils/formatters.dart';
@@ -52,7 +52,7 @@ class _BankTransferScreenState extends ConsumerState<BankTransferScreen> {
       ref.invalidate(orderProvider(widget.orderId));
       if (mounted) context.pushReplacement(Routes.order(widget.orderId));
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

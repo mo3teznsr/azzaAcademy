@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
@@ -144,7 +144,7 @@ class _BankFormState extends ConsumerState<_BankForm> {
           ));
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -158,21 +158,21 @@ class _BankFormState extends ConsumerState<_BankForm> {
       child: Form(
         key: _form,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          TextFormField(controller: _bank, decoration: InputDecoration(labelText: l.bankName), validator: (v) => (v ?? '').trim().length < 2 ? l.nameTooShort : null),
+          TextFormField(controller: _bank, decoration: fieldDecoration(label: l.bankName, icon: Icons.account_balance_outlined), validator: (v) => (v ?? '').trim().length < 2 ? l.nameTooShort : null),
           const SizedBox(height: 10),
-          TextFormField(controller: _holder, decoration: InputDecoration(labelText: l.accountHolder), validator: (v) => (v ?? '').trim().length < 2 ? l.nameTooShort : null),
+          TextFormField(controller: _holder, decoration: fieldDecoration(label: l.accountHolder, icon: Icons.badge_outlined), validator: (v) => (v ?? '').trim().length < 2 ? l.nameTooShort : null),
           const SizedBox(height: 10),
           TextFormField(
             controller: _iban,
             textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(labelText: l.iban, hintText: 'AE07 0331 2345 6789 0123 456'),
+            decoration: fieldDecoration(label: l.iban, icon: Icons.numbers_rounded, hint: 'AE07 0331 2345 6789 0123 456'),
             validator: (v) => TeacherBankDetails.ibanPattern.hasMatch((v ?? '').replaceAll(' ', '').toUpperCase()) ? null : l.ibanInvalid,
           ),
           const SizedBox(height: 10),
           TextFormField(
             controller: _swift,
             textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(labelText: l.swift),
+            decoration: fieldDecoration(label: l.swift, icon: Icons.swap_horiz_rounded),
             validator: (v) => TeacherBankDetails.swiftPattern.hasMatch((v ?? '').trim().toUpperCase()) ? null : l.swiftInvalid,
           ),
           const SizedBox(height: 10),

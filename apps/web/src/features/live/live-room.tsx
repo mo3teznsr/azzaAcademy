@@ -38,6 +38,7 @@ import { ErrorState, LoadingBlock } from '@/components/brand/states';
 import { sessionsApi, type JoinTicket, type SessionDetail } from '@/lib/api';
 import { ApiError } from '@/lib/api/client';
 import { qk } from '@/lib/query-keys';
+import { useForcedTheme } from '@/lib/theme/provider';
 import { useAuth } from '@/lib/auth/use-auth';
 import { useI18n } from '@/lib/i18n/provider';
 import { slate, timecode } from '@/lib/i18n/format';
@@ -63,6 +64,8 @@ import {
 type Mode = 'student' | 'host';
 
 export function LiveRoomScreen({ sessionId, mode }: { sessionId: string; mode: Mode }) {
+  // The room is always on the ink ground, whatever the site theme (the inline theme script also forces it on load).
+  useForcedTheme('dark');
   const q = useQuery({
     queryKey: qk.session(sessionId),
     queryFn: () => sessionsApi.get(sessionId),

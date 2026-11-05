@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "335686566610",
+    "project_id": "azza-76935",
+    "storage_bucket": "azza-76935.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335686566610:android:317a41ed2b82e6c35e230b",
+        "android_client_info": {
+          "package_name": "com.futuretech.azza"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "335686566610-94nk4p019kjgagiahsq62l87p3a06icg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkLeFnhU6j63GJCW7pLAZix8godRPg4_k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "335686566610-94nk4p019kjgagiahsq62l87p3a06icg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "335686566610-rjhkukq5h4h8618tlfk2mog4l3q2cpan.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.futuretech.azza"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

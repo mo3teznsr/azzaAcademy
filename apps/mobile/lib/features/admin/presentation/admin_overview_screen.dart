@@ -50,7 +50,7 @@ class AdminOverviewScreen extends ConsumerWidget {
               ]),
               const SizedBox(height: 20),
               Material(
-                color: AzzaColors.ink,
+                color: AzzaPalette.of(context).isDark ? AzzaColors.ink2 : AzzaColors.ink,
                 borderRadius: BorderRadius.circular(AzzaSpace.radius),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(AzzaSpace.radius),

@@ -6,7 +6,7 @@ import { appEmails } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { RefundEarningsReverser } from '../payouts/payout.service';
 import type { EnrollmentLifecycle } from './enrollment-lifecycle';
-import type { PaymentsRepository } from './payments.repository';
+import type { OrderRecord, PaymentsRepository } from './payments.repository';
 
 const aed = (fils: number) => formatMoney(fils / 100, 'AED');
 
@@ -110,6 +110,8 @@ export class FinanceAdminService {
   async refund(orderId: string, input: { amountAed: number; reason: string }) {
     const order = await this.loadOrder(orderId);
     if (order.status !== 'PAID') throw new BusinessRuleError('Only paid orders can be refunded', 'ORDER_NOT_PAID');
+    // Apple holds the money for in-app purchases; only Apple refunds them (the webhook records it).
+    if (order.method === 'APPLE_IAP') throw new BusinessRuleError('In-app purchases are refunded by Apple', 'APPLE_REFUND_VIA_APPLE');
     const amountFils = aedToFils(input.amountAed);
     const refundable = order.totalFils - order.refundedFils;
     if (amountFils > refundable) throw new BusinessRuleError('Refund exceeds the refundable amount', 'REFUND_TOO_LARGE', { refundableFils: refundable });
@@ -120,6 +122,14 @@ export class FinanceAdminService {
     } else {
       manual = true; // bank refund is sent by finance; we record it
     }
+    return { order: await this.recordRefund(order, amountFils, input.reason), refundFils: amountFils, manual };
+  }
+
+  /**
+   * Books money that already went back to the student: refunded amount, REFUNDED order + enrollment when full,
+   * teacher earnings reversed, seat released to the waitlist, student notified. Used by admin refunds and Apple refunds.
+   */
+  async recordRefund(order: OrderRecord, amountFils: number, reason: string) {
     const refundedFils = order.refundedFils + amountFils;
     const full = refundedFils >= order.totalFils;
     const updated = await this.repo.updateOrder(order.id, { refundedFils, ...(full && { status: 'REFUNDED' }) });
@@ -142,10 +152,10 @@ export class FinanceAdminService {
     await this.notifier.notify([order.userId], {
       type: 'ORDER_REFUNDED',
       title: `Refund issued · ${order.reference}`,
-      body: `${aed(amountFils)} — ${input.reason}`,
+      body: `${aed(amountFils)} — ${reason}`,
       data: { orderId: order.id },
       email: (r) => appEmails.refunded(r.name, aed(amountFils), order.reference),
     });
-    return { order: updated, refundFils: amountFils, manual };
+    return updated;
   }
 }

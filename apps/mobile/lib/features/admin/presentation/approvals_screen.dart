@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
@@ -142,7 +142,7 @@ class _RescheduleRequestTileState extends ConsumerState<RescheduleRequestTile> {
         ..invalidate(adminDashboardProvider);
       if (mounted) showToast(context, l.reviewDone);
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -257,7 +257,7 @@ class _PayoutRunsTab extends ConsumerWidget {
         ref.invalidate(payoutRunsProvider);
         if (context.mounted) context.go(Routes.adminPayoutRun(run.id));
       } catch (e) {
-        if (context.mounted) showToast(context, AppException.from(e).message);
+        if (context.mounted) showToast(context, errorText(context, e));
       }
     }
 

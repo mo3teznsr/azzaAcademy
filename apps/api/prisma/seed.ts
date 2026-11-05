@@ -4,11 +4,13 @@
  *
  *   bun run db:seed
  */
+import { randomBytes } from 'node:crypto';
 import type { Role } from '@azza/shared';
 import { createAdapters, createContainer } from '../src/container';
 import { loadConfig } from '../src/core/config';
 import type { Mailer, PushNotifier } from '../src/core/ports';
 import { addMinutes } from '../src/core/time';
+import { DemoReviewers } from '../src/modules/sessions/demo-reviewers';
 
 const PASSWORD = 'password123';
 const config = loadConfig();
@@ -501,6 +503,132 @@ async function main() {
   };
   console.info('Seed complete', counts);
   console.info(`Sign in with any of admin@azza.test, lina@azza.test, sara@azza.test (password: ${PASSWORD})`);
+
+  await seedAppReviewer({ maya, lina, watercolour: watercolour!, pdf: pdf!, b06, b06Sessions });
+}
+
+// ───────────────────────── App Store review account ─────────────────────────
+
+const REVIEWER_EMAIL = 'appreview@azza.academy';
+
+/**
+ * `appreview@azza.academy`: a paid student with something on every main screen — upcoming sessions in a private
+ * batch (Watercolour B90, capacity 1, no waitlist, so no real student shares it), past sessions with recordings in
+ * the library, and a certificate from the completed Product Design B06 cohort. List the email in
+ * DEMO_REVIEWER_EMAILS so the API lets it into any of its sessions at any time (see DemoReviewers).
+ *
+ * Password: DEMO_REVIEWER_PASSWORD (also re-applied on every run, so rotating it is "change env, re-seed").
+ * Without it a random one is generated and printed once, when the account is created.
+ */
+async function seedAppReviewer(ctx: {
+  maya: { id: string };
+  lina: { id: string };
+  watercolour: { id: string; priceFils: number; slug: string };
+  pdf: { id: string; priceFils: number };
+  b06: { id: string };
+  b06Sessions: { id: string; number: number; startsAt: Date; endsAt: Date }[];
+}) {
+  console.info('Seeding the App Store review account…');
+  const envPassword = process.env.DEMO_REVIEWER_PASSWORD?.trim();
+  if (envPassword !== undefined && envPassword !== '' && envPassword.length < 12) {
+    throw new Error('DEMO_REVIEWER_PASSWORD must be at least 12 characters');
+  }
+  let user = await db.user.findUnique({ where: { email: REVIEWER_EMAIL } });
+  let printedPassword: string | null = null;
+  if (!user) {
+    const password = envPassword || randomBytes(18).toString('base64url');
+    await auth.api.signUpEmail({ body: { name: 'App Review', email: REVIEWER_EMAIL, password } });
+    user = await db.user.findUniqueOrThrow({ where: { email: REVIEWER_EMAIL } });
+    if (!envPassword) printedPassword = password;
+  } else if (envPassword) {
+    const hash = await (await auth.$context).password.hash(envPassword);
+    await db.account.updateMany({ where: { userId: user.id, providerId: 'credential' }, data: { password: hash } });
+  }
+  const reviewer = await db.user.update({
+    where: { id: user.id },
+    data: { role: 'STUDENT', emailVerified: true, timezone: 'Asia/Dubai', locale: 'en' },
+  });
+
+  // Private batch: started two weeks ago, three sessions a week for about a year → always upcoming sessions.
+  const today = new Date();
+  const startsOn = addMinutes(today, -14 * 24 * 60).toISOString().slice(0, 10);
+  let batch = await db.batch.findUnique({ where: { courseId_code: { courseId: ctx.watercolour.id, code: 'B90' } } });
+  if (!batch) {
+    const modules = COURSES.find((c) => c.slug === ctx.watercolour.slug)!.modules;
+    const created = await services.batches.create({
+      courseId: ctx.watercolour.id,
+      code: 'B90',
+      teacherId: ctx.maya.id,
+      capacity: 1,
+      language: 'EN',
+      timezone: 'Asia/Dubai',
+      waitlistEnabled: false,
+      minStudents: 1,
+      schedule: { weekdays: [1, 3, 5], startTime: '12:00', durationMin: 60, sessionCount: 150, startsOn, skipDates: [] },
+      sessionTitles: Array.from({ length: 150 }, (_, i) => `${modules[i % modules.length]} · studio ${Math.floor(i / modules.length) + 1}`),
+    });
+    batch = await db.batch.update({ where: { id: created.id }, data: { status: 'RUNNING' } });
+  }
+  await ensurePaidEnrollment({
+    userId: reviewer.id,
+    batchId: batch.id,
+    priceFils: ctx.watercolour.priceFils,
+    reference: 'AZ-B90-90001',
+    method: 'STRIPE',
+    paidAt: addMinutes(new Date(`${startsOn}T08:00:00Z`), -3 * 24 * 60),
+  });
+
+  // Sessions already in the past: delivered, attended, recorded.
+  const recordingBase = process.env.DEMO_RECORDING_URL?.trim();
+  const past = await db.liveSession.findMany({ where: { batchId: batch.id, status: 'SCHEDULED', endsAt: { lt: today } }, orderBy: { number: 'asc' } });
+  for (const s of past) {
+    await db.liveSession.update({
+      where: { id: s.id },
+      data: {
+        status: 'ENDED',
+        startedAt: addMinutes(s.startsAt, 1),
+        endedAt: s.endsAt,
+        recordingUrl: recordingBase || `https://recordings.azza.test/b90/s${String(s.number).padStart(2, '0')}.mp4`,
+      },
+    });
+    const seconds = Math.round((s.endsAt.getTime() - s.startsAt.getTime()) / 1000) - 120;
+    await db.attendance.createMany({
+      data: [
+        { sessionId: s.id, userId: reviewer.id, joinedAt: addMinutes(s.startsAt, 2), leftAt: s.endsAt, seconds },
+        { sessionId: s.id, userId: ctx.maya.id, joinedAt: s.startsAt, leftAt: s.endsAt, seconds: seconds + 120 },
+      ],
+    });
+  }
+
+  // Certificate: a seat in the completed B06 cohort with 11 of 12 sessions attended (issued on GET /me/certificates).
+  await ensurePaidEnrollment({
+    userId: reviewer.id,
+    batchId: ctx.b06.id,
+    priceFils: ctx.pdf.priceFils,
+    reference: 'AZ-B06-90002',
+    method: 'STRIPE',
+    paidAt: new Date(Date.UTC(2026, 7, 25, 10, 0)),
+  });
+  if ((await db.attendance.count({ where: { userId: reviewer.id, sessionId: { in: ctx.b06Sessions.map((s) => s.id) } } })) === 0) {
+    await db.attendance.createMany({
+      data: ctx.b06Sessions
+        .filter((s) => s.number !== 7)
+        .map((s) => {
+          const joinedAt = addMinutes(s.startsAt, 3);
+          return { sessionId: s.id, userId: reviewer.id, joinedAt, leftAt: s.endsAt, seconds: Math.round((s.endsAt.getTime() - joinedAt.getTime()) / 1000) };
+        }),
+    });
+  }
+
+  if (!DemoReviewers.fromCsv(config.DEMO_REVIEWER_EMAILS).isDemo(REVIEWER_EMAIL)) {
+    console.warn(`! ${REVIEWER_EMAIL} is not in DEMO_REVIEWER_EMAILS — the API will apply the normal lobby rules to it.`);
+  }
+  if (!recordingBase) console.warn('! DEMO_REVIEWER: set DEMO_RECORDING_URL to a playable MP4 so the reviewer\'s recordings play.');
+  if (printedPassword) {
+    console.info(`App Review account created: ${REVIEWER_EMAIL} / ${printedPassword}  (shown once — set DEMO_REVIEWER_PASSWORD to choose it)`);
+  } else {
+    console.info(`App Review account: ${REVIEWER_EMAIL} (password ${envPassword ? 'from DEMO_REVIEWER_PASSWORD' : 'unchanged'})`);
+  }
 }
 
 main()

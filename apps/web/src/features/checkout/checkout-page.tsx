@@ -22,6 +22,7 @@ import { useMoney } from '@/lib/money';
 import { describeRule } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
 import { BankTransferDetails } from './bank-details';
+import { useTheme } from '@/lib/theme/provider';
 import { getStripe, stripeAppearance, stripeConfigured } from './stripe';
 
 type Choice = 'CARD' | 'WALLET' | 'BANK';
@@ -46,9 +47,9 @@ function Stepper({ current }: { current: number }) {
           aria-current={i + 1 === current ? 'step' : undefined}
           className={cn(
             'label-mono flex h-8 items-center gap-2 rounded-full px-3',
-            i + 1 < current && 'bg-line text-ivory',
-            i + 1 === current && 'bg-ivory text-ink',
-            i + 1 > current && 'border border-line text-stone',
+            i + 1 < current && 'bg-secondary text-foreground',
+            i + 1 === current && 'bg-primary text-primary-foreground',
+            i + 1 > current && 'border border-border text-muted-foreground',
           )}
         >
           {f.number(i + 1)} · {label}
@@ -122,7 +123,7 @@ function Checkout({ batch }: { batch: BatchDetail }) {
                     key={o.v}
                     className={cn(
                       'flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-colors',
-                      choice === o.v ? 'border-ivory bg-card' : 'border-line hover:border-line-2',
+                      choice === o.v ? 'border-foreground bg-card' : 'border-border hover:border-line-strong',
                       o.disabled && 'cursor-not-allowed opacity-50',
                     )}
                   >
@@ -135,7 +136,7 @@ function Checkout({ batch }: { batch: BatchDetail }) {
                   </label>
                 ))}
               </RadioGroup>
-              {!stripeConfigured && <p className="text-sm text-peach">{t.checkout.stripeMissing}</p>}
+              {!stripeConfigured && <p className="text-sm text-peach-fg">{t.checkout.stripeMissing}</p>}
 
               {choice === 'BANK' && (
                 <div className="flex flex-col gap-2">
@@ -222,7 +223,7 @@ function Checkout({ batch }: { batch: BatchDetail }) {
               </Button>
             </form>
           )}
-          <div className="flex flex-col gap-3 border-t border-line pt-4 text-sm">
+          <div className="flex flex-col gap-3 border-t border-border pt-4 text-sm">
             <b>{t.checkout.nextTitle}</b>
             <p className="text-muted-foreground">
               <b className="text-foreground">{t.checkout.card}: </b>
@@ -272,7 +273,7 @@ function Summary({ quote, pending, error }: { quote: Quote | undefined; pending:
           <dd>{v < 0 ? `− ${money.aed(-v)}` : money.aed(v)}</dd>
         </div>
       ))}
-      <div className="mt-2 flex items-end justify-between gap-2 border-t border-line pt-3">
+      <div className="mt-2 flex items-end justify-between gap-2 border-t border-border pt-3">
         <dt className="font-semibold">{t.checkout.total}</dt>
         <dd className="text-end">
           <b className="font-display text-3xl font-extrabold">{money.aed(quote.totalFils)}</b>
@@ -293,10 +294,11 @@ function Summary({ quote, pending, error }: { quote: Quote | undefined; pending:
 
 function StripePayment({ clientSecret, orderId, totalFils }: { clientSecret: string; orderId: string; totalFils: number }) {
   const { t, locale } = useI18n();
+  const { resolved } = useTheme();
   const stripe = getStripe();
-  if (!stripe) return <p className="text-sm text-peach">{t.checkout.stripeMissing}</p>;
+  if (!stripe) return <p className="text-sm text-peach-fg">{t.checkout.stripeMissing}</p>;
   return (
-    <Elements stripe={stripe} options={{ clientSecret, appearance: stripeAppearance, locale: locale === 'ar' ? 'ar' : 'en' }}>
+    <Elements stripe={stripe} options={{ clientSecret, appearance: stripeAppearance(resolved), locale: locale === 'ar' ? 'ar' : 'en' }}>
       <StripeForm orderId={orderId} totalFils={totalFils} />
     </Elements>
   );

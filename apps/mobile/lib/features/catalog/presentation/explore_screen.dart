@@ -75,7 +75,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   controller: _search,
                   onChanged: _onSearch,
                   textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(prefixIcon: const Icon(Icons.search_rounded), hintText: l.searchCourses),
+                  decoration: fieldDecoration(
+                    label: l.searchCourses,
+                    icon: Icons.search_rounded,
+                    labelIsHint: true,
+                    action: ClearFieldButton(controller: _search, onCleared: () => _onSearch('')),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -117,8 +122,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CourseCover(course: c, locale: locale, height: 150, compact: true),
-                          const SizedBox(height: 8),
+                          CourseCover(course: c, locale: locale, height: 170, compact: true),
+                          const SizedBox(height: 10),
+                          CourseMetaLine(course: c),
+                          const SizedBox(height: 2),
                           Row(
                             children: [
                               Expanded(child: Text(c.title(locale), style: Theme.of(context).textTheme.titleMedium)),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/providers.dart';
+import '../../me/data/me_repository.dart';
 import '../data/auth_repository.dart';
 import '../domain/app_user.dart';
 
@@ -62,6 +63,17 @@ class AuthController extends AsyncNotifier<AppUser?> {
     final user = state.value;
     if (user != null) await _runHook(preSignOutHookProvider, user);
     await ref.read(authRepositoryProvider).signOut();
+    state = const AsyncData(null);
+  }
+
+  /// Deletes the account on the server, then clears the local session.
+  Future<void> deleteAccount() async {
+    final user = state.value;
+    if (user != null) await _runHook(preSignOutHookProvider, user);
+    await ref.read(meRepositoryProvider).deleteAccount();
+    try {
+      await ref.read(authRepositoryProvider).signOut();
+    } catch (_) {}
     state = const AsyncData(null);
   }
 

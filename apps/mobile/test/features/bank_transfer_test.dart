@@ -50,7 +50,7 @@ void main() {
       ],
       child: MaterialApp.router(
         routerConfig: router,
-        theme: AzzaTheme.build(ThemeVariant.studentInk),
+        theme: AzzaTheme.build(ThemeVariant.student),
         locale: const Locale('en'),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: localizationDelegates,

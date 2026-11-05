@@ -63,14 +63,14 @@ function CourseView({ course }: { course: Course }) {
 
   return (
     <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-14 px-4 sm:px-6 lg:px-10">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-stone">
-        <Link href="/#catalog" className="hover:text-ivory">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/#catalog" className="hover:text-foreground">
           {t.nav.public.courses}
         </Link>
         <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
         <span>{course.category}</span>
         <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
-        <span className="text-ivory">{title.text}</span>
+        <span className="text-foreground">{title.text}</span>
       </nav>
 
       <section className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
@@ -84,15 +84,15 @@ function CourseView({ course }: { course: Course }) {
             {title.fallback && <Chip tone="dashed">{t.common.englishOnly}</Chip>}
           </div>
           <h1 className="font-display text-[clamp(48px,7vw,96px)] font-extrabold leading-[0.88]">{title.text}</h1>
-          {desc.text && <p className="max-w-2xl text-lg leading-relaxed text-stone">{desc.text}</p>}
+          {desc.text && <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">{desc.text}</p>}
           {teacher && (
             <div className="flex items-center gap-3">
               <InitialsAvatar name={teacher.name} src={teacher.image} size={48} />
               <div>
-                <Link href={`/teachers/${teacher.id}`} className="block font-bold text-ivory underline-offset-4 hover:underline">
+                <Link href={`/teachers/${teacher.id}`} className="block font-bold text-foreground underline-offset-4 hover:underline">
                   <bdi>{teacher.name}</bdi>
                 </Link>
-                <span className="text-sm text-stone">{t.course.leadTeacher}</span>
+                <span className="text-sm text-muted-foreground">{t.course.leadTeacher}</span>
               </div>
             </div>
           )}
@@ -102,13 +102,13 @@ function CourseView({ course }: { course: Course }) {
 
       {course.modules.length > 0 && (
         <section aria-labelledby="syllabus" className="flex flex-col gap-4">
-          <h2 id="syllabus" className="label-mono text-stone">
+          <h2 id="syllabus" className="label-mono text-muted-foreground">
             {fill(t.course.syllabus, { n: f.number(course.modules.length) })}
           </h2>
-          <ol className="grid gap-px overflow-hidden rounded-[20px] border border-line bg-line sm:grid-cols-2">
+          <ol className="grid gap-px overflow-hidden rounded-[20px] border border-border bg-border sm:grid-cols-2">
             {course.modules.map((m) => (
-              <li key={m.id} className="flex items-baseline gap-4 bg-ink p-5">
-                <span className="timecode text-sm text-stone">M{String(m.order + 1).padStart(2, '0')}</span>
+              <li key={m.id} className="flex items-baseline gap-4 bg-background p-5">
+                <span className="timecode text-sm text-muted-foreground">M{String(m.order + 1).padStart(2, '0')}</span>
                 <b className="text-lg">{pick(m.titleEn, m.titleAr).text}</b>
               </li>
             ))}
@@ -120,12 +120,12 @@ function CourseView({ course }: { course: Course }) {
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <span className="label-mono text-stone">{t.course.step}</span>
+              <span className="label-mono text-muted-foreground">{t.course.step}</span>
               <h2 id="pick" className="mt-2 font-display text-[44px] font-extrabold leading-none">
                 {t.course.pickWeek}
               </h2>
             </div>
-            <label className="flex items-center gap-2 text-sm text-stone">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
               {t.course.showTimesIn}
               <Select value={tz} onValueChange={setTz}>
                 <SelectTrigger size="sm" className="rounded-full">
@@ -177,7 +177,7 @@ function BatchSchedule({ batchId, tz }: { batchId: string; tz: string }) {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-display text-2xl font-extrabold">{fill(t.course.fullSchedule, { code: b.code })}</h3>
-        <span className="label-mono text-stone">
+        <span className="label-mono text-muted-foreground">
           {fill(t.course.scheduleMeta, { n: f.number(b.sessions.length), d: f.number(b.schedule?.durationMin ?? 0), tz: gmtOffset(tz) })}
         </span>
       </div>
@@ -198,7 +198,7 @@ function BatchSchedule({ batchId, tz }: { batchId: string; tz: string }) {
           );
         })}
       </ol>
-      {ended > 0 && <p className="text-sm text-stone">{t.course.midBatch}</p>}
+      {ended > 0 && <p className="text-sm text-muted-foreground">{t.course.midBatch}</p>}
     </div>
   );
 }
@@ -239,8 +239,9 @@ function SeatPanel({ batchId, tz }: { batchId: string; tz: string }) {
   const open = b.status === 'ENROLLING' || b.status === 'RUNNING' || full;
   const checkoutHref = `/checkout/${b.id}`;
   const href = isSignedIn ? checkoutHref : `/sign-in?next=${encodeURIComponent(checkoutHref)}`;
+  // Ivory "paper" card in both themes; theme-cream gives its controls light-ground tokens.
   return (
-    <aside className="flex h-fit flex-col gap-5 rounded-[24px] bg-ivory p-6 text-ink lg:sticky lg:top-6">
+    <aside className="theme-cream flex h-fit flex-col gap-5 rounded-[24px] bg-ivory p-6 text-ink light:border light:border-border lg:sticky lg:top-6">
       <span className="label-mono text-stone-2">{t.course.yourSeat}</span>
       <div>
         <b className="font-display text-6xl font-extrabold leading-none" dir="ltr">

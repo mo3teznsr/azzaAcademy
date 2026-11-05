@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import {
+  appleVerifyInput,
   bankAccountInput,
   checkoutInput,
   couponInput,
@@ -18,6 +19,7 @@ import { currentUser, requireAuth, requireRole } from '../../http/middleware';
 import { paged } from '../../http/pagination';
 import type { AppEnv } from '../../http/types';
 import { validate } from '../../http/validate';
+import type { AppleIapService } from './apple/apple-iap.service';
 import type { BankAccountService, CouponService } from './catalog-admin.service';
 import type { CheckoutService } from './checkout.service';
 import type { FinanceAdminService } from './finance-admin.service';
@@ -35,6 +37,7 @@ export interface PaymentServices {
   orders: OrderQueries;
   waitlist: WaitlistQueries;
   receipts: ReceiptUploadService;
+  appleIap: AppleIapService;
 }
 
 /** Mounted at /api/v1 */
@@ -49,6 +52,9 @@ export function paymentRoutes(s: PaymentServices) {
       const result = await s.checkout.checkout(currentUser(c).id, c.req.valid('json'));
       return c.json(result, result.waitlisted ? 202 : 201);
     })
+    .post('/payments/apple/verify', requireAuth, validate('json', appleVerifyInput), async (c) =>
+      c.json(await s.appleIap.verifyPurchase(currentUser(c).id, c.req.valid('json'))),
+    )
     .post('/batches/:id/waitlist', requireAuth, async (c) => c.json(await s.checkout.joinWaitlist(currentUser(c).id, c.req.param('id')), 201))
     .delete('/batches/:id/waitlist', requireAuth, async (c) => c.json(await s.checkout.leaveWaitlist(currentUser(c).id, c.req.param('id'))))
     .get('/orders/:id', requireAuth, async (c) => c.json(await s.orders.get(c.req.param('id'), currentUser(c))))

@@ -59,6 +59,12 @@ export const registerDeviceInput = z.object({
 });
 export type RegisterDeviceInput = z.infer<typeof registerDeviceInput>;
 
+/** `DELETE /me` — the literal word guards against accidental calls. */
+export const deleteAccountInput = z.object({
+  confirm: z.literal('DELETE'),
+});
+export type DeleteAccountInput = z.infer<typeof deleteAccountInput>;
+
 // ---------- Courses ----------
 export const courseModuleInput = z.object({
   titleEn: z.string().min(2),
@@ -192,6 +198,14 @@ export const checkoutInput = z.object({
 export type CheckoutInput = z.infer<typeof checkoutInput>;
 
 export const uploadReceiptInput = z.object({ receiptUrl: z.url() });
+
+/** `POST /payments/apple/verify` — the StoreKit 2 JWS (`Transaction.jwsRepresentation`). `orderId` is optional:
+ * the transaction's appAccountToken identifies the order (restores of unfinished transactions send none). */
+export const appleVerifyInput = z.object({
+  orderId: id.optional(),
+  signedTransaction: z.string().min(20).max(20_000),
+});
+export type AppleVerifyInput = z.infer<typeof appleVerifyInput>;
 
 export const reviewTransferInput = z.discriminatedUnion('decision', [
   z.object({ decision: z.literal('APPROVE'), receivedAed: z.number().positive() }),

@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { dateRangeQuery, paginationQuery, registerDeviceInput, updateProfileInput } from '@azza/shared';
+import { dateRangeQuery, deleteAccountInput, paginationQuery, registerDeviceInput, updateProfileInput } from '@azza/shared';
+import { BusinessRuleError } from '../../core/errors';
 import { currentUser, requireAuth } from '../../http/middleware';
 import { paged } from '../../http/pagination';
 import type { AppEnv } from '../../http/types';
@@ -16,6 +17,14 @@ export function meRoutes(me: MeService, notifications: NotificationService, cale
     .use('*', requireAuth)
     .get('/', async (c) => c.json(await me.profile(currentUser(c).id)))
     .patch('/', validate('json', updateProfileInput), async (c) => c.json(await me.updateProfile(currentUser(c), c.req.valid('json'))))
+    .delete('/', validate('json', deleteAccountInput), async (c) => c.json(await me.deleteAccount(currentUser(c))))
+    .post('/avatar', async (c) => {
+      const file = (await c.req.parseBody()).file;
+      if (!(file instanceof File)) throw new BusinessRuleError('Attach the photo as a multipart `file` field', 'AVATAR_FILE_INVALID', { reason: 'MISSING' });
+      return c.json(
+        await me.uploadAvatar(currentUser(c).id, { type: file.type, size: file.size, bytes: async () => new Uint8Array(await file.arrayBuffer()) }),
+      );
+    })
     .post('/devices', validate('json', registerDeviceInput), async (c) =>
       c.json(await me.registerDevice(currentUser(c).id, c.req.valid('json')), 201),
     )

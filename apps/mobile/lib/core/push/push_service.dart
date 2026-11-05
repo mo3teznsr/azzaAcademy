@@ -16,6 +16,15 @@ abstract class PushService {
 
   /// Data payloads of notifications the user tapped (deep links).
   Stream<Map<String, String>> get opened;
+
+  /// The tap that cold-started the app, if any (read once).
+  Future<Map<String, String>?> initialOpened();
+
+  /// Shows the OS prompt (once); later calls just report the current answer.
+  Future<bool> requestPermission();
+
+  /// Whether the user currently allows notifications.
+  Future<bool> permitted();
   DevicePlatform get platform;
 }
 
@@ -30,6 +39,12 @@ class DisabledPushService implements PushService {
   @override
   Stream<Map<String, String>> get opened => const Stream.empty();
   @override
+  Future<Map<String, String>?> initialOpened() async => null;
+  @override
+  Future<bool> requestPermission() async => false;
+  @override
+  Future<bool> permitted() async => false;
+  @override
   DevicePlatform get platform => DevicePlatform.ios;
 }
 
@@ -37,12 +52,11 @@ class FirebasePushService implements PushService {
   FirebasePushService._();
 
   /// Initialises Firebase if `google-services.json` / `GoogleService-Info.plist`
-  /// are present; otherwise returns a [DisabledPushService].
+  /// are present; otherwise returns a [DisabledPushService]. The permission prompt is NOT shown
+  /// here — it waits until the user has signed in (see `session_hooks.dart`).
   static Future<PushService> init() async {
     try {
       await Firebase.initializeApp();
-      final m = FirebaseMessaging.instance;
-      await m.requestPermission();
       return FirebasePushService._();
     } catch (e) {
       debugPrint('[push] Firebase not configured — push disabled ($e)');
@@ -69,8 +83,36 @@ class FirebasePushService implements PushService {
   Stream<String> get tokenRefresh => FirebaseMessaging.instance.onRegistered;
 
   @override
-  Stream<Map<String, String>> get opened => FirebaseMessaging.onMessageOpenedApp
-      .map((m) => m.data.map((k, v) => MapEntry(k, '$v')));
+  Stream<Map<String, String>> get opened => FirebaseMessaging.onMessageOpenedApp.map(_data);
+
+  @override
+  Future<Map<String, String>?> initialOpened() async {
+    final m = await FirebaseMessaging.instance.getInitialMessage();
+    return m == null ? null : _data(m);
+  }
+
+  static Map<String, String> _data(RemoteMessage m) => m.data.map((k, v) => MapEntry(k, '$v'));
+
+  static bool _allowed(NotificationSettings s) =>
+      s.authorizationStatus == AuthorizationStatus.authorized || s.authorizationStatus == AuthorizationStatus.provisional;
+
+  @override
+  Future<bool> requestPermission() async {
+    try {
+      return _allowed(await FirebaseMessaging.instance.requestPermission());
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> permitted() async {
+    try {
+      return _allowed(await FirebaseMessaging.instance.getNotificationSettings());
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   DevicePlatform get platform => Platform.isAndroid ? DevicePlatform.android : DevicePlatform.ios;
@@ -78,3 +120,6 @@ class FirebasePushService implements PushService {
 
 /// Overridden in `main()` with the initialised service.
 final pushServiceProvider = Provider<PushService>((ref) => const DisabledPushService());
+
+/// Current OS permission, refreshed when Profile is reopened.
+final pushPermittedProvider = FutureProvider.autoDispose<bool>((ref) => ref.watch(pushServiceProvider).permitted());

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +18,7 @@ abstract final class _Keys {
   static const interests = 'azza.interests';
   static const timezone = 'azza.timezone';
   static const bestTimes = 'azza.best_times';
+  static const themeMode = 'azza.theme_mode';
 }
 
 /// App language (persisted). Drives `MaterialApp.locale`, RTL and fonts.
@@ -36,6 +38,23 @@ class LocaleController extends Notifier<AppLocale> {
 }
 
 final localeProvider = NotifierProvider<LocaleController, AppLocale>(LocaleController.new);
+
+/// Appearance: System (default) follows the phone's light/dark setting.
+class ThemeModeController extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() => switch (ref.watch(sharedPreferencesProvider).getString(_Keys.themeMode)) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      };
+
+  Future<void> set(ThemeMode mode) async {
+    state = mode;
+    await ref.read(sharedPreferencesProvider).setString(_Keys.themeMode, mode.name);
+  }
+}
+
+final themeModeProvider = NotifierProvider<ThemeModeController, ThemeMode>(ThemeModeController.new);
 
 /// Arabic-Indic numerals (٠١٢٣) toggle; only applied while the locale is Arabic.
 class ArabicDigitsController extends Notifier<bool> {

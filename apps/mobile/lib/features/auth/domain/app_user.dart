@@ -44,6 +44,9 @@ class AppUser {
 
   String get firstName => name.trim().split(RegExp(r'\s+')).first;
 
+  /// Students must have a profile photo: teachers see it on the roster and in the live room.
+  bool get needsPhoto => role == Role.student && (image == null || image!.isEmpty);
+
   AppUser copyWith({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency}) => AppUser(
         id: id,
         name: name ?? this.name,
@@ -52,6 +55,19 @@ class AppUser {
         locale: locale ?? this.locale,
         timezone: timezone ?? this.timezone,
         displayCurrency: displayCurrency ?? this.displayCurrency,
+        phone: phone,
+        image: image,
+        emailVerified: emailVerified,
+      );
+
+  AppUser copyWithImage(String? image) => AppUser(
+        id: id,
+        name: name,
+        email: email,
+        role: role,
+        locale: locale,
+        timezone: timezone,
+        displayCurrency: displayCurrency,
         phone: phone,
         image: image,
         emailVerified: emailVerified,

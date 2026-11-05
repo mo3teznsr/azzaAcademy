@@ -12,16 +12,25 @@ class AppConfig {
     required this.apiBaseUrl,
     this.stripePublishableKey = '',
     this.stripeMerchantId = '',
-    this.webBaseUrl = 'http://localhost:3005',
+    this.webBaseUrl = 'https://azza.academy',
   });
 
   factory AppConfig.fromEnvironment() => const AppConfig(
-        // `API_URL` is accepted as an alias (same name as the web app's env).
-        apiBaseUrl: String.fromEnvironment('API_BASE_URL', defaultValue: String.fromEnvironment('API_URL', defaultValue: 'http://localhost:4000')),
-        stripePublishableKey: String.fromEnvironment('STRIPE_PUBLISHABLE_KEY'),
-        stripeMerchantId: String.fromEnvironment('STRIPE_MERCHANT_ID'),
-        webBaseUrl: String.fromEnvironment('WEB_URL', defaultValue: 'http://localhost:3005'),
-      );
+    // `API_URL` is accepted as an alias (same name as the web app's env).
+    apiBaseUrl: String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: String.fromEnvironment(
+        'API_URL',
+        defaultValue: 'https://api.azza.academy',
+      ),
+    ),
+    stripePublishableKey: String.fromEnvironment('STRIPE_PUBLISHABLE_KEY'),
+    stripeMerchantId: String.fromEnvironment('STRIPE_MERCHANT_ID'),
+    webBaseUrl: String.fromEnvironment(
+      'WEB_URL',
+      defaultValue: 'https://azza.academy',
+    ),
+  );
 
   /// Origin of the Azza API (no trailing slash). Socket.IO uses the same origin.
   final String apiBaseUrl;
@@ -42,9 +51,21 @@ class AppConfig {
 
   /// Public verification page for a certificate: `<web origin>/verify/<code>`.
   String certificateVerifyUrl(String code) {
-    final origin = webBaseUrl.endsWith('/') ? webBaseUrl.substring(0, webBaseUrl.length - 1) : webBaseUrl;
+    final origin = webBaseUrl.endsWith('/')
+        ? webBaseUrl.substring(0, webBaseUrl.length - 1)
+        : webBaseUrl;
     return '$origin/verify/${Uri.encodeComponent(code)}';
   }
+
+  String get _webOrigin => webBaseUrl.endsWith('/')
+      ? webBaseUrl.substring(0, webBaseUrl.length - 1)
+      : webBaseUrl;
+
+  String get privacyUrl => '$_webOrigin/privacy';
+  String get termsUrl => '$_webOrigin/terms';
+
+  /// Support inbox (store listings ask for one; order problems link here).
+  static const supportEmail = 'support@azza.academy';
 
   /// Business constants mirrored from the API config (display only — the API is authoritative).
   static const bankTransferHoldHours = 48;

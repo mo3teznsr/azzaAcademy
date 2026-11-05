@@ -63,6 +63,7 @@ enum EnrollmentStatus {
 enum PaymentMethod {
   STRIPE
   BANK_TRANSFER
+  APPLE_IAP
 }
 
 enum OrderStatus {
@@ -370,6 +371,13 @@ model Order {
   fxRate                Decimal       @default(1) @db.Decimal(12, 6)
   couponCode            String?
   stripePaymentIntentId String?       @unique
+  /// Apple In-App Purchase (iOS): consumable product for the batch's price tier, the per-order
+  /// appAccountToken passed to StoreKit, and the verified transaction (unique → idempotent verify).
+  appleProductId             String?
+  appleAppAccountToken       String?  @unique
+  appleTransactionId         String?  @unique
+  appleOriginalTransactionId String?
+  appleEnvironment           String?
   bankAccountId         String?
   bankAccount           BankAccount?  @relation(fields: [bankAccountId], references: [id])
   receiptUrl            String?

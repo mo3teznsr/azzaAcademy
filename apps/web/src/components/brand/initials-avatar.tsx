@@ -51,7 +51,7 @@ export function AvatarStack({ names, max = 3, size = 36 }: { names: string[]; ma
       ))}
       {extra > 0 && (
         <span
-          className="-ms-2.5 inline-flex items-center justify-center rounded-full border-2 border-background bg-line text-xs font-bold text-ivory"
+          className="-ms-2.5 inline-flex items-center justify-center rounded-full border-2 border-background bg-secondary text-xs font-bold text-foreground"
           style={{ width: size, height: size }}
         >
           +{extra}

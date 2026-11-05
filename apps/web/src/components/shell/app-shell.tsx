@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/s
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/signal-mark';
 import { LocaleSwitcher, CurrencySwitcher } from '@/components/brand/switchers';
+import { ThemeMenu } from '@/components/brand/theme-switcher';
 import { Chip } from '@/components/brand/status-chip';
 import { adminApi } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
@@ -44,7 +45,7 @@ function SideNav({ groups, variant, onNavigate }: { groups: NavGroup[]; variant:
     <nav aria-label={t.nav.primary} className="flex flex-col gap-5">
       {groups.map((g, gi) => (
         <div key={gi} className="flex flex-col gap-1">
-          {g.label && <span className="label-mono px-3.5 pb-1 text-stone">{g.label}</span>}
+          {g.label && <span className="label-mono px-3.5 pb-1 text-muted-foreground">{g.label}</span>}
           {g.items.map((item) => {
             const active = isActive(pathname, item.href, item.exact);
             const Icon = item.icon;
@@ -56,7 +57,11 @@ function SideNav({ groups, variant, onNavigate }: { groups: NavGroup[]; variant:
                 aria-current={active ? 'page' : undefined}
                 className={cn(
                   'flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-[15px] font-medium no-underline transition-colors duration-200',
-                  active ? 'bg-ivory text-ink' : variant === 'admin' ? 'text-[#C9C1B5] hover:bg-ink-2 hover:text-ivory' : 'text-stone hover:bg-ink-2 hover:text-ivory',
+                  active
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                    : variant === 'admin'
+                      ? 'text-[#C9C1B5] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                 )}
               >
                 <Icon className="size-5 shrink-0" strokeWidth={1.8} />
@@ -74,8 +79,8 @@ function SideNav({ groups, variant, onNavigate }: { groups: NavGroup[]; variant:
 function SideFooter({ variant, t }: { variant: Variant; t: Dictionary }) {
   if (variant !== 'student') return null;
   return (
-    <div className="mt-auto flex flex-col gap-2 rounded-2xl bg-ink-2 p-4">
-      <span className="label-mono text-stone">{t.nav.helpTitle}</span>
+    <div className="mt-auto flex flex-col gap-2 rounded-2xl bg-sidebar-accent p-4">
+      <span className="label-mono text-muted-foreground">{t.nav.helpTitle}</span>
       <span className="text-sm leading-snug">{t.nav.helpBody}</span>
       <a href="mailto:support@azza.live" className="link-sun text-sm">
         {t.nav.contactSupport}
@@ -113,8 +118,9 @@ export function AppShell({ variant, groups, settingsHref, children }: { variant:
       </a>
       <aside
         className={cn(
-          'theme-ink sticky top-0 hidden h-dvh w-60 shrink-0 overflow-y-auto bg-ink text-ivory lg:block',
-          !isAdmin && 'border-e border-line',
+          'sticky top-0 hidden h-dvh w-60 shrink-0 overflow-y-auto bg-sidebar text-sidebar-foreground lg:block',
+          // Admin: ink sidebar on the cream ground. Student / teacher: follows the light / dark theme.
+          isAdmin ? 'theme-ink' : 'border-e border-sidebar-border',
         )}
       >
         {sidebar}
@@ -127,7 +133,7 @@ export function AppShell({ variant, groups, settingsHref, children }: { variant:
                 <Menu />
               </Button>
             </SheetTrigger>
-            <SheetContent side={dir === 'rtl' ? 'right' : 'left'} className="theme-ink w-72 border-line bg-ink p-0 text-ivory">
+            <SheetContent side={dir === 'rtl' ? 'right' : 'left'} className={cn('w-72 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground', isAdmin && 'theme-ink')}>
               <SheetTitle className="sr-only">{t.nav.primary}</SheetTitle>
               {sidebar}
             </SheetContent>
@@ -143,6 +149,7 @@ export function AppShell({ variant, groups, settingsHref, children }: { variant:
           </label>
           <div className="ms-auto flex items-center gap-2">
             <LocaleSwitcher className="hidden md:flex" />
+            {!isAdmin && <ThemeMenu />}
             {variant === 'student' && <CurrencySwitcher className="hidden md:flex" />}
             <NotificationsBell />
             <UserMenu settingsHref={settingsHref} />

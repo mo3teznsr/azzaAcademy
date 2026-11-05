@@ -14,10 +14,8 @@ import '../data/certificates_repository.dart';
 import '../domain/certificate_models.dart';
 
 /// `start → end` for a batch, or whichever end is known.
-String batchDates(Fmt f, DateTime? start, DateTime? end) => [
-      if (start != null) f.shortDate(start),
-      if (end != null) f.shortDate(end),
-    ].join(' → ');
+String batchDates(Fmt f, DateTime? start, DateTime? end) =>
+    [if (start != null) f.shortDate(start), if (end != null) f.shortDate(end)].join(' → ');
 
 /// Earned certificates + batches still on their way to one.
 class CertificatesScreen extends ConsumerWidget {
@@ -50,11 +48,7 @@ class CertificatesScreen extends ConsumerWidget {
                 for (final c in o.items) ...[
                   FadeSlideIn(
                     index: i++,
-                    child: _EarnedCard(
-                      cert: c,
-                      isNew: seen.isNew(c.code),
-                      onTap: () => context.push(Routes.certificate(c.code)),
-                    ),
+                    child: _EarnedCard(cert: c, isNew: seen.isNew(c.code), onTap: () => context.push(Routes.certificate(c.code))),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -62,7 +56,10 @@ class CertificatesScreen extends ConsumerWidget {
               if (o.inProgress.isNotEmpty) ...[
                 SectionHeader(l.certificatesInProgress, padding: EdgeInsets.only(top: o.items.isEmpty ? 8 : 28, bottom: 12)),
                 for (final pr in o.inProgress) ...[
-                  FadeSlideIn(index: i++, child: _ProgressCard(progress: pr)),
+                  FadeSlideIn(
+                    index: i++,
+                    child: _ProgressCard(progress: pr),
+                  ),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -91,52 +88,51 @@ class _EarnedCard extends ConsumerWidget {
       key: Key('cert-${cert.code}'),
       onTap: onTap,
       padding: EdgeInsets.zero,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        SizedBox(
-          height: 112,
-          child: Stack(fit: StackFit.expand, children: [
-            MediaImage(cert.course.coverImageUrl, fallback: ColoredBox(color: coverColor(cert.course.coverStyle))),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Color(0xCC121110), Color(0x00121110)],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            height: 112,
+            child: MediaImage(cert.course.coverImageUrl, fallback: ColoredBox(color: coverColor(cert.course.coverStyle))),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Slate(cert.batchCode),
+                    const Spacer(),
+                    if (isNew) StatusChip(label: l.certificateNew, color: AzzaColors.onAir, textColor: AzzaColors.ink),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 10),
+                Text(cert.courseName(locale), style: t.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
+                Text(
+                  [
+                    if (cert.teacherName.isNotEmpty) l.certificateWithTeacher(cert.teacherName),
+                    batchDates(f, cert.startsOn, cert.endsOn),
+                  ].where((e) => e.isNotEmpty).join(' · '),
+                  style: t.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: MonoLabel(l.certificateAttended(f.n(cert.attended), f.n(cert.total)))),
+                    Text(
+                      cert.code,
+                      textDirection: TextDirection.ltr,
+                      style: AzzaFonts.mono(size: 12, color: p.text, tracking: 0.08),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            PositionedDirectional(
-              start: 16,
-              bottom: 12,
-              end: 16,
-              child: Row(children: [
-                Slate(cert.batchCode, inverted: true, color: AzzaColors.ivory),
-                const Spacer(),
-                if (isNew) StatusChip(label: l.certificateNew, color: AzzaColors.onAir, textColor: AzzaColors.ink),
-              ]),
-            ),
-          ]),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(cert.courseName(locale), style: t.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 2),
-            Text(
-              [
-                if (cert.teacherName.isNotEmpty) l.certificateWithTeacher(cert.teacherName),
-                batchDates(f, cert.startsOn, cert.endsOn),
-              ].where((e) => e.isNotEmpty).join(' · '),
-              style: t.bodySmall,
-            ),
-            const SizedBox(height: 12),
-            Row(children: [
-              Expanded(child: MonoLabel(l.certificateAttended(f.n(cert.attended), f.n(cert.total)))),
-              Text(cert.code, textDirection: TextDirection.ltr, style: AzzaFonts.mono(size: 12, color: p.text, tracking: 0.08)),
-            ]),
-          ]),
-        ),
-      ]),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -156,53 +152,60 @@ class _ProgressCard extends ConsumerWidget {
     final status = !pr.reachable
         ? l.certificateUnreachable
         : pr.needed <= 0
-            ? l.certificateRequirementMet
-            : pr.needed == 1
-                ? l.certificateOneSessionNeeded
-                : l.certificateSessionsNeeded(f.n(pr.needed));
+        ? l.certificateRequirementMet
+        : pr.needed == 1
+        ? l.certificateOneSessionNeeded
+        : l.certificateSessionsNeeded(f.n(pr.needed));
     return RaisedCard(
       onTap: pr.batchId.isEmpty ? null : () => context.push(Routes.batchSchedule(pr.batchId)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Slate(pr.batchCode),
-          const SizedBox(width: 10),
-          Expanded(child: Text(pr.courseName(locale), style: t.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
-        ]),
-        const SizedBox(height: 14),
-        Semantics(
-          label: l.certificateAttendedOfRequired(f.n(pr.attended), f.n(pr.required)),
-          child: ExcludeSemantics(
-            child: LinearProgressIndicator(
-              value: pr.fraction,
-              minHeight: 6,
-              borderRadius: BorderRadius.circular(3),
-              color: pr.reachable ? p.accent : p.muted,
-              backgroundColor: p.line,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Slate(pr.batchCode),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(pr.courseName(locale), style: t.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Semantics(
+            label: l.certificateAttendedOfRequired(f.n(pr.attended), f.n(pr.required)),
+            child: ExcludeSemantics(
+              child: LinearProgressIndicator(
+                value: pr.fraction,
+                minHeight: 6,
+                borderRadius: BorderRadius.circular(3),
+                color: pr.reachable ? p.accent : p.muted,
+                backgroundColor: p.line,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-            child: Text(
-              status,
-              style: t.bodyMedium?.copyWith(color: pr.reachable ? p.text : p.muted),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(status, style: t.bodyMedium?.copyWith(color: pr.reachable ? p.text : p.muted)),
+              ),
+              const SizedBox(width: 12),
+              MonoLabel('${f.n(pr.attended)}/${f.n(pr.required)}'),
+            ],
+          ),
+          if (pr.teacherName.isNotEmpty || pr.endsOn != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              [
+                if (pr.teacherName.isNotEmpty) l.certificateWithTeacher(pr.teacherName),
+                batchDates(f, pr.startsOn, pr.endsOn),
+              ].where((e) => e.isNotEmpty).join(' · '),
+              style: t.bodySmall,
             ),
-          ),
-          const SizedBox(width: 12),
-          MonoLabel('${f.n(pr.attended)}/${f.n(pr.required)}'),
-        ]),
-        if (pr.teacherName.isNotEmpty || pr.endsOn != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            [
-              if (pr.teacherName.isNotEmpty) l.certificateWithTeacher(pr.teacherName),
-              batchDates(f, pr.startsOn, pr.endsOn),
-            ].where((e) => e.isNotEmpty).join(' · '),
-            style: t.bodySmall,
-          ),
+          ],
         ],
-      ]),
+      ),
     );
   }
 }

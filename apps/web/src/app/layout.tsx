@@ -4,6 +4,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { dirOf } from '@/lib/i18n/config';
 import en from '@/lib/i18n/dictionaries/en';
 import ar from '@/lib/i18n/dictionaries/ar';
+import { THEME_SCRIPT } from '@/lib/theme/config';
 import { Providers } from './providers';
 import './globals.css';
 
@@ -19,7 +20,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: { default: t.meta.title, template: '%s · Azza' }, description: t.meta.description };
 }
 
-export const viewport: Viewport = { themeColor: '#121110' };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f5efe4' },
+    { media: '(prefers-color-scheme: dark)', color: '#121110' },
+  ],
+};
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getLocale();
@@ -30,6 +36,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       className={`${bricolage.variable} ${interTight.variable} ${jetbrains.variable} ${readex.variable} ${plexArabic.variable} h-full`}
       suppressHydrationWarning
     >
+      <head>
+        {/* Sets <html data-theme> from the saved preference / OS before first paint (no flash). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full bg-background text-foreground">
         <Providers locale={locale}>{children}</Providers>
       </body>

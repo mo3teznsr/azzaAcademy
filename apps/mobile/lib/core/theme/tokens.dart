@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Raw palette from the "Main" design board. Use [AzzaPalette] in widgets so
-/// they adapt to the ink (student/teacher) and cream (admin) grounds.
+/// they adapt to the light (cream) and dark (ink) grounds.
 abstract final class AzzaColors {
   static const ink = Color(0xFF121110);
   static const ink2 = Color(0xFF1C1A18);
@@ -27,6 +27,13 @@ abstract final class AzzaColors {
   /// "Full / warn".
   static const peach = Color(0xFFFFC7A6);
 
+  /// Light-ground accents: the sky/sun hues deepened so they read as text on cream (AA ≥ 4.5:1).
+  static const skyDeep = Color(0xFF24578C);
+  static const sunDeep = Color(0xFF8A5A00);
+
+  /// Destructive actions on a light ground (5.8:1 on ivory).
+  static const dangerDeep = Color(0xFFA3311A);
+
   /// On-air: used ONLY when a LiveKit room is actually live.
   static const onAir = Color(0xFFFF5A36);
 }
@@ -43,7 +50,8 @@ abstract final class AzzaSpace {
   static const radiusSm = 12.0;
 }
 
-enum ThemeVariant { studentInk, teacherInk, adminCream }
+/// Which role's accent the theme carries. Light/dark comes from [ThemeMode] (System by default).
+enum ThemeVariant { student, teacher, admin }
 
 /// Semantic colours for the active ground.
 @immutable
@@ -59,7 +67,7 @@ class AzzaPalette extends ThemeExtension<AzzaPalette> {
     required this.isDark,
   });
 
-  static const studentInk = AzzaPalette(
+  static const _dark = AzzaPalette(
     ground: AzzaColors.ink,
     raised: AzzaColors.ink2,
     line: AzzaColors.line,
@@ -70,30 +78,35 @@ class AzzaPalette extends ThemeExtension<AzzaPalette> {
     isDark: true,
   );
 
-  static const teacherInk = AzzaPalette(
-    ground: AzzaColors.ink,
-    raised: AzzaColors.ink2,
-    line: AzzaColors.line,
-    text: AzzaColors.ivory,
-    muted: AzzaColors.muted,
-    accent: AzzaColors.sun,
-    onAccent: AzzaColors.ink,
-    isDark: true,
-  );
-
-  static const adminCream = AzzaPalette(
+  static const _light = AzzaPalette(
     ground: AzzaColors.cream,
     raised: AzzaColors.creamRaised,
     line: AzzaColors.creamLine,
     text: AzzaColors.ink,
     muted: AzzaColors.mutedDeep,
-    accent: AzzaColors.ink,
+    accent: AzzaColors.skyDeep,
     onAccent: AzzaColors.ivory,
     isDark: false,
   );
 
+  static const studentDark = _dark;
+  static const studentLight = _light;
+  static final teacherDark = _dark.copyWith(accent: AzzaColors.sun);
+  static final teacherLight = _light.copyWith(accent: AzzaColors.sunDeep);
+  static final adminDark = _dark.copyWith(accent: AzzaColors.ivory);
+  static final adminLight = _light.copyWith(accent: AzzaColors.ink);
+
+  static AzzaPalette forVariant(ThemeVariant v, Brightness b) {
+    final dark = b == Brightness.dark;
+    return switch (v) {
+      ThemeVariant.student => dark ? studentDark : studentLight,
+      ThemeVariant.teacher => dark ? teacherDark : teacherLight,
+      ThemeVariant.admin => dark ? adminDark : adminLight,
+    };
+  }
+
   static AzzaPalette of(BuildContext context) =>
-      Theme.of(context).extension<AzzaPalette>() ?? AzzaPalette.studentInk;
+      Theme.of(context).extension<AzzaPalette>() ?? AzzaPalette.studentDark;
 
   final Color ground;
   final Color raised;

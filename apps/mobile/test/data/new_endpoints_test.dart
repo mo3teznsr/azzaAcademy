@@ -63,7 +63,7 @@ void main() {
 
     test('verify link uses the web origin', () {
       expect(const AppConfig(apiBaseUrl: 'http://localhost:4000').certificateVerifyUrl('AZ-CERT-7Q4K'),
-          'http://localhost:3005/verify/AZ-CERT-7Q4K');
+          'https://azza.academy/verify/AZ-CERT-7Q4K');
       expect(const AppConfig(apiBaseUrl: 'x', webBaseUrl: 'https://azza.academy/').certificateVerifyUrl('AZ-CERT-7Q4K'),
           'https://azza.academy/verify/AZ-CERT-7Q4K');
     });

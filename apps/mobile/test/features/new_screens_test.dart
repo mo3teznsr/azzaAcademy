@@ -37,7 +37,7 @@ Future<void> _pumpLocale(WidgetTester tester, Widget child, Locale locale, List<
     retry: (_, _) => null,
     overrides: [sharedPreferencesProvider.overrideWithValue(prefs), ...overrides],
     child: MaterialApp(
-      theme: AzzaTheme.build(ThemeVariant.studentInk),
+      theme: AzzaTheme.build(ThemeVariant.student),
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: localizationDelegates,
@@ -78,8 +78,15 @@ void main() {
       expect(find.text('No certificates yet'), findsOneWidget);
     });
 
-    testWidgets('detail renders the certificate and copies the verify link', (tester) async {
+    testWidgets('detail renders the certificate and shares the verify link', (tester) async {
       String? copied;
+      Object? shared;
+      const share = MethodChannel('dev.fluttercommunity.plus/share');
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(share, (call) async {
+        shared = call.arguments;
+        return 'dev.fluttercommunity.plus/share/unavailable';
+      });
+      addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(share, null));
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
         if (call.method == 'Clipboard.setData') copied = (call.arguments as Map)['text'] as String?;
         return null;
@@ -103,7 +110,14 @@ void main() {
 
       await tester.tap(find.byKey(const Key('cert-share')));
       await settle(tester);
-      expect(copied, 'http://localhost:3005/verify/AZ-CERT-7Q4K');
+      expect('$shared', contains('https://azza.academy/verify/AZ-CERT-7Q4K'));
+      expect(copied, isNull);
+
+      // Without a share sheet the link is copied instead.
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(share, (call) async => throw PlatformException(code: 'x'));
+      await tester.tap(find.byKey(const Key('cert-share')));
+      await settle(tester);
+      expect(copied, 'https://azza.academy/verify/AZ-CERT-7Q4K');
       expect(find.text('Verification link copied'), findsOneWidget);
     });
 

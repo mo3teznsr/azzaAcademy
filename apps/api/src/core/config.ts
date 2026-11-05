@@ -35,6 +35,15 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
+  /** Apple In-App Purchase (iOS seats). Environments whose signed transactions are accepted, comma-separated:
+   * `Production`, `Sandbox` (TestFlight, App Review and sandbox testers). Production needs APPLE_APP_APPLE_ID. */
+  APPLE_BUNDLE_ID: z.string().min(1).default('com.futuretech.azza'),
+  APPLE_IAP_ENVIRONMENT: z.string().default('Sandbox'),
+  APPLE_APP_APPLE_ID: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
+
+  /** App Review demo accounts, comma-separated emails: may enter their batch's live room at any time (see DemoReviewers). */
+  DEMO_REVIEWER_EMAILS: z.string().default(''),
+
   TEACHER_SHARE_PERCENT: z.coerce.number().min(0).max(100).default(60),
   EARNING_HOLD_DAYS: z.coerce.number().int().min(0).default(14),
   MIN_PAYOUT_AED: z.coerce.number().min(0).default(200),
@@ -42,7 +51,10 @@ const envSchema = z.object({
   VAT_PERCENT: z.coerce.number().min(0).max(100).default(5),
 });
 
-export type AppConfig = z.infer<typeof envSchema> & { trustedOrigins: string[] };
+export const APPLE_ENVIRONMENTS = ['Production', 'Sandbox'] as const;
+export type AppleEnvironment = (typeof APPLE_ENVIRONMENTS)[number];
+
+export type AppConfig = z.infer<typeof envSchema> & { trustedOrigins: string[]; appleEnvironments: AppleEnvironment[] };
 
 export function loadConfig(env: Record<string, string | undefined> = process.env): AppConfig {
   const parsed = envSchema.safeParse(env);
@@ -56,8 +68,15 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (parsed.data.NODE_ENV === 'production' && !parsed.data.S3_BUCKET) {
     throw new Error('Invalid environment:\n  S3_BUCKET and CLOUDFRONT_URL are required in production');
   }
+  const appleEnvironments = parsed.data.APPLE_IAP_ENVIRONMENT.split(',').map((e) => e.trim()).filter(Boolean);
+  const unknown = appleEnvironments.filter((e) => !(APPLE_ENVIRONMENTS as readonly string[]).includes(e));
+  if (unknown.length) throw new Error(`Invalid environment:\n  APPLE_IAP_ENVIRONMENT: unknown ${unknown.join(', ')} (use Production and/or Sandbox)`);
+  if (appleEnvironments.includes('Production') && !parsed.data.APPLE_APP_APPLE_ID) {
+    throw new Error('Invalid environment:\n  APPLE_APP_APPLE_ID is required when APPLE_IAP_ENVIRONMENT includes Production');
+  }
   return {
     ...parsed.data,
+    appleEnvironments: appleEnvironments as AppleEnvironment[],
     trustedOrigins: parsed.data.TRUSTED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean),
   };
 }

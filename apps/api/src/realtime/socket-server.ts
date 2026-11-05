@@ -25,7 +25,7 @@ export function attachSocketServer(httpServer: HttpServer, container: Container)
     const session = await auth.api.getSession({ headers }).catch(() => null);
     if (!session) return next(new Error('UNAUTHORIZED'));
     if ((session.user as { banned?: boolean }).banned) return next(new Error('UNAUTHORIZED'));
-    socket.data.user = { id: session.user.id, name: session.user.name, role: session.user.role };
+    socket.data.user = { id: session.user.id, name: session.user.name, email: session.user.email, role: session.user.role };
     next();
   });
 

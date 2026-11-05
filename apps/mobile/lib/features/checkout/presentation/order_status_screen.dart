@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/providers.dart';
 import '../../../core/realtime/socket_events.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/links.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../data/checkout_repository.dart';
+import '../domain/apple_iap.dart';
 import '../domain/checkout_models.dart';
 
 /// Payment status: timeline while finance verifies, rejected / mismatch variant, success.
@@ -133,11 +136,22 @@ class _OrderBody extends ConsumerWidget {
           ]),
         ),
         const SizedBox(height: 16),
-        FilledButton(onPressed: () => context.push(Routes.bankTransfer(o.id)), child: Text(l.reupload)),
+        // iOS never leads to bank transfer (guideline 3.1.1); support can still help.
+        if (!usesAppStorePayments) FilledButton(onPressed: () => context.push(Routes.bankTransfer(o.id)), child: Text(l.reupload)),
         const SizedBox(height: 8),
-        OutlinedButton(onPressed: () => showToast(context, l.comingSoon), child: Text(l.contactSupport)),
+        OutlinedButton(
+            onPressed: () => openExternal(context, 'mailto:${AppConfig.supportEmail}?subject=${Uri.encodeComponent('Order ${o.id}')}'),
+            child: Text(l.contactSupport)),
       ],
-      if (o.needsReceipt && !problem) ...[
+      if (usesAppStorePayments && o.awaitsAppStorePurchase) ...[
+        const SizedBox(height: 16),
+        FilledButton(
+          key: const Key('order-pay-app-store'),
+          onPressed: () => context.push(Routes.applePayment(o.id)),
+          child: Text(l.payWithAppStore),
+        ),
+      ],
+      if (o.needsReceipt && !problem && !usesAppStorePayments) ...[
         const SizedBox(height: 16),
         FilledButton(onPressed: () => context.push(Routes.bankTransfer(o.id)), child: Text(l.uploadReceipt.split('(').first.trim())),
       ],

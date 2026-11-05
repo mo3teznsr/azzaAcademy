@@ -1,0 +1,7 @@
+# Copy to android/key.properties (git-ignored) for Play Store release builds.
+# Create the upload key once:
+#   keytool -genkey -v -keystore ~/azza-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+storeFile=/Users/you/azza-upload.jks
+storePassword=
+keyAlias=upload
+keyPassword=

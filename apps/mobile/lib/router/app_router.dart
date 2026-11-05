@@ -22,6 +22,8 @@ import '../features/certificates/presentation/certificates_screen.dart';
 import '../features/catalog/presentation/batch_schedule_screen.dart';
 import '../features/catalog/presentation/course_detail_screen.dart';
 import '../features/catalog/presentation/explore_screen.dart';
+import '../features/checkout/domain/apple_iap.dart';
+import '../features/checkout/presentation/apple_payment_screen.dart';
 import '../features/checkout/presentation/bank_transfer_screen.dart';
 import '../features/checkout/presentation/card_payment_screen.dart';
 import '../features/checkout/presentation/checkout_screen.dart';
@@ -35,7 +37,9 @@ import '../features/live/presentation/after_session_screen.dart';
 import '../features/live/presentation/attendance_summary_screen.dart';
 import '../features/live/presentation/live_room_screen.dart';
 import '../features/live/presentation/lobby_screen.dart';
+import '../features/me/presentation/edit_profile_screen.dart';
 import '../features/me/presentation/language_settings_screen.dart';
+import '../features/me/presentation/profile_photo_screen.dart';
 import '../features/me/presentation/notifications_screen.dart';
 import '../features/me/presentation/profile_screen.dart';
 import '../features/me/presentation/schedule_screen.dart';
@@ -52,6 +56,8 @@ import 'role_shell.dart';
 import 'routes.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+
+String? _appStoreOnly(BuildContext _, GoRouterState s) => usesAppStorePayments ? Routes.order(s.pathParameters['id']!) : null;
 
 GoRoute _route(String path, Widget Function(GoRouterState s) build, {List<RouteBase> routes = const []}) =>
     GoRoute(path: path, builder: (_, s) => build(s), routes: routes);
@@ -118,8 +124,14 @@ List<RouteBase> buildRoutes() => [
       _route('/batches/:id/roster', (s) => RosterScreen(batchId: s.pathParameters['id']!)),
       _route('/checkout/:batchId', (s) => CheckoutScreen(batchId: s.pathParameters['batchId']!)),
       _route('/orders/:id', (s) => OrderStatusScreen(orderId: s.pathParameters['id']!), routes: [
-        _route('card', (s) => CardPaymentScreen(orderId: s.pathParameters['id']!, clientSecret: s.extra as String?)),
-        _route('bank-transfer', (s) => BankTransferScreen(orderId: s.pathParameters['id']!)),
+        // iOS sells seats only through In-App Purchase: card / bank-transfer screens are unreachable there.
+        GoRoute(
+          path: 'card',
+          redirect: _appStoreOnly,
+          builder: (_, s) => CardPaymentScreen(orderId: s.pathParameters['id']!, clientSecret: s.extra as String?),
+        ),
+        GoRoute(path: 'bank-transfer', redirect: _appStoreOnly, builder: (_, s) => BankTransferScreen(orderId: s.pathParameters['id']!)),
+        _route('app-store', (s) => ApplePaymentScreen(orderId: s.pathParameters['id']!, autoStart: s.extra == true)),
         _route('enrolled', (s) => EnrolledScreen(orderId: s.pathParameters['id']!)),
       ]),
       _route(Routes.myOrders, (_) => const MyOrdersScreen()),
@@ -136,6 +148,8 @@ List<RouteBase> buildRoutes() => [
       _route(Routes.assignments, (s) => AssignmentsScreen(batchId: s.uri.queryParameters['batchId'])),
       _route(Routes.notifications, (_) => const NotificationsScreen()),
       _route(Routes.languageSettings, (_) => const LanguageSettingsScreen()),
+      _route(Routes.editProfile, (_) => const EditProfileScreen()),
+      _route(Routes.profilePhoto, (_) => const ProfilePhotoScreen()),
     ];
 
 final routerProvider = Provider<GoRouter>((ref) {

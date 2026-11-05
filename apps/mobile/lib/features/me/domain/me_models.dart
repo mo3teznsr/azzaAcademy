@@ -86,12 +86,15 @@ class AppNotification {
       AppNotification(id: id, type: type, title: title, body: body, createdAt: createdAt, read: true, data: data);
 
   /// Deep link target derived from `data` (sessionId / orderId / batchId).
-  String? get route {
-    if (data['sessionId'] != null) {
-      return type.contains('LIVE') || type.contains('LOBBY') ? '/sessions/${data['sessionId']}/lobby' : null;
-    }
-    if (data['orderId'] != null) return '/orders/${data['orderId']}';
-    if (data['batchId'] != null) return '/batches/${data['batchId']}/schedule';
-    return null;
+  String? get route => notificationRoute(type, data);
+}
+
+/// Where a notification (in-app row or tapped push) leads; null when it has no screen.
+String? notificationRoute(String type, Map<String, dynamic> data) {
+  if (data['sessionId'] != null) {
+    return type.contains('LIVE') || type.contains('LOBBY') ? '/sessions/${data['sessionId']}/lobby' : null;
   }
+  if (data['orderId'] != null) return '/orders/${data['orderId']}';
+  if (data['batchId'] != null) return '/batches/${data['batchId']}/schedule';
+  return null;
 }

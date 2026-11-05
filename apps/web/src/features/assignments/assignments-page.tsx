@@ -53,7 +53,7 @@ export function AssignmentsPage() {
                   <span className="text-sm text-muted-foreground">{pick(a.enrollment.batch.course.titleEn, a.enrollment.batch.course.titleAr).text}</span>
                   {a.description && <p className="mt-2 text-sm text-muted-foreground">{a.description}</p>}
                   {sub?.feedback && (
-                    <p className="mt-2 rounded-xl bg-ink p-3 text-sm">
+                    <p className="mt-2 rounded-xl bg-background p-3 text-sm">
                       <b>{t.assignments.feedback}: </b>
                       {sub.feedback}
                     </p>

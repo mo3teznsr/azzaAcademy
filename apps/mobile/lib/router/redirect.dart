@@ -25,6 +25,10 @@ String? computeRedirect({
     return Routes.signIn;
   }
 
+  // Students add a photo before anything else (sign-up step, and once for older accounts).
+  if (user.needsPhoto) return location == Routes.profilePhoto ? null : Routes.profilePhoto;
+  if (location == Routes.profilePhoto) return Routes.homeFor(user.role);
+
   final home = Routes.homeFor(user.role);
   if (location == Routes.splash || location == '/' || Routes.publicPaths.contains(location)) return home;
   for (final role in Role.values) {

@@ -2,38 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSCameraUsageDescription</key>
-	<string>Azza uses the camera so your teacher and classmates can see you in live sessions.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Azza uses the microphone so you can speak in live sessions.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Choose a bank transfer receipt to upload.</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>Add your batch sessions to your calendar.</string>
-	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>Add your batch sessions to your calendar.</string>
-	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
-	<string>Add your batch sessions to your calendar.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>Calendar invites may reference contacts.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Connect to a local Azza development server.</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>audio</string>
-		<string>voip</string>
-		<string>remote-notification</string>
-	</array>
-	<key>CFBundleLocalizations</key>
-	<array>
-		<string>en</string>
-		<string>ar</string>
-	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -46,6 +14,11 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ar</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>Azza</string>
 	<key>CFBundlePackageType</key>
@@ -56,8 +29,31 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Add your batch sessions to your calendar.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Add your batch sessions to your calendar.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>Add your batch sessions to your calendar.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Azza uses the camera to take your profile photo and so your teacher and classmates can see you in live sessions.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Azza only adds session events to your calendar; it does not read your contacts.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Azza uses the local network to connect audio and video in live sessions.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Azza uses the microphone so you can speak in live sessions.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a profile photo so your teacher can recognise you.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -81,6 +77,11 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -88,8 +89,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>

@@ -1,5 +1,6 @@
 import type { Platform, UpdateProfileInput } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
+import { deletedEmail } from './account-deletion';
 
 const profileSelect = {
   id: true,
@@ -41,6 +42,10 @@ export class PrismaMeRepository {
     return this.db.user.update({ where: { id: userId }, data, select: profileSelect });
   }
 
+  setImage(userId: string, image: string) {
+    return this.db.user.update({ where: { id: userId }, data: { image }, select: profileSelect });
+  }
+
   async counts(userId: string, now: Date, weekAhead: Date) {
     const [activeEnrollments, unreadNotifications, teachingBatches, upcomingSessions] = await this.db.$transaction([
       this.db.enrollment.count({ where: { userId, status: 'ACTIVE' } }),
@@ -72,6 +77,67 @@ export class PrismaMeRepository {
 
   async deleteDevice(userId: string, token: string) {
     return (await this.db.deviceToken.deleteMany({ where: { userId, token } })).count;
+  }
+
+  /** Inputs for `canDeleteAccount`. */
+  async deletionFacts(userId: string, now: Date) {
+    const [activeBatches, upcomingHosted, earnings, payouts, ordersUnderReview] = await this.db.$transaction([
+      this.db.batch.count({ where: { teacherId: userId, status: { notIn: ['COMPLETED', 'CANCELLED'] } } }),
+      this.db.liveSession.count({ where: { hostId: userId, status: { in: ['SCHEDULED', 'LIVE'] }, endsAt: { gt: now } } }),
+      this.db.earning.count({ where: { teacherId: userId, status: { in: ['PENDING', 'AVAILABLE'] } } }),
+      this.db.payout.count({ where: { teacherId: userId, status: { in: ['READY', 'HELD'] } } }),
+      this.db.order.count({ where: { userId, status: { in: ['VERIFYING', 'AMOUNT_MISMATCH'] } } }),
+    ]);
+    return { activeTeaching: activeBatches + upcomingHosted, unpaidEarnings: earnings + payouts, ordersUnderReview };
+  }
+
+  /**
+   * Erases the account in one transaction. The `user` row itself is kept as an anonymous tombstone:
+   * orders, earnings and payouts reference it without cascade (and `Enrollment → Order` cascades), so a
+   * hard delete would either fail or destroy accounting records. Everything personal is removed or blanked;
+   * attendance rows stay (session counts, teacher reports) but point at the tombstone only.
+   * Returns the batches whose seats were freed so the caller can promote their waitlists.
+   */
+  async eraseAccount(userId: string) {
+    return this.db.$transaction(async (tx) => {
+      const held = await tx.enrollment.findMany({
+        where: { userId, status: { in: ['ACTIVE', 'PENDING_PAYMENT', 'AWAITING_TRANSFER', 'VERIFYING', 'WAITLISTED'] } },
+        select: { batchId: true },
+      });
+      await tx.enrollment.updateMany({ where: { userId, status: { in: ['ACTIVE', 'PENDING_PAYMENT', 'AWAITING_TRANSFER', 'VERIFYING', 'WAITLISTED'] } }, data: { status: 'CANCELLED' } });
+      // Unpaid holds can never complete now; paid/refunded/failed orders are kept for accounting.
+      await tx.order.updateMany({ where: { userId, status: { in: ['AWAITING_PAYMENT', 'AWAITING_RECEIPT'] } }, data: { status: 'EXPIRED' } });
+
+      await tx.authSession.deleteMany({ where: { userId } });
+      await tx.account.deleteMany({ where: { userId } });
+      // better-auth keys verification rows by the address, password-reset rows carry the user id as value.
+      const { email } = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: { email: true } });
+      await tx.verification.deleteMany({ where: { OR: [{ identifier: email }, { value: userId }] } });
+      await tx.deviceToken.deleteMany({ where: { userId } });
+      await tx.notification.deleteMany({ where: { userId } });
+      await tx.teacherBankDetails.deleteMany({ where: { userId } });
+      await tx.chatMessage.deleteMany({ where: { userId } });
+      await tx.sessionFeedback.deleteMany({ where: { userId } });
+      await tx.submission.deleteMany({ where: { userId } });
+      await tx.certificate.deleteMany({ where: { userId } });
+      await tx.rescheduleRequest.deleteMany({ where: { requestedById: userId } });
+
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          name: 'Deleted user',
+          email: deletedEmail(userId),
+          emailVerified: false,
+          image: null,
+          phone: null,
+          headline: null,
+          bio: null,
+          role: 'STUDENT',
+          banned: true,
+        },
+      });
+      return [...new Set(held.map((e) => e.batchId))];
+    });
   }
 
   /** `scope` decides which sessions: as a student (active enrollments), as a teacher (hosted) or everything (admin). */

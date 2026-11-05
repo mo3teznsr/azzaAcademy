@@ -47,7 +47,7 @@ export function SignInForm() {
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         {error && <FormBanner tone="error">{error}</FormBanner>}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email" className="text-[13px] text-stone">
+          <Label htmlFor="email" className="text-[13px] text-muted-foreground">
             {t.auth.signIn.email}
           </Label>
           <Input id="email" type="email" autoComplete="email" dir="ltr" aria-invalid={!!errors.email} {...form.register('email')} />
@@ -55,7 +55,7 @@ export function SignInForm() {
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-[13px] text-stone">
+            <Label htmlFor="password" className="text-[13px] text-muted-foreground">
               {t.auth.signIn.password}
             </Label>
             <Link href="/forgot-password" className="link-sun text-[13px]">
@@ -71,7 +71,7 @@ export function SignInForm() {
         <Button type="submit" size="lg" disabled={isSubmitting}>
           {isSubmitting ? t.auth.signIn.submitting : t.auth.signIn.submit}
         </Button>
-        <p className="text-center text-sm text-stone">
+        <p className="text-center text-sm text-muted-foreground">
           {t.auth.signIn.newHere}{' '}
           <Link href="/sign-up" className="link-sun">
             {t.auth.signIn.create}

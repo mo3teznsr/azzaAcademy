@@ -9,6 +9,7 @@ import '../theme/typography.dart';
 import 'media_image.dart';
 import 'signal_mark.dart';
 
+export 'fields.dart';
 export 'media_image.dart';
 export 'motion.dart';
 export 'signal_mark.dart';

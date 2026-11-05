@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
@@ -31,7 +31,7 @@ class _PayoutRunScreenState extends ConsumerState<PayoutRunScreen> {
         ..invalidate(payoutRunsProvider);
       if (mounted) showToast(context, context.l10n.runApproved);
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -43,7 +43,7 @@ class _PayoutRunScreenState extends ConsumerState<PayoutRunScreen> {
       await Clipboard.setData(ClipboardData(text: csv));
       if (mounted) showToast(context, context.l10n.copied);
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     }
   }
 

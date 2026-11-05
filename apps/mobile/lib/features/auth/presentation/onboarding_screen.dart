@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/utils/device_timezone.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 
@@ -29,9 +30,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _finish({bool skip = false}) async {
+    // The IANA zone is saved to the new profile on sign-up, so session times are right from day one.
+    final tz = await deviceTimezone();
     await ref.read(onboardingProvider.notifier).complete(
           interests: skip ? const [] : _interests.toList(),
           bestTimes: skip ? const [] : _times.toList(),
+          timezone: tz,
         );
     if (mounted) context.go(Routes.signIn);
   }
@@ -52,22 +56,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final times = {'mornings': l.mornings, 'evenings': l.evenings, 'weekends': l.weekends};
 
     Widget chips(Map<String, String> options, Set<String> selected) => Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final e in options.entries)
-              FilterChip(
-                label: Text(e.value),
-                selected: selected.contains(e.key),
-                showCheckmark: false,
-                labelStyle: TextStyle(color: selected.contains(e.key) ? p.onAccent : p.text),
-                onSelected: (v) => setState(() => v ? selected.add(e.key) : selected.remove(e.key)),
-              ),
-          ],
-        );
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final e in options.entries)
+          FilterChip(
+            label: Text(e.value),
+            selected: selected.contains(e.key),
+            showCheckmark: false,
+            labelStyle: TextStyle(color: selected.contains(e.key) ? p.onAccent : p.text),
+            onSelected: (v) => setState(() => v ? selected.add(e.key) : selected.remove(e.key)),
+          ),
+      ],
+    );
 
     return Scaffold(
-      appBar: AppBar(actions: [TextButton(onPressed: () => _finish(skip: true), child: Text(l.skip))]),
+      appBar: AppBar(
+        actions: [TextButton(onPressed: () => _finish(skip: true), child: Text(l.skip))],
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: AzzaSpace.gutter),
         children: [
@@ -76,16 +82,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             borderRadius: BorderRadius.circular(AzzaSpace.radius),
             child: SizedBox(
               height: 220,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset('assets/images/onboarding.jpg', fit: BoxFit.cover, alignment: const Alignment(0, -0.2), excludeFromSemantics: true),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.center, colors: [AzzaColors.ink, Color(0x00121110)]),
-                    ),
-                  ),
-                ],
+              child: Image.asset(
+                'assets/images/onboarding.jpg',
+                fit: BoxFit.cover,
+                alignment: const Alignment(0, -0.2),
+                excludeFromSemantics: true,
               ),
             ),
           ),
@@ -112,7 +113,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           chips(times, _times),
         ],
       ),
-      bottomNavigationBar: BottomActionBar(children: [FilledButton(onPressed: _finish, child: Text(l.continueLabel))]),
+      bottomNavigationBar: BottomActionBar(
+        children: [FilledButton(onPressed: _finish, child: Text(l.continueLabel))],
+      ),
     );
   }
 }

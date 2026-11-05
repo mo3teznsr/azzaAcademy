@@ -16,6 +16,12 @@ abstract class AuthRepository {
   Future<AppUser?> restore();
   Future<void> signOut();
   Future<void> sendVerificationEmail(String email);
+
+  /// Emails a reset link that opens the web's `/reset-password` page ([redirectTo]).
+  Future<void> requestPasswordReset(String email, {required String redirectTo});
+
+  /// Signed-in password change; other devices are signed out.
+  Future<void> changePassword({required String current, required String next});
 }
 
 class DioAuthRepository extends DioRepository implements AuthRepository {
@@ -76,6 +82,17 @@ class DioAuthRepository extends DioRepository implements AuthRepository {
       await _tokens.clear();
     }
   }
+
+  @override
+  Future<void> changePassword({required String current, required String next}) => guard(() async {
+        await dio.post<dynamic>('/api/auth/change-password',
+            data: {'currentPassword': current, 'newPassword': next, 'revokeOtherSessions': true});
+      });
+
+  @override
+  Future<void> requestPasswordReset(String email, {required String redirectTo}) => guard(() async {
+        await dio.post<dynamic>('/api/auth/request-password-reset', data: {'email': email.trim(), 'redirectTo': redirectTo});
+      });
 
   @override
   Future<void> sendVerificationEmail(String email) =>

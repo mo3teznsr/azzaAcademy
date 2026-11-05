@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/money/money.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
@@ -51,7 +51,7 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
       showToast(context, l.reviewDone);
       context.pop();
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -109,10 +109,11 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
                 controller: _received,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  labelText: l.receivedStatement,
+                decoration: fieldDecoration(
+                  label: l.receivedStatement,
+                  icon: Icons.account_balance_wallet_outlined,
                   prefixText: 'AED ',
-                  suffixIcon: Icon(matches ? Icons.check_circle_rounded : Icons.error_outline_rounded, color: matches ? Colors.green.shade700 : AzzaColors.warnDeep),
+                  action: Icon(matches ? Icons.check_circle_rounded : Icons.error_outline_rounded, color: matches ? Colors.green.shade700 : AzzaColors.warnDeep),
                 ),
               ),
               const SizedBox(height: 16),

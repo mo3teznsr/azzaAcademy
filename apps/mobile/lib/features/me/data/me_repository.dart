@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
@@ -18,6 +19,12 @@ abstract class MeRepository {
   Future<List<AppNotification>> notifications();
   Future<void> markNotificationRead(String id);
   Future<void> markAllNotificationsRead();
+
+  /// Uploads a profile photo (JPEG bytes) and returns the updated user.
+  Future<AppUser> uploadAvatar(List<int> jpegBytes);
+
+  /// Permanently deletes the signed-in account (App Store 5.1.1(v), Play account-deletion policy).
+  Future<void> deleteAccount();
 }
 
 class DioMeRepository extends DioRepository implements MeRepository {
@@ -47,6 +54,20 @@ class DioMeRepository extends DioRepository implements MeRepository {
   @override
   Future<void> unregisterDevice(String token) =>
       guard(() => dio.delete<dynamic>('/api/v1/me/devices/${Uri.encodeComponent(token)}'));
+
+  @override
+  Future<AppUser> uploadAvatar(List<int> jpegBytes) => guard(() async {
+        final form = FormData.fromMap({
+          'file': MultipartFile.fromBytes(jpegBytes, filename: 'avatar.jpg', contentType: DioMediaType('image', 'jpeg')),
+        });
+        final res = await dio.post<dynamic>('/api/v1/me/avatar', data: form);
+        final j = asMap(res.data);
+        return AppUser.fromJson(j['user'] is Map ? asMap(j['user']) : j);
+      });
+
+  @override
+  Future<void> deleteAccount() =>
+      guard(() => dio.delete<dynamic>('/api/v1/me', data: {'confirm': 'DELETE'}));
 
   @override
   Future<List<SessionSummary>> schedule({required DateTime from, required DateTime to}) async {

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/utils/formatters.dart';
@@ -52,7 +52,7 @@ class _RescheduleRequestScreenState extends ConsumerState<RescheduleRequestScree
       showToast(context, context.l10n.requestSent);
       context.pop();
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -128,7 +128,7 @@ class _RescheduleRequestScreenState extends ConsumerState<RescheduleRequestScree
                 ),
               ]),
               const SizedBox(height: 20),
-              TextField(controller: _reason, decoration: InputDecoration(labelText: l.reason)),
+              TextField(controller: _reason, decoration: fieldDecoration(label: l.reason, icon: Icons.edit_note_rounded)),
               const SizedBox(height: 8),
               SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(l.notifyStudents), value: _notify, onChanged: (v) => setState(() => _notify = v)),
               Text(l.adminReviews, style: t.bodySmall),

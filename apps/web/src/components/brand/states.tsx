@@ -45,7 +45,7 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn('flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line-2 p-7 text-center in-data-[theme=cream]:border-cream-line', className)}>
+    <div className={cn('flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line-strong p-7 text-center in-data-[theme=cream]:border-cream-line', className)}>
       <SignalMark state="ended" size={36} />
       <b className="font-display text-2xl">{title}</b>
       {body && <span className="max-w-md text-sm text-muted-foreground">{body}</span>}
@@ -74,7 +74,7 @@ export function ErrorState({ error, onRetry, className, compact }: { error: unkn
         className,
       )}
     >
-      {!compact && <b className="font-display text-xl text-ivory">{apiErr?.isNotFound ? t.common.notFoundTitle : t.common.errorTitle}</b>}
+      {!compact && <b className="font-display text-xl text-foreground">{apiErr?.isNotFound ? t.common.notFoundTitle : t.common.errorTitle}</b>}
       <span className="text-sm">{message}</span>
       {apiErr && apiErr.code && !apiErr.isNetwork && <span className="label-mono opacity-70">{apiErr.code}</span>}
       {onRetry && (

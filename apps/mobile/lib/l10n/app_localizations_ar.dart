@@ -60,9 +60,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get you => 'أنت';
 
   @override
-  String get comingSoon => 'قريبًا على الجوال.';
-
-  @override
   String get navHome => 'الرئيسية';
 
   @override
@@ -496,7 +493,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get payWith => 'ادفع عبر';
 
   @override
-  String get payCard => 'بطاقة · Apple Pay · Google Pay';
+  String get payCard => 'بطاقة · Google Pay';
 
   @override
   String get payCardSub => 'مقعد فوري · 3-D Secure';
@@ -1059,15 +1056,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get displayCurrency => 'عملة العرض';
-
-  @override
-  String get pushLobby => 'فتح الردهة';
-
-  @override
-  String get pushChanges => 'تغييرات الجدول';
-
-  @override
-  String get pushRecordings => 'التسجيلات والدرجات';
 
   @override
   String get editProfile => 'تعديل الملف';
@@ -1725,4 +1713,261 @@ class AppLocalizationsAr extends AppLocalizations {
   String waitlistOfTotal(String total) {
     return 'من $total';
   }
+
+  @override
+  String get deleteAccount => 'حذف الحساب';
+
+  @override
+  String get deleteAccountTitle => 'هل تريد حذف حسابك؟';
+
+  @override
+  String get deleteAccountBody =>
+      'سيُحذف ملفك الشخصي وتسجيلاتك وشهاداتك ورسائلك نهائيًا. تُحفظ سجلات الدفع دون اسمك لأغراض المحاسبة. لا يمكن التراجع عن ذلك.';
+
+  @override
+  String get deleteAccountTypeHint => 'اكتب DELETE للتأكيد';
+
+  @override
+  String get deleteAccountConfirm => 'حذف نهائيًا';
+
+  @override
+  String get deleteAccountFailed =>
+      'تعذّر حذف الحساب. حاول مجددًا أو تواصل مع الدعم.';
+
+  @override
+  String get deleteAccountTeacher =>
+      'لا يمكن للمعلمين والمشرفين حذف حساباتهم ما دامت لديهم دفعات. تواصل مع الدعم.';
+
+  @override
+  String get privacyPolicy => 'سياسة الخصوصية';
+
+  @override
+  String get termsOfService => 'شروط الخدمة';
+
+  @override
+  String get legal => 'قانوني';
+
+  @override
+  String get termsLead => 'بالمتابعة فإنك توافق على';
+
+  @override
+  String get andLabel => 'و';
+
+  @override
+  String get deleteAccountOrderPending =>
+      'يجري التحقق من تحويل بنكي لأحد طلباتك. حاول مجددًا بعد تسويته.';
+
+  @override
+  String get appearance => 'المظهر';
+
+  @override
+  String get themeSystem => 'النظام';
+
+  @override
+  String get themeLight => 'فاتح';
+
+  @override
+  String get themeDark => 'داكن';
+
+  @override
+  String get themeSystemHint => 'مطابقة إعداد هاتفك';
+
+  @override
+  String get pushNotifications => 'الإشعارات';
+
+  @override
+  String get pushOn => 'مفعّلة';
+
+  @override
+  String get pushOff => 'متوقفة';
+
+  @override
+  String get pushSettingsHint =>
+      'غيّر الإشعارات من إعدادات هاتفك ← التطبيقات ← Azza.';
+
+  @override
+  String get forgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get forgotPasswordBody =>
+      'أدخل بريد حسابك وسنرسل لك رابطًا لاختيار كلمة مرور جديدة.';
+
+  @override
+  String get sendResetLink => 'إرسال رابط إعادة التعيين';
+
+  @override
+  String get resetLinkSent =>
+      'إن كان لهذا البريد حساب، فرابط إعادة التعيين في طريقه إليك.';
+
+  @override
+  String get showPassword => 'إظهار كلمة المرور';
+
+  @override
+  String get hidePassword => 'إخفاء كلمة المرور';
+
+  @override
+  String get errNetwork =>
+      'لا يوجد اتصال بـ Azza. تحقّق من الشبكة وحاول مجددًا.';
+
+  @override
+  String get errTimeout => 'استغرقت Azza وقتًا طويلًا للرد. حاول مجددًا.';
+
+  @override
+  String get errCancelled => 'أُلغي.';
+
+  @override
+  String get errSignedOut => 'انتهت جلستك. سجّل الدخول مجددًا.';
+
+  @override
+  String get errForbidden => 'لا تملك صلاحية الوصول إلى هذا.';
+
+  @override
+  String get errNotFound => 'لم نعثر على ذلك. ربما أُزيل.';
+
+  @override
+  String get errBadCredentials => 'البريد وكلمة المرور غير متطابقين.';
+
+  @override
+  String get errEmailTaken => 'يوجد حساب بهذا البريد. جرّب تسجيل الدخول.';
+
+  @override
+  String get errTooMany => 'محاولات كثيرة. انتظر دقيقة ثم حاول مجددًا.';
+
+  @override
+  String get errServer => 'حدث خطأ من جهتنا. حاول بعد قليل.';
+
+  @override
+  String get errGeneric => 'حدث خطأ ما. حاول مجددًا.';
+
+  @override
+  String get profileSaved => 'حُفظ الملف الشخصي.';
+
+  @override
+  String get timezoneHint => 'تُعرض مواعيد الجلسات بهذه المنطقة الزمنية.';
+
+  @override
+  String useDeviceTimezone(String zone) {
+    return 'استخدم المنطقة الزمنية لهذا الهاتف: $zone';
+  }
+
+  @override
+  String get changePassword => 'تغيير كلمة المرور';
+
+  @override
+  String get currentPassword => 'كلمة المرور الحالية';
+
+  @override
+  String get newPassword => 'كلمة المرور الجديدة';
+
+  @override
+  String get passwordChanged =>
+      'تغيّرت كلمة المرور. سُجّل الخروج من الأجهزة الأخرى.';
+
+  @override
+  String get changePasswordNote =>
+      'تغيير كلمة المرور يسجّل خروجك من أجهزتك الأخرى.';
+
+  @override
+  String get payAppStore => 'App Store';
+
+  @override
+  String get payAppStoreSub => 'شراء داخل التطبيق، يُخصم من حساب Apple';
+
+  @override
+  String get payWithAppStore => 'الدفع عبر App Store';
+
+  @override
+  String get appStoreNote =>
+      'تتولى Apple عملية الدفع. يُؤكَّد مقعدك فور اكتمال الشراء.';
+
+  @override
+  String appStoreBuy(String price) {
+    return 'شراء · $price';
+  }
+
+  @override
+  String get appStoreConfirming => 'جارٍ تأكيد عملية الشراء…';
+
+  @override
+  String get appStorePending =>
+      'بانتظار الموافقة. سنسجّلك فور تأكيد App Store لعملية الشراء.';
+
+  @override
+  String get appStoreFailed => 'لم تكتمل عملية الشراء.';
+
+  @override
+  String get appStoreUnavailable =>
+      'المشتريات داخل التطبيق غير متاحة على هذا الجهاز.';
+
+  @override
+  String get appStoreRetryLater =>
+      'تعذّر تأكيد عملية الشراء الآن. لا تقلق — سنعيد المحاولة تلقائيًا عند فتح التطبيق مرة أخرى.';
+
+  @override
+  String get appStoreRejected =>
+      'تعذّر تطبيق عملية الشراء على طلبك. تواصل مع الدعم — يمكن لـ Apple استرداد المبلغ.';
+
+  @override
+  String get enrolOnWebsite => 'التسجيل عبر موقعنا الإلكتروني';
+
+  @override
+  String get enrolOnWebsiteBody => 'هذا المقعد غير متاح للشراء داخل التطبيق.';
+
+  @override
+  String get clear => 'مسح';
+
+  @override
+  String get accountTitle => 'الحساب';
+
+  @override
+  String get accountRowHint => 'الصورة، كلمة المرور، الحذف';
+
+  @override
+  String get profileSection => 'الملف الشخصي';
+
+  @override
+  String get changePhoto => 'تغيير الصورة';
+
+  @override
+  String get emailLockedNote => 'بريد تسجيل الدخول. تواصل مع الدعم لتغييره.';
+
+  @override
+  String get useThisPhone => 'منطقة هذا الهاتف';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get currentPasswordRequired => 'أدخل كلمة المرور الحالية.';
+
+  @override
+  String get dangerZone => 'منطقة الخطر';
+
+  @override
+  String get deleteAccountSummary =>
+      'احذف حسابك وتسجيلاتك وشهاداتك نهائيًا. لا يمكن التراجع عن ذلك.';
+
+  @override
+  String get takePhoto => 'التقط صورة';
+
+  @override
+  String get chooseFromLibrary => 'اختر من الصور';
+
+  @override
+  String get photoPickFailed =>
+      'تعذّر فتح الكاميرا أو الصور. تحقّق من أذونات Azza في الإعدادات.';
+
+  @override
+  String get addPhotoTitle => 'أضف صورتك';
+
+  @override
+  String get addPhotoBody =>
+      'يرى معلمك صورتك في قائمة الصف وفي الجلسات المباشرة ليعرف من في القاعة.';
+
+  @override
+  String get addPhotoTips =>
+      'استخدم صورة واضحة وحديثة لوجهك. لا يراها إلا معلموك وزملاؤك.';
+
+  @override
+  String get addPhotoAction => 'أضف صورة';
 }

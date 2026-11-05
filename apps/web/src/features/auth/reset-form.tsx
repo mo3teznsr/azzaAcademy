@@ -41,14 +41,14 @@ export function ResetForm() {
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
           {error && <FormBanner tone="error">{error}</FormBanner>}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password" className="text-[13px] text-stone">
+            <Label htmlFor="password" className="text-[13px] text-muted-foreground">
               {t.auth.reset.password}
             </Label>
             <Input id="password" type="password" autoComplete="new-password" {...form.register('password')} />
             <FieldError message={errors.password && t.auth.errors.minPassword} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="confirm" className="text-[13px] text-stone">
+            <Label htmlFor="confirm" className="text-[13px] text-muted-foreground">
               {t.auth.reset.confirm}
             </Label>
             <Input id="confirm" type="password" autoComplete="new-password" {...form.register('confirm')} />

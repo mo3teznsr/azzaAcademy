@@ -24,7 +24,7 @@ const DOT: Record<SessionDisplayState, string> = {
   SCHEDULED: 'bg-sky',
   MOVED: 'bg-peach',
   ENDED: 'bg-stone',
-  CANCELLED: 'bg-line-2',
+  CANCELLED: 'bg-line-strong',
 };
 
 function monthGrid(anchor: Date) {
@@ -111,11 +111,11 @@ export function SchedulePage() {
                     onClick={() => setSelected(key)}
                     className={cn(
                       'flex min-h-20 flex-col items-start gap-1 rounded-xl p-2 text-start transition-colors',
-                      isSel ? 'bg-ivory text-ink' : 'bg-card hover:bg-line',
+                      isSel ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent',
                       !inMonth && 'opacity-40',
                     )}
                   >
-                    <b className={cn('font-display text-lg', isToday && !isSel && 'text-sun')}>{f.number(d.getDate())}</b>
+                    <b className={cn('font-display text-lg', isToday && !isSel && 'text-sun-fg')}>{f.number(d.getDate())}</b>
                     <span className="flex flex-wrap gap-1">
                       {list.slice(0, 4).map((s) => (
                         <span key={s.id} className={cn('size-1.5 rounded-full', DOT[sessionState(s)])} />
@@ -192,7 +192,7 @@ function DayDetail({ s }: { s: ScheduleItem }) {
         {pick(s.batch.course.titleEn, s.batch.course.titleAr).text}
         {s.batch.teacher ? ` · ${s.batch.teacher.name}` : ''}
       </span>
-      {s.movedFrom && <span className="text-sm text-peach">{fill(t.schedule.movedFrom, { d: f.dateTime(s.movedFrom) })}</span>}
+      {s.movedFrom && <span className="text-sm text-peach-fg">{fill(t.schedule.movedFrom, { d: f.dateTime(s.movedFrom) })}</span>}
       {(state === 'LIVE' || state === 'SOON') && (
         <Button asChild variant={state === 'LIVE' ? 'ink' : 'onair'}>
           <Link href={`/live/${s.id}`}>

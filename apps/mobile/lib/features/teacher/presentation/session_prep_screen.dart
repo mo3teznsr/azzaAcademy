@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/error_text.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/utils/formatters.dart';
@@ -50,9 +50,9 @@ class _SessionPrepScreenState extends ConsumerState<SessionPrepScreen> {
       builder: (context) => Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          TextField(controller: label, autofocus: true, decoration: InputDecoration(labelText: l.blockLabel)),
+          TextField(controller: label, autofocus: true, decoration: fieldDecoration(label: l.blockLabel, icon: Icons.view_agenda_outlined)),
           const SizedBox(height: 10),
-          TextField(controller: minute, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: l.atMinute)),
+          TextField(controller: minute, keyboardType: TextInputType.number, decoration: fieldDecoration(label: l.atMinute, icon: Icons.timer_outlined)),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () {
@@ -80,7 +80,7 @@ class _SessionPrepScreenState extends ConsumerState<SessionPrepScreen> {
       setState(() => _dirty = false);
       if (mounted) showToast(context, context.l10n.saved);
     } catch (e) {
-      if (mounted) showToast(context, AppException.from(e).message);
+      if (mounted) showToast(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -147,6 +147,7 @@ class _SessionPrepScreenState extends ConsumerState<SessionPrepScreen> {
                 controller: _notes,
                 maxLines: 5,
                 minLines: 3,
+                decoration: fieldDecoration(label: l.privateNotes, icon: Icons.sticky_note_2_outlined, labelIsHint: true),
                 onChanged: (_) => setState(() => _dirty = true),
               ),
             ],
