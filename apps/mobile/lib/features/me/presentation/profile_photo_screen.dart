@@ -24,6 +24,8 @@ class ProfilePhotoScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(AzzaSpace.gutter),
         children: [
+          const SceneImage('photo', height: 170, alignment: Alignment(0, -0.3)),
+          const SizedBox(height: 24),
           DisplayText(l.addPhotoTitle, size: 40),
           const SizedBox(height: 12),
           Text(l.addPhotoBody, style: t.bodyLarge?.copyWith(color: p.muted)),

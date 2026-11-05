@@ -8,6 +8,7 @@ import { errorHandler } from './http/error-handler';
 import { sessionMiddleware } from './http/middleware';
 import type { AppEnv } from './http/types';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { adminMediaRoutes } from './modules/admin/course-media.routes';
 import { batchRoutes } from './modules/batches/batch.routes';
 import { certificateRoutes } from './modules/certificates/certificate.routes';
 import { contentRoutes } from './modules/content/content.routes';
@@ -70,7 +71,15 @@ export function createApp(container: Container) {
   app.get('/uploads/*', async (c) => {
     const file = await adapters.storage.read(c.req.path.slice('/uploads/'.length));
     if (!file) return c.json({ error: { code: 'NOT_FOUND', message: 'File not found' } }, 404);
-    return c.body(new Uint8Array(file.bytes) as Uint8Array<ArrayBuffer>, 200, { 'Content-Type': file.contentType, 'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff' });
+    const headers = { 'Content-Type': file.contentType, 'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff', 'Accept-Ranges': 'bytes' };
+    // Single byte ranges, so browsers (Safari in particular) can play and seek uploaded intro videos.
+    const range = byteRange(c.req.header('Range'), file.bytes.length);
+    if (range === 'invalid') return c.body(null, 416, { 'Content-Range': `bytes */${file.bytes.length}` });
+    if (range) {
+      const [start, end] = range;
+      return c.body(file.bytes.slice(start, end + 1) as Uint8Array<ArrayBuffer>, 206, { ...headers, 'Content-Range': `bytes ${start}-${end}/${file.bytes.length}` });
+    }
+    return c.body(new Uint8Array(file.bytes) as Uint8Array<ArrayBuffer>, 200, headers);
   });
 
   const api = new Hono<AppEnv>()
@@ -83,6 +92,7 @@ export function createApp(container: Container) {
     .route('/teacher', teacherPayoutRoutes(services.payouts))
     .route('/teachers', teacherRoutes(services.teachers))
     .route('/admin', adminRoutes(services.admin, container.platformSettings))
+    .route('/admin', adminMediaRoutes(services.courseMedia))
     .route('/admin', adminFinanceRoutes(services))
     .route('/admin', adminPayoutRoutes(services.payouts))
     .route('/admin', adminReportRoutes(services.reports))
@@ -95,3 +105,19 @@ export function createApp(container: Container) {
 }
 
 export type App = ReturnType<typeof createApp>;
+
+/** Parses a single `bytes=start-end` Range header: `null` = serve the whole file, `'invalid'` = 416. */
+export function byteRange(header: string | undefined, size: number): [number, number] | null | 'invalid' {
+  const m = header ? /^bytes=(\d*)-(\d*)$/.exec(header.trim()) : null;
+  if (!m || (m[1] === '' && m[2] === '')) return null;
+  let start: number;
+  let end: number;
+  if (m[1] === '') {
+    start = Math.max(0, size - Number(m[2]));
+    end = size - 1;
+  } else {
+    start = Number(m[1]);
+    end = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1);
+  }
+  return start <= end && start < size ? [start, end] : 'invalid';
+}

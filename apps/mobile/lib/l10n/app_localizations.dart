@@ -3571,6 +3571,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add photo'**
   String get addPhotoAction;
+
+  /// No description provided for @watchIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch the intro'**
+  String get watchIntro;
+
+  /// No description provided for @watchIntroHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A short look at the course and the teacher'**
+  String get watchIntroHint;
 }
 
 class _AppLocalizationsDelegate

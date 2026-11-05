@@ -1,6 +1,5 @@
 'use client';
 
-import { SignalMark } from '@/components/brand/signal-mark';
 import { useI18n } from '@/lib/i18n/provider';
 import type { Certificate } from '@/lib/api/types';
 
@@ -17,12 +16,9 @@ export function CertificateSheet({ cert, holderName }: { cert: Certificate; hold
     <div className="print-sheet hidden bg-ivory text-ink print:flex" aria-hidden>
       <div className="m-[12mm] flex flex-1 flex-col justify-between rounded-[6mm] border-[1.5mm] border-ink p-[14mm]">
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-3">
-            <SignalMark state="ended" size={34} />
-            <span className="font-display text-3xl font-extrabold" dir="ltr">
-              azza
-            </span>
-          </span>
+          {/* Plain <img>: print drops background colours, so the CSS-mask logo would vanish on paper. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-navy.png" alt="عازة Azza" className="h-[14mm] w-auto" />
           <span className="label-mono">{t.certificates.sheetKicker}</span>
         </div>
         <div className="flex flex-col gap-4">

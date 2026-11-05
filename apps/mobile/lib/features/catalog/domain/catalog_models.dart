@@ -28,6 +28,7 @@ class Course {
     this.level = CourseLevel.beginner,
     this.coverStyle = 'sun',
     this.coverImageUrl,
+    this.introVideoUrl,
     this.priceFils = 0,
     this.status = CourseStatus.published,
     this.modules = const [],
@@ -45,6 +46,7 @@ class Course {
         level: CourseLevel.parse(j['level']),
         coverStyle: str(j, 'coverStyle', 'sun'),
         coverImageUrl: strOrNull(j, 'coverImageUrl'),
+        introVideoUrl: strOrNull(j, 'introVideoUrl'),
         priceFils: integer(j, 'priceFils'),
         status: CourseStatus.parse(j['status']),
         modules: list(j, 'modules').map(CourseModule.fromJson).toList()..sort((a, b) => a.order.compareTo(b.order)),
@@ -63,6 +65,9 @@ class Course {
 
   /// Photo cover (`/media/...` or absolute URL); null = typographic cover.
   final String? coverImageUrl;
+
+  /// Short intro video (uploaded file or an https link such as YouTube).
+  final String? introVideoUrl;
   final int priceFils;
   final CourseStatus status;
   final List<CourseModule> modules;

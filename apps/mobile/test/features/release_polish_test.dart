@@ -158,4 +158,22 @@ void main() {
     await tester.scrollUntilVisible(find.byKey(const Key('danger-zone')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Danger zone'), findsOneWidget);
   });
+
+  Future<void> pumpCourse(WidgetTester tester, Course c) => pumpScreen(tester, const CourseDetailScreen(courseId: 'c1'), overrides: [
+        courseProvider('c1').overrideWith((ref) async => c),
+        catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
+        fxRatesProvider.overrideWith((ref) async => FxRates.fallback),
+      ]);
+
+  testWidgets('course detail without a video has no intro card', (tester) async {
+    await pumpCourse(tester, Course.fromJson(_json('course_detail')));
+    await settle(tester, 12);
+    expect(find.byKey(const Key('intro-video')), findsNothing);
+  });
+
+  testWidgets('course detail with a video shows "Watch the intro"', (tester) async {
+    await pumpCourse(tester, Course.fromJson({..._json('course_detail'), 'introVideoUrl': '/media/course-videos/intro.mp4'}));
+    await settle(tester, 12);
+    expect(find.text('Watch the intro'), findsOneWidget);
+  });
 }

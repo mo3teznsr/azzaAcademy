@@ -123,6 +123,36 @@ function defaultCode(status: number): string {
   return 'SERVER_ERROR';
 }
 
+/**
+ * Multipart POST with upload progress (fetch can't report it). Same credentials and error envelope as `request`.
+ * `onProgress` gets 0–1; abort with `signal`.
+ */
+export function uploadWithProgress<T>(path: string, form: FormData, opts: { onProgress?: (fraction: number) => void; signal?: AbortSignal } = {}): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_URL}${path}`);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.upload.onprogress = (e) => e.lengthComputable && opts.onProgress?.(e.loaded / e.total);
+    xhr.onload = () => {
+      let payload: (ErrorEnvelope & T) | undefined;
+      try {
+        payload = xhr.responseText ? JSON.parse(xhr.responseText) : undefined;
+      } catch {
+        /* non-JSON body */
+      }
+      if (xhr.status >= 200 && xhr.status < 300) return resolve(payload as T);
+      reject(
+        new ApiError(xhr.status, payload?.error?.code ?? defaultCode(xhr.status), payload?.error?.message ?? payload?.message ?? (xhr.statusText || 'Request failed'), payload?.error?.details),
+      );
+    };
+    xhr.onerror = () => reject(new ApiError(0, 'NETWORK', 'Can’t reach the Azza API. Check your connection and try again.'));
+    xhr.onabort = () => reject(new DOMException('Upload cancelled', 'AbortError'));
+    opts.signal?.addEventListener('abort', () => xhr.abort(), { once: true });
+    xhr.send(form);
+  });
+}
+
 export const http = {
   get: <T>(path: string, query?: Query, signal?: AbortSignal) => request<T>(path, { query, signal }),
   post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body: body ?? {} }),

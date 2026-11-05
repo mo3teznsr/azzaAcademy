@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isCourseCoverUrl, parseCourseVideoUrl } from './course-media';
 import {
   ATTENDANCE_MARKS,
   BATCH_STATUSES,
@@ -81,11 +82,13 @@ export const createCourseInput = z.object({
   category: z.string().min(2),
   level: z.enum(COURSE_LEVELS),
   coverStyle: z.enum(['sun', 'sky', 'sage', 'peach']).default('sun'),
-  /** Photo cover: bundled art under `/media/` or an https URL (uploaded file). Null = typographic cover. */
-  coverImageUrl: z
+  /** Photo cover: bundled art under `/media/`, a file from `POST /admin/media`, or an https URL. Null = typographic cover. */
+  coverImageUrl: z.string().max(500).refine(isCourseCoverUrl, 'Must be a /media/ path, an uploaded file or an https URL').nullable().optional(),
+  /** Intro video: a file from `POST /admin/media`, a YouTube / Vimeo link, or an https link to an mp4 / mov / webm. */
+  introVideoUrl: z
     .string()
     .max(500)
-    .refine((v) => /^\/media\/[a-z0-9/_-]+\.(jpg|png|webp)$/.test(v) || v.startsWith('https://'), 'Must be a /media/ path or an https URL')
+    .refine((v) => parseCourseVideoUrl(v) !== null, 'Must be an uploaded video, a YouTube or Vimeo link, or an https link to an mp4 / mov / webm file')
     .nullable()
     .optional(),
   priceAed: z.number().positive(),

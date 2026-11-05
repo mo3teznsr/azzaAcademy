@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/brand/signal-mark';
+import { Logo, LogoMark } from '@/components/brand/signal-mark';
 import { CurrencySwitcher, LocaleSwitcher } from '@/components/brand/switchers';
 import { ThemeMenu } from '@/components/brand/theme-switcher';
 import { useAuth } from '@/lib/auth/use-auth';
@@ -84,9 +84,8 @@ export function PublicFooter() {
     <footer className="mt-24 border-t border-border">
       <div className="mx-auto grid w-full max-w-[1360px] gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:px-10">
         <div className="flex flex-col gap-4">
-          <span className="font-display text-[clamp(64px,10vw,140px)] font-extrabold leading-[0.8]" dir="ltr">
-            azza<span className="text-onair-fg">.</span>
-          </span>
+          <LogoMark className="h-[clamp(64px,9vw,120px)] self-start text-foreground light:text-[#050A30]" />
+          <span className="sr-only">عازة Azza</span>
           <p className="max-w-xs text-sm text-muted-foreground">{t.landing.footerTagline}</p>
         </div>
         {cols.map((c) => (

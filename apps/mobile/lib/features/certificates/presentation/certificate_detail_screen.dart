@@ -152,7 +152,7 @@ class _CertificateCard extends ConsumerWidget {
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const AzzaWordmark(size: 26, color: ink),
+            const AzzaWordmark(size: 30, color: AzzaColors.navy),
             const Spacer(),
             Flexible(child: MonoLabel(l.certificateOfCompletion, color: muted, size: 10)),
           ]),

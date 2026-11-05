@@ -8,7 +8,7 @@ const certificateInclude = {
       code: true,
       startsOn: true,
       endsOn: true,
-      course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverImageUrl: true } },
+      course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverImageUrl: true, introVideoUrl: true } },
       teacher: { select: { id: true, name: true } },
     },
   },

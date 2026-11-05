@@ -27,7 +27,7 @@ export function AuthShell({ kicker, title, sub, children }: { kicker: string; ti
           <p className="mt-6 max-w-md text-lg text-muted-foreground">{t.auth.heroBody}</p>
         </div>
         <div className="relative min-h-56 flex-1 overflow-hidden rounded-[24px] bg-muted">
-          <Image src="/images/scenes/auth.jpg" alt="" fill priority sizes="50vw" className="object-cover object-top" />
+          <Image src="/images/scenes/auth.jpg" alt="" fill priority sizes="50vw" className="object-cover object-[center_68%]" />
         </div>
         <span className="label-mono text-muted-foreground">B07·S05 · 00:42:17</span>
       </section>

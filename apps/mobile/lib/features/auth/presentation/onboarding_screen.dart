@@ -77,19 +77,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: AzzaSpace.gutter),
         children: [
-          // Decorative film-set still (scenes/onboarding); the title below carries the meaning.
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AzzaSpace.radius),
-            child: SizedBox(
-              height: 220,
-              child: Image.asset(
-                'assets/images/onboarding.jpg',
-                fit: BoxFit.cover,
-                alignment: const Alignment(0, -0.2),
-                excludeFromSemantics: true,
-              ),
-            ),
-          ),
+          const SceneImage('onboarding', height: 220),
           const SizedBox(height: 24),
           DisplayText(l.onboardingTitle, size: 36),
           const SizedBox(height: 24),

@@ -24,6 +24,7 @@ import { PrismaCourseRepository } from './modules/courses/course.repository';
 import { CourseService } from './modules/courses/course.service';
 import { PrismaAdminRepository } from './modules/admin/admin.repository';
 import { AdminService } from './modules/admin/admin.service';
+import { CourseMediaService } from './modules/admin/course-media.service';
 import { BatchAccessPolicy, PrismaBatchAccessRepository } from './modules/batches/batch-access';
 import { PrismaContentRepository } from './modules/content/content.repository';
 import { ContentService } from './modules/content/content.service';
@@ -214,6 +215,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     reports: new ReportService(new PrismaReportRepository(db), clock),
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock),
+    courseMedia: new CourseMediaService(adapters.storage),
     admin: new AdminService(new PrismaAdminRepository(db), new BetterAuthUserProvisioner(auth, invites, config.WEB_URL), video, clock),
   };
 

@@ -1970,4 +1970,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get addPhotoAction => 'أضف صورة';
+
+  @override
+  String get watchIntro => 'شاهد المقدمة';
+
+  @override
+  String get watchIntroHint => 'لمحة قصيرة عن الدورة والمعلم';
 }

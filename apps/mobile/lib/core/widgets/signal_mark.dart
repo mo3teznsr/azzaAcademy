@@ -93,6 +93,8 @@ class _SignalPainter extends CustomPainter {
 }
 
 /// `azza.` wordmark; the full stop is the on-air lamp.
+/// The عازة logo (assets/brand/logo-mask.png, tinted): brand navy on light grounds, ivory on dark.
+/// [size] is the logo's height in logical pixels.
 class AzzaWordmark extends StatelessWidget {
   const AzzaWordmark({super.key, this.size = 28, this.color});
   final double size;
@@ -100,12 +102,18 @@ class AzzaWordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.displayLarge!.copyWith(fontSize: size, color: color, height: 0.9);
-    return Text.rich(
-      TextSpan(text: 'azza', children: const [TextSpan(text: '.', style: TextStyle(color: AzzaColors.onAir))]),
-      style: style,
-      textDirection: TextDirection.ltr,
-      semanticsLabel: 'azza',
+    final p = AzzaPalette.of(context);
+    return Semantics(
+      label: 'عازة Azza',
+      image: true,
+      child: Image.asset(
+        'assets/brand/logo-mask.png',
+        height: size,
+        color: color ?? (p.isDark ? AzzaColors.ivory : AzzaColors.navy),
+        colorBlendMode: BlendMode.srcIn,
+        excludeFromSemantics: true,
+        errorBuilder: (_, _, _) => SizedBox(height: size),
+      ),
     );
   }
 }

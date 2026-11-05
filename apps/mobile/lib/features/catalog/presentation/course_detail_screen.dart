@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/utils/links.dart';
+import '../../../core/providers.dart';
 import '../../../core/money/money.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
@@ -59,6 +61,10 @@ class CourseDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 6),
                     DisplayText(c.title(locale), size: 34, maxLines: 3),
                     const SizedBox(height: 14),
+                    if (c.introVideoUrl != null) ...[
+                      _IntroVideoCard(url: ref.read(appConfigProvider).resolveMediaUrl(c.introVideoUrl)!),
+                      const SizedBox(height: 14),
+                    ],
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -166,6 +172,39 @@ class CourseDetailScreen extends ConsumerWidget {
               ],
             )
           : null,
+    );
+  }
+}
+
+/// "Watch the intro" — opens the course's intro video in the system player (or YouTube/Vimeo).
+class _IntroVideoCard extends StatelessWidget {
+  const _IntroVideoCard({required this.url});
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final p = AzzaPalette.of(context);
+    final t = Theme.of(context).textTheme;
+    return RaisedCard(
+      key: const Key('intro-video'),
+      onTap: () => openExternal(context, url),
+      child: Row(children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(color: p.accent, shape: BoxShape.circle),
+          child: Icon(Icons.play_arrow_rounded, color: p.onAccent, size: 30),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(l.watchIntro, style: t.titleSmall),
+            Text(l.watchIntroHint, style: t.bodySmall),
+          ]),
+        ),
+        Icon(Icons.chevron_right_rounded, color: p.muted),
+      ]),
     );
   }
 }

@@ -25,7 +25,7 @@ const sessionInclude = {
       code: true,
       language: true,
       timezone: true,
-      course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverStyle: true, coverImageUrl: true } },
+      course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverStyle: true, coverImageUrl: true, introVideoUrl: true } },
       teacher: { select: { id: true, name: true, image: true } },
     },
   },
@@ -171,7 +171,7 @@ export class PrismaMeRepository {
             startsOn: true,
             endsOn: true,
             capacity: true,
-            course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverStyle: true, coverImageUrl: true, category: true } },
+            course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverStyle: true, coverImageUrl: true, introVideoUrl: true, category: true } },
             teacher: { select: { id: true, name: true, image: true } },
             schedule: { select: { weekdays: true, startTime: true, durationMin: true, sessionCount: true } },
             sessions: {

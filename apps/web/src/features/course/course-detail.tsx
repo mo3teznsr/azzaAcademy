@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BatchCard } from '@/components/brand/batch-card';
 import { CourseCover } from '@/components/brand/course-cover';
+import { CourseIntroVideo } from '@/components/brand/course-intro-video';
 import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { SessionSlate } from '@/components/brand/session-slate';
 import { SessionStatusChip, Chip } from '@/components/brand/status-chip';
@@ -97,7 +98,10 @@ function CourseView({ course }: { course: Course }) {
             </div>
           )}
         </div>
-        <CourseCover course={course} size="xl" className="min-h-80" />
+        <div className="flex flex-col gap-4">
+          <CourseCover course={course} size="xl" className="min-h-80" />
+          <CourseIntroVideo url={course.introVideoUrl} title={fill(t.course.introVideo, { title: title.text })} />
+        </div>
       </section>
 
       {course.modules.length > 0 && (

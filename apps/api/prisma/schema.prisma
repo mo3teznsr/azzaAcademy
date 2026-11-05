@@ -226,6 +226,8 @@ model Course {
   coverStyle    String       @default("sun")
   /// Photo cover: a path under the API's `/media/` (bundled art) or an uploaded file URL. Null = typographic cover.
   coverImageUrl String?
+  /// Intro video: an uploaded file URL (mp4/mov/webm) or an https link (YouTube, Vimeo or a direct video file).
+  introVideoUrl String?
   priceFils     Int
   status        CourseStatus @default(DRAFT)
   createdAt     DateTime     @default(now())

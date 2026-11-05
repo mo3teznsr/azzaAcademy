@@ -1288,5 +1288,7 @@
   "addPhotoTitle": "Add your photo",
   "addPhotoBody": "Your teacher sees your photo on the class list and in live sessions, so they know who's in the room.",
   "addPhotoTips": "Use a clear, recent photo of your face. Only your teachers and classmates see it.",
-  "addPhotoAction": "Add photo"
+  "addPhotoAction": "Add photo",
+  "watchIntro": "Watch the intro",
+  "watchIntroHint": "A short look at the course and the teacher"
 }

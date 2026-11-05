@@ -9,7 +9,7 @@ const batchSelect = {
   code: true,
   status: true,
   startsOn: true,
-  course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverImageUrl: true } },
+  course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverImageUrl: true, introVideoUrl: true } },
 } as const;
 
 /** Read model for `GET /me/waitlist`. Writes (join/leave/promote) go through CheckoutService + EnrollmentLifecycle. */

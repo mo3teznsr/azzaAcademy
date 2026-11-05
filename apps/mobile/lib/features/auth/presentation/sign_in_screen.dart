@@ -84,8 +84,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 24, AzzaSpace.gutter, 24),
             children: [
-              const Align(alignment: AlignmentDirectional.centerStart, child: AzzaWordmark(size: 30)),
-              const SizedBox(height: 40),
+              const Align(alignment: AlignmentDirectional.centerStart, child: AzzaWordmark(size: 36)),
+              const SizedBox(height: 20),
+              SceneImage(up ? 'signup' : 'signin', height: 190, alignment: const Alignment(0, -0.2)),
+              const SizedBox(height: 24),
               DisplayText(up ? l.signUpTitle : l.signInTitle, size: 44),
               const SizedBox(height: 10),
               Text(l.signInSubtitle, style: t.bodyMedium?.copyWith(color: p.muted)),

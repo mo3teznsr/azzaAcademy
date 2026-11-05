@@ -44,12 +44,20 @@ export function SignalMark({ state = 'live', size = 24, className, title }: { st
 
 export function Logo({ href = '/', className, suffix }: { href?: string; className?: string; suffix?: string }) {
   return (
-    <Link href={href} className={cn('inline-flex items-center gap-2.5 text-foreground no-underline', className)} aria-label="Azza">
-      <SignalMark size={26} />
-      <span className="font-display text-2xl font-extrabold" dir="ltr">
-        azza
-      </span>
+    <Link href={href} className={cn('inline-flex items-center gap-2.5 text-foreground no-underline', className)} aria-label="عازة Azza">
+      <LogoMark className="h-9 light:text-[#050A30]" />
       {suffix && <span className="label-mono text-muted-foreground ms-auto">{suffix}</span>}
     </Link>
+  );
+}
+
+/** The عازة logo, painted in the current text colour through a mask (navy on light grounds, ivory on dark). */
+export function LogoMark({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn('inline-block aspect-[1210/767] bg-current', className)}
+      style={{ maskImage: 'url(/brand/logo-mask.png)', maskSize: 'contain', maskRepeat: 'no-repeat', maskPosition: 'center' }}
+    />
   );
 }

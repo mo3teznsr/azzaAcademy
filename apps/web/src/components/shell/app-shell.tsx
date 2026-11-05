@@ -133,7 +133,7 @@ export function AppShell({ variant, groups, settingsHref, children }: { variant:
                 <Menu />
               </Button>
             </SheetTrigger>
-            <SheetContent side={dir === 'rtl' ? 'right' : 'left'} className={cn('w-72 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground', isAdmin && 'theme-ink')}>
+            <SheetContent side={dir === 'rtl' ? 'right' : 'left'} className={cn('w-72 overflow-y-auto overscroll-contain border-sidebar-border bg-sidebar p-0 text-sidebar-foreground', isAdmin && 'theme-ink')}>
               <SheetTitle className="sr-only">{t.nav.primary}</SheetTitle>
               {sidebar}
             </SheetContent>

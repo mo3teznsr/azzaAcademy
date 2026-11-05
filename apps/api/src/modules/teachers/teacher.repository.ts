@@ -26,7 +26,7 @@ export class PrismaTeacherRepository {
         startsOn: true,
         timezone: true,
         schedule: { select: { weekdays: true, startTime: true, sessionCount: true } },
-        course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverImageUrl: true, category: true, priceFils: true } },
+        course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverImageUrl: true, introVideoUrl: true, category: true, priceFils: true } },
       },
     });
   }

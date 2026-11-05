@@ -81,6 +81,8 @@ export interface Course {
   coverStyle: CoverStyle | string;
   /** `/media/...` path or absolute URL; null = typographic cover. Resolve with `mediaUrl`. */
   coverImageUrl: string | null;
+  /** Uploaded video URL, or a YouTube / Vimeo / direct https link; null = none. Classify with `parseCourseVideoUrl`. */
+  introVideoUrl: string | null;
   priceFils: number;
   status: CourseStatus;
   modules: CourseModule[];

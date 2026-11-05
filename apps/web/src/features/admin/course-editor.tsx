@@ -25,6 +25,7 @@ import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { describeRule } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
+import { CoverPhotoField, IntroVideoField } from './course-media-fields';
 
 type In = z.input<typeof createCourseInput>;
 type Out = z.output<typeof createCourseInput>;
@@ -47,6 +48,8 @@ function toForm(c?: Course): In {
     category: c?.category ?? '',
     level: c?.level ?? 'BEGINNER',
     coverStyle: (COVERS as readonly string[]).includes(c?.coverStyle ?? '') ? (c!.coverStyle as In['coverStyle']) : 'sun',
+    coverImageUrl: c?.coverImageUrl ?? null,
+    introVideoUrl: c?.introVideoUrl ?? null,
     priceAed: c ? filsToAed(c.priceFils) : 0,
     modules: c?.modules.map((m) => ({ titleEn: m.titleEn, titleAr: m.titleAr ?? '', order: m.order })) ?? [],
   };
@@ -143,12 +146,12 @@ function Editor({ course }: { course?: Course }) {
                     )}
                   />
                 </Field>
-                <Field label={t.admin.editor.cover}>
+                <Field label={t.admin.editor.fallbackColour} hint={t.admin.editor.fallbackColourHint}>
                   <Controller
                     control={form.control}
                     name="coverStyle"
                     render={({ field }) => (
-                      <div className="flex gap-2" role="radiogroup" aria-label={t.admin.editor.cover}>
+                      <div className="flex gap-2" role="radiogroup" aria-label={t.admin.editor.fallbackColour}>
                         {COVERS.map((c) => (
                           <button
                             key={c}
@@ -165,18 +168,44 @@ function Editor({ course }: { course?: Course }) {
                     )}
                   />
                 </Field>
+                <Field label={t.admin.editor.coverPhoto} className="md:col-span-2">
+                  <Controller
+                    control={form.control}
+                    name="coverImageUrl"
+                    render={({ field }) => <CoverPhotoField value={field.value} onChange={(v) => field.onChange(v)} />}
+                  />
+                  {err.coverImageUrl?.message && <span className="text-[13px] text-destructive">{err.coverImageUrl.message}</span>}
+                </Field>
                 <Field label={t.admin.editor.descriptionEn} className="md:col-span-2">
                   <Textarea rows={4} {...form.register('descriptionEn')} />
                 </Field>
                 <Field label={t.admin.editor.descriptionAr} className="md:col-span-2">
                   <Textarea rows={4} dir="rtl" lang="ar" {...form.register('descriptionAr')} />
                 </Field>
+                <Field label={t.admin.editor.introVideo} className="md:col-span-2">
+                  <Controller
+                    control={form.control}
+                    name="introVideoUrl"
+                    render={({ field }) => (
+                      <IntroVideoField value={field.value} onChange={(v) => field.onChange(v)} title={preview.titleEn || t.admin.editor.introVideo} error={err.introVideoUrl?.message} />
+                    )}
+                  />
+                </Field>
               </Panel>
-              <CourseCover
-                course={{ titleEn: preview.titleEn || '—', titleAr: preview.titleAr ?? null, coverStyle: preview.coverStyle ?? 'sun', category: preview.category, level: preview.level }}
-                size="lg"
-                className="min-h-72"
-              />
+              <div className="xl:sticky xl:top-6">
+                <CourseCover
+                  course={{
+                    titleEn: preview.titleEn || '—',
+                    titleAr: preview.titleAr ?? null,
+                    coverStyle: preview.coverStyle ?? 'sun',
+                    coverImageUrl: preview.coverImageUrl,
+                    category: preview.category,
+                    level: preview.level,
+                  }}
+                  size="lg"
+                  className="min-h-72"
+                />
+              </div>
             </div>
           </TabsContent>
           <TabsContent value="curriculum" className="mt-4">
@@ -229,11 +258,12 @@ function Editor({ course }: { course?: Course }) {
   );
 }
 
-function Field({ label, error, children, className }: { label: string; error?: string; children: React.ReactNode; className?: string }) {
+function Field({ label, hint, error, children, className }: { label: string; hint?: string; error?: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <Label className="text-[13px] text-muted-foreground">{label}</Label>
       {children}
+      {hint && <span className="text-[13px] text-muted-foreground">{hint}</span>}
       {error && <span className="text-[13px] text-destructive">{error}</span>}
     </div>
   );

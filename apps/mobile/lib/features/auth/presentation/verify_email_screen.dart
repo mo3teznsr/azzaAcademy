@@ -52,6 +52,8 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(AzzaSpace.gutter),
         children: [
+          const SceneImage('verify', height: 180),
+          const SizedBox(height: 24),
           DisplayText(l.verifyTitle, size: 44),
           const SizedBox(height: 12),
           Text(l.verifyBody(widget.email), style: t.bodyLarge?.copyWith(color: p.muted)),

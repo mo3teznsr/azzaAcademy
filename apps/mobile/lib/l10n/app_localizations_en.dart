@@ -1984,4 +1984,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addPhotoAction => 'Add photo';
+
+  @override
+  String get watchIntro => 'Watch the intro';
+
+  @override
+  String get watchIntroHint => 'A short look at the course and the teacher';
 }

@@ -34,6 +34,9 @@ abstract final class AzzaColors {
   /// Destructive actions on a light ground (5.8:1 on ivory).
   static const dangerDeep = Color(0xFFA3311A);
 
+  /// Brand navy of the عازة logo (app icon, splash).
+  static const navy = Color(0xFF050A30);
+
   /// On-air: used ONLY when a LiveKit room is actually live.
   static const onAir = Color(0xFFFF5A36);
 }

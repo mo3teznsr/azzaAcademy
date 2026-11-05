@@ -19,6 +19,7 @@ export interface CourseRecord {
   level: CourseLevel;
   coverStyle: string;
   coverImageUrl: string | null;
+  introVideoUrl: string | null;
   priceFils: number;
   status: CourseStatus;
   modules: CourseModuleRecord[];
@@ -35,6 +36,7 @@ export interface CourseWriteData {
   level?: CourseLevel;
   coverStyle?: string;
   coverImageUrl?: string | null;
+  introVideoUrl?: string | null;
   priceFils?: number;
   status?: CourseStatus;
   modules?: Array<{ order: number; titleEn: string; titleAr?: string | null }>;

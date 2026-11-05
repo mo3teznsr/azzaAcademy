@@ -40,8 +40,8 @@ class LanguagePickerScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Align(alignment: AlignmentDirectional.centerStart, child: AzzaWordmark(size: 32)),
-              const SizedBox(height: 48),
+              const Align(alignment: AlignmentDirectional.centerStart, child: AzzaWordmark(size: 40)),
+              const SizedBox(height: 32),
               DisplayText(l.chooseLanguage, size: 40),
               const SizedBox(height: 6),
               Text(current == AppLocale.ar ? 'Choose your language' : 'اختر لغتك', style: TextStyle(color: p.muted)),
@@ -51,7 +51,9 @@ class LanguagePickerScreen extends ConsumerWidget {
               option(AppLocale.en, 'English', l.leftToRight),
               const SizedBox(height: 20),
               Text(l.languageHint, style: Theme.of(context).textTheme.bodySmall),
-              const Spacer(),
+              const SizedBox(height: 20),
+              const Expanded(child: SceneImage('welcome', alignment: Alignment(0, -0.3))),
+              const SizedBox(height: 20),
               FilledButton(onPressed: () => context.go(Routes.interests), child: Text(l.continueLabel)),
             ],
           ),

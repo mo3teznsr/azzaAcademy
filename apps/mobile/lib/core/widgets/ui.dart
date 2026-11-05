@@ -11,6 +11,7 @@ import 'signal_mark.dart';
 
 export 'fields.dart';
 export 'media_image.dart';
+export 'scene_image.dart';
 export 'motion.dart';
 export 'signal_mark.dart';
 export 'states.dart';

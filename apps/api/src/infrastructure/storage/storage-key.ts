@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 const KEY = /^([a-z0-9-]+)\/([a-f0-9]{32})\.([a-z0-9]{2,5})$/;
-const TYPES: Record<string, string> = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', heic: 'image/heic' };
+const TYPES: Record<string, string> = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', heic: 'image/heic', mp4: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm' };
 
 /** `<folder>/<128-bit random hex>.<ext>` — unguessable, and safe in a URL path or an S3 key. */
 export function newStorageKey(folder: string, extension: string): string {
