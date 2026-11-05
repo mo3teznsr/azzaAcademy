@@ -17,6 +17,8 @@ const envSchema = z.object({
 
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.url().default('http://localhost:4000'),
+  /** Parent domain for the session cookie (e.g. `.azza.academy`) so the web app on another subdomain sees it. Empty = host-only. */
+  COOKIE_DOMAIN: z.string().optional(),
 
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().default(587),
