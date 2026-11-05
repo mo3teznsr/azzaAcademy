@@ -13,6 +13,9 @@ export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: 
     baseURL: config.BETTER_AUTH_URL,
     basePath: '/api/auth',
     trustedOrigins: config.trustedOrigins,
+    // The web app (azza.academy) and API (api.azza.academy) are different hosts; the web
+    // proxy reads the session cookie, so it must be scoped to the shared parent domain.
+    ...(config.COOKIE_DOMAIN ? { advanced: { crossSubDomainCookies: { enabled: true, domain: config.COOKIE_DOMAIN } } } : {}),
     database: prismaAdapter(db, { provider: 'postgresql' }),
     // Our Prisma model for login sessions is AuthSession (LiveSession is the class).
     session: { modelName: 'authSession', expiresIn: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
