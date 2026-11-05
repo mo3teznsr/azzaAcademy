@@ -16,6 +16,13 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 subprojects {
+    // stripe_android's release lint classpath pulls in stripe-android-issuing-push-provisioning, which needs
+    // Google's private play-services-tapandpay, so lintVital* fails to resolve. We don't use push provisioning.
+    if (project.name == "stripe_android") {
+        tasks.matching { it.name.startsWith("lintVital") }.configureEach { enabled = false }
+    }
+}
+subprojects {
     project.evaluationDependsOn(":app")
 }
 
