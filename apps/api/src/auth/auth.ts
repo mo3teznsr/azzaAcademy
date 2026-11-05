@@ -15,7 +15,12 @@ export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: 
     trustedOrigins: config.trustedOrigins,
     // The web app (azza.academy) and API (api.azza.academy) are different hosts; the web
     // proxy reads the session cookie, so it must be scoped to the shared parent domain.
-    ...(config.COOKIE_DOMAIN ? { advanced: { crossSubDomainCookies: { enabled: true, domain: config.COOKIE_DOMAIN } } } : {}),
+    advanced: {
+      ...(config.COOKIE_DOMAIN ? { crossSubDomainCookies: { enabled: true, domain: config.COOKIE_DOMAIN } } : {}),
+      // Behind a proxy, rate limits must key on the visitor's IP, read only from the header the
+      // proxy overwrites (never from client-supplied X-Forwarded-For).
+      ...(config.CLIENT_IP_HEADER ? { ipAddress: { ipAddressHeaders: [config.CLIENT_IP_HEADER.toLowerCase()] } } : {}),
+    },
     database: prismaAdapter(db, { provider: 'postgresql' }),
     // Our Prisma model for login sessions is AuthSession (LiveSession is the class).
     session: { modelName: 'authSession', expiresIn: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
