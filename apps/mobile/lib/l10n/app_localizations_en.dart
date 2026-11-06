@@ -2556,4 +2556,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errReviewNotEligible =>
       'You can review this course after attending one of its sessions.';
+
+  @override
+  String get teacherRecordingsTitle => 'Your recordings';
+
+  @override
+  String get teacherRecordingsLede =>
+      'Every session you teach is recorded automatically when you press Start. Recordings show here once processed, usually within the hour.';
+
+  @override
+  String get teacherRecordingsEmpty => 'No recordings yet';
+
+  @override
+  String get shareRecording => 'Share or save the recording';
+
+  @override
+  String get playRecording => 'Play recording';
 }

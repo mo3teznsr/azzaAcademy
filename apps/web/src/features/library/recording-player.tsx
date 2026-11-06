@@ -18,16 +18,17 @@ import { cn } from '@/lib/utils';
 
 const SPEEDS = [1, 1.25, 1.5, 2] as const;
 
-export function RecordingPlayer({ sessionId }: { sessionId: string }) {
+/** `base` is where the list lives: `/library` for students, `/studio/recordings` for teachers. */
+export function RecordingPlayer({ sessionId, base = '/library' }: { sessionId: string; base?: string }) {
   const { t } = useI18n();
   const q = useQuery({ queryKey: qk.session(sessionId), queryFn: () => sessionsApi.get(sessionId), retry: false });
   if (q.isPending) return <LoadingBlock rows={1} height={420} />;
   if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;
   if (!q.data.myRole) return <ErrorState error={new Error(t.player.notFound)} />;
-  return <PlayerView s={q.data} />;
+  return <PlayerView s={q.data} base={base} />;
 }
 
-function PlayerView({ s }: { s: SessionDetail }) {
+function PlayerView({ s, base }: { s: SessionDetail; base: string }) {
   const { t, f, fill, pick } = useI18n();
   const src = mediaUrl(s.recordingUrl);
   const course = pick(s.batch.course.titleEn, s.batch.course.titleAr).text;
@@ -36,8 +37,8 @@ function PlayerView({ s }: { s: SessionDetail }) {
   return (
     <>
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/library" className="hover:text-foreground">
-          {t.player.back}
+        <Link href={base} className="hover:text-foreground">
+          {base === '/library' ? t.player.back : t.studio.recordings.back}
         </Link>
         <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
         <span className="text-foreground">
@@ -82,7 +83,7 @@ function PlayerView({ s }: { s: SessionDetail }) {
           </div>
           {s.notes && <p className="max-w-2xl whitespace-pre-line text-muted-foreground">{s.notes}</p>}
         </header>
-        <NextSession s={s} />
+        <NextSession s={s} base={base} />
       </div>
       <BatchMaterials batchId={s.batch.id} sessionId={s.id} />
     </>
@@ -167,7 +168,7 @@ function VideoPlayer({ src, title }: { src: string; title: string }) {
       {failed && (
         <div className="absolute inset-x-4 top-4 flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-danger-line bg-danger-bg p-3 text-sm text-danger-fg" role="alert">
           {t.common.errorBody}
-          <a href={src} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-foreground underline">
+          <a href={src} target="_blank" rel="noreferrer" download className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-foreground underline">
             <Download className="size-4" aria-hidden /> {t.common.download}
           </a>
         </div>
@@ -220,7 +221,7 @@ function VideoPlayer({ src, title }: { src: string; title: string }) {
   );
 }
 
-function NextSession({ s }: { s: SessionDetail }) {
+function NextSession({ s, base }: { s: SessionDetail; base: string }) {
   const { t, f, fill } = useI18n();
   const q = useQuery({ queryKey: qk.batch(s.batch.id), queryFn: () => batchesApi.get(s.batch.id) });
   const next = q.data?.sessions.filter((x) => x.status !== 'CANCELLED' && x.number > s.number).sort((a, b) => a.number - b.number)[0];
@@ -242,11 +243,11 @@ function NextSession({ s }: { s: SessionDetail }) {
           </span>
           <b className="font-display text-2xl leading-tight font-extrabold">{next.title}</b>
           {next.recordingUrl || next.status === 'ENDED' ? (
-            <Link href={`/library/${next.id}`} className="link-sun inline-flex min-h-11 items-center text-sm">
+            <Link href={`${base}/${next.id}`} className="link-sun inline-flex min-h-11 items-center text-sm">
               {t.player.watchNext}
             </Link>
           ) : next.status === 'LIVE' ? (
-            <Link href={`/live/${next.id}`} className="link-sun inline-flex min-h-11 items-center gap-2 text-sm">
+            <Link href={base === '/library' ? `/live/${next.id}` : `/studio/live/${next.id}`} className="link-sun inline-flex min-h-11 items-center gap-2 text-sm">
               <span aria-hidden className="onair text-onair-fg" /> {t.learn.joinLive}
             </Link>
           ) : (

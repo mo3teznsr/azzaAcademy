@@ -2540,4 +2540,20 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get errReviewNotEligible =>
       'يمكنك تقييم هذه الدورة بعد حضور إحدى جلساتها.';
+
+  @override
+  String get teacherRecordingsTitle => 'تسجيلاتك';
+
+  @override
+  String get teacherRecordingsLede =>
+      'تُسجَّل كل حصّة تقدّمها تلقائيًا عند الضغط على «ابدأ». تظهر التسجيلات هنا بعد معالجتها، عادةً خلال ساعة.';
+
+  @override
+  String get teacherRecordingsEmpty => 'لا توجد تسجيلات بعد';
+
+  @override
+  String get shareRecording => 'شارك التسجيل أو احفظه';
+
+  @override
+  String get playRecording => 'شغّل التسجيل';
 }

@@ -91,6 +91,9 @@ class AppNotification {
 
 /// Where a notification (in-app row or tapped push) leads; null when it has no screen.
 String? notificationRoute(String type, Map<String, dynamic> data) {
+  // Recording alerts open the list the reader can play from: the teacher's studio recordings or the student library.
+  if (type == 'RECORDING_READY_TEACHER' || type == 'RECORDING_NOT_STARTED') return '/teacher/batches/recordings';
+  if (type == 'RECORDING_READY') return '/student/library';
   if (data['sessionId'] != null) {
     return type.contains('LIVE') || type.contains('LOBBY') ? '/sessions/${data['sessionId']}/lobby' : null;
   }

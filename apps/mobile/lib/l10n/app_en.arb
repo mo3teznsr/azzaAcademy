@@ -1617,5 +1617,10 @@
       }
     }
   },
-  "errReviewNotEligible": "You can review this course after attending one of its sessions."
+  "errReviewNotEligible": "You can review this course after attending one of its sessions.",
+  "teacherRecordingsTitle": "Your recordings",
+  "teacherRecordingsLede": "Every session you teach is recorded automatically when you press Start. Recordings show here once processed, usually within the hour.",
+  "teacherRecordingsEmpty": "No recordings yet",
+  "shareRecording": "Share or save the recording",
+  "playRecording": "Play recording"
 }

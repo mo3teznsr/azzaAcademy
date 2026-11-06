@@ -750,5 +750,10 @@
   "faqIncomplete": "يحتاج كل سؤال إلى سؤال وجواب بالإنجليزية.",
   "moduleDescriptionEn": "وصف الوحدة {n} (بالإنجليزية)",
   "moduleDescriptionAr": "وصف الوحدة {n} (بالعربية)",
-  "errReviewNotEligible": "يمكنك تقييم هذه الدورة بعد حضور إحدى جلساتها."
+  "errReviewNotEligible": "يمكنك تقييم هذه الدورة بعد حضور إحدى جلساتها.",
+  "teacherRecordingsTitle": "تسجيلاتك",
+  "teacherRecordingsLede": "تُسجَّل كل حصّة تقدّمها تلقائيًا عند الضغط على «ابدأ». تظهر التسجيلات هنا بعد معالجتها، عادةً خلال ساعة.",
+  "teacherRecordingsEmpty": "لا توجد تسجيلات بعد",
+  "shareRecording": "شارك التسجيل أو احفظه",
+  "playRecording": "شغّل التسجيل"
 }

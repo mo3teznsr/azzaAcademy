@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { useState } from 'react';
 import { Bell } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SOCKET_EVENTS, type NotificationEvent } from '@azza/shared';
@@ -16,6 +18,7 @@ import { cn } from '@/lib/utils';
 export function NotificationsBell() {
   const { t, f, fill } = useI18n();
   const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
   const q = useQuery({ queryKey: qk.notifications, queryFn: () => meApi.notifications(), retry: false });
   const items = q.data?.items ?? [];
   const unread = q.data?.unread ?? 0;
@@ -31,7 +34,7 @@ export function NotificationsBell() {
 
   const label = unread ? `${t.common.notifications}, ${unread}` : t.common.notifications;
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="secondary" size="icon" aria-label={label} className="relative bg-card">
           <Bell />
@@ -54,13 +57,27 @@ export function NotificationsBell() {
             <p className="p-4 text-sm text-muted-foreground">{q.isPending ? t.common.loading : t.common.noNotifications}</p>
           ) : (
             <ul>
-              {items.slice(0, 20).map((n) => (
-                <li key={n.id} className={cn('border-b border-border px-4 py-3 text-sm last:border-0', !n.readAt && 'bg-muted/60')}>
-                  <b className="block">{n.title}</b>
-                  <span className="text-muted-foreground">{n.body}</span>
-                  <span className="label-mono mt-1 block text-muted-foreground">{f.dateTime(n.createdAt)}</span>
-                </li>
-              ))}
+              {items.slice(0, 20).map((n) => {
+                const href = notificationHref(n.type, n.data);
+                const body = (
+                  <>
+                    <b className="block">{n.title}</b>
+                    <span className="text-muted-foreground">{n.body}</span>
+                    <span className="label-mono mt-1 block text-muted-foreground">{f.dateTime(n.createdAt)}</span>
+                  </>
+                );
+                return (
+                  <li key={n.id} className={cn('border-b border-border text-sm last:border-0', !n.readAt && 'bg-muted/60')}>
+                    {href ? (
+                      <Link href={href} onClick={() => setOpen(false)} className="block px-4 py-3 text-foreground no-underline hover:bg-accent">
+                        {body}
+                      </Link>
+                    ) : (
+                      <div className="px-4 py-3">{body}</div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </ScrollArea>
@@ -68,4 +85,19 @@ export function NotificationsBell() {
       </PopoverContent>
     </Popover>
   );
+}
+
+/** Where a notice takes you. Recording alerts open the recording itself (studio for teachers, library for students). */
+function notificationHref(type: string, data: unknown): string | null {
+  const sessionId = typeof data === 'object' && data && 'sessionId' in data ? String((data as { sessionId: unknown }).sessionId) : null;
+  switch (type) {
+    case 'RECORDING_READY_TEACHER':
+      return sessionId ? `/studio/recordings/${sessionId}` : '/studio/recordings';
+    case 'RECORDING_NOT_STARTED':
+      return '/studio/recordings';
+    case 'RECORDING_READY':
+      return sessionId ? `/library/${sessionId}` : '/library';
+    default:
+      return null;
+  }
 }

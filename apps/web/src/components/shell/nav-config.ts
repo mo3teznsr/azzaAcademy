@@ -23,8 +23,7 @@ import {
   Heart,
   Shapes,
   ArrowLeftRight,
-  type LucideIcon,
-} from 'lucide-react';
+  type LucideIcon, Clapperboard } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/dictionaries/en';
 
 export interface NavItem {
@@ -59,6 +58,7 @@ export const teacherNav = (t: Dictionary): NavGroup[] => [
     items: [
       { href: '/studio', label: t.nav.teacher.studio, icon: Radio, exact: true },
       { href: '/studio/courses', label: t.nav.teacher.courses, icon: BookOpen },
+      { href: '/studio/recordings', label: t.nav.teacher.recordings, icon: Clapperboard },
       { href: '/studio/grading', label: t.nav.teacher.grading, icon: SquareCheck },
       { href: '/studio/earnings', label: t.nav.teacher.earnings, icon: Wallet },
       { href: '/studio/settings', label: t.nav.teacher.settings, icon: Settings },

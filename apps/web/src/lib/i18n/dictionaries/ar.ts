@@ -109,7 +109,7 @@ const ar: Dictionary = {
   nav: {
     public: { courses: 'الدورات', startingSoon: 'ما يبدأ قريبًا', howItWorks: 'كيف تعمل', teachers: 'للمعلّمين', signIn: 'تسجيل الدخول', findBatch: 'تصفّح الدورات', myLearning: 'تعلّمي' },
     student: { home: 'الرئيسية', explore: 'استكشف', schedule: 'جدولي', library: 'المكتبة', assignments: 'الواجبات', certificates: 'الشهادات', settings: 'الإعدادات', saved: 'المحفوظة' },
-    teacher: { studio: 'الاستوديو', courses: 'دوراتي', grading: 'التصحيح', earnings: 'الأرباح', settings: 'الملف والحساب البنكي' },
+    teacher: { studio: 'الاستوديو', courses: 'دوراتي', recordings: 'التسجيلات', grading: 'التصحيح', earnings: 'الأرباح', settings: 'الملف والحساب البنكي' },
     admin: {
       label: 'الإدارة',
       dashboard: 'لوحة التحكم',
@@ -587,7 +587,14 @@ const ar: Dictionary = {
       ended: 'انتهت الجلسة. جارٍ اعتماد الحضور.',
       openReport: 'افتح التقرير',
     },
+    recordings: {
+      title: 'تسجيلاتك',
+      lede: 'تُسجَّل كل حصّة تقدّمها تلقائيًا عند الضغط على «ابدأ». شاهد التسجيل أو نزّله من هنا بعد معالجته، عادةً خلال ساعة.',
+      empty: 'لا توجد تسجيلات بعد. تظهر هنا بعد انتهاء أول حصّة لك.',
+      back: 'التسجيلات',
+    },
     reportPage: {
+      watchRecording: 'شاهد أو نزّل',
       title: 'تقرير {s}',
       ended: 'انتهت {t}',
       exportCsv: 'تصدير CSV',

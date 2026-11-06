@@ -110,7 +110,7 @@ const en = {
   nav: {
     public: { courses: 'Courses', startingSoon: 'Starting soon', howItWorks: 'How it works', teachers: 'Teachers', signIn: 'Sign in', findBatch: 'Browse courses', myLearning: 'My learning' },
     student: { home: 'Home', explore: 'Explore', schedule: 'Schedule', library: 'Library', assignments: 'Assignments', certificates: 'Certificates', settings: 'Settings', saved: 'Saved' },
-    teacher: { studio: 'Studio', courses: 'My courses', grading: 'Grading', earnings: 'Earnings', settings: 'Profile & bank' },
+    teacher: { studio: 'Studio', courses: 'My courses', recordings: 'Recordings', grading: 'Grading', earnings: 'Earnings', settings: 'Profile & bank' },
     admin: {
       label: 'Admin',
       dashboard: 'Dashboard',
@@ -588,7 +588,14 @@ const en = {
       ended: 'Session ended. Attendance is being finalised.',
       openReport: 'Open report',
     },
+    recordings: {
+      title: 'Your recordings',
+      lede: 'Every session you teach is recorded automatically when you press Start. Watch or download a recording here once it has processed, usually within the hour.',
+      empty: 'No recordings yet. They appear here after your first session ends.',
+      back: 'Recordings',
+    },
     reportPage: {
+      watchRecording: 'Watch or download',
       title: '{s} report',
       ended: 'Ended {t}',
       exportCsv: 'Export CSV',
