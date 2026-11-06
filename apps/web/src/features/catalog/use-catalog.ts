@@ -1,13 +1,15 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { batchesApi, coursesApi, type BatchSummary } from '@/lib/api';
+import type { CourseListParams } from '@/lib/api/courses';
 import { qk } from '@/lib/query-keys';
 
-export function useCatalogCourses(params: { q?: string; category?: string }) {
+export function useCatalogCourses(params: CourseListParams) {
   const p = { pageSize: 48, ...params };
-  return useQuery({ queryKey: qk.courses(p), queryFn: () => coursesApi.list(p) });
+  // Keep the previous results on screen while a filter change loads.
+  return useQuery({ queryKey: qk.courses(p), queryFn: () => coursesApi.list(p), placeholderData: keepPreviousData });
 }
 
 /** Public batches (ENROLLING/FULL/RUNNING) grouped per course, sorted by start. */

@@ -23,6 +23,8 @@ const { auth, services } = container;
 
 // ───────────────────────── users ─────────────────────────
 
+const SEED_ADMIN = { id: 'seed', role: 'ADMIN' as const };
+
 async function ensureUser(
   name: string,
   email: string,
@@ -63,6 +65,31 @@ const PDF_MODULES = [
   'Wireframes', 'Visual hierarchy', 'Typography & colour', 'Components & systems', 'Prototyping', 'Usability testing', 'Portfolio & critique',
 ];
 
+const CATEGORIES = [
+  { slug: 'design', nameEn: 'Design', nameAr: 'التصميم', icon: 'pen-tool', order: 0 },
+  { slug: 'languages', nameEn: 'Languages', nameAr: 'اللغات', icon: 'languages', order: 1 },
+  { slug: 'data', nameEn: 'Data & AI', nameAr: 'البيانات والذكاء الاصطناعي', icon: 'chart-line', order: 2 },
+  { slug: 'art', nameEn: 'Art', nameAr: 'الفنون', icon: 'palette', order: 3 },
+  { slug: 'business', nameEn: 'Business', nameAr: 'الأعمال', icon: 'briefcase', order: 4 },
+  { slug: 'technology', nameEn: 'Technology', nameAr: 'التقنية', icon: 'code', order: 5 },
+  { slug: 'quran-arabic', nameEn: 'Quran & Arabic', nameAr: 'القرآن والعربية', icon: 'book-open', order: 6 },
+  { slug: 'personal-growth', nameEn: 'Personal growth', nameAr: 'تطوير الذات', icon: 'sprout', order: 7 },
+];
+
+/** Rich detail for the catalog demo (outcomes, requirements, audience, FAQ). */
+const DETAIL = {
+  outcomesEn: ['Run user interviews and turn them into insights', 'Sketch, wireframe and prototype in Figma', 'Present a portfolio-ready case study'],
+  outcomesAr: ['إجراء مقابلات المستخدمين وتحويلها إلى رؤى', 'الرسم والتخطيط والنماذج الأولية في Figma', 'تقديم دراسة حالة جاهزة لملف الأعمال'],
+  requirementsEn: ['A laptop with a modern browser', 'No design experience needed'],
+  requirementsAr: ['حاسوب محمول بمتصفح حديث', 'لا تحتاج إلى خبرة سابقة في التصميم'],
+  audienceEn: ['Career switchers into product design', 'Developers and PMs who work with designers'],
+  audienceAr: ['من يرغب في الانتقال إلى تصميم المنتجات', 'المطورون ومديرو المنتجات الذين يعملون مع المصممين'],
+  faq: [
+    { qEn: 'What if I miss a session?', aEn: 'Every session is recorded and stays in your library.', qAr: 'ماذا لو فاتتني جلسة؟', aAr: 'كل جلسة مسجلة وتبقى في مكتبتك.' },
+    { qEn: 'Do I get a certificate?', aEn: 'Yes — attend most sessions and pass the assignments.', qAr: 'هل أحصل على شهادة؟', aAr: 'نعم — احضر معظم الجلسات واجتز الواجبات.' },
+  ],
+};
+
 const COURSES = [
   {
     slug: 'product-design-foundations',
@@ -70,7 +97,7 @@ const COURSES = [
     titleEn: 'Product Design Foundations',
     titleAr: 'أساسيات تصميم المنتجات',
     descriptionEn: 'Twelve live sessions from research to a portfolio-ready case study.',
-    category: 'Design',
+    category: 'design',
     level: 'BEGINNER' as const,
     coverStyle: 'sun',
     priceFils: 88_000,
@@ -82,7 +109,7 @@ const COURSES = [
     titleEn: 'Spoken Arabic A1',
     titleAr: 'العربية المحكية A1',
     descriptionEn: 'Gulf Arabic for everyday conversations.',
-    category: 'Languages',
+    category: 'languages',
     level: 'BEGINNER' as const,
     coverStyle: 'sage',
     priceFils: 65_000,
@@ -94,7 +121,7 @@ const COURSES = [
     titleEn: 'Python for Data L2',
     titleAr: 'بايثون للبيانات - المستوى 2',
     descriptionEn: 'pandas, plotting and a real dataset project.',
-    category: 'Data',
+    category: 'data',
     level: 'INTERMEDIATE' as const,
     coverStyle: 'sky',
     priceFils: 120_000,
@@ -106,7 +133,7 @@ const COURSES = [
     titleEn: 'Watercolour L1',
     titleAr: 'الألوان المائية - المستوى 1',
     descriptionEn: 'Washes, layering and loose botanicals.',
-    category: 'Art',
+    category: 'art',
     level: 'BEGINNER' as const,
     coverStyle: 'peach',
     priceFils: 54_000,
@@ -114,8 +141,13 @@ const COURSES = [
   },
 ];
 
+async function ensureCategories() {
+  for (const c of CATEGORIES) await db.category.upsert({ where: { slug: c.slug }, create: c, update: c });
+}
+
 async function ensureCourse(c: (typeof COURSES)[number]) {
-  const { modules, ...data } = c;
+  const { modules, ...rest } = c;
+  const data = { ...rest, ...DETAIL };
   return db.course.upsert({
     where: { slug: c.slug },
     create: { ...data, status: 'PUBLISHED', modules: { create: modules.map((titleEn, order) => ({ order, titleEn })) } },
@@ -155,7 +187,7 @@ async function ensureBatch(args: {
       startsOn: args.startsOn,
       skipDates: [],
     },
-  });
+  }, SEED_ADMIN);
   return db.batch.update({ where: { id: created.id }, data: { status: args.status } });
 }
 
@@ -259,6 +291,7 @@ async function main() {
 
   console.info('Seeding courses & batches…');
   const seededCourses = [];
+  await ensureCategories();
   for (const c of COURSES) seededCourses.push(await ensureCourse(c)); // sequential: nested writes must not share a connection
   const [pdf, arabic, python, watercolour] = seededCourses;
   const earlybird = { percentOff: 10, courseId: pdf!.id, perUserLimit: 1, maxRedemptions: 50, startsOn: new Date('2026-10-01T00:00:00Z'), expiresOn: new Date('2026-12-31T00:00:00Z') };
@@ -566,7 +599,7 @@ async function seedAppReviewer(ctx: {
       minStudents: 1,
       schedule: { weekdays: [1, 3, 5], startTime: '12:00', durationMin: 60, sessionCount: 150, startsOn, skipDates: [] },
       sessionTitles: Array.from({ length: 150 }, (_, i) => `${modules[i % modules.length]} · studio ${Math.floor(i / modules.length) + 1}`),
-    });
+    }, SEED_ADMIN);
     batch = await db.batch.update({ where: { id: created.id }, data: { status: 'RUNNING' } });
   }
   await ensurePaidEnrollment({

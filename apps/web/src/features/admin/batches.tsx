@@ -14,7 +14,7 @@ import { batchesApi } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { describeRule } from '@/lib/schedule';
-import { Pager } from './courses';
+import { Pager, ReviewTabs } from './courses';
 
 export function AdminBatches() {
   const { t, f } = useI18n();
@@ -22,6 +22,8 @@ export function AdminBatches() {
   const [page, setPage] = useState(1);
   const params = { status: status === 'all' ? undefined : status, page, pageSize: 25 };
   const q = useQuery({ queryKey: qk.batches(params), queryFn: () => batchesApi.list(params) });
+  const waitingParams = { status: 'PENDING_REVIEW' as const, pageSize: 1 };
+  const waiting = useQuery({ queryKey: qk.batches(waitingParams), queryFn: () => batchesApi.list(waitingParams) });
   return (
     <>
       <PageTitle
@@ -31,6 +33,11 @@ export function AdminBatches() {
             <Link href="/admin/batches/new">{t.admin.batches.newBatch}</Link>
           </Button>
         }
+      />
+      <ReviewTabs
+        waiting={status === 'PENDING_REVIEW'}
+        count={waiting.data?.total ?? 0}
+        onChange={(w) => (setStatus(w ? 'PENDING_REVIEW' : 'all'), setPage(1))}
       />
       <Select value={status} onValueChange={(v) => (setStatus(v as BatchStatus | 'all'), setPage(1))}>
         <SelectTrigger className="w-56 rounded-full" aria-label={t.common.status}>

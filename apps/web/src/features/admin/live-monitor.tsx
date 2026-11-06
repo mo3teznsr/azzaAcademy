@@ -38,7 +38,7 @@ export function LiveMonitor() {
 
   return (
     <>
-      <PageTitle kicker={<span className="text-onair">● {fill(t.admin.live.onAir, { n: f.number(rooms.length) })}</span>} title={t.admin.live.title} />
+      <PageTitle kicker={<span className="text-onair-fg">● {fill(t.admin.live.onAir, { n: f.number(rooms.length) })}</span>} title={t.admin.live.title} />
       <Panel className="p-2">
         {q.isPending ? (
           <LoadingBlock rows={4} height={52} />
@@ -76,7 +76,7 @@ export function LiveMonitor() {
                   <TableCell className="timecode">{r.startedAt ? timecode((now - +new Date(r.startedAt)) / 1000) : '—'}</TableCell>
                   <TableCell>{r.recording ? <Chip tone="onair" dot>{t.admin.live.recOn}</Chip> : <Chip>{t.admin.live.recOff}</Chip>}</TableCell>
                   <TableCell>
-                    <span className={cn('font-semibold', !r.roomOpen && 'text-[#9a4a1c]')}>{r.roomOpen ? 'GOOD' : '—'}</span>
+                    <span className={cn('font-semibold', !r.roomOpen && 'text-peach-fg')}>{r.roomOpen ? 'GOOD' : '—'}</span>
                   </TableCell>
                 </TableRow>
               ))}

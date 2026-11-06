@@ -81,8 +81,8 @@ class _ChatPeopleSheetState extends ConsumerState<ChatPeopleSheet> with SingleTi
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                   Row(children: [
-                                    Text(m.userName, style: t.titleSmall?.copyWith(color: m.fromHost ? AzzaColors.sun : p.text)),
-                                    if (m.fromHost) ...[const SizedBox(width: 6), MonoLabel(l.hostLabel, color: AzzaColors.sun)],
+                                    Text(m.userName, style: t.titleSmall?.copyWith(color: m.fromHost ? p.accent : p.text)),
+                                    if (m.fromHost) ...[const SizedBox(width: 6), MonoLabel(l.hostLabel, color: p.accent)],
                                     const SizedBox(width: 8),
                                     MonoLabel(f.time(m.createdAt)),
                                   ]),

@@ -1990,4 +1990,570 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get watchIntroHint => 'A short look at the course and the teacher';
+
+  @override
+  String get statusPendingReview => 'Waiting for review';
+
+  @override
+  String get statusPublished => 'Published';
+
+  @override
+  String get statusArchived => 'Archived';
+
+  @override
+  String get myCoursesTitle => 'My courses';
+
+  @override
+  String get proposeCourse => 'Propose a course';
+
+  @override
+  String get noProposedCourses => 'You haven\'t proposed a course yet.';
+
+  @override
+  String get noProposedCoursesBody =>
+      'Propose a course and an admin will review it before it goes live.';
+
+  @override
+  String get changesRequested => 'Changes requested';
+
+  @override
+  String get waitingForReviewBody =>
+      'An admin is reviewing this. You can still make changes.';
+
+  @override
+  String get publishedLockedBody =>
+      'This course is published. Ask an admin if it needs changes.';
+
+  @override
+  String get editCourse => 'Edit course';
+
+  @override
+  String get newCourse => 'New course';
+
+  @override
+  String get courseBasics => 'Basics';
+
+  @override
+  String get courseTitleEn => 'Title (English)';
+
+  @override
+  String get courseTitleAr => 'Title (Arabic)';
+
+  @override
+  String get courseCategory => 'Category';
+
+  @override
+  String get courseLevel => 'Level';
+
+  @override
+  String get levelBeginner => 'Beginner';
+
+  @override
+  String get levelIntermediate => 'Intermediate';
+
+  @override
+  String get levelAdvanced => 'Advanced';
+
+  @override
+  String get coursePriceAed => 'Price (AED)';
+
+  @override
+  String get courseDescription => 'Description';
+
+  @override
+  String get descriptionEn => 'Description (English)';
+
+  @override
+  String get descriptionAr => 'Description (Arabic)';
+
+  @override
+  String get descriptionHint => 'At least 20 characters.';
+
+  @override
+  String get coverPhoto => 'Cover photo';
+
+  @override
+  String get addCoverPhoto => 'Add cover photo';
+
+  @override
+  String get changeCoverPhoto => 'Change photo';
+
+  @override
+  String get removeCoverPhoto => 'Remove photo';
+
+  @override
+  String get coverPhotoHint =>
+      'Without a photo, the course shows its title on the colour below.';
+
+  @override
+  String get coverColour => 'Cover colour';
+
+  @override
+  String get coverSun => 'Sun';
+
+  @override
+  String get coverSky => 'Sky';
+
+  @override
+  String get coverSage => 'Sage';
+
+  @override
+  String get coverPeach => 'Peach';
+
+  @override
+  String get modulesTitle => 'Modules';
+
+  @override
+  String moduleTitleEn(String n) {
+    return 'Module $n (English)';
+  }
+
+  @override
+  String moduleTitleAr(String n) {
+    return 'Module $n (Arabic)';
+  }
+
+  @override
+  String get addModule => 'Add module';
+
+  @override
+  String get removeModule => 'Remove module';
+
+  @override
+  String get moveUp => 'Move up';
+
+  @override
+  String get moveDown => 'Move down';
+
+  @override
+  String get noModulesYet => 'Add at least one module before you submit.';
+
+  @override
+  String get saveDraft => 'Save draft';
+
+  @override
+  String get submitForReview => 'Submit for review';
+
+  @override
+  String get draftSaved => 'Draft saved.';
+
+  @override
+  String get sentForReview => 'Sent for review.';
+
+  @override
+  String get titleRequired => 'Add an English title.';
+
+  @override
+  String get descriptionTooShort =>
+      'Write at least 20 characters in the English description.';
+
+  @override
+  String get categoryRequired => 'Add a category.';
+
+  @override
+  String get priceInvalid => 'Enter a price in AED.';
+
+  @override
+  String get moduleTitleRequired => 'Every module needs an English title.';
+
+  @override
+  String get uploadingPhoto => 'Uploading…';
+
+  @override
+  String get newBatch => 'New batch';
+
+  @override
+  String get batchCourse => 'Course';
+
+  @override
+  String get pickCourse => 'Pick a course';
+
+  @override
+  String get noBatchableCourses => 'No courses yet. Propose one first.';
+
+  @override
+  String get batchCode => 'Batch code';
+
+  @override
+  String get batchCodeHint => 'B and 2–4 digits, e.g. B07';
+
+  @override
+  String get batchCodeInvalid => 'Use B and 2–4 digits, e.g. B07.';
+
+  @override
+  String get batchSeats => 'Seats';
+
+  @override
+  String get seatsInvalid => 'Seats must be between 1 and 500.';
+
+  @override
+  String get sessionLanguage => 'Session language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageArabic => 'Arabic';
+
+  @override
+  String get firstDay => 'First day';
+
+  @override
+  String get weekdaysLabel => 'Days';
+
+  @override
+  String get pickWeekdays => 'Pick at least one day.';
+
+  @override
+  String get sessionLength => 'Length (minutes)';
+
+  @override
+  String get lengthInvalid => 'Length must be 15–480 minutes.';
+
+  @override
+  String get sessionCountLabel => 'Sessions';
+
+  @override
+  String get sessionCountInvalid => 'Sessions must be 1–200.';
+
+  @override
+  String get previewSchedule => 'Preview schedule';
+
+  @override
+  String lastSessionOn(String date) {
+    return 'Last session $date';
+  }
+
+  @override
+  String conflictCount(String count) {
+    return 'Clashes with your other batches: $count';
+  }
+
+  @override
+  String conflictWith(String batch) {
+    return 'Clashes with $batch';
+  }
+
+  @override
+  String get noConflicts => 'No clashes with your other batches.';
+
+  @override
+  String get createBatch => 'Create batch';
+
+  @override
+  String get batchCreated => 'Batch saved as a draft.';
+
+  @override
+  String get batchDraftBody =>
+      'This batch is a draft. Submit it so an admin can open enrollment.';
+
+  @override
+  String get batchPendingBody => 'An admin is reviewing this batch.';
+
+  @override
+  String get toReviewTab => 'To review';
+
+  @override
+  String get coursesSection => 'Courses';
+
+  @override
+  String get batchesSection => 'Batches';
+
+  @override
+  String get noPendingReviews => 'Nothing is waiting for review.';
+
+  @override
+  String get sendBack => 'Send back';
+
+  @override
+  String get sendBackTitle => 'What needs to change?';
+
+  @override
+  String get sendBackNote => 'Note to the teacher';
+
+  @override
+  String get sendBackNoteTooShort => 'Write at least 3 characters.';
+
+  @override
+  String submittedOn(String date) {
+    return 'Submitted $date';
+  }
+
+  @override
+  String modulesCount(String count) {
+    return 'Modules: $count';
+  }
+
+  @override
+  String proposedBy(String name) {
+    return 'By $name';
+  }
+
+  @override
+  String get errCourseLocked =>
+      'This course is published, so only an admin can change it.';
+
+  @override
+  String get errCourseIncomplete =>
+      'Add a description of at least 20 characters and one module before you submit.';
+
+  @override
+  String get errAlreadySubmitted => 'This is already waiting for review.';
+
+  @override
+  String get errCourseNotPublished => 'Approve the course before its batches.';
+
+  @override
+  String get errBatchLocked =>
+      'This batch is approved, so only an admin can change it.';
+
+  @override
+  String get errNotPendingReview => 'This is no longer waiting for review.';
+
+  @override
+  String get errScheduleConflict => 'You already teach at some of these times.';
+
+  @override
+  String get errScheduleIncomplete =>
+      'Not every session fits this schedule. Check the days and dates.';
+
+  @override
+  String get errCourseArchived => 'This course is archived.';
+
+  @override
+  String get whatYoullLearn => 'What you\'ll learn';
+
+  @override
+  String get requirementsTitle => 'Requirements';
+
+  @override
+  String get audienceTitle => 'Who it\'s for';
+
+  @override
+  String get faqTitle => 'FAQ';
+
+  @override
+  String totalHoursLive(String hours) {
+    return '$hours h live';
+  }
+
+  @override
+  String ratingSemantics(String avg, String count) {
+    return 'Rated $avg out of 5 from $count reviews';
+  }
+
+  @override
+  String get reviewsTitle => 'Reviews';
+
+  @override
+  String reviewsCount(String count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get noReviewsYet => 'No reviews yet.';
+
+  @override
+  String get loadMore => 'Load more';
+
+  @override
+  String get writeReview => 'Write a review';
+
+  @override
+  String get editReview => 'Edit your review';
+
+  @override
+  String get yourReview => 'Your review';
+
+  @override
+  String get reviewBodyLabel => 'What stood out?';
+
+  @override
+  String get ratingRequired => 'Pick a star rating.';
+
+  @override
+  String get postReview => 'Post review';
+
+  @override
+  String get reviewSaved => 'Thanks for your review.';
+
+  @override
+  String get deleteReview => 'Delete review';
+
+  @override
+  String get deleteReviewConfirm => 'Delete your review?';
+
+  @override
+  String get reviewDeleted => 'Review deleted.';
+
+  @override
+  String starsN(String n) {
+    return '$n stars';
+  }
+
+  @override
+  String get replyAction => 'Reply';
+
+  @override
+  String replyTo(String name) {
+    return 'Reply to $name';
+  }
+
+  @override
+  String get teacherReply => 'Teacher\'s reply';
+
+  @override
+  String get replyTooShort => 'Write at least 2 characters.';
+
+  @override
+  String get replySent => 'Reply posted.';
+
+  @override
+  String get hideReview => 'Hide';
+
+  @override
+  String get unhideReview => 'Unhide';
+
+  @override
+  String get hiddenLabel => 'Hidden';
+
+  @override
+  String get relatedTitle => 'You might also like';
+
+  @override
+  String get shareCourse => 'Share';
+
+  @override
+  String get saveCourse => 'Save';
+
+  @override
+  String get unsaveCourse => 'Remove from saved';
+
+  @override
+  String get savedToast => 'Saved.';
+
+  @override
+  String get unsavedToast => 'Removed from saved.';
+
+  @override
+  String get filters => 'Filters';
+
+  @override
+  String get sortLabel => 'Sort by';
+
+  @override
+  String get sortNewest => 'Newest';
+
+  @override
+  String get sortRating => 'Top rated';
+
+  @override
+  String get sortPriceAsc => 'Price: low to high';
+
+  @override
+  String get sortPriceDesc => 'Price: high to low';
+
+  @override
+  String get sortPopular => 'Most popular';
+
+  @override
+  String get anyOption => 'Any';
+
+  @override
+  String get minRatingLabel => 'Rating';
+
+  @override
+  String ratingAtLeast(String n) {
+    return '$n+ stars';
+  }
+
+  @override
+  String get priceRangeAed => 'Price range (AED)';
+
+  @override
+  String get minPrice => 'Min';
+
+  @override
+  String get maxPrice => 'Max';
+
+  @override
+  String get priceRangeInvalid => 'The minimum price is above the maximum.';
+
+  @override
+  String get applyFilters => 'Show results';
+
+  @override
+  String get resetFilters => 'Reset';
+
+  @override
+  String get featuredTitle => 'Featured';
+
+  @override
+  String get savedCoursesTitle => 'Saved courses';
+
+  @override
+  String get noSavedTitle => 'Nothing saved yet.';
+
+  @override
+  String get noSavedBody => 'Tap the heart on a course to keep it here.';
+
+  @override
+  String bulletEn(String n) {
+    return 'Point $n (English)';
+  }
+
+  @override
+  String bulletAr(String n) {
+    return 'Point $n (Arabic)';
+  }
+
+  @override
+  String get addPoint => 'Add point';
+
+  @override
+  String get removePoint => 'Remove point';
+
+  @override
+  String faqQuestionEn(String n) {
+    return 'Question $n (English)';
+  }
+
+  @override
+  String faqAnswerEn(String n) {
+    return 'Answer $n (English)';
+  }
+
+  @override
+  String faqQuestionAr(String n) {
+    return 'Question $n (Arabic)';
+  }
+
+  @override
+  String faqAnswerAr(String n) {
+    return 'Answer $n (Arabic)';
+  }
+
+  @override
+  String get addQuestion => 'Add question';
+
+  @override
+  String get removeQuestion => 'Remove question';
+
+  @override
+  String get faqIncomplete =>
+      'Each question needs an English question and answer.';
+
+  @override
+  String moduleDescriptionEn(String n) {
+    return 'Module $n description (English)';
+  }
+
+  @override
+  String moduleDescriptionAr(String n) {
+    return 'Module $n description (Arabic)';
+  }
+
+  @override
+  String get errReviewNotEligible =>
+      'You can review this course after attending one of its sessions.';
 }

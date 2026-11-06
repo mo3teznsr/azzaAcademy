@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CourseCover } from '@/components/brand/course-cover';
 import { CourseStatusChip } from '@/components/brand/status-chip';
@@ -19,10 +20,13 @@ import { coursesApi } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
+import { useProposalError } from './proposal-review';
+import { useCategoryLabel } from '@/components/brand/category';
 
 export function AdminCourses() {
   const { t, f, fill } = useI18n();
   const money = useMoney();
+  const categoryLabel = useCategoryLabel();
   const qc = useQueryClient();
   const [q, setQ] = useState('');
   const [status, setStatus] = useState<CourseStatus | 'all'>('all');
@@ -31,13 +35,24 @@ export function AdminCourses() {
   const dq = useDeferredValue(q);
   const params = { q: dq || undefined, status: status === 'all' ? undefined : status, level: level === 'all' ? undefined : level, page, pageSize: 20 };
   const list = useQuery({ queryKey: qk.courses(params), queryFn: () => coursesApi.list(params) });
+  const waitingParams = { status: 'PENDING_REVIEW' as const, pageSize: 1 };
+  const waiting = useQuery({ queryKey: qk.courses(waitingParams), queryFn: () => coursesApi.list(waitingParams) });
+  const errorMessage = useProposalError();
   const setCourseStatus = useMutation({
     mutationFn: ({ id, s }: { id: string; s: CourseStatus }) => coursesApi.update(id, { status: s }),
     onSuccess: () => {
       toast.success(t.admin.editor.saved);
       void qc.invalidateQueries({ queryKey: ['courses'] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(errorMessage(e)),
+  });
+  const approve = useMutation({
+    mutationFn: (id: string) => coursesApi.review(id, { approve: true }),
+    onSuccess: () => {
+      toast.success(t.proposals.approvedCourse);
+      void qc.invalidateQueries({ queryKey: ['courses'] });
+    },
+    onError: (e: Error) => toast.error(errorMessage(e)),
   });
 
   return (
@@ -50,6 +65,11 @@ export function AdminCourses() {
             <Link href="/admin/courses/new">{t.admin.courses.newCourse}</Link>
           </Button>
         }
+      />
+      <ReviewTabs
+        waiting={status === 'PENDING_REVIEW'}
+        count={waiting.data?.total ?? 0}
+        onChange={(w) => (setStatus(w ? 'PENDING_REVIEW' : 'all'), setPage(1))}
       />
       <div className="flex flex-wrap gap-3">
         <Input value={q} onChange={(e) => (setQ(e.target.value), setPage(1))} placeholder={t.common.search} aria-label={t.common.search} className="max-w-xs rounded-full" />
@@ -113,7 +133,7 @@ export function AdminCourses() {
                         <span>
                           <b className="block">{c.titleEn}</b>
                           <span className="text-[13px] text-muted-foreground">
-                            {c.category} · <span dir="ltr">{c.slug}</span>
+                            {categoryLabel(c)} · <span dir="ltr">{c.slug}</span>
                           </span>
                         </span>
                       </Link>
@@ -144,7 +164,10 @@ export function AdminCourses() {
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          {c.status !== 'PUBLISHED' && <DropdownMenuItem onSelect={() => setCourseStatus.mutate({ id: c.id, s: 'PUBLISHED' })}>{t.admin.courses.publish}</DropdownMenuItem>}
+                          {c.status === 'PENDING_REVIEW' && <DropdownMenuItem onSelect={() => approve.mutate(c.id)}>{t.proposals.approve}</DropdownMenuItem>}
+                          {c.status !== 'PUBLISHED' && c.status !== 'PENDING_REVIEW' && (
+                            <DropdownMenuItem onSelect={() => setCourseStatus.mutate({ id: c.id, s: 'PUBLISHED' })}>{t.admin.courses.publish}</DropdownMenuItem>
+                          )}
                           {c.status !== 'ARCHIVED' && <DropdownMenuItem onSelect={() => setCourseStatus.mutate({ id: c.id, s: 'ARCHIVED' })}>{t.admin.courses.archive}</DropdownMenuItem>}
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -158,6 +181,27 @@ export function AdminCourses() {
         )}
       </Panel>
     </>
+  );
+}
+
+/** "All / Waiting for review (n)" switch above the admin course and batch lists. */
+export function ReviewTabs({ waiting, count, onChange }: { waiting: boolean; count: number; onChange: (waiting: boolean) => void }) {
+  const { t, f } = useI18n();
+  return (
+    <Tabs value={waiting ? 'waiting' : 'all'} onValueChange={(v) => onChange(v === 'waiting')}>
+      <TabsList>
+        <TabsTrigger value="all">{t.proposals.tabAll}</TabsTrigger>
+        <TabsTrigger value="waiting" className="gap-2">
+          {t.proposals.tabWaiting}
+          {count > 0 && (
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-sun px-1.5 font-mono text-[11px] text-ink" aria-hidden>
+              {f.number(count)}
+            </span>
+          )}
+          {count > 0 && <span className="sr-only">({f.number(count)})</span>}
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 }
 

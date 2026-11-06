@@ -15,20 +15,20 @@ class SplashScreen extends ConsumerWidget {
     final l = context.l10n;
     final auth = ref.watch(authControllerProvider);
     return Scaffold(
-      backgroundColor: AzzaColors.navy,
+      backgroundColor: AzzaColors.inkDeep,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(28, 24, 28, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              MonoLabel(l.splashTagline),
+              MonoLabel(l.splashTagline, color: AzzaColors.muted),
               const Spacer(),
-              const SignalMark(size: 96, live: true),
+              const SignalMark(size: 96, color: AzzaColors.green, live: true),
               const SizedBox(height: 18),
-              const AzzaWordmark(size: 96, color: AzzaColors.ivory),
+              const AzzaWordmark(size: 96, color: AzzaColors.cream),
               const SizedBox(height: 14),
-              DisplayText(l.splashLine, size: 26, weight: FontWeight.w400, color: AzzaColors.ivory),
+              DisplayText(l.splashLine, size: 26, weight: FontWeight.w400, color: AzzaColors.cream),
               const Spacer(),
               if (auth.hasError)
                 ErrorState(error: auth.error!, onRetry: () => ref.read(authControllerProvider.notifier).retry())

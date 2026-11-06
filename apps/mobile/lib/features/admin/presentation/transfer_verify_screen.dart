@@ -113,7 +113,7 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
                   label: l.receivedStatement,
                   icon: Icons.account_balance_wallet_outlined,
                   prefixText: 'AED ',
-                  action: Icon(matches ? Icons.check_circle_rounded : Icons.error_outline_rounded, color: matches ? Colors.green.shade700 : AzzaColors.warnDeep),
+                  action: Icon(matches ? Icons.check_circle_rounded : Icons.error_outline_rounded, color: matches ? AzzaPalette.of(context).success : AzzaPalette.of(context).warning),
                 ),
               ),
               const SizedBox(height: 16),

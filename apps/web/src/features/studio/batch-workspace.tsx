@@ -28,12 +28,50 @@ import { useI18n } from '@/lib/i18n/provider';
 import { gmtOffset, sessionCode } from '@/lib/i18n/format';
 import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
+import { ProposalNotice, ReviewNoteQuote, useProposalError } from '../admin/proposal-review';
 
 export function BatchWorkspace({ batchId, basePath = '/studio' }: { batchId: string; basePath?: string }) {
   const q = useQuery({ queryKey: qk.batch(batchId), queryFn: () => batchesApi.get(batchId) });
   if (q.isPending) return <LoadingBlock rows={3} height={140} />;
   if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;
   return <Workspace b={q.data} basePath={basePath} />;
+}
+
+/** DRAFT: the admin's note (if sent back) + Submit for review. PENDING_REVIEW: a waiting notice. */
+function ProposalStatus({ b }: { b: BatchDetail }) {
+  const { t, f, fill } = useI18n();
+  const qc = useQueryClient();
+  const errorMessage = useProposalError();
+  const submit = useMutation({
+    mutationFn: () => batchesApi.submit(b.id),
+    onSuccess: () => {
+      toast.success(t.proposals.submitted);
+      void qc.invalidateQueries({ queryKey: qk.batch(b.id) });
+      void qc.invalidateQueries({ queryKey: ['batches'] });
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+  if (b.status === 'PENDING_REVIEW') {
+    return (
+      <ProposalNotice tone="pending" title={t.proposals.pendingTitle}>
+        <p className="text-[15px]">{t.proposals.pendingBatch}</p>
+        {b.submittedAt && <span className="text-[13px]">{fill(t.proposals.submittedOn, { d: f.dayMonth(b.submittedAt) })}</span>}
+      </ProposalNotice>
+    );
+  }
+  const action = (
+    <Button type="button" variant="ink" disabled={submit.isPending} onClick={() => submit.mutate()}>
+      {submit.isPending ? t.proposals.submitting : t.proposals.submit}
+    </Button>
+  );
+  return b.reviewNote ? (
+    <ProposalNotice tone="sentBack" title={t.proposals.sentBackTitle} action={action}>
+      <ReviewNoteQuote note={b.reviewNote} />
+      <span className="text-[13px]">{t.proposals.sentBackHint}</span>
+    </ProposalNotice>
+  ) : (
+    <ProposalNotice tone="neutral" title={t.proposals.draftBatch} action={action} />
+  );
 }
 
 function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
@@ -43,6 +81,8 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
   const next = b.sessions.find((s) => s.status === 'LIVE' || s.status === 'SCHEDULED');
   const avg = roster.data?.averageAttendancePercent ?? null;
   const atRisk = roster.data && roster.data.endedSessions ? roster.data.items.filter((r) => (r.attendancePercent ?? 100) < 60).length : null;
+  // Proposals aren't open to students yet, so there's no lobby to open.
+  const proposal = b.status === 'DRAFT' || b.status === 'PENDING_REVIEW';
 
   return (
     <>
@@ -68,7 +108,7 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
             {describeRule(b, f)} · {gmtOffset(b.timezone)} · {f.dayMonth(b.startsOn)} → {f.dayMonth(b.endsOn)} · {f.number(b.seatsTaken)}/{f.number(b.capacity)} · {t.status.sessionLanguage[b.language]}
           </p>
         </div>
-        {next && (
+        {next && !proposal && (
           <Button asChild variant="sun" size="lg">
             <Link href={`/studio/live/${next.id}`}>
               <Radio /> {fill(t.studio.batch.openLobby, { s: sessionCode(next.number) })}
@@ -76,6 +116,7 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
           </Button>
         )}
       </header>
+      {proposal && <ProposalStatus b={b} />}
       <section className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
         <StatTile label={t.studio.batch.progress} value={<>{f.number(delivered)}<span className="text-xl text-muted-foreground">/{f.number(b.sessions.length)}</span></>} />
         <StatTile label={t.studio.batch.avgAttendance} value={avg === null ? '—' : f.percent(avg)} />
@@ -150,7 +191,7 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
                         return (
                           <TableCell key={s.id} className="text-center">
                             <span
-                              className={cn('inline-block size-3 rounded-sm', a === 'PRESENT' && 'bg-sage', a === 'ABSENT' && 'bg-onair', a === 'UPCOMING' && 'border border-line-strong')}
+                              className={cn('inline-block size-3 rounded-sm', a === 'PRESENT' && 'bg-green', a === 'ABSENT' && 'bg-onair', a === 'UPCOMING' && 'border border-line-strong')}
                               title={a}
                             />
                           </TableCell>

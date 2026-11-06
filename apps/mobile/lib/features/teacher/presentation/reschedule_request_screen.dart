@@ -170,9 +170,14 @@ class _MyRequests extends ConsumerWidget {
               _ => l.requestPending,
             },
             color: switch (r.status) {
-              'APPROVED' => AzzaColors.sage,
-              'DECLINED' => AzzaColors.peach,
-              _ => AzzaColors.sun,
+              'APPROVED' => AzzaPalette.of(context).successBg,
+              'DECLINED' => AzzaPalette.of(context).dangerBg,
+              _ => AzzaColors.green,
+            },
+            textColor: switch (r.status) {
+              'APPROVED' => AzzaPalette.of(context).success,
+              'DECLINED' => AzzaPalette.of(context).danger,
+              _ => AzzaColors.inkDeep,
             },
           ),
         ),

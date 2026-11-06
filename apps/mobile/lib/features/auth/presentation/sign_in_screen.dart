@@ -127,13 +127,13 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                Text(_error!, style: t.bodyMedium?.copyWith(color: AzzaColors.peach)),
+                Text(_error!, style: t.bodyMedium?.copyWith(color: AzzaPalette.of(context).danger)),
               ],
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: _busy ? null : _submit,
                 child: _busy
-                    ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onAccent))
+                    ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onPrimary))
                     : Text(up ? l.createAccount : l.signIn),
               ),
               const SizedBox(height: 8),

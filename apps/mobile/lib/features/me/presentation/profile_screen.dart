@@ -81,6 +81,7 @@ class ProfileScreen extends ConsumerWidget {
               ),
             row(l.inbox, '', icon: Icons.inbox_outlined, onTap: () => context.push(Routes.notifications)),
             SectionHeader(l.account),
+            row(l.savedCoursesTitle, '', icon: Icons.favorite_border_rounded, onTap: () => context.push(Routes.savedCourses)),
             if (user.role == Role.student) ...[
               row(l.myOrders, '', icon: Icons.receipt_long_outlined, onTap: () => context.push(Routes.myOrders)),
               row(l.certificatesTitle, '', icon: Icons.workspace_premium_outlined, onTap: () => context.push(Routes.certificates)),

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Bricolage_Grotesque, IBM_Plex_Sans_Arabic, Inter_Tight, JetBrains_Mono, Readex_Pro } from 'next/font/google';
+import { Almarai, JetBrains_Mono } from 'next/font/google';
 import { getLocale } from '@/lib/i18n/server';
 import { dirOf } from '@/lib/i18n/config';
 import en from '@/lib/i18n/dictionaries/en';
@@ -8,11 +8,9 @@ import { THEME_SCRIPT } from '@/lib/theme/config';
 import { Providers } from './providers';
 import './globals.css';
 
-const bricolage = Bricolage_Grotesque({ subsets: ['latin'], variable: '--font-bricolage', display: 'swap' });
-const interTight = Inter_Tight({ subsets: ['latin'], variable: '--font-inter-tight', display: 'swap' });
+// Almarai carries display and body in Arabic and English (docs/BRAND.md); JetBrains Mono is for code and timecodes only.
+const almarai = Almarai({ subsets: ['arabic', 'latin'], weight: ['300', '400', '700', '800'], variable: '--font-almarai', display: 'swap' });
 const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains', display: 'swap' });
-const readex = Readex_Pro({ subsets: ['arabic', 'latin'], variable: '--font-readex', display: 'swap' });
-const plexArabic = IBM_Plex_Sans_Arabic({ subsets: ['arabic'], weight: ['400', '500', '600', '700'], variable: '--font-plex-arabic', display: 'swap' });
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -22,8 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f5efe4' },
-    { media: '(prefers-color-scheme: dark)', color: '#121110' },
+    { media: '(prefers-color-scheme: light)', color: '#f5f7f3' },
+    { media: '(prefers-color-scheme: dark)', color: '#07110d' },
   ],
 };
 
@@ -33,7 +31,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html
       lang={locale}
       dir={dirOf(locale)}
-      className={`${bricolage.variable} ${interTight.variable} ${jetbrains.variable} ${readex.variable} ${plexArabic.variable} h-full`}
+      className={`${almarai.variable} ${jetbrains.variable} h-full`}
       suppressHydrationWarning
     >
       <head>

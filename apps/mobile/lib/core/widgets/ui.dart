@@ -33,9 +33,9 @@ class MonoLabel extends StatelessWidget {
   }
 }
 
-/// Large display headline (Bricolage / Readex).
+/// Large display headline (Almarai, w800).
 class DisplayText extends StatelessWidget {
-  const DisplayText(this.text, {super.key, this.size = 34, this.color, this.weight = FontWeight.w700, this.maxLines});
+  const DisplayText(this.text, {super.key, this.size = 32, this.color, this.weight = FontWeight.w800, this.maxLines});
   final String text;
   final double size;
   final Color? color;
@@ -80,7 +80,7 @@ class StatusChip extends StatelessWidget {
     final l = context.l10n;
     final p = AzzaPalette.of(context);
     if (status == SessionStatus.live) {
-      return StatusChip(label: l.statusLive, color: AzzaColors.onAir, textColor: AzzaColors.ink, live: true);
+      return StatusChip(label: l.statusLive, color: p.live, textColor: p.onLive, live: true);
     }
     if (status == SessionStatus.ended) return StatusChip(label: l.statusEnded, color: p.muted, look: ChipLook.outline);
     if (status == SessionStatus.cancelled) {
@@ -89,11 +89,11 @@ class StatusChip extends StatelessWidget {
     if (startsAt != null) {
       final mins = startsAt.difference(DateTime.now()).inMinutes;
       if (mins >= 0 && mins <= 60) {
-        return StatusChip(label: l.statusStartsIn('$mins'), color: AzzaColors.sun, textColor: AzzaColors.ink);
+        return StatusChip(label: l.statusStartsIn('$mins'), color: AzzaColors.green, textColor: AzzaColors.inkDeep);
       }
     }
-    if (moved) return StatusChip(label: l.statusRescheduled, color: AzzaColors.peach, look: ChipLook.dashed);
-    return StatusChip(label: l.statusScheduled, color: AzzaColors.sky, textColor: AzzaColors.ink);
+    if (moved) return StatusChip(label: l.statusRescheduled, color: p.warning, look: ChipLook.dashed);
+    return StatusChip(label: l.statusScheduled, color: p.infoBg, textColor: p.info);
   }
 
   factory StatusChip.batch(BuildContext context, BatchStatus status, {int? taken, int? capacity}) {
@@ -101,19 +101,32 @@ class StatusChip extends StatelessWidget {
     final p = AzzaPalette.of(context);
     return switch (status) {
       BatchStatus.draft => StatusChip(label: l.batchDraft, color: p.muted, look: ChipLook.dashed),
+      BatchStatus.pendingReview => StatusChip(label: l.statusPendingReview, color: AzzaColors.green, textColor: AzzaColors.inkDeep),
       BatchStatus.enrolling => StatusChip(
           label: taken != null && capacity != null ? '${l.batchEnrolling} · $taken/$capacity' : l.batchEnrolling,
-          color: AzzaColors.sage,
-          textColor: AzzaColors.ink,
+          color: p.successBg,
+          textColor: p.success,
         ),
-      BatchStatus.full => StatusChip(label: l.batchFull, color: AzzaColors.peach, textColor: AzzaColors.ink),
+      BatchStatus.full => StatusChip(label: l.batchFull, color: p.warningBg, textColor: p.warning),
       BatchStatus.running => StatusChip(
           label: l.batchRunning,
-          color: p.isDark ? AzzaColors.ivory : AzzaColors.ink,
-          textColor: p.isDark ? AzzaColors.ink : AzzaColors.ivory,
+          color: p.primary,
+          textColor: p.onPrimary,
         ),
       BatchStatus.completed => StatusChip(label: l.batchCompleted, color: p.muted, look: ChipLook.outline),
       BatchStatus.cancelled => StatusChip(label: l.batchCancelled, color: p.muted, look: ChipLook.struck),
+    };
+  }
+
+  /// Course lifecycle (teacher proposals and the admin review queue).
+  factory StatusChip.course(BuildContext context, CourseStatus status) {
+    final l = context.l10n;
+    final p = AzzaPalette.of(context);
+    return switch (status) {
+      CourseStatus.draft => StatusChip(label: l.batchDraft, color: p.muted, look: ChipLook.dashed),
+      CourseStatus.pendingReview => StatusChip(label: l.statusPendingReview, color: AzzaColors.green, textColor: AzzaColors.inkDeep),
+      CourseStatus.published => StatusChip(label: l.statusPublished, color: p.successBg, textColor: p.success),
+      CourseStatus.archived => StatusChip(label: l.statusArchived, color: p.muted, look: ChipLook.struck),
     };
   }
 
@@ -122,15 +135,15 @@ class StatusChip extends StatelessWidget {
     final p = AzzaPalette.of(context);
     return switch (status) {
       OrderStatus.awaitingPayment =>
-        StatusChip(label: l.orderAwaitingPayment, color: AzzaColors.sky, textColor: AzzaColors.ink),
+        StatusChip(label: l.orderAwaitingPayment, color: p.infoBg, textColor: p.info),
       OrderStatus.awaitingReceipt =>
-        StatusChip(label: l.orderAwaitingReceipt, color: AzzaColors.sun, textColor: AzzaColors.ink),
-      OrderStatus.verifying => StatusChip(label: l.orderVerifying, color: AzzaColors.sun, textColor: AzzaColors.ink),
+        StatusChip(label: l.orderAwaitingReceipt, color: AzzaColors.green, textColor: AzzaColors.inkDeep),
+      OrderStatus.verifying => StatusChip(label: l.orderVerifying, color: AzzaColors.green, textColor: AzzaColors.inkDeep),
       OrderStatus.amountMismatch =>
-        StatusChip(label: l.orderAmountMismatch, color: AzzaColors.peach, look: ChipLook.dashed),
-      OrderStatus.paid => StatusChip(label: l.orderPaid, color: AzzaColors.sage, textColor: AzzaColors.ink),
-      OrderStatus.failed => StatusChip(label: l.orderFailed, color: AzzaColors.peach, look: ChipLook.outline),
-      OrderStatus.rejected => StatusChip(label: l.orderRejected, color: AzzaColors.peach, look: ChipLook.dashed),
+        StatusChip(label: l.orderAmountMismatch, color: p.warning, look: ChipLook.dashed),
+      OrderStatus.paid => StatusChip(label: l.orderPaid, color: p.successBg, textColor: p.success),
+      OrderStatus.failed => StatusChip(label: l.orderFailed, color: p.danger, look: ChipLook.outline),
+      OrderStatus.rejected => StatusChip(label: l.orderRejected, color: p.danger, look: ChipLook.dashed),
       OrderStatus.expired => StatusChip(label: l.orderExpired, color: p.muted, look: ChipLook.struck),
       OrderStatus.refunded => StatusChip(label: l.orderRefunded, color: p.muted, look: ChipLook.outline),
     };
@@ -140,7 +153,7 @@ class StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = color ?? AzzaPalette.of(context).muted;
     final filled = look == ChipLook.filled;
-    final fg = filled ? (textColor ?? AzzaColors.ink) : c;
+    final fg = filled ? (textColor ?? AzzaColors.inkDeep) : c;
     final style = AzzaFonts.mono(size: 11, color: fg, tracking: 0.06).copyWith(
       decoration: look == ChipLook.struck ? TextDecoration.lineThrough : null,
       decorationColor: fg,
@@ -299,7 +312,7 @@ class InitialsAvatar extends StatelessWidget {
     final p = AzzaPalette.of(context);
     final initials = Text(
       initialsOf(name),
-      style: AzzaFonts.display(arabic: context.isArabic, size: size * 0.38, weight: FontWeight.w700, color: color == null ? p.text : AzzaColors.ink),
+      style: AzzaFonts.display(arabic: context.isArabic, size: size * 0.38, weight: FontWeight.w700, color: color == null ? p.text : _onFill(color!)),
     );
     return AnimatedContainer(
       duration: AzzaMotion.quick,
@@ -309,13 +322,16 @@ class InitialsAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color ?? p.line,
-        border: speaking ? Border.all(color: AzzaColors.sun, width: 2.5) : null,
+        border: speaking ? Border.all(color: AzzaColors.green, width: 2.5) : null,
       ),
       clipBehavior: imageUrl == null ? Clip.none : Clip.antiAlias,
       child: imageUrl == null ? initials : MediaImage(imageUrl, fallback: Center(child: initials), cacheWidth: size),
     );
   }
 }
+
+/// Text colour for initials on a [fill]: inkDeep on light fills, white on dark ones.
+Color _onFill(Color fill) => fill.computeLuminance() > 0.18 ? AzzaColors.inkDeep : AzzaColors.ivory;
 
 /// Rebuilds every [interval] — for countdowns and live timecodes.
 class Ticker extends StatefulWidget {

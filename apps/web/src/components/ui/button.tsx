@@ -4,19 +4,22 @@ import { cn } from "cn"
 import { Slot } from "radix-ui"
 
 const buttonVariants = cva(
-  "press group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent bg-clip-padding font-semibold whitespace-nowrap outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/60 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "press group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent bg-clip-padding font-bold whitespace-nowrap outline-none select-none hover:-translate-y-px focus-visible:ring-3 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/85",
-        onair: "bg-onair text-ink hover:bg-[#ff7354]",
-        sun: "bg-sun text-ink hover:bg-[#ffdc6e]",
-        outline: "border-input bg-transparent text-foreground hover:bg-accent aria-expanded:bg-accent",
+        /* Main action: ink fill + white on light (hover green-deep); green fill + ink-deep on dark (hover mint). */
+        default: "bg-primary text-primary-foreground hover:bg-primary-hover",
+        onair: "bg-onair text-onair-ink hover:bg-onair/90",
+        /* Accent: the bright green never takes white text, so ink-deep on green; hover mint. */
+        sun: "bg-green text-ink-deep hover:bg-mint",
+        outline: "border-input bg-transparent text-foreground hover:border-green-deep hover:bg-accent aria-expanded:bg-accent",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "text-foreground hover:bg-accent aria-expanded:bg-accent",
-        destructive: "border-danger-line bg-danger-bg text-danger-fg hover:bg-[#3a1a14] light:hover:bg-[#f7d3c8]",
-        ink: "bg-ink text-ivory hover:bg-ink-2",
-        link: "rounded-none px-0 text-sun-fg underline-offset-4 hover:underline in-data-[theme=cream]:text-ink",
+        destructive: "border-danger-line bg-danger-bg text-danger-fg hover:border-danger-fg/40 hover:bg-danger-bg/70",
+        /* Fixed dark green fill with white text in both themes; hover green-deep. */
+        ink: "bg-ink text-white hover:bg-green-deep",
+        link: "rounded-none px-0 text-link underline-offset-4 decoration-green hover:-translate-y-0 hover:text-(--link-hover) hover:underline",
       },
       size: {
         default: "min-h-11 px-5 text-[15px]",

@@ -60,7 +60,7 @@ function SideNav({ groups, variant, onNavigate }: { groups: NavGroup[]; variant:
                   active
                     ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                     : variant === 'admin'
-                      ? 'text-[#C9C1B5] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                      ? 'text-soft-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                       : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                 )}
               >

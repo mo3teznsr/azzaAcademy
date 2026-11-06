@@ -1,62 +1,152 @@
 import 'package:flutter/material.dart';
 
-/// Raw palette from the "Main" design board. Use [AzzaPalette] in widgets so
-/// they adapt to the light (cream) and dark (ink) grounds.
+/// Raw palette from docs/BRAND.md (the green theme). Use [AzzaPalette] in
+/// widgets so they adapt to the light (page) and dark (inkDeep) grounds.
+///
+/// The historical names (sun, sage, sky, peach, navy…) are kept so call sites
+/// compile; their values now follow the green system.
 abstract final class AzzaColors {
-  static const ink = Color(0xFF121110);
-  static const ink2 = Color(0xFF1C1A18);
-  static const line = Color(0xFF2E2B27);
-  static const fieldLine = Color(0xFF3A3631);
-  static const cream = Color(0xFFF5EFE4);
-  static const ivory = Color(0xFFFBF8F2);
-  static const muted = Color(0xFFA39B90);
-  static const mutedDeep = Color(0xFF6B645B);
-  static const creamLine = Color(0xFFD9D0C2);
-  static const creamRaised = Color(0xFFFBF8F2);
-  static const warnDeep = Color(0xFFB5641F);
+  // ── Ink (deep green) ──────────────────────────────────────────────────────
+  /// Text, primary button fill (light), logo on light.
+  static const ink = Color(0xFF102018);
 
-  /// Teacher accent / "next up".
-  static const sun = Color(0xFFFFD24A);
+  /// Dark ground, auth panel, app icon and launch-screen ground.
+  static const inkDeep = Color(0xFF07110D);
 
-  /// Student accent / "scheduled".
-  static const sky = Color(0xFFBFD8F2);
+  /// Dark card.
+  static const ink2 = Color(0xFF16291F);
 
-  /// "Enrolling".
-  static const sage = Color(0xFFCFE3C9);
+  /// Dark raised / hover.
+  static const ink3 = Color(0xFF1D3328);
 
-  /// "Full / warn".
-  static const peach = Color(0xFFFFC7A6);
+  /// Dark border.
+  static const line = Color(0xFF26402F);
 
-  /// Light-ground accents: the sky/sun hues deepened so they read as text on cream (AA ≥ 4.5:1).
-  static const skyDeep = Color(0xFF24578C);
-  static const sunDeep = Color(0xFF8A5A00);
+  /// Dark strong border / input outline.
+  static const fieldLine = Color(0xFF33503F);
 
-  /// Destructive actions on a light ground (5.8:1 on ivory).
-  static const dangerDeep = Color(0xFFA3311A);
+  // ── Green ─────────────────────────────────────────────────────────────────
+  /// Brand accent: fills, rings, accent buttons. Never takes white text (inkDeep instead).
+  static const green = Color(0xFF25D366);
 
-  /// Brand navy of the عازة logo (app icon, splash).
-  static const navy = Color(0xFF050A30);
+  /// Hover / links on light; focused input border.
+  static const greenDeep = Color(0xFF159454);
 
-  /// On-air: used ONLY when a LiveKit room is actually live.
-  static const onAir = Color(0xFFFF5A36);
+  /// Green as text on light (≥ 4.5:1 on page and white).
+  static const greenDarker = Color(0xFF117443);
+
+  /// Accent hover; green as text on dark.
+  static const mint = Color(0xFF57ED99);
+
+  /// The one loud colour: whole sections/bands only, with inkDeep text.
+  static const lime = Color(0xFFDFFF69);
+
+  // ── Light grounds ─────────────────────────────────────────────────────────
+  /// Text on dark; light raised alt.
+  static const cream = Color(0xFFF1F1E9);
+
+  /// Light ground.
+  static const page = Color(0xFFF5F7F3);
+
+  /// Light card.
+  static const surface = Color(0xFFFFFFFF);
+
+  /// Light raised / popover.
+  static const raised = Color(0xFFF8F8F2);
+
+  /// White: text on ink fills, certificate paper.
+  static const ivory = Color(0xFFFFFFFF);
+
+  /// Light border.
+  static const creamLine = Color(0xFFE6EBE4);
+
+  /// Light strong border / input outline.
+  static const borderStrong = Color(0xFFD8E0D6);
+
+  /// Light divider.
+  static const borderSoft = Color(0xFFEFF3ED);
+
+  /// Light raised (alias kept for older call sites).
+  static const creamRaised = raised;
+
+  /// Placeholder (light); secondary text on dark.
+  static const muted = Color(0xFF9DABA3);
+
+  /// Secondary text on light.
+  static const mutedDeep = Color(0xFF55655C);
+
+  // ── Status (legacy names) ─────────────────────────────────────────────────
+  /// Old yellow accent → the brand green (inkDeep text on it).
+  static const sun = green;
+
+  /// Info tint (was the student sky blue).
+  static const sky = Color(0xFFE8EDFB);
+
+  /// Success tint (was sage).
+  static const sage = Color(0xFFE7F8EE);
+
+  /// Warning tint (was peach).
+  static const peach = Color(0xFFFDF3DF);
+
+  /// Danger tint.
+  static const dangerTint = Color(0xFFFBE9E9);
+
+  /// Dark-ground versions of the tints above.
+  static const sageDark = Color(0xFF123A27);
+  static const skyDark = Color(0xFF17254A);
+  static const peachDark = Color(0xFF3A2A10);
+  static const dangerTintDark = Color(0xFF2A1212);
+
+  /// Text variants on light grounds (AA ≥ 4.5:1 on page, white and their tint).
+  static const skyDeep = Color(0xFF2F5BD6);
+  static const sunDeep = greenDarker;
+  static const warnDeep = Color(0xFF8A5A12);
+  static const dangerDeep = Color(0xFFB83232);
+
+  /// Text variants on dark grounds.
+  static const skyLight = Color(0xFF9DB4FF);
+  static const warnLight = Color(0xFFF2C46B);
+  static const dangerLight = Color(0xFFFF9C9C);
+
+  /// Warning icon (non-text) on light.
+  static const warnIcon = Color(0xFFB4741F);
+
+  /// Former brand navy of the عازة logo; now the ink it is tinted with on light.
+  static const navy = ink;
+
+  /// On-air: used ONLY when a LiveKit room is actually live. White text on it.
+  static const onAir = Color(0xFFD64545);
+
+  /// On-air on dark grounds (inkDeep text on it).
+  static const onAirDark = Color(0xFFFF6B6B);
 }
 
 abstract final class AzzaMotion {
-  static const ease = Cubic(0.16, 1, 0.3, 1);
+  static const ease = Cubic(0.23, 1, 0.32, 1);
   static const quick = Duration(milliseconds: 240);
   static const entrance = Duration(milliseconds: 700);
 }
 
 abstract final class AzzaSpace {
   static const gutter = 20.0;
-  static const radius = 20.0;
-  static const radiusSm = 12.0;
+
+  /// Cards.
+  static const radius = 16.0;
+
+  /// Inputs and small boxes.
+  static const radiusSm = 14.0;
+
+  /// Controls and buttons.
+  static const radiusPill = 999.0;
 }
 
 /// Which role's accent the theme carries. Light/dark comes from [ThemeMode] (System by default).
 enum ThemeVariant { student, teacher, admin }
 
 /// Semantic colours for the active ground.
+///
+/// - [primary]/[onPrimary]: the main action (ink + white on light, green + inkDeep on dark).
+/// - [accent]/[onAccent]: green as text, icon or selection fill — readable on [ground] and [raised].
 @immutable
 class AzzaPalette extends ThemeExtension<AzzaPalette> {
   const AzzaPalette({
@@ -67,37 +157,44 @@ class AzzaPalette extends ThemeExtension<AzzaPalette> {
     required this.muted,
     required this.accent,
     required this.onAccent,
+    required this.primary,
+    required this.onPrimary,
     required this.isDark,
   });
 
   static const _dark = AzzaPalette(
-    ground: AzzaColors.ink,
+    ground: AzzaColors.inkDeep,
     raised: AzzaColors.ink2,
     line: AzzaColors.line,
-    text: AzzaColors.ivory,
+    text: AzzaColors.cream,
     muted: AzzaColors.muted,
-    accent: AzzaColors.sky,
-    onAccent: AzzaColors.ink,
+    accent: AzzaColors.green,
+    onAccent: AzzaColors.inkDeep,
+    primary: AzzaColors.green,
+    onPrimary: AzzaColors.inkDeep,
     isDark: true,
   );
 
   static const _light = AzzaPalette(
-    ground: AzzaColors.cream,
-    raised: AzzaColors.creamRaised,
+    ground: AzzaColors.page,
+    raised: AzzaColors.surface,
     line: AzzaColors.creamLine,
     text: AzzaColors.ink,
     muted: AzzaColors.mutedDeep,
-    accent: AzzaColors.skyDeep,
+    accent: AzzaColors.greenDarker,
     onAccent: AzzaColors.ivory,
+    primary: AzzaColors.ink,
+    onPrimary: AzzaColors.ivory,
     isDark: false,
   );
 
+  // Teacher and admin share the same green system (docs/BRAND.md).
   static const studentDark = _dark;
   static const studentLight = _light;
-  static final teacherDark = _dark.copyWith(accent: AzzaColors.sun);
-  static final teacherLight = _light.copyWith(accent: AzzaColors.sunDeep);
-  static final adminDark = _dark.copyWith(accent: AzzaColors.ivory);
-  static final adminLight = _light.copyWith(accent: AzzaColors.ink);
+  static const teacherDark = _dark;
+  static const teacherLight = _light;
+  static const adminDark = _dark;
+  static const adminLight = _light;
 
   static AzzaPalette forVariant(ThemeVariant v, Brightness b) {
     final dark = b == Brightness.dark;
@@ -118,7 +215,26 @@ class AzzaPalette extends ThemeExtension<AzzaPalette> {
   final Color muted;
   final Color accent;
   final Color onAccent;
+  final Color primary;
+  final Color onPrimary;
   final bool isDark;
+
+  /// Input outline.
+  Color get fieldLine => isDark ? AzzaColors.fieldLine : AzzaColors.borderStrong;
+
+  // Status pairs: a tint to fill with and a foreground readable on the tint and on [ground].
+  Color get success => isDark ? AzzaColors.mint : AzzaColors.greenDarker;
+  Color get successBg => isDark ? AzzaColors.sageDark : AzzaColors.sage;
+  Color get info => isDark ? AzzaColors.skyLight : AzzaColors.skyDeep;
+  Color get infoBg => isDark ? AzzaColors.skyDark : AzzaColors.sky;
+  Color get warning => isDark ? AzzaColors.warnLight : AzzaColors.warnDeep;
+  Color get warningBg => isDark ? AzzaColors.peachDark : AzzaColors.peach;
+  Color get danger => isDark ? AzzaColors.dangerLight : AzzaColors.dangerDeep;
+  Color get dangerBg => isDark ? AzzaColors.dangerTintDark : AzzaColors.dangerTint;
+
+  /// Live fill and the text on it.
+  Color get live => isDark ? AzzaColors.onAirDark : AzzaColors.onAir;
+  Color get onLive => isDark ? AzzaColors.inkDeep : AzzaColors.ivory;
 
   @override
   AzzaPalette copyWith({
@@ -129,6 +245,8 @@ class AzzaPalette extends ThemeExtension<AzzaPalette> {
     Color? muted,
     Color? accent,
     Color? onAccent,
+    Color? primary,
+    Color? onPrimary,
     bool? isDark,
   }) =>
       AzzaPalette(
@@ -139,6 +257,8 @@ class AzzaPalette extends ThemeExtension<AzzaPalette> {
         muted: muted ?? this.muted,
         accent: accent ?? this.accent,
         onAccent: onAccent ?? this.onAccent,
+        primary: primary ?? this.primary,
+        onPrimary: onPrimary ?? this.onPrimary,
         isDark: isDark ?? this.isDark,
       );
 
@@ -153,6 +273,8 @@ class AzzaPalette extends ThemeExtension<AzzaPalette> {
       muted: Color.lerp(muted, other.muted, t)!,
       accent: Color.lerp(accent, other.accent, t)!,
       onAccent: Color.lerp(onAccent, other.onAccent, t)!,
+      primary: Color.lerp(primary, other.primary, t)!,
+      onPrimary: Color.lerp(onPrimary, other.onPrimary, t)!,
       isDark: t < 0.5 ? isDark : other.isDark,
     );
   }

@@ -27,6 +27,7 @@ import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { gmtOffset, sessionCode } from '@/lib/i18n/format';
 import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
+import { ProposalNotice, ReviewActions, ReviewNoteQuote, useProposalError } from './proposal-review';
 
 export function AdminBatchDetail({ batchId }: { batchId: string }) {
   const q = useQuery({ queryKey: qk.batch(batchId), queryFn: () => batchesApi.get(batchId) });
@@ -49,11 +50,22 @@ function Detail({ b }: { b: BatchDetail }) {
   const [moving, setMoving] = useState<LiveSession | null>(null);
   const enr = useQuery({ queryKey: qk.batchEnrollments(b.id), queryFn: () => batchesApi.enrollments(b.id), retry: false });
   const invalidate = () => void qc.invalidateQueries({ queryKey: qk.batch(b.id) });
+  const errorMessage = useProposalError();
   const setStatus = useMutation({
     mutationFn: (status: BatchStatus) => batchesApi.update(b.id, { status }),
     onSuccess: () => (toast.success(t.common.saved), invalidate()),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(errorMessage(e)),
   });
+  const review = useMutation({
+    mutationFn: (input: { approve: boolean; note?: string }) => batchesApi.review(b.id, input),
+    onSuccess: (_, v) => {
+      toast.success(v.approve ? t.proposals.approvedBatch : t.proposals.sentBack);
+      invalidate();
+      void qc.invalidateQueries({ queryKey: ['batches'] });
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+  const pendingReview = b.status === 'PENDING_REVIEW';
   const cancelSession = useMutation({
     mutationFn: (id: string) => sessionsApi.cancel(id),
     onSuccess: () => (toast.success(t.common.saved), invalidate()),
@@ -98,6 +110,7 @@ function Detail({ b }: { b: BatchDetail }) {
             <Button variant="outline" onClick={() => setShiftOpen(true)}>
               {t.admin.batchDetail.shift}
             </Button>
+            {pendingReview && <ReviewActions pending={review.isPending} onApprove={() => review.mutate({ approve: true })} onSendBack={(note) => review.mutateAsync({ approve: false, note })} />}
             {(NEXT_STATUS[b.status] ?? []).map((s) => (
               <Button key={s} variant={s === 'CANCELLED' ? 'destructive' : 'ink'} disabled={setStatus.isPending} onClick={() => setStatus.mutate(s)}>
                 {label[s]}
@@ -109,6 +122,19 @@ function Detail({ b }: { b: BatchDetail }) {
       <p className="text-muted-foreground">
         {t.admin.batchDetail.teacher}: <bdi className="font-semibold text-foreground">{b.teacher.name}</bdi> · {describeRule(b, f)} {gmtOffset(b.timezone)} · {f.dayMonth(b.startsOn)} → {f.dayMonth(b.endsOn)} · {t.status.sessionLanguage[b.language]}
       </p>
+      {pendingReview && (
+        <ProposalNotice tone="pending" title={t.proposals.reviewBanner}>
+          <span className="text-[13px]">
+            {fill(t.proposals.proposedBy, { name: b.teacher.name })}
+            {b.submittedAt && ` · ${fill(t.proposals.submittedOn, { d: f.dayMonth(b.submittedAt) })}`}
+          </span>
+        </ProposalNotice>
+      )}
+      {b.status === 'DRAFT' && b.reviewNote && (
+        <ProposalNotice tone="sentBack" title={t.proposals.sentBackTitle}>
+          <ReviewNoteQuote note={b.reviewNote} />
+        </ProposalNotice>
+      )}
       <section className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
         <StatTile label={t.admin.batches.colSeats} value={fill(t.admin.batchDetail.seatsSummary, { a: f.number(b.seatsTaken), b: f.number(b.capacity) })} />
         <StatTile label={t.studio.batch.progress} value={`${f.number(delivered)}/${f.number(b.sessions.length)}`} />

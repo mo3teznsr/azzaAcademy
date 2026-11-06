@@ -808,15 +808,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get edgePermBody =>
-      'لا يستطيع أزّا استخدام الكاميرا أو الميكروفون، لذا لا يراك الصف ولا يسمعك.';
+      'لا يستطيع عازة استخدام الكاميرا أو الميكروفون، لذا لا يراك الصف ولا يسمعك.';
 
   @override
   String get edgePermStepsIos =>
-      'افتح الإعدادات ← أزّا ← فعّل الكاميرا والميكروفون، ثم عُد.';
+      'افتح الإعدادات ← عازة ← فعّل الكاميرا والميكروفون، ثم عُد.';
 
   @override
   String get edgePermStepsAndroid =>
-      'افتح الإعدادات ← التطبيقات ← أزّا ← الأذونات ← اسمح بالكاميرا والميكروفون، ثم عُد.';
+      'افتح الإعدادات ← التطبيقات ← عازة ← الأذونات ← اسمح بالكاميرا والميكروفون، ثم عُد.';
 
   @override
   String get edgePermMissing => 'لم نجد كاميرا أو ميكروفونًا على هذا الجهاز.';
@@ -1976,4 +1976,567 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get watchIntroHint => 'لمحة قصيرة عن الدورة والمعلم';
+
+  @override
+  String get statusPendingReview => 'بانتظار المراجعة';
+
+  @override
+  String get statusPublished => 'منشورة';
+
+  @override
+  String get statusArchived => 'مؤرشفة';
+
+  @override
+  String get myCoursesTitle => 'دوراتي';
+
+  @override
+  String get proposeCourse => 'اقترح دورة';
+
+  @override
+  String get noProposedCourses => 'لم تقترح أي دورة بعد.';
+
+  @override
+  String get noProposedCoursesBody =>
+      'اقترح دورة وسيراجعها أحد المشرفين قبل نشرها.';
+
+  @override
+  String get changesRequested => 'مطلوب تعديلات';
+
+  @override
+  String get waitingForReviewBody =>
+      'يراجع أحد المشرفين هذا الآن، ولا يزال بإمكانك إجراء تعديلات.';
+
+  @override
+  String get publishedLockedBody =>
+      'هذه الدورة منشورة. اطلب من أحد المشرفين إن احتاجت إلى تعديل.';
+
+  @override
+  String get editCourse => 'تعديل الدورة';
+
+  @override
+  String get newCourse => 'دورة جديدة';
+
+  @override
+  String get courseBasics => 'الأساسيات';
+
+  @override
+  String get courseTitleEn => 'العنوان (بالإنجليزية)';
+
+  @override
+  String get courseTitleAr => 'العنوان (بالعربية)';
+
+  @override
+  String get courseCategory => 'التصنيف';
+
+  @override
+  String get courseLevel => 'المستوى';
+
+  @override
+  String get levelBeginner => 'مبتدئ';
+
+  @override
+  String get levelIntermediate => 'متوسط';
+
+  @override
+  String get levelAdvanced => 'متقدم';
+
+  @override
+  String get coursePriceAed => 'السعر (بالدرهم)';
+
+  @override
+  String get courseDescription => 'الوصف';
+
+  @override
+  String get descriptionEn => 'الوصف (بالإنجليزية)';
+
+  @override
+  String get descriptionAr => 'الوصف (بالعربية)';
+
+  @override
+  String get descriptionHint => '20 حرفًا على الأقل.';
+
+  @override
+  String get coverPhoto => 'صورة الغلاف';
+
+  @override
+  String get addCoverPhoto => 'أضف صورة غلاف';
+
+  @override
+  String get changeCoverPhoto => 'غيّر الصورة';
+
+  @override
+  String get removeCoverPhoto => 'أزل الصورة';
+
+  @override
+  String get coverPhotoHint =>
+      'من دون صورة، يظهر عنوان الدورة على اللون أدناه.';
+
+  @override
+  String get coverColour => 'لون الغلاف';
+
+  @override
+  String get coverSun => 'شمسي';
+
+  @override
+  String get coverSky => 'سماوي';
+
+  @override
+  String get coverSage => 'أخضر هادئ';
+
+  @override
+  String get coverPeach => 'خوخي';
+
+  @override
+  String get modulesTitle => 'الوحدات';
+
+  @override
+  String moduleTitleEn(String n) {
+    return 'الوحدة $n (بالإنجليزية)';
+  }
+
+  @override
+  String moduleTitleAr(String n) {
+    return 'الوحدة $n (بالعربية)';
+  }
+
+  @override
+  String get addModule => 'أضف وحدة';
+
+  @override
+  String get removeModule => 'احذف الوحدة';
+
+  @override
+  String get moveUp => 'انقل لأعلى';
+
+  @override
+  String get moveDown => 'انقل لأسفل';
+
+  @override
+  String get noModulesYet => 'أضف وحدة واحدة على الأقل قبل الإرسال.';
+
+  @override
+  String get saveDraft => 'احفظ المسودة';
+
+  @override
+  String get submitForReview => 'أرسل للمراجعة';
+
+  @override
+  String get draftSaved => 'حُفظت المسودة.';
+
+  @override
+  String get sentForReview => 'أُرسلت للمراجعة.';
+
+  @override
+  String get titleRequired => 'أضف عنوانًا بالإنجليزية.';
+
+  @override
+  String get descriptionTooShort =>
+      'اكتب 20 حرفًا على الأقل في الوصف الإنجليزي.';
+
+  @override
+  String get categoryRequired => 'أضف تصنيفًا.';
+
+  @override
+  String get priceInvalid => 'أدخل السعر بالدرهم.';
+
+  @override
+  String get moduleTitleRequired => 'تحتاج كل وحدة إلى عنوان بالإنجليزية.';
+
+  @override
+  String get uploadingPhoto => 'جارٍ الرفع…';
+
+  @override
+  String get newBatch => 'دفعة جديدة';
+
+  @override
+  String get batchCourse => 'الدورة';
+
+  @override
+  String get pickCourse => 'اختر دورة';
+
+  @override
+  String get noBatchableCourses => 'لا توجد دورات بعد. اقترح دورة أولًا.';
+
+  @override
+  String get batchCode => 'رمز الدفعة';
+
+  @override
+  String get batchCodeHint => 'حرف B ثم 2–4 أرقام، مثل B07';
+
+  @override
+  String get batchCodeInvalid => 'استخدم حرف B ثم 2–4 أرقام، مثل B07.';
+
+  @override
+  String get batchSeats => 'المقاعد';
+
+  @override
+  String get seatsInvalid => 'يجب أن يكون عدد المقاعد بين 1 و500.';
+
+  @override
+  String get sessionLanguage => 'لغة الجلسات';
+
+  @override
+  String get languageEnglish => 'الإنجليزية';
+
+  @override
+  String get languageArabic => 'العربية';
+
+  @override
+  String get firstDay => 'اليوم الأول';
+
+  @override
+  String get weekdaysLabel => 'الأيام';
+
+  @override
+  String get pickWeekdays => 'اختر يومًا واحدًا على الأقل.';
+
+  @override
+  String get sessionLength => 'المدة (بالدقائق)';
+
+  @override
+  String get lengthInvalid => 'يجب أن تكون المدة بين 15 و480 دقيقة.';
+
+  @override
+  String get sessionCountLabel => 'عدد الجلسات';
+
+  @override
+  String get sessionCountInvalid => 'يجب أن يكون عدد الجلسات بين 1 و200.';
+
+  @override
+  String get previewSchedule => 'اعرض الجدول';
+
+  @override
+  String lastSessionOn(String date) {
+    return 'آخر جلسة $date';
+  }
+
+  @override
+  String conflictCount(String count) {
+    return 'تعارضات مع دفعاتك الأخرى: $count';
+  }
+
+  @override
+  String conflictWith(String batch) {
+    return 'تتعارض مع $batch';
+  }
+
+  @override
+  String get noConflicts => 'لا تعارض مع دفعاتك الأخرى.';
+
+  @override
+  String get createBatch => 'أنشئ الدفعة';
+
+  @override
+  String get batchCreated => 'حُفظت الدفعة كمسودة.';
+
+  @override
+  String get batchDraftBody =>
+      'هذه الدفعة مسودة. أرسلها ليفتح أحد المشرفين باب التسجيل.';
+
+  @override
+  String get batchPendingBody => 'يراجع أحد المشرفين هذه الدفعة.';
+
+  @override
+  String get toReviewTab => 'للمراجعة';
+
+  @override
+  String get coursesSection => 'الدورات';
+
+  @override
+  String get batchesSection => 'الدفعات';
+
+  @override
+  String get noPendingReviews => 'لا شيء بانتظار المراجعة.';
+
+  @override
+  String get sendBack => 'أعِد للتعديل';
+
+  @override
+  String get sendBackTitle => 'ما الذي يحتاج إلى تعديل؟';
+
+  @override
+  String get sendBackNote => 'ملاحظة للمعلم';
+
+  @override
+  String get sendBackNoteTooShort => 'اكتب 3 أحرف على الأقل.';
+
+  @override
+  String submittedOn(String date) {
+    return 'أُرسلت في $date';
+  }
+
+  @override
+  String modulesCount(String count) {
+    return 'الوحدات: $count';
+  }
+
+  @override
+  String proposedBy(String name) {
+    return 'من $name';
+  }
+
+  @override
+  String get errCourseLocked => 'هذه الدورة منشورة، لذا لا يعدّلها إلا مشرف.';
+
+  @override
+  String get errCourseIncomplete =>
+      'أضف وصفًا من 20 حرفًا على الأقل ووحدة واحدة قبل الإرسال.';
+
+  @override
+  String get errAlreadySubmitted => 'هذا بانتظار المراجعة بالفعل.';
+
+  @override
+  String get errCourseNotPublished => 'وافق على الدورة قبل دفعاتها.';
+
+  @override
+  String get errBatchLocked => 'هذه الدفعة معتمدة، لذا لا يعدّلها إلا مشرف.';
+
+  @override
+  String get errNotPendingReview => 'لم يعد هذا بانتظار المراجعة.';
+
+  @override
+  String get errScheduleConflict => 'لديك حصص في بعض هذه الأوقات.';
+
+  @override
+  String get errScheduleIncomplete =>
+      'لا تتسع الجلسات كلها في هذا الجدول. راجع الأيام والتواريخ.';
+
+  @override
+  String get errCourseArchived => 'هذه الدورة مؤرشفة.';
+
+  @override
+  String get whatYoullLearn => 'ماذا ستتعلم';
+
+  @override
+  String get requirementsTitle => 'المتطلبات';
+
+  @override
+  String get audienceTitle => 'لمن هذه الدورة';
+
+  @override
+  String get faqTitle => 'الأسئلة الشائعة';
+
+  @override
+  String totalHoursLive(String hours) {
+    return '$hours ساعة مباشرة';
+  }
+
+  @override
+  String ratingSemantics(String avg, String count) {
+    return 'التقييم $avg من 5 من $count مراجعة';
+  }
+
+  @override
+  String get reviewsTitle => 'المراجعات';
+
+  @override
+  String reviewsCount(String count) {
+    return '$count مراجعة';
+  }
+
+  @override
+  String get noReviewsYet => 'لا توجد مراجعات بعد.';
+
+  @override
+  String get loadMore => 'تحميل المزيد';
+
+  @override
+  String get writeReview => 'اكتب مراجعة';
+
+  @override
+  String get editReview => 'عدّل مراجعتك';
+
+  @override
+  String get yourReview => 'مراجعتك';
+
+  @override
+  String get reviewBodyLabel => 'ما الذي لفت انتباهك؟';
+
+  @override
+  String get ratingRequired => 'اختر تقييمًا بالنجوم.';
+
+  @override
+  String get postReview => 'انشر المراجعة';
+
+  @override
+  String get reviewSaved => 'شكرًا على مراجعتك.';
+
+  @override
+  String get deleteReview => 'احذف المراجعة';
+
+  @override
+  String get deleteReviewConfirm => 'هل تريد حذف مراجعتك؟';
+
+  @override
+  String get reviewDeleted => 'حُذفت المراجعة.';
+
+  @override
+  String starsN(String n) {
+    return '$n نجوم';
+  }
+
+  @override
+  String get replyAction => 'ردّ';
+
+  @override
+  String replyTo(String name) {
+    return 'الرد على $name';
+  }
+
+  @override
+  String get teacherReply => 'رد المعلم';
+
+  @override
+  String get replyTooShort => 'اكتب حرفين على الأقل.';
+
+  @override
+  String get replySent => 'نُشر الرد.';
+
+  @override
+  String get hideReview => 'إخفاء';
+
+  @override
+  String get unhideReview => 'إظهار';
+
+  @override
+  String get hiddenLabel => 'مخفية';
+
+  @override
+  String get relatedTitle => 'قد يعجبك أيضًا';
+
+  @override
+  String get shareCourse => 'مشاركة';
+
+  @override
+  String get saveCourse => 'احفظ';
+
+  @override
+  String get unsaveCourse => 'أزل من المحفوظات';
+
+  @override
+  String get savedToast => 'حُفظت.';
+
+  @override
+  String get unsavedToast => 'أُزيلت من المحفوظات.';
+
+  @override
+  String get filters => 'التصفية';
+
+  @override
+  String get sortLabel => 'الترتيب حسب';
+
+  @override
+  String get sortNewest => 'الأحدث';
+
+  @override
+  String get sortRating => 'الأعلى تقييمًا';
+
+  @override
+  String get sortPriceAsc => 'السعر: من الأقل إلى الأعلى';
+
+  @override
+  String get sortPriceDesc => 'السعر: من الأعلى إلى الأقل';
+
+  @override
+  String get sortPopular => 'الأكثر رواجًا';
+
+  @override
+  String get anyOption => 'الكل';
+
+  @override
+  String get minRatingLabel => 'التقييم';
+
+  @override
+  String ratingAtLeast(String n) {
+    return '$n+ نجوم';
+  }
+
+  @override
+  String get priceRangeAed => 'نطاق السعر (بالدرهم)';
+
+  @override
+  String get minPrice => 'الأدنى';
+
+  @override
+  String get maxPrice => 'الأعلى';
+
+  @override
+  String get priceRangeInvalid => 'السعر الأدنى أعلى من السعر الأعلى.';
+
+  @override
+  String get applyFilters => 'اعرض النتائج';
+
+  @override
+  String get resetFilters => 'إعادة ضبط';
+
+  @override
+  String get featuredTitle => 'مختارة لك';
+
+  @override
+  String get savedCoursesTitle => 'الدورات المحفوظة';
+
+  @override
+  String get noSavedTitle => 'لا شيء محفوظ بعد.';
+
+  @override
+  String get noSavedBody => 'اضغط على القلب في أي دورة لتحتفظ بها هنا.';
+
+  @override
+  String bulletEn(String n) {
+    return 'النقطة $n (بالإنجليزية)';
+  }
+
+  @override
+  String bulletAr(String n) {
+    return 'النقطة $n (بالعربية)';
+  }
+
+  @override
+  String get addPoint => 'أضف نقطة';
+
+  @override
+  String get removePoint => 'احذف النقطة';
+
+  @override
+  String faqQuestionEn(String n) {
+    return 'السؤال $n (بالإنجليزية)';
+  }
+
+  @override
+  String faqAnswerEn(String n) {
+    return 'الجواب $n (بالإنجليزية)';
+  }
+
+  @override
+  String faqQuestionAr(String n) {
+    return 'السؤال $n (بالعربية)';
+  }
+
+  @override
+  String faqAnswerAr(String n) {
+    return 'الجواب $n (بالعربية)';
+  }
+
+  @override
+  String get addQuestion => 'أضف سؤالًا';
+
+  @override
+  String get removeQuestion => 'احذف السؤال';
+
+  @override
+  String get faqIncomplete => 'يحتاج كل سؤال إلى سؤال وجواب بالإنجليزية.';
+
+  @override
+  String moduleDescriptionEn(String n) {
+    return 'وصف الوحدة $n (بالإنجليزية)';
+  }
+
+  @override
+  String moduleDescriptionAr(String n) {
+    return 'وصف الوحدة $n (بالعربية)';
+  }
+
+  @override
+  String get errReviewNotEligible =>
+      'يمكنك تقييم هذه الدورة بعد حضور إحدى جلساتها.';
 }

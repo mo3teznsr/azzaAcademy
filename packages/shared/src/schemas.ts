@@ -4,6 +4,7 @@ import {
   ATTENDANCE_MARKS,
   BATCH_STATUSES,
   COURSE_LEVELS,
+  COURSE_SORTS,
   COURSE_STATUSES,
   DISPLAY_CURRENCIES,
   LOCALES,
@@ -70,15 +71,28 @@ export type DeleteAccountInput = z.infer<typeof deleteAccountInput>;
 export const courseModuleInput = z.object({
   titleEn: z.string().min(2),
   titleAr: z.string().optional(),
+  descriptionEn: z.string().max(1000).optional(),
+  descriptionAr: z.string().max(1000).optional(),
   order: z.number().int().min(0),
 });
 
+const bullets = z.array(z.string().trim().min(1).max(300)).max(20).default([]);
+export const courseFaqItem = z.object({
+  qEn: z.string().trim().min(2).max(300),
+  aEn: z.string().trim().min(1).max(2000),
+  qAr: z.string().trim().max(300).optional(),
+  aAr: z.string().trim().max(2000).optional(),
+});
+export type CourseFaqItem = z.infer<typeof courseFaqItem>;
+
 export const createCourseInput = z.object({
-  slug: z.string().regex(/^[a-z0-9-]+$/),
+  /** Omit to derive one from the English title. */
+  slug: z.string().regex(/^[a-z0-9-]+$/).optional(),
   titleEn: z.string().min(2),
   titleAr: z.string().optional(),
   descriptionEn: z.string().default(''),
   descriptionAr: z.string().optional(),
+  /** A `Category.slug` (see `GET /categories`). */
   category: z.string().min(2),
   level: z.enum(COURSE_LEVELS),
   coverStyle: z.enum(['sun', 'sky', 'sage', 'peach']).default('sun'),
@@ -93,6 +107,15 @@ export const createCourseInput = z.object({
     .optional(),
   priceAed: z.number().positive(),
   modules: z.array(courseModuleInput).default([]),
+  outcomesEn: bullets,
+  outcomesAr: bullets,
+  requirementsEn: bullets,
+  requirementsAr: bullets,
+  audienceEn: bullets,
+  audienceAr: bullets,
+  faq: z.array(courseFaqItem).max(30).default([]),
+  /** ADMIN only: position on the featured rail; null removes it. */
+  featuredRank: z.number().int().min(0).max(999).nullable().optional(),
 });
 export type CreateCourseInput = z.infer<typeof createCourseInput>;
 export const updateCourseInput = createCourseInput.partial().extend({ status: z.enum(COURSE_STATUSES).optional() });
@@ -102,7 +125,44 @@ export const courseListQuery = paginationQuery.extend({
   category: z.string().optional(),
   level: z.enum(COURSE_LEVELS).optional(),
   status: z.enum(COURSE_STATUSES).optional(),
+  /** TEACHER: only the courses they proposed (any status). */
+  mine: z.stringbool().optional(),
+  /** Has an open (ENROLLING) batch taught in this language. */
+  language: z.enum(SESSION_LANGUAGES).optional(),
+  minPriceAed: z.coerce.number().min(0).optional(),
+  maxPriceAed: z.coerce.number().min(0).optional(),
+  minRating: z.coerce.number().min(1).max(5).optional(),
+  featured: z.stringbool().optional(),
+  sort: z.enum(COURSE_SORTS).default('newest'),
 });
+
+// ---------- Categories ----------
+export const categoryInput = z.object({
+  slug: z.string().regex(/^[a-z0-9-]{2,40}$/),
+  nameEn: z.string().trim().min(2).max(60),
+  nameAr: z.string().trim().max(60).optional(),
+  icon: z.string().max(40).optional(),
+  order: z.number().int().min(0).default(0),
+  active: z.boolean().default(true),
+});
+export type CategoryInput = z.infer<typeof categoryInput>;
+export const updateCategoryInput = categoryInput.omit({ slug: true }).partial();
+export type UpdateCategoryInput = z.infer<typeof updateCategoryInput>;
+
+// ---------- Course reviews ----------
+export const courseReviewInput = z.object({
+  rating: z.number().int().min(1).max(5),
+  body: z.string().trim().max(2000).default(''),
+});
+export type CourseReviewInput = z.infer<typeof courseReviewInput>;
+export const reviewReplyInput = z.object({ reply: z.string().trim().min(2).max(2000) });
+export const reviewModerationInput = z.object({ hidden: z.boolean() });
+
+/** Admin decision on a teacher's course or batch proposal. A send-back needs a note the teacher can act on. */
+export const reviewDecisionInput = z
+  .object({ approve: z.boolean(), note: z.string().trim().max(1000).optional() })
+  .refine((d) => d.approve || (d.note?.length ?? 0) >= 3, { message: 'Say what needs to change', path: ['note'] });
+export type ReviewDecisionInput = z.infer<typeof reviewDecisionInput>;
 
 // ---------- Batches & schedules ----------
 export const scheduleRuleInput = z.object({
@@ -118,7 +178,8 @@ export type ScheduleRuleInput = z.infer<typeof scheduleRuleInput>;
 export const createBatchInput = z.object({
   courseId: id,
   code: z.string().regex(/^B\d{2,4}$/),
-  teacherId: id,
+  /** Required for admins; a teacher always proposes batches for themselves. */
+  teacherId: id.optional(),
   capacity: z.number().int().min(1).max(500),
   language: z.enum(SESSION_LANGUAGES),
   timezone: ianaTimezone,

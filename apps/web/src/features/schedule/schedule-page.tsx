@@ -21,8 +21,8 @@ import { CalendarSubscribe } from './calendar-subscribe';
 const DOT: Record<SessionDisplayState, string> = {
   LIVE: 'bg-onair',
   SOON: 'bg-sun',
-  SCHEDULED: 'bg-sky',
-  MOVED: 'bg-peach',
+  SCHEDULED: 'bg-sky-fg',
+  MOVED: 'bg-peach-fg',
   ENDED: 'bg-stone',
   CANCELLED: 'bg-line-strong',
 };
@@ -180,7 +180,7 @@ function DayDetail({ s }: { s: ScheduleItem }) {
   const { t, f, fill, pick } = useI18n();
   const state = sessionState(s);
   return (
-    <div className={cn('flex flex-col gap-3 rounded-2xl p-4', state === 'LIVE' ? 'bg-onair text-ink' : 'bg-card')}>
+    <div className={cn('flex flex-col gap-3 rounded-2xl p-4', state === 'LIVE' ? 'bg-onair text-onair-ink' : 'bg-card')}>
       <div className="flex items-center justify-between gap-2">
         <span className="label-mono" dir="ltr">
           {s.batch.code}·{sessionCode(s.number)} · {f.time(s.startsAt)}–{f.time(s.endsAt)}

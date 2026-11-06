@@ -98,7 +98,7 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AzzaColors.onAir, foregroundColor: AzzaColors.ink),
+            style: FilledButton.styleFrom(backgroundColor: AzzaPalette.of(context).live, foregroundColor: AzzaPalette.of(context).onLive),
             onPressed: () => Navigator.pop(context, true),
             child: Text(l.endForAll),
           ),
@@ -129,7 +129,7 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: AzzaColors.ink,
+        backgroundColor: AzzaColors.inkDeep,
         body: ListenableBuilder(
           listenable: _c,
           builder: (context, _) {
@@ -178,11 +178,11 @@ class _RoomBody extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Row(children: [
-          const StatusChip(label: 'Live', color: AzzaColors.onAir, textColor: AzzaColors.ink, live: true),
+          const StatusChip(label: 'Live', color: AzzaColors.onAirDark, textColor: AzzaColors.inkDeep, live: true),
           const SizedBox(width: 8),
           const PulsingDot(size: 7),
           const SizedBox(width: 2),
-          Ticker(builder: (_, now) => MonoLabel('${l.rec} ${Fmt.timecode(now.difference(c.startedAt ?? now))}', color: AzzaColors.ivory)),
+          Ticker(builder: (_, now) => MonoLabel('${l.rec} ${Fmt.timecode(now.difference(c.startedAt ?? now))}', color: AzzaColors.cream)),
           const Spacer(),
           MonoLabel('${l.inRoom('$count')}${c.hands.isNotEmpty ? ' · ✋ ${c.hands.length}' : ''}', color: AzzaColors.muted),
         ]),
@@ -302,16 +302,16 @@ class _Tile extends StatelessWidget {
         bottom: 6,
         end: 8,
         child: Row(children: [
-          if (!p.micOn) const Icon(Icons.mic_off_rounded, size: 14, color: AzzaColors.peach),
+          if (!p.micOn) const Icon(Icons.mic_off_rounded, size: 14, color: AzzaColors.warnLight),
           Flexible(
             child: Text(
               p.isLocal ? youLabel : p.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: AzzaColors.ivory, fontSize: large ? 14 : 11, fontWeight: FontWeight.w600),
+              style: TextStyle(color: AzzaColors.cream, fontSize: large ? 14 : 11, fontWeight: FontWeight.w600),
             ),
           ),
-          if (p.weakNetwork) const Icon(Icons.signal_cellular_connected_no_internet_0_bar_rounded, size: 14, color: AzzaColors.peach),
+          if (p.weakNetwork) const Icon(Icons.signal_cellular_connected_no_internet_0_bar_rounded, size: 14, color: AzzaColors.warnLight),
         ]),
       ),
     ]);
@@ -331,13 +331,13 @@ class _Ctl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = danger
-        ? AzzaColors.onAir
+        ? AzzaColors.onAirDark
         : highlight
             ? AzzaColors.sun
             : active
                 ? AzzaColors.ink2
                 : AzzaColors.peach;
-    final fg = danger || highlight || !active ? AzzaColors.ink : AzzaColors.ivory;
+    final fg = danger || highlight || !active ? AzzaColors.inkDeep : AzzaColors.cream;
     return Tooltip(
       message: label,
       child: Semantics(

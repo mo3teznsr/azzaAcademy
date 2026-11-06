@@ -3,16 +3,73 @@ import 'package:flutter/foundation.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/utils/json.dart';
 
+/// Picks the Arabic text when the app is in Arabic and it exists, else the English.
+String _pick(AppLocale l, String en, String? ar) => l == AppLocale.ar && ar != null && ar.trim().isNotEmpty ? ar : en;
+List<String> _pickList(AppLocale l, List<String> en, List<String> ar) => l == AppLocale.ar && ar.isNotEmpty ? ar : en;
+
+/// `GET /categories` item, and `Course.categoryRef`. A course's `category` field is the [slug].
+@immutable
+class CourseCategory {
+  const CourseCategory({required this.slug, required this.nameEn, this.nameAr, this.icon, this.courseCount});
+  factory CourseCategory.fromJson(Json j) => CourseCategory(
+        slug: str(j, 'slug'),
+        nameEn: str(j, 'nameEn', str(j, 'slug')),
+        nameAr: strOrNull(j, 'nameAr'),
+        icon: strOrNull(j, 'icon'),
+        courseCount: intOrNull(j, 'courseCount'),
+      );
+  final String slug;
+  final String nameEn;
+  final String? nameAr;
+
+  /// lucide icon name from the web admin (mapped to a Material icon on mobile).
+  final String? icon;
+
+  /// Published courses in it (only on `GET /categories`).
+  final int? courseCount;
+  String name(AppLocale l) => _pick(l, nameEn, nameAr);
+}
+
+@immutable
+class CourseFaq {
+  const CourseFaq({required this.qEn, required this.aEn, this.qAr, this.aAr});
+  factory CourseFaq.fromJson(Json j) =>
+      CourseFaq(qEn: str(j, 'qEn'), aEn: str(j, 'aEn'), qAr: strOrNull(j, 'qAr'), aAr: strOrNull(j, 'aAr'));
+  final String qEn;
+  final String aEn;
+  final String? qAr;
+  final String? aAr;
+  String question(AppLocale l) => _pick(l, qEn, qAr);
+  String answer(AppLocale l) => _pick(l, aEn, aAr);
+  Map<String, dynamic> toJson() => {
+        'qEn': qEn.trim(),
+        'aEn': aEn.trim(),
+        if (qAr != null && qAr!.trim().isNotEmpty) 'qAr': qAr!.trim(),
+        if (aAr != null && aAr!.trim().isNotEmpty) 'aAr': aAr!.trim(),
+      };
+}
+
 @immutable
 class CourseModule {
-  const CourseModule({required this.order, required this.titleEn, this.titleAr});
-  factory CourseModule.fromJson(Json j) =>
-      CourseModule(order: integer(j, 'order'), titleEn: str(j, 'titleEn'), titleAr: strOrNull(j, 'titleAr'));
+  const CourseModule({required this.order, required this.titleEn, this.titleAr, this.descriptionEn, this.descriptionAr});
+  factory CourseModule.fromJson(Json j) => CourseModule(
+        order: integer(j, 'order'),
+        titleEn: str(j, 'titleEn'),
+        titleAr: strOrNull(j, 'titleAr'),
+        descriptionEn: strOrNull(j, 'descriptionEn'),
+        descriptionAr: strOrNull(j, 'descriptionAr'),
+      );
 
   final int order;
   final String titleEn;
   final String? titleAr;
-  String title(AppLocale l) => l == AppLocale.ar && titleAr != null ? titleAr! : titleEn;
+  final String? descriptionEn;
+  final String? descriptionAr;
+  String title(AppLocale l) => _pick(l, titleEn, titleAr);
+  String? description(AppLocale l) {
+    final d = _pick(l, descriptionEn ?? '', descriptionAr);
+    return d.trim().isEmpty ? null : d;
+  }
 }
 
 @immutable
@@ -33,6 +90,20 @@ class Course {
     this.status = CourseStatus.published,
     this.modules = const [],
     this.batchCount,
+    this.createdById,
+    this.reviewNote,
+    this.submittedAt,
+    this.categoryRef,
+    this.outcomesEn = const [],
+    this.outcomesAr = const [],
+    this.requirementsEn = const [],
+    this.requirementsAr = const [],
+    this.audienceEn = const [],
+    this.audienceAr = const [],
+    this.faq = const [],
+    this.ratingAvg = 0,
+    this.ratingCount = 0,
+    this.featuredRank,
   });
 
   factory Course.fromJson(Json j) => Course(
@@ -51,6 +122,20 @@ class Course {
         status: CourseStatus.parse(j['status']),
         modules: list(j, 'modules').map(CourseModule.fromJson).toList()..sort((a, b) => a.order.compareTo(b.order)),
         batchCount: intOrNull(obj(j, '_count'), 'batches') ?? intOrNull(j, 'openBatches'),
+        createdById: strOrNull(j, 'createdById'),
+        reviewNote: strOrNull(j, 'reviewNote'),
+        submittedAt: date(j, 'submittedAt'),
+        categoryRef: objOrNull(j, 'categoryRef') == null ? null : CourseCategory.fromJson(obj(j, 'categoryRef')),
+        outcomesEn: strings(j, 'outcomesEn'),
+        outcomesAr: strings(j, 'outcomesAr'),
+        requirementsEn: strings(j, 'requirementsEn'),
+        requirementsAr: strings(j, 'requirementsAr'),
+        audienceEn: strings(j, 'audienceEn'),
+        audienceAr: strings(j, 'audienceAr'),
+        faq: list(j, 'faq').map(CourseFaq.fromJson).toList(),
+        ratingAvg: dbl(j, 'ratingAvg'),
+        ratingCount: integer(j, 'ratingCount'),
+        featuredRank: intOrNull(j, 'featuredRank'),
       );
 
   final String id;
@@ -73,16 +158,38 @@ class Course {
   final List<CourseModule> modules;
   final int? batchCount;
 
-  String title(AppLocale l) => l == AppLocale.ar && titleAr != null ? titleAr! : titleEn;
-  String description(AppLocale l) => l == AppLocale.ar && descriptionAr != null ? descriptionAr! : descriptionEn;
+  /// The teacher who proposed the course (null for admin-made courses).
+  final String? createdById;
 
-  /// Outcome bullets: description lines (API has no dedicated outcomes field yet).
-  List<String> outcomes(AppLocale l) => description(l)
-      .split(RegExp(r'\n+|(?<=\.)\s+'))
-      .map((e) => e.replaceFirst(RegExp(r'^[-•*]\s*'), '').trim())
-      .where((e) => e.isNotEmpty)
-      .take(5)
-      .toList();
+  /// The admin's note when the course was sent back to the teacher.
+  final String? reviewNote;
+  final DateTime? submittedAt;
+
+  /// `{ slug, nameEn, nameAr, icon }` of [category]; null on older payloads.
+  final CourseCategory? categoryRef;
+  final List<String> outcomesEn;
+  final List<String> outcomesAr;
+  final List<String> requirementsEn;
+  final List<String> requirementsAr;
+  final List<String> audienceEn;
+  final List<String> audienceAr;
+  final List<CourseFaq> faq;
+  final double ratingAvg;
+  final int ratingCount;
+
+  /// Position on the featured rail (null = not featured).
+  final int? featuredRank;
+
+  String title(AppLocale l) => _pick(l, titleEn, titleAr);
+  String description(AppLocale l) => _pick(l, descriptionEn, descriptionAr);
+
+  /// The category's name in the app language (falls back to the slug).
+  String categoryName(AppLocale l) => categoryRef?.name(l) ?? category;
+
+  /// "What you'll learn" bullets.
+  List<String> outcomes(AppLocale l) => _pickList(l, outcomesEn, outcomesAr);
+  List<String> requirements(AppLocale l) => _pickList(l, requirementsEn, requirementsAr);
+  List<String> audience(AppLocale l) => _pickList(l, audienceEn, audienceAr);
 }
 
 @immutable
@@ -195,6 +302,8 @@ class Batch {
     this.sessions = const [],
     this.waitlistEnabled = true,
     this.waitlistCount,
+    this.reviewNote,
+    this.submittedAt,
   });
 
   factory Batch.fromJson(Json j) {
@@ -238,6 +347,8 @@ class Batch {
       ],
       waitlistEnabled: boolean(j, 'waitlistEnabled', true),
       waitlistCount: intOrNull(j, 'waitlistCount'),
+      reviewNote: strOrNull(j, 'reviewNote'),
+      submittedAt: date(j, 'submittedAt'),
     );
   }
 
@@ -259,6 +370,10 @@ class Batch {
   final List<SessionSummary> sessions;
   final bool waitlistEnabled;
   final int? waitlistCount;
+
+  /// The admin's note when the batch was sent back to the teacher.
+  final String? reviewNote;
+  final DateTime? submittedAt;
 
   int get seatsLeft => (capacity - seatsTaken).clamp(0, capacity);
   int get effectivePriceFils => priceFils ?? course?.priceFils ?? 0;

@@ -44,7 +44,7 @@ class _AdminBatchesScreenState extends ConsumerState<AdminBatchesScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
             children: [
-              for (final s in <BatchStatus?>[null, BatchStatus.running, BatchStatus.enrolling, BatchStatus.full, BatchStatus.draft, BatchStatus.completed])
+              for (final s in <BatchStatus?>[null, BatchStatus.running, BatchStatus.enrolling, BatchStatus.full, BatchStatus.pendingReview, BatchStatus.draft, BatchStatus.completed])
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 8),
                   child: ChoiceChip(

@@ -16,7 +16,7 @@ class SceneImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = AzzaPalette.of(context);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(AzzaSpace.radius),
+      borderRadius: BorderRadius.circular(24), // media radius (docs/BRAND.md)
       child: SizedBox(
         height: height,
         width: double.infinity,

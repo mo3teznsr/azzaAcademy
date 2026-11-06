@@ -67,6 +67,31 @@ export interface CourseModule {
   order: number;
   titleEn: string;
   titleAr: string | null;
+  descriptionEn: string | null;
+  descriptionAr: string | null;
+}
+
+/** Managed course category, as embedded on a course (`categoryRef`). */
+export interface CategoryRef {
+  slug: string;
+  nameEn: string;
+  nameAr: string | null;
+  /** A lucide icon name (kebab-case), e.g. `book-open`. */
+  icon: string | null;
+}
+
+/** GET /categories item. `courseCount` = published courses. */
+export interface Category extends CategoryRef {
+  order: number;
+  active: boolean;
+  courseCount: number;
+}
+
+export interface CourseFaq {
+  qEn: string;
+  aEn: string;
+  qAr?: string;
+  aAr?: string;
 }
 
 export interface Course {
@@ -76,7 +101,9 @@ export interface Course {
   titleAr: string | null;
   descriptionEn: string;
   descriptionAr: string | null;
+  /** Category slug; show `categoryRef` names to people. */
   category: string;
+  categoryRef: CategoryRef | null;
   level: CourseLevel;
   coverStyle: CoverStyle | string;
   /** `/media/...` path or absolute URL; null = typographic cover. Resolve with `mediaUrl`. */
@@ -84,7 +111,24 @@ export interface Course {
   /** Uploaded video URL, or a YouTube / Vimeo / direct https link; null = none. Classify with `parseCourseVideoUrl`. */
   introVideoUrl: string | null;
   priceFils: number;
+  outcomesEn: string[];
+  outcomesAr: string[];
+  requirementsEn: string[];
+  requirementsAr: string[];
+  audienceEn: string[];
+  audienceAr: string[];
+  faq: CourseFaq[];
+  /** Position on the featured rail; null = not featured. */
+  featuredRank: number | null;
+  /** Average of visible reviews (0 when none). */
+  ratingAvg: number;
+  ratingCount: number;
   status: CourseStatus;
+  /** Teacher who proposed the course; null for admin-made courses. */
+  createdById: string | null;
+  /** Admin's note when a proposal was sent back; cleared on approval. */
+  reviewNote: string | null;
+  submittedAt: ISODate | null;
   modules: CourseModule[];
   createdAt: ISODate;
   updatedAt: ISODate;
@@ -117,6 +161,9 @@ export interface BatchSummary {
   enrollmentOpensOn: ISODate | null;
   enrollmentClosesOn: ISODate | null;
   status: BatchStatus;
+  /** Admin's note when a teacher's proposal was sent back. */
+  reviewNote: string | null;
+  submittedAt: ISODate | null;
   startsOn: ISODate;
   endsOn: ISODate;
   createdAt: ISODate;
@@ -806,3 +853,38 @@ export interface AdminReport {
   attendanceBySession: Array<{ number: number; rate: number }>;
   teachers: Array<{ id: string; name: string; sessionsRun: number; avgAttendance: number; onTimeStartRate: number }>;
 }
+
+export interface CourseReview {
+  id: string;
+  courseId: string;
+  userId: string;
+  rating: number;
+  body: string;
+  teacherReply: string | null;
+  repliedAt: ISODate | null;
+  /** Only admins ever see hidden reviews. */
+  hidden: boolean;
+  createdAt: ISODate;
+  updatedAt: ISODate;
+  user: { id: string; name: string; image: string | null };
+}
+
+export interface RatingSummary {
+  ratingAvg: number;
+  ratingCount: number;
+  distribution: Record<'1' | '2' | '3' | '4' | '5', number>;
+}
+
+/** GET /courses/:idOrSlug/reviews */
+export interface CourseReviewPage {
+  items: CourseReview[];
+  total: number;
+  page: number;
+  pageSize: number;
+  summary: RatingSummary;
+  mine: CourseReview | null;
+  canReview: boolean;
+}
+
+/** GET /me/saved-courses item. */
+export type SavedCourse = Course & { savedAt: ISODate };

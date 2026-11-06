@@ -50,6 +50,7 @@ enum SessionLanguage implements WireEnum {
 
 enum CourseStatus implements WireEnum {
   draft('DRAFT'),
+  pendingReview('PENDING_REVIEW'),
   published('PUBLISHED'),
   archived('ARCHIVED');
 
@@ -57,6 +58,9 @@ enum CourseStatus implements WireEnum {
   @override
   final String wire;
   static CourseStatus parse(Object? raw) => _parse(values, raw, CourseStatus.published);
+
+  /// The proposing teacher may still change the course (the API answers `COURSE_LOCKED` otherwise).
+  bool get teacherEditable => this == CourseStatus.draft || this == CourseStatus.pendingReview;
 }
 
 enum CourseLevel implements WireEnum {
@@ -73,6 +77,7 @@ enum CourseLevel implements WireEnum {
 
 enum BatchStatus implements WireEnum {
   draft('DRAFT'),
+  pendingReview('PENDING_REVIEW'),
   enrolling('ENROLLING'),
   full('FULL'),
   running('RUNNING'),
@@ -84,6 +89,9 @@ enum BatchStatus implements WireEnum {
   final String wire;
   static BatchStatus parse(Object? raw) => _parse(values, raw, BatchStatus.enrolling);
   bool get canEnroll => this == BatchStatus.enrolling || this == BatchStatus.running;
+
+  /// Still a teacher's proposal: not yet approved by an admin.
+  bool get isProposal => this == BatchStatus.draft || this == BatchStatus.pendingReview;
 }
 
 enum SessionStatus implements WireEnum {

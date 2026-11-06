@@ -18,6 +18,7 @@ import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
 import { useNow } from '@/lib/use-now';
 import { useEnrollments, useMyAssignments, useMySchedule, useRecordings } from './hooks';
 import { WaitlistPanel } from '../waitlist/waitlist-panel';
+import { useCategoryLabel } from '@/components/brand/category';
 
 export function LearnDashboard() {
   const [range] = useState(() => {
@@ -108,10 +109,10 @@ function OnAirHero({ session }: { session: ScheduleItem }) {
   const elapsed = session.startedAt ? (now - new Date(session.startedAt).getTime()) / 1000 : 0;
   const course = pick(session.batch.course.titleEn, session.batch.course.titleAr).text;
   return (
-    <section aria-labelledby="onair" className="relative flex flex-wrap items-end justify-between gap-8 overflow-hidden rounded-[28px] bg-onair p-[clamp(1.5rem,3vw,2.75rem)] text-ink">
+    <section aria-labelledby="onair" className="relative flex flex-wrap items-end justify-between gap-8 overflow-hidden rounded-[28px] bg-onair p-[clamp(1.5rem,3vw,2.75rem)] text-onair-ink">
       <div className="flex min-w-0 flex-[1_1_480px] flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2.5">
-          <Chip tone="ink" dot live className="text-onair">
+          <Chip tone="ink" dot live>
             {t.learn.onAirChip}
           </Chip>
           <span className="label-mono">
@@ -124,7 +125,7 @@ function OnAirHero({ session }: { session: ScheduleItem }) {
         <div className="flex flex-wrap items-center gap-5 text-[15px]">
           {session.batch.teacher && (
             <span className="flex items-center gap-2">
-              <InitialsAvatar name={session.batch.teacher.name} src={session.batch.teacher.image} size={32} className="border-2 border-ink" />
+              <InitialsAvatar name={session.batch.teacher.name} src={session.batch.teacher.image} size={32} className="border-2 border-onair-ink" />
               {fill(t.learn.presenting, { name: session.batch.teacher.name })}
             </span>
           )}
@@ -197,6 +198,7 @@ function NextTakeHero({ session }: { session: ScheduleItem }) {
 
 function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
   const { t, f, fill, pick } = useI18n();
+  const categoryLabel = useCategoryLabel();
   const b = enrollment.batch;
   const total = enrollment.progress.sessionsTotal || b.schedule?.sessionCount || 0;
   const done = enrollment.progress.sessionsDone;
@@ -214,7 +216,7 @@ function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
           {active ? <Chip tone="ivory">{t.status.batch[b.status]}</Chip> : <EnrollmentStatusChip status={enrollment.status} />}
         </div>
         <div className="flex flex-col gap-1">
-          <span className="label-mono text-muted-foreground">{b.course.category}</span>
+          <span className="label-mono text-muted-foreground">{categoryLabel(b.course)}</span>
           <b className="text-base">{pick(b.course.titleEn, b.course.titleAr).text}</b>
         </div>
         <span className="text-[13px] text-muted-foreground">
@@ -228,7 +230,7 @@ function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
                 {att !== undefined && <span className="text-muted-foreground">{fill(t.learn.attendance, { p: f.percent(att) })}</span>}
               </div>
               <div className="h-1.5 rounded-md bg-secondary">
-                <div className="h-1.5 rounded-md bg-sage" style={{ width: `${pct}%` }} />
+                <div className="h-1.5 rounded-md bg-green" style={{ width: `${pct}%` }} />
               </div>
             </div>
             <div className="mt-auto flex items-center justify-between gap-2 text-[13px]">

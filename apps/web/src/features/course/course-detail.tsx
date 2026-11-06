@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BatchCard } from '@/components/brand/batch-card';
@@ -15,6 +15,8 @@ import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { SessionSlate } from '@/components/brand/session-slate';
 import { SessionStatusChip, Chip } from '@/components/brand/status-chip';
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states';
+import { useCategoryLabel } from '@/components/brand/category';
+import { RatingInline } from '@/components/brand/rating';
 import { ApiError, batchesApi, coursesApi, meApi, type BatchDetail, type Course } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
@@ -22,6 +24,11 @@ import { useMoney } from '@/lib/money';
 import { useAuth } from '@/lib/auth/use-auth';
 import { gmtOffset, sessionCode } from '@/lib/i18n/format';
 import { batchPriceFils, describeRule, minutesUntil, sessionState } from '@/lib/schedule';
+import { Accordion } from '../catalog/faq';
+import { CourseRail } from '../catalog/course-card';
+import { usePublicBatches } from '../catalog/use-catalog';
+import { SaveToggle } from '../saved/use-saved';
+import { CourseReviews } from './reviews';
 
 const ZONES = ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Africa/Cairo', 'Europe/London'];
 
@@ -48,8 +55,15 @@ export function CourseDetail({ slug }: { slug: string }) {
 }
 
 function CourseView({ course }: { course: Course }) {
-  const { t, f, fill, pick } = useI18n();
+  const { t, f, fill, pick, locale } = useI18n();
   const params = useSearchParams();
+  const { user, role } = useAuth();
+  const categoryLabel = useCategoryLabel();
+  /** Arabic list when there is one, else English (lists are translated as a whole, not line by line). */
+  const pickList = (en: string[], ar: string[]) => (locale === 'ar' && ar.length ? ar : en);
+  const outcomes = pickList(course.outcomesEn, course.outcomesAr);
+  const requirements = pickList(course.requirementsEn, course.requirementsAr);
+  const audience = pickList(course.audienceEn, course.audienceAr);
   const title = pick(course.titleEn, course.titleAr);
   const desc = pick(course.descriptionEn, course.descriptionAr);
   const p = { courseId: course.id, pageSize: 50 };
@@ -61,6 +75,10 @@ function CourseView({ course }: { course: Course }) {
   const [tz, setTz] = useState(localTz);
   const zones = useMemo(() => Array.from(new Set([localTz, ...ZONES])), [localTz]);
   const teacher = list[0]?.teacher;
+  // Teachers of this course (its proposer, or anyone running one of its batches) reply to reviews; admins moderate.
+  const canModerate = role === 'ADMIN';
+  const canReply = canModerate || (role === 'TEACHER' && !!user && (course.createdById === user.id || list.some((b) => b.teacherId === user.id)));
+  const categoryHref = `/?category=${encodeURIComponent(course.category)}#catalog`;
 
   return (
     <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-14 px-4 sm:px-6 lg:px-10">
@@ -69,7 +87,9 @@ function CourseView({ course }: { course: Course }) {
           {t.nav.public.courses}
         </Link>
         <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
-        <span>{course.category}</span>
+        <Link href={categoryHref} className="hover:text-foreground">
+          {categoryLabel(course)}
+        </Link>
         <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
         <span className="text-foreground">{title.text}</span>
       </nav>
@@ -78,14 +98,23 @@ function CourseView({ course }: { course: Course }) {
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap gap-2">
             <Chip tone="ivory">
-              {course.category} · {t.status.level[course.level]}
+              {categoryLabel(course)} · {t.status.level[course.level]}
             </Chip>
             <Chip tone="outline">{fill(t.course.liveSessions, { n: f.number(list[0]?.schedule?.sessionCount ?? course.modules.length) })}</Chip>
             <Chip tone="outline">{t.course.recordings}</Chip>
             {title.fallback && <Chip tone="dashed">{t.common.englishOnly}</Chip>}
           </div>
           <h1 className="font-display text-[clamp(48px,7vw,96px)] font-extrabold leading-[0.88]">{title.text}</h1>
+          {course.ratingCount > 0 && (
+            <a href="#reviews" className="self-start no-underline">
+              <RatingInline avg={course.ratingAvg} count={course.ratingCount} className="text-base" />
+            </a>
+          )}
           {desc.text && <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">{desc.text}</p>}
+          <div className="flex flex-wrap gap-2">
+            <SaveToggle course={course} labelled />
+            <ShareButton title={title.text} slug={course.slug} />
+          </div>
           {teacher && (
             <div className="flex items-center gap-3">
               <InitialsAvatar name={teacher.name} src={teacher.image} size={48} />
@@ -110,13 +139,27 @@ function CourseView({ course }: { course: Course }) {
             {fill(t.course.syllabus, { n: f.number(course.modules.length) })}
           </h2>
           <ol className="grid gap-px overflow-hidden rounded-[20px] border border-border bg-border sm:grid-cols-2">
-            {course.modules.map((m) => (
-              <li key={m.id} className="flex items-baseline gap-4 bg-background p-5">
-                <span className="timecode text-sm text-muted-foreground">M{String(m.order + 1).padStart(2, '0')}</span>
-                <b className="text-lg">{pick(m.titleEn, m.titleAr).text}</b>
-              </li>
-            ))}
+            {course.modules.map((m) => {
+              const desc = pick(m.descriptionEn, m.descriptionAr).text;
+              return (
+                <li key={m.id} className="flex items-baseline gap-4 bg-background p-5">
+                  <span className="timecode text-sm text-muted-foreground">M{String(m.order + 1).padStart(2, '0')}</span>
+                  <span className="flex flex-col gap-1">
+                    <b className="text-lg">{pick(m.titleEn, m.titleAr).text}</b>
+                    {desc && <span className="text-[15px] text-muted-foreground">{desc}</span>}
+                  </span>
+                </li>
+              );
+            })}
           </ol>
+        </section>
+      )}
+
+      {(outcomes.length > 0 || requirements.length > 0 || audience.length > 0) && (
+        <section className="grid gap-4 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
+          {outcomes.length > 0 && <BulletBlock id="outcomes" title={t.course.outcomes} items={outcomes} tone="sun" />}
+          {requirements.length > 0 && <BulletBlock id="requirements" title={t.course.requirements} items={requirements} />}
+          {audience.length > 0 && <BulletBlock id="audience" title={t.course.audience} items={audience} />}
         </section>
       )}
 
@@ -162,7 +205,85 @@ function CourseView({ course }: { course: Course }) {
         </div>
         {selectedId && <SeatPanel batchId={selectedId} tz={tz} />}
       </section>
+
+      <section id="reviews" aria-labelledby="reviews-title" className="flex scroll-mt-8 flex-col gap-6">
+        <h2 id="reviews-title" className="font-display text-[44px] font-extrabold leading-none">
+          {t.reviews.title}
+        </h2>
+        <CourseReviews courseId={course.id} canReply={canReply} canModerate={canModerate} />
+      </section>
+
+      {course.faq.length > 0 && (
+        <section aria-labelledby="course-faq" className="grid gap-10 lg:grid-cols-[1fr_1.4fr]">
+          <h2 id="course-faq" className="font-display text-[44px] font-extrabold leading-none">
+            {t.course.faqTitle}
+          </h2>
+          <Accordion items={course.faq.map((q) => ({ q: pick(q.qEn, q.qAr).text, a: pick(q.aEn, q.aAr).text }))} />
+        </section>
+      )}
+
+      <RelatedCourses courseId={course.id} />
     </div>
+  );
+}
+
+function BulletBlock({ id, title, items, tone }: { id: string; title: string; items: string[]; tone?: 'sun' }) {
+  return (
+    <section aria-labelledby={id} className={tone === 'sun' ? 'flex flex-col gap-4 rounded-[20px] bg-sun p-6 text-ink' : 'flex flex-col gap-4 rounded-[20px] border border-border p-6'}>
+      <h2 id={id} className="font-display text-2xl font-extrabold">
+        {title}
+      </h2>
+      <ul className="flex flex-col gap-2.5">
+        {items.map((item, i) => (
+          <li key={i} className="flex gap-2.5 text-[15px] leading-snug">
+            <Check className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <span dir="auto">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** `navigator.share` where available (mobile), else copy the link. */
+function ShareButton({ title, slug }: { title: string; slug: string }) {
+  const { t } = useI18n();
+  const share = async () => {
+    const url = `${window.location.origin}/courses/${slug}`;
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(t.course.linkCopied);
+    } catch {
+      toast.error(t.course.shareFailed);
+    }
+  };
+  return (
+    <Button type="button" variant="outline" onClick={() => void share()}>
+      <Share2 /> {t.course.share}
+    </Button>
+  );
+}
+
+function RelatedCourses({ courseId }: { courseId: string }) {
+  const { t } = useI18n();
+  const q = useQuery({ queryKey: qk.related(courseId), queryFn: () => coursesApi.related(courseId) });
+  const batches = usePublicBatches();
+  if (!q.data?.length) return null;
+  return (
+    <section aria-labelledby="related" className="flex flex-col gap-6">
+      <h2 id="related" className="font-display text-[44px] font-extrabold leading-none">
+        {t.course.related}
+      </h2>
+      <CourseRail courses={q.data} byCourse={batches.byCourse} />
+    </section>
   );
 }
 

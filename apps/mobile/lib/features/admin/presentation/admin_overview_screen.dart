@@ -61,10 +61,10 @@ class AdminOverviewScreen extends ConsumerWidget {
                       Row(children: [
                         SignalMark(size: 18, live: d.liveRooms > 0, color: d.liveRooms > 0 ? AzzaColors.onAir : AzzaColors.muted),
                         const SizedBox(width: 6),
-                        MonoLabel(l.onAirLabel, color: AzzaColors.ivory),
+                        MonoLabel(l.onAirLabel, color: AzzaColors.cream),
                       ]),
                       const SizedBox(height: 10),
-                      DisplayText(l.roomsPeople(f.n(d.liveRooms), f.n(livePeople)), size: 30, color: AzzaColors.ivory),
+                      DisplayText(l.roomsPeople(f.n(d.liveRooms), f.n(livePeople)), size: 30, color: AzzaColors.cream),
                     ]),
                   ),
                 ),

@@ -125,9 +125,9 @@ class _AssignmentCardState extends ConsumerState<_AssignmentCard> {
           if (a.sessionNumber != null) MonoLabel('S${a.sessionNumber.toString().padLeft(2, '0')} · ${a.batchCode}'),
           const Spacer(),
           if (a.state == AssignmentState.graded)
-            StatusChip(label: l.scoreOf(f.n(a.score!), f.n(a.maxScore)), color: AzzaColors.sage)
+            StatusChip(label: l.scoreOf(f.n(a.score!), f.n(a.maxScore)), color: AzzaPalette.of(context).successBg, textColor: AzzaPalette.of(context).success)
           else
-            MonoLabel(l.dueAt(f.dayTime(a.dueAt)), color: a.dueAt.isBefore(DateTime.now()) ? AzzaColors.peach : null),
+            MonoLabel(l.dueAt(f.dayTime(a.dueAt)), color: a.dueAt.isBefore(DateTime.now()) ? AzzaPalette.of(context).danger : null),
         ]),
         const SizedBox(height: 8),
         Text(a.title, style: t.titleMedium),

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -15,10 +14,6 @@ import 'features/auth/presentation/session_hooks.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final config = AppConfig.fromEnvironment();
-  // Store builds must point at the real API: a localhost default would ship a dead app to review.
-  if (kReleaseMode && !config.apiBaseUrl.startsWith('https://')) {
-    throw StateError('Release build needs --dart-define=API_BASE_URL=https://… (got ${config.apiBaseUrl})');
-  }
 
   await initializeDateFormatting();
   final prefs = await SharedPreferences.getInstance();
@@ -26,7 +21,9 @@ Future<void> main() async {
   // Stripe is optional: without a publishable key the card option is disabled.
   if (config.stripeEnabled) {
     Stripe.publishableKey = config.stripePublishableKey;
-    if (config.stripeMerchantId.isNotEmpty) Stripe.merchantIdentifier = config.stripeMerchantId;
+    if (config.stripeMerchantId.isNotEmpty) {
+      Stripe.merchantIdentifier = config.stripeMerchantId;
+    }
     try {
       await Stripe.instance.applySettings();
     } catch (e) {
@@ -37,13 +34,15 @@ Future<void> main() async {
   // Firebase is optional: without google-services files push stays disabled.
   final push = await FirebasePushService.init();
 
-  runApp(ProviderScope(
-    overrides: [
-      appConfigProvider.overrideWithValue(config),
-      sharedPreferencesProvider.overrideWithValue(prefs),
-      pushServiceProvider.overrideWithValue(push),
-      ...productionSessionHooks(),
-    ],
-    child: const AzzaApp(),
-  ));
+  runApp(
+    ProviderScope(
+      overrides: [
+        appConfigProvider.overrideWithValue(config),
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        pushServiceProvider.overrideWithValue(push),
+        ...productionSessionHooks(),
+      ],
+      child: const AzzaApp(),
+    ),
+  );
 }

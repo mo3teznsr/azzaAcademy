@@ -13,8 +13,9 @@ import '../../../router/routes.dart';
 import '../../checkout/domain/checkout_models.dart';
 import '../../live/domain/live_models.dart';
 import '../data/admin_repository.dart';
+import 'review_queue.dart';
 
-/// Alerts & approvals: transfers to verify, payout runs, reschedule requests and other alerts.
+/// Alerts & approvals: teacher proposals to review, transfers to verify, payout runs, reschedule requests and other alerts.
 class ApprovalsScreen extends ConsumerWidget {
   const ApprovalsScreen({super.key});
 
@@ -22,7 +23,7 @@ class ApprovalsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.navApprovals),
@@ -31,10 +32,10 @@ class ApprovalsScreen extends ConsumerWidget {
             tabAlignment: TabAlignment.start,
             labelColor: AzzaPalette.of(context).text,
             indicatorColor: AzzaPalette.of(context).text,
-            tabs: [Tab(text: l.needsYou), Tab(text: l.transfersToVerify), Tab(text: l.payoutRuns)],
+            tabs: [Tab(text: l.needsYou), Tab(text: l.toReviewTab), Tab(text: l.transfersToVerify), Tab(text: l.payoutRuns)],
           ),
         ),
-        body: const TabBarView(children: [_AlertsTab(), _TransfersTab(), _PayoutRunsTab()]),
+        body: const TabBarView(children: [_AlertsTab(), ReviewQueueTab(), _TransfersTab(), _PayoutRunsTab()]),
       ),
     );
   }
@@ -89,11 +90,11 @@ class AlertTile extends ConsumerWidget {
       'PAYOUTS_HELD' => l.alertPayoutsHeld(n),
       _ => '${a.type.replaceAll('_', ' ')} · $n',
     };
-    final tab = a.isTransfer ? 1 : (a.isPayouts ? 2 : null);
+    final tab = a.isTransfer ? 2 : (a.isPayouts ? 3 : null);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: RaisedCard(
-        color: a.urgent ? AzzaColors.peach.withValues(alpha: 0.35) : null,
+        color: a.urgent ? AzzaPalette.of(context).warningBg : null,
         onTap: tab == null
             ? null
             : () {
@@ -107,7 +108,7 @@ class AlertTile extends ConsumerWidget {
         child: Row(children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              MonoLabel(a.type.replaceAll('_', ' '), color: a.urgent ? AzzaColors.warnDeep : null),
+              MonoLabel(a.type.replaceAll('_', ' '), color: a.urgent ? AzzaPalette.of(context).warning : null),
               const SizedBox(height: 6),
               Text(title, style: t.titleSmall),
             ]),
@@ -161,7 +162,7 @@ class _RescheduleRequestTileState extends ConsumerState<RescheduleRequestTile> {
         color: AzzaColors.sun.withValues(alpha: 0.18),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            MonoLabel(l.reschedule.toUpperCase(), color: AzzaColors.warnDeep),
+            MonoLabel(l.reschedule.toUpperCase(), color: AzzaPalette.of(context).warning),
             const Spacer(),
             if (r.createdAt != null) MonoLabel(f.shortDate(r.createdAt!)),
           ]),
@@ -287,7 +288,8 @@ class _PayoutRunsTab extends ConsumerWidget {
                   if (r.totalFils != null || r.payouts.isNotEmpty) Text(f.aed(r.grandTotalFils), style: t.titleSmall),
                   StatusChip(
                     label: r.status == PayoutRunStatus.draft ? l.awaitingApproval : r.status.wire,
-                    color: r.status == PayoutRunStatus.draft ? AzzaColors.sun : AzzaColors.sage,
+                    color: r.status == PayoutRunStatus.draft ? AzzaColors.green : AzzaPalette.of(context).successBg,
+                    textColor: r.status == PayoutRunStatus.draft ? AzzaColors.inkDeep : AzzaPalette.of(context).success,
                   ),
                 ]),
               ]),

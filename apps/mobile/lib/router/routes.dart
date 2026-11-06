@@ -21,6 +21,10 @@ abstract final class Routes {
   // teacher tree
   static const teacherToday = '/teacher/today';
   static const teacherBatches = '/teacher/batches';
+  static const teacherNewBatch = '/teacher/batches/new';
+  static const teacherCourses = '/teacher/batches/courses';
+  static const teacherNewCourse = '/teacher/batches/courses/new';
+  static String teacherCourse(String id) => '/teacher/batches/courses/$id';
   static const teacherCalendar = '/teacher/calendar';
   static const teacherEarnings = '/teacher/earnings';
   static const teacherPayoutMethod = '/teacher/earnings/payout-method';
@@ -48,6 +52,7 @@ abstract final class Routes {
   static String applePayment(String orderId) => '/orders/$orderId/app-store';
   static String enrolled(String orderId) => '/orders/$orderId/enrolled';
   static const myOrders = '/me/orders';
+  static const savedCourses = '/me/saved';
   static const certificates = '/me/certificates';
   static String certificate(String code) => '/me/certificates/${Uri.encodeComponent(code)}';
   static String teacher(String id) => '/teachers/$id';

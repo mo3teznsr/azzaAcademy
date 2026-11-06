@@ -158,7 +158,7 @@ class _BatchOption extends StatelessWidget {
               const SizedBox(height: 10),
               Row(children: [
                 Expanded(child: Text(b.teacher?.name ?? '', style: t.bodyMedium)),
-                if (b.seatsLeft > 0 && b.seatsLeft <= 5) ...[MonoLabel(l.seatsLeft(fmt.n(b.seatsLeft)), color: AzzaColors.peach), const SizedBox(width: 10)],
+                if (b.seatsLeft > 0 && b.seatsLeft <= 5) ...[MonoLabel(l.seatsLeft(fmt.n(b.seatsLeft)), color: AzzaPalette.of(context).warning), const SizedBox(width: 10)],
                 Text(price, style: t.titleSmall),
               ]),
             ]),

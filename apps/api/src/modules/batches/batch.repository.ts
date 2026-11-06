@@ -32,7 +32,7 @@ export interface NewBatchData {
 
 export type BatchUpdateData = Partial<
   Pick<NewBatchData, 'code' | 'teacherId' | 'capacity' | 'language' | 'timezone' | 'priceFils' | 'waitlistEnabled' | 'minStudents' | 'enrollmentOpensOn' | 'enrollmentClosesOn'>
-> & { status?: BatchStatus };
+> & { status?: BatchStatus; reviewNote?: string | null; submittedAt?: Date | null };
 
 export interface TeacherBusySlot {
   sessionId: string;

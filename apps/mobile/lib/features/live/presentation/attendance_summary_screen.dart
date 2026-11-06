@@ -57,10 +57,10 @@ class _AttendanceSummaryScreenState extends ConsumerState<AttendanceSummaryScree
       };
 
   Color _color(AttendanceMark m) => switch (m) {
-        AttendanceMark.present => AzzaColors.sage,
-        AttendanceMark.late => AzzaColors.sun,
-        AttendanceMark.leftEarly => AzzaColors.peach,
-        AttendanceMark.absent => AzzaColors.muted,
+        AttendanceMark.present => AzzaPalette.of(context).success,
+        AttendanceMark.late => AzzaPalette.of(context).warning,
+        AttendanceMark.leftEarly => AzzaPalette.of(context).danger,
+        AttendanceMark.absent => AzzaPalette.of(context).muted,
       };
 
   @override

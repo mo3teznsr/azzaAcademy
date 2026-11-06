@@ -163,3 +163,28 @@ Server → client: `session:status` (session room + admins), `notification:new` 
 ## Seed (`bun run db:seed`, idempotent)
 All passwords `password123`: admin `admin@azza.test` (Nour Adel) · teachers `lina@azza.test` (Lina Haddad), `omar@`, `maya@`, `tomas@azza.test` · student `sara@azza.test` (Sara Kamal) + 23 more (`firstname.lastname@azza.test`).
 Product Design Foundations B06 (Lina, Sep–Oct, COMPLETED: 8 students, all 12 sessions ENDED with attendance; Sara 11/12 → certificate on `GET /me/certificates`, Mariam Saeed 7/12 → none), B07 (Lina, Tue/Thu 19:00 Dubai, AR, 23/24 ACTIVE + Nadia Shams' transfer `AZ-B07-48213` VERIFYING, S01–S04 ENDED with attendance, recordings, chat and accrued earnings), B08 (ENROLLING, Sara not enrolled), B09 (weekend); one ENROLLING batch for each other course; Spoken Arabic B02 (Omar, capacity 4, FULL, waitlist: Lara Mikhail then Sara → position 2 of 2); teachers have a `headline` and `bio`; 3 bank accounts; FX rates; coupons `WELCOME10`, `RAMADAN100`, `EARLYBIRD` (−10 %, Product Design Foundations only, 1 per student, Oct 1 – Dec 31).
+
+## Teacher proposals (courses & batches)
+
+Teachers draft courses and batches; admins approve them.
+
+| Endpoint | Who | Notes |
+|---|---|---|
+| `POST /api/v1/courses` | TEACHER, ADMIN | `slug` optional (derived from `titleEn`). A teacher's course is `DRAFT` with `createdById` = them. `category` must be a `Category.slug` (422 `UNKNOWN_CATEGORY`). |
+| `PATCH /api/v1/courses/:id` | TEACHER (own, `DRAFT`/`PENDING_REVIEW`), ADMIN | A teacher cannot send `status` or `featuredRank`; 422 `COURSE_LOCKED` once published. |
+| `POST /api/v1/courses/:id/submit` | TEACHER | `DRAFT` → `PENDING_REVIEW`; 422 `COURSE_INCOMPLETE` (description ≥ 20 chars and ≥ 1 module), `ALREADY_SUBMITTED`. Notifies admins (`COURSE_SUBMITTED`). |
+| `POST /api/v1/courses/:id/review` | ADMIN | `{ approve, note? }` (note ≥ 3 chars to send back). Approve → `PUBLISHED`; send back → `DRAFT` + `reviewNote`. Notifies the teacher. |
+| `GET /api/v1/courses?mine=true` | TEACHER | The teacher's own proposals, any status. |
+| `POST /api/v1/courses/media` | TEACHER, ADMIN | Same as `POST /admin/media` (cover / intro video upload). |
+| `POST /api/v1/batches`, `POST /batches/schedule/preview` | TEACHER, ADMIN | For a teacher, `teacherId` is forced to them; only on `PUBLISHED` courses or their own. Admins must send `teacherId` (422 `TEACHER_REQUIRED`). |
+| `PATCH /api/v1/batches/:id` | TEACHER (own, `DRAFT`/`PENDING_REVIEW`), ADMIN | 422 `BATCH_LOCKED` once approved. |
+| `POST /api/v1/batches/:id/submit` / `/review` | TEACHER / ADMIN | Same shape as courses; approve → `ENROLLING` (422 `COURSE_NOT_PUBLISHED` until the course is approved). |
+
+## Catalog depth
+
+- `GET /api/v1/categories` (public) → `{ items: [{ slug, nameEn, nameAr, icon, order, active, courseCount }] }` (published courses). `?all=true` (admin) includes hidden ones. ADMIN: `POST /categories`, `PATCH /categories/:slug`, `DELETE /categories/:slug` (409 while courses use it — hide with `active: false` instead).
+- Course now carries `categoryRef { slug, nameEn, nameAr, icon }`, `outcomesEn/Ar`, `requirementsEn/Ar`, `audienceEn/Ar` (string arrays), `faq [{ qEn, aEn, qAr?, aAr? }]`, `featuredRank`, `ratingAvg`, `ratingCount`; modules gain `descriptionEn/Ar`.
+- `GET /api/v1/courses` adds `language` (has an ENROLLING batch in it), `minPriceAed`, `maxPriceAed`, `minRating`, `featured=true` (ordered by `featuredRank`) and `sort` = `newest | rating | price_asc | price_desc | popular`.
+- `GET /api/v1/courses/:idOrSlug/related` → `{ items }` (≤ 4: same category, then same level).
+- Reviews: `GET /api/v1/courses/:idOrSlug/reviews?page` → `{ items, total, summary: { ratingAvg, ratingCount, distribution }, mine, canReview }`; `PUT /courses/:id/reviews/mine` (STUDENT with an ACTIVE enrollment in a batch that has delivered a session, else 422 `REVIEW_NOT_ELIGIBLE`) `{ rating 1–5, body }`; `DELETE /courses/:id/reviews/mine`; `POST /reviews/:id/reply` (a teacher of the course or ADMIN) `{ reply }`; `PATCH /reviews/:id` (ADMIN) `{ hidden }`. Hidden reviews leave the average.
+- Saved courses: `GET /api/v1/me/saved-courses`, `PUT|DELETE /api/v1/courses/:id/save`.

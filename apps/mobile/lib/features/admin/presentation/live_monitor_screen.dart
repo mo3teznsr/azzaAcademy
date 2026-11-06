@@ -62,7 +62,7 @@ class _LiveMonitorScreenState extends ConsumerState<LiveMonitorScreen> {
                     MonoLabel('${f.time(now)} · ${l.autoRefresh('5')}'),
                     Row(children: [
                       Expanded(child: DisplayText(l.liveMonitorTitle, size: 32)),
-                      StatusChip(label: l.liveN(f.n(all.length)), color: AzzaColors.onAir, live: all.isNotEmpty),
+                      StatusChip(label: l.liveN(f.n(all.length)), color: AzzaPalette.of(context).live, textColor: AzzaPalette.of(context).onLive, live: all.isNotEmpty),
                     ]),
                     const SizedBox(height: 12),
                     Wrap(spacing: 8, children: [
@@ -89,12 +89,12 @@ class _LiveMonitorScreenState extends ConsumerState<LiveMonitorScreen> {
                           Row(children: [
                             Slate(Fmt.slate(r.batchCode, r.sessionNumber)),
                             const SizedBox(width: 8),
-                            if (r.quality != null) MonoLabel(r.quality!, color: r.hasIssue ? AzzaColors.warnDeep : null),
+                            if (r.quality != null) MonoLabel(r.quality!, color: r.hasIssue ? AzzaPalette.of(context).warning : null),
                             const Spacer(),
                             if (r.recording) ...[
                               const PulsingDot(size: 7),
                               const SizedBox(width: 2),
-                              MonoLabel(l.recordingOn, color: AzzaColors.onAir),
+                              MonoLabel(l.recordingOn, color: AzzaPalette.of(context).danger),
                             ],
                           ]),
                           const SizedBox(height: 8),

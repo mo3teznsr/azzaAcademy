@@ -70,7 +70,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
         TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
         TextButton(
           key: const Key('delete-confirm'),
-          style: TextButton.styleFrom(foregroundColor: AzzaColors.peach),
+          style: TextButton.styleFrom(foregroundColor: AzzaPalette.of(context).danger),
           onPressed: ok ? () => Navigator.pop(context, true) : null,
           child: Text(l.deleteAccountConfirm),
         ),

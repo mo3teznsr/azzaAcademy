@@ -1,6 +1,7 @@
 export { ApiError, API_URL, mediaUrl } from './client';
 export * from './types';
 export { coursesApi } from './courses';
+export { categoriesApi } from './categories';
 export { batchesApi } from './batches';
 export { sessionsApi } from './sessions';
 export { meApi, itemsOf } from './me';

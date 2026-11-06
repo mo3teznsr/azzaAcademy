@@ -18,7 +18,7 @@ export function CertificateSheet({ cert, holderName }: { cert: Certificate; hold
         <div className="flex items-center justify-between">
           {/* Plain <img>: print drops background colours, so the CSS-mask logo would vanish on paper. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-navy.png" alt="عازة Azza" className="h-[14mm] w-auto" />
+          <img src="/brand/logo-ink.png" alt="عازة Azza" className="h-[14mm] w-auto" />
           <span className="label-mono">{t.certificates.sheetKicker}</span>
         </div>
         <div className="flex flex-col gap-4">

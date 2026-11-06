@@ -5,11 +5,13 @@ import { cn } from '@/lib/utils';
 import { mediaUrl } from '@/lib/api/client';
 import { coverBg } from '@/lib/schedule';
 import { useI18n } from '@/lib/i18n/provider';
-import type { Course } from '@/lib/api/types';
+import type { CategoryRef, Course } from '@/lib/api/types';
+import { useCategoryLabel } from './category';
 
 type CoverCourse = Pick<Course, 'titleEn' | 'titleAr' | 'coverStyle'> & {
   coverImageUrl?: string | null;
   category?: string;
+  categoryRef?: CategoryRef | null;
   level?: Course['level'];
 };
 
@@ -32,6 +34,7 @@ export function CourseCover({
   showMeta?: boolean;
 }) {
   const { pick, t } = useI18n();
+  const categoryLabel = useCategoryLabel();
   const image = mediaUrl(course.coverImageUrl);
   if (image) {
     return (
@@ -51,7 +54,7 @@ export function CourseCover({
     >
       {showMeta && (
         <span className="label-mono">
-          {course.category}
+          {course.category ? categoryLabel({ category: course.category, categoryRef: course.categoryRef }) : ''}
           {course.level ? ` · ${t.status.levelShort[course.level]}` : ''}
         </span>
       )}

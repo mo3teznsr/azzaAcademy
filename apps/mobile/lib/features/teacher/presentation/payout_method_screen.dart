@@ -44,8 +44,8 @@ class PayoutMethodScreen extends ConsumerWidget {
                 Row(children: [
                   Expanded(child: Text(l.payoutMethod, style: t.titleMedium)),
                   b!.verified
-                      ? StatusChip(label: l.verified, color: AzzaColors.sage)
-                      : StatusChip(label: l.unverified, color: AzzaColors.peach, look: ChipLook.dashed),
+                      ? StatusChip(label: l.verified, color: AzzaPalette.of(context).successBg, textColor: AzzaPalette.of(context).success)
+                      : StatusChip(label: l.unverified, color: AzzaPalette.of(context).warning, look: ChipLook.dashed),
                 ]),
                 const SizedBox(height: 8),
                 KeyValueRow(l.bankName, b.bankName),

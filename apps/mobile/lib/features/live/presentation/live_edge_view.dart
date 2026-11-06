@@ -92,10 +92,10 @@ class PermissionHelp extends StatelessWidget {
       liveRegion: true,
       container: true,
       child: RaisedCard(
-        color: AzzaColors.peach.withValues(alpha: 0.14),
+        color: AzzaPalette.of(context).warningBg,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const Icon(Icons.no_photography_outlined, color: AzzaColors.peach),
+            Icon(Icons.no_photography_outlined, color: AzzaPalette.of(context).warning),
             const SizedBox(width: 10),
             Expanded(child: Text(l.edgePermTitle, style: t.titleMedium)),
           ]),
@@ -172,7 +172,7 @@ class LiveEdgeView extends ConsumerWidget {
         Center(
           child: edge.kind == LiveEdgeKind.roomFull
               ? SignalPortrait(person: teacher, live: false, size: 72)
-              : SignalMark(size: 56, color: edge.kind == LiveEdgeKind.moved ? AzzaColors.sky : AzzaColors.muted),
+              : SignalMark(size: 56, color: edge.kind == LiveEdgeKind.moved ? AzzaPalette.of(context).info : AzzaPalette.of(context).muted),
         ),
         const SizedBox(height: 16),
         Semantics(
@@ -228,12 +228,13 @@ class ConnectionBanner extends StatelessWidget {
         ),
       LinkState.lost => _bar(
           key: const Key('lost-banner'),
-          color: AzzaColors.onAir,
-          leading: const Icon(Icons.wifi_off_rounded, size: 18, color: AzzaColors.ink),
+          color: AzzaColors.dangerDeep,
+          fg: AzzaColors.ivory,
+          leading: const Icon(Icons.wifi_off_rounded, size: 18, color: AzzaColors.ivory),
           text: l.edgeLostTitle,
           action: TextButton(
             onPressed: rejoining ? null : onRejoin,
-            style: TextButton.styleFrom(foregroundColor: AzzaColors.ink, minimumSize: const Size(48, 40)),
+            style: TextButton.styleFrom(foregroundColor: AzzaColors.ivory, minimumSize: const Size(48, 40)),
             child: Text(l.edgeRejoin),
           ),
         ),
@@ -252,7 +253,7 @@ class ConnectionBanner extends StatelessWidget {
     );
   }
 
-  Widget _bar({required Key key, required Color color, required Widget leading, required String text, Widget? action}) => Container(
+  Widget _bar({required Key key, required Color color, Color fg = AzzaColors.ink, required Widget leading, required String text, Widget? action}) => Container(
         key: key,
         width: double.infinity,
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -261,7 +262,7 @@ class ConnectionBanner extends StatelessWidget {
         child: Row(children: [
           leading,
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: const TextStyle(color: AzzaColors.ink, fontWeight: FontWeight.w600))),
+          Expanded(child: Text(text, style: TextStyle(color: fg, fontWeight: FontWeight.w700))),
           ?action,
         ]),
       );

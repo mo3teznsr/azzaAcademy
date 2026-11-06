@@ -9,7 +9,10 @@ import 'package:azza/features/live/domain/live_models.dart';
 import 'package:azza/features/auth/data/auth_repository.dart';
 import 'package:azza/features/auth/domain/app_user.dart';
 import 'package:azza/features/catalog/data/catalog_repository.dart';
+import 'package:azza/features/catalog/data/reviews_repository.dart';
 import 'package:azza/features/catalog/domain/catalog_models.dart';
+import 'package:azza/features/catalog/domain/course_filters.dart';
+import 'package:azza/features/catalog/domain/review_models.dart';
 import 'package:azza/features/checkout/data/app_store_gateway.dart';
 import 'package:azza/features/checkout/data/apple_iap_repository.dart';
 import 'package:azza/features/checkout/data/checkout_repository.dart';
@@ -20,6 +23,8 @@ import 'package:azza/features/me/data/me_repository.dart';
 import 'package:azza/features/me/domain/me_models.dart';
 import 'package:azza/features/certificates/data/certificates_repository.dart';
 import 'package:azza/features/certificates/domain/certificate_models.dart';
+import 'package:azza/features/teacher/data/proposals_repository.dart';
+import 'package:azza/features/teacher/domain/proposal_models.dart';
 import 'package:azza/features/teachers/data/teachers_repository.dart';
 import 'package:azza/features/teachers/domain/teacher_models.dart';
 import 'package:azza/features/waitlist/data/waitlist_repository.dart';
@@ -118,17 +123,100 @@ class FakeLearnRepository implements LearnRepository {
 }
 
 class FakeCatalogRepository implements CatalogRepository {
-  FakeCatalogRepository({this.batchList = const []});
+  FakeCatalogRepository({
+    this.batchList = const [],
+    this.courseList = const [],
+    this.searchResults = const [],
+    this.featuredList = const [],
+    this.categoryList = const [],
+    this.relatedList = const [],
+  });
   final List<Batch> batchList;
+
+  /// Answers `course(idOrSlug)`.
+  final List<Course> courseList;
+
+  /// Answers `courses(filters)` (non-featured).
+  final List<Course> searchResults;
+  final List<Course> featuredList;
+  final List<CourseCategory> categoryList;
+  final List<Course> relatedList;
+
+  /// Every `courses()` call, in order.
+  final List<CourseFilters> queries = [];
 
   @override
   Future<Batch> batch(String id) async => batchList.firstWhere((b) => b.id == id);
   @override
   Future<List<Batch>> batches({String? courseId, String? status, String? teacherId}) async => batchList;
   @override
-  Future<Course> course(String idOrSlug) async => throw const AppException('NOT_FOUND', 'Course not found');
+  Future<Course> course(String idOrSlug) async => courseList.firstWhere(
+        (c) => c.id == idOrSlug || c.slug == idOrSlug,
+        orElse: () => throw const AppException('NOT_FOUND', 'Course not found'),
+      );
   @override
-  Future<List<Course>> courses({String? q, String? category, String? level}) async => const [];
+  Future<List<Course>> courses([CourseFilters filters = const CourseFilters()]) async {
+    queries.add(filters);
+    return filters.featured ? featuredList : searchResults;
+  }
+
+  @override
+  Future<List<CourseCategory>> categories() async => categoryList;
+  @override
+  Future<List<Course>> related(String idOrSlug) async => relatedList;
+}
+
+/// Reviews & saved courses: [page] answers the first page, [morePages] the rest; writes are recorded.
+class FakeReviewsRepository implements ReviewsRepository {
+  FakeReviewsRepository({this.page = const ReviewsPage(), this.morePages = const {}, this.saved = const [], this.error});
+  ReviewsPage page;
+  Map<int, ReviewsPage> morePages;
+  List<Course> saved;
+  Object? error;
+
+  final List<({String courseId, int rating, String body})> saves = [];
+  final List<String> deletes = [];
+  final List<(String, String)> replies = [];
+  final List<(String, bool)> moderations = [];
+  final List<(String, bool)> saveToggles = [];
+  final List<int> pagesRequested = [];
+
+  @override
+  Future<ReviewsPage> reviews(String courseIdOrSlug, {int page = 1}) async {
+    pagesRequested.add(page);
+    return page == 1 ? this.page : (morePages[page] ?? const ReviewsPage());
+  }
+
+  @override
+  Future<CourseReview> saveMine(String courseId, {required int rating, required String body}) async {
+    if (error != null) throw error!;
+    saves.add((courseId: courseId, rating: rating, body: body));
+    final mine = CourseReview(id: 'r-mine', rating: rating, body: body, userId: student.id, userName: student.name);
+    page = ReviewsPage(
+      items: [mine, ...page.items],
+      total: page.total + 1,
+      ratingAvg: rating.toDouble(),
+      ratingCount: page.ratingCount + 1,
+      distribution: {...page.distribution, rating: (page.distribution[rating] ?? 0) + 1},
+      mine: mine,
+      canReview: true,
+    );
+    return mine;
+  }
+
+  @override
+  Future<void> deleteMine(String courseId) async => deletes.add(courseId);
+  @override
+  Future<void> reply(String reviewId, String reply) async => replies.add((reviewId, reply));
+  @override
+  Future<void> setHidden(String reviewId, bool hidden) async => moderations.add((reviewId, hidden));
+  @override
+  Future<List<Course>> savedCourses() async => saved;
+  @override
+  Future<void> setSaved(String courseId, bool saved) async {
+    if (error != null) throw error!;
+    saveToggles.add((courseId, saved));
+  }
 }
 
 class FakeCheckoutRepository implements CheckoutRepository {
@@ -286,4 +374,117 @@ class FakeTeachersRepository implements TeachersRepository {
 
   @override
   Future<TeacherProfile> teacher(String id) async => profile;
+}
+
+/// Course/batch proposals: records every call; [preview], [createError] and [reviewError] steer the answers.
+class FakeProposalsRepository implements ProposalsRepository {
+  FakeProposalsRepository({
+    this.mine = const [],
+    this.batchable = const [],
+    this.pendingCourseList = const [],
+    this.pendingBatchList = const [],
+    this.preview = const SchedulePreview(),
+    this.createError,
+    this.reviewError,
+  });
+  List<Course> mine;
+  List<Course> batchable;
+  List<Course> pendingCourseList;
+  List<Batch> pendingBatchList;
+  SchedulePreview preview;
+  Object? createError;
+  Object? reviewError;
+
+  final List<CourseDraft> createdCourses = [];
+  final List<(String, CourseDraft)> updatedCourses = [];
+  final List<String> submittedCourses = [];
+  final List<String> submittedBatches = [];
+  final List<BatchDraft> createdBatches = [];
+  final List<(ScheduleDraft, String)> previews = [];
+  final List<({String id, bool approve, String? note})> courseReviews = [];
+  final List<({String id, bool approve, String? note})> batchReviews = [];
+  int uploads = 0;
+
+  Course _course(String id, CourseDraft d, CourseStatus status) => Course(
+        id: id,
+        slug: id,
+        titleEn: d.titleEn,
+        titleAr: d.titleAr,
+        descriptionEn: d.descriptionEn,
+        category: d.category,
+        level: d.level,
+        coverStyle: d.coverStyle,
+        coverImageUrl: d.coverImageUrl,
+        priceFils: (d.priceAed * 100).round(),
+        status: status,
+        createdById: teacher.id,
+        modules: [for (final (i, m) in d.modules.indexed) CourseModule(order: i + 1, titleEn: m.titleEn, titleAr: m.titleAr)],
+      );
+
+  @override
+  Future<List<Course>> myCourses() async => mine;
+  @override
+  Future<List<Course>> batchableCourses() async => batchable;
+  @override
+  Future<Course> createCourse(CourseDraft draft) async {
+    createdCourses.add(draft);
+    return _course('c-new', draft, CourseStatus.draft);
+  }
+
+  @override
+  Future<Course> updateCourse(String id, CourseDraft draft) async {
+    updatedCourses.add((id, draft));
+    return _course(id, draft, CourseStatus.draft);
+  }
+
+  @override
+  Future<Course> submitCourse(String id) async {
+    submittedCourses.add(id);
+    final d = updatedCourses.isNotEmpty ? updatedCourses.last.$2 : createdCourses.last;
+    return _course(id, d, CourseStatus.pendingReview);
+  }
+
+  @override
+  Future<String> uploadCover(List<int> jpegBytes) async {
+    uploads++;
+    return '/media/course-covers/test.jpg';
+  }
+
+  @override
+  Future<SchedulePreview> previewSchedule(ScheduleDraft schedule, {required String timezone}) async {
+    previews.add((schedule, timezone));
+    return preview;
+  }
+
+  @override
+  Future<Batch> createBatch(BatchDraft draft) async {
+    createdBatches.add(draft);
+    if (createError != null) throw createError!;
+    return Batch(id: 'b-new', code: draft.code, courseId: draft.courseId, capacity: draft.capacity, status: BatchStatus.draft);
+  }
+
+  @override
+  Future<Batch> submitBatch(String id) async {
+    submittedBatches.add(id);
+    return Batch(id: id, code: createdBatches.isEmpty ? 'B01' : createdBatches.last.code, courseId: '', status: BatchStatus.pendingReview);
+  }
+
+  @override
+  Future<List<Course>> pendingCourses() async => pendingCourseList;
+  @override
+  Future<List<Batch>> pendingBatches() async => pendingBatchList;
+
+  @override
+  Future<void> reviewCourse(String id, {required bool approve, String? note}) async {
+    if (reviewError != null) throw reviewError!;
+    courseReviews.add((id: id, approve: approve, note: note));
+    pendingCourseList = pendingCourseList.where((c) => c.id != id).toList();
+  }
+
+  @override
+  Future<void> reviewBatch(String id, {required bool approve, String? note}) async {
+    if (reviewError != null) throw reviewError!;
+    batchReviews.add((id: id, approve: approve, note: note));
+    pendingBatchList = pendingBatchList.where((b) => b.id != id).toList();
+  }
 }
