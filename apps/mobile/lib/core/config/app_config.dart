@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Build-time configuration, injected with `--dart-define`.
 ///
 /// ```bash
@@ -15,22 +17,35 @@ class AppConfig {
     this.webBaseUrl = 'https://azza.academy',
   });
 
-  factory AppConfig.fromEnvironment() => const AppConfig(
-    // `API_URL` is accepted as an alias (same name as the web app's env).
-    apiBaseUrl: String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: String.fromEnvironment(
-        'API_URL',
-        defaultValue: 'https://api.azza.academy',
+  static const productionApiUrl = 'https://api.azza.academy';
+
+  factory AppConfig.fromEnvironment({bool release = kReleaseMode}) => AppConfig(
+    apiBaseUrl: storeSafeApiUrl(
+      // `API_URL` is accepted as an alias (same name as the web app's env).
+      const String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: String.fromEnvironment(
+          'API_URL',
+          defaultValue: productionApiUrl,
+        ),
       ),
+      release: release,
     ),
-    stripePublishableKey: String.fromEnvironment('STRIPE_PUBLISHABLE_KEY'),
-    stripeMerchantId: String.fromEnvironment('STRIPE_MERCHANT_ID'),
-    webBaseUrl: String.fromEnvironment(
+    stripePublishableKey: const String.fromEnvironment(
+      'STRIPE_PUBLISHABLE_KEY',
+    ),
+    stripeMerchantId: const String.fromEnvironment('STRIPE_MERCHANT_ID'),
+    webBaseUrl: const String.fromEnvironment(
       'WEB_URL',
       defaultValue: 'https://azza.academy',
     ),
   );
+
+  /// A release build must never ship pointing at a dev server: Xcode reuses the last
+  /// `--dart-define`s from `ios/Flutter/Generated.xcconfig`, which may be `http://localhost`.
+  /// Falling back to production keeps the app usable instead of dying before the first frame.
+  static String storeSafeApiUrl(String url, {required bool release}) =>
+      release && !url.startsWith('https://') ? productionApiUrl : url;
 
   /// Origin of the Azza API (no trailing slash). Socket.IO uses the same origin.
   final String apiBaseUrl;
@@ -60,6 +75,9 @@ class AppConfig {
   String get _webOrigin => webBaseUrl.endsWith('/')
       ? webBaseUrl.substring(0, webBaseUrl.length - 1)
       : webBaseUrl;
+
+  /// Public course page on the web app: `<web origin>/courses/<slug>`.
+  String courseUrl(String slug) => '$_webOrigin/courses/${Uri.encodeComponent(slug)}';
 
   String get privacyUrl => '$_webOrigin/privacy';
   String get termsUrl => '$_webOrigin/terms';

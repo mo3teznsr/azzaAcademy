@@ -28,6 +28,7 @@ export function BatchCard({
   const taken = seatsTaken ?? batch._count?.enrollments ?? 0;
   const pct = batch.capacity ? Math.min(100, Math.round((taken / batch.capacity) * 100)) : 0;
   const sessionsTotal = batch.schedule?.sessionCount ?? batch._count?.sessions ?? 0;
+  const hours = batch.schedule ? (batch.schedule.sessionCount * batch.schedule.durationMin) / 60 : 0;
   const Comp = onSelect ? 'button' : 'div';
   return (
     <Comp
@@ -52,12 +53,13 @@ export function BatchCard({
           {f.dayMonth(batch.startsOn, batch.timezone)} → {f.dayMonth(batch.endsOn, batch.timezone)}
         </span>
         <span>{f.plural(sessionsTotal, t.common.sessions)}</span>
+        {hours > 0 && <span>{fill(t.course.totalHours, { h: f.number(hours, { maximumFractionDigits: 1 }) })}</span>}
         <span>
           {t.status.sessionLanguage[batch.language]} · <bdi dir="ltr">{gmtOffset(batch.timezone)}</bdi>
         </span>
       </div>
       <div className="h-1 rounded bg-secondary" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={fill(t.course.seatsOf, { n: taken, c: batch.capacity })}>
-        <div className="h-1 rounded bg-sage" style={{ width: `${pct}%` }} />
+        <div className="h-1 rounded bg-green" style={{ width: `${pct}%` }} />
       </div>
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-2 text-sm">

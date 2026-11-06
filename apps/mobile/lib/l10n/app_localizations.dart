@@ -3583,6 +3583,1026 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A short look at the course and the teacher'**
   String get watchIntroHint;
+
+  /// No description provided for @statusPendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for review'**
+  String get statusPendingReview;
+
+  /// No description provided for @statusPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get statusPublished;
+
+  /// No description provided for @statusArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get statusArchived;
+
+  /// No description provided for @myCoursesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My courses'**
+  String get myCoursesTitle;
+
+  /// No description provided for @proposeCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Propose a course'**
+  String get proposeCourse;
+
+  /// No description provided for @noProposedCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t proposed a course yet.'**
+  String get noProposedCourses;
+
+  /// No description provided for @noProposedCoursesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Propose a course and an admin will review it before it goes live.'**
+  String get noProposedCoursesBody;
+
+  /// No description provided for @changesRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes requested'**
+  String get changesRequested;
+
+  /// No description provided for @waitingForReviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'An admin is reviewing this. You can still make changes.'**
+  String get waitingForReviewBody;
+
+  /// No description provided for @publishedLockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This course is published. Ask an admin if it needs changes.'**
+  String get publishedLockedBody;
+
+  /// No description provided for @editCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit course'**
+  String get editCourse;
+
+  /// No description provided for @newCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'New course'**
+  String get newCourse;
+
+  /// No description provided for @courseBasics.
+  ///
+  /// In en, this message translates to:
+  /// **'Basics'**
+  String get courseBasics;
+
+  /// No description provided for @courseTitleEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Title (English)'**
+  String get courseTitleEn;
+
+  /// No description provided for @courseTitleAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Title (Arabic)'**
+  String get courseTitleAr;
+
+  /// No description provided for @courseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get courseCategory;
+
+  /// No description provided for @courseLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get courseLevel;
+
+  /// No description provided for @levelBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get levelBeginner;
+
+  /// No description provided for @levelIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get levelIntermediate;
+
+  /// No description provided for @levelAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get levelAdvanced;
+
+  /// No description provided for @coursePriceAed.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (AED)'**
+  String get coursePriceAed;
+
+  /// No description provided for @courseDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get courseDescription;
+
+  /// No description provided for @descriptionEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (English)'**
+  String get descriptionEn;
+
+  /// No description provided for @descriptionAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (Arabic)'**
+  String get descriptionAr;
+
+  /// No description provided for @descriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 20 characters.'**
+  String get descriptionHint;
+
+  /// No description provided for @coverPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover photo'**
+  String get coverPhoto;
+
+  /// No description provided for @addCoverPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add cover photo'**
+  String get addCoverPhoto;
+
+  /// No description provided for @changeCoverPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get changeCoverPhoto;
+
+  /// No description provided for @removeCoverPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get removeCoverPhoto;
+
+  /// No description provided for @coverPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Without a photo, the course shows its title on the colour below.'**
+  String get coverPhotoHint;
+
+  /// No description provided for @coverColour.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover colour'**
+  String get coverColour;
+
+  /// No description provided for @coverSun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get coverSun;
+
+  /// No description provided for @coverSky.
+  ///
+  /// In en, this message translates to:
+  /// **'Sky'**
+  String get coverSky;
+
+  /// No description provided for @coverSage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sage'**
+  String get coverSage;
+
+  /// No description provided for @coverPeach.
+  ///
+  /// In en, this message translates to:
+  /// **'Peach'**
+  String get coverPeach;
+
+  /// No description provided for @modulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Modules'**
+  String get modulesTitle;
+
+  /// No description provided for @moduleTitleEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Module {n} (English)'**
+  String moduleTitleEn(String n);
+
+  /// No description provided for @moduleTitleAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Module {n} (Arabic)'**
+  String moduleTitleAr(String n);
+
+  /// No description provided for @addModule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add module'**
+  String get addModule;
+
+  /// No description provided for @removeModule.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove module'**
+  String get removeModule;
+
+  /// No description provided for @moveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get moveUp;
+
+  /// No description provided for @moveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get moveDown;
+
+  /// No description provided for @noModulesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one module before you submit.'**
+  String get noModulesYet;
+
+  /// No description provided for @saveDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save draft'**
+  String get saveDraft;
+
+  /// No description provided for @submitForReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit for review'**
+  String get submitForReview;
+
+  /// No description provided for @draftSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft saved.'**
+  String get draftSaved;
+
+  /// No description provided for @sentForReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent for review.'**
+  String get sentForReview;
+
+  /// No description provided for @titleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an English title.'**
+  String get titleRequired;
+
+  /// No description provided for @descriptionTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least 20 characters in the English description.'**
+  String get descriptionTooShort;
+
+  /// No description provided for @categoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a category.'**
+  String get categoryRequired;
+
+  /// No description provided for @priceInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a price in AED.'**
+  String get priceInvalid;
+
+  /// No description provided for @moduleTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Every module needs an English title.'**
+  String get moduleTitleRequired;
+
+  /// No description provided for @uploadingPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get uploadingPhoto;
+
+  /// No description provided for @newBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'New batch'**
+  String get newBatch;
+
+  /// No description provided for @batchCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get batchCourse;
+
+  /// No description provided for @pickCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a course'**
+  String get pickCourse;
+
+  /// No description provided for @noBatchableCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses yet. Propose one first.'**
+  String get noBatchableCourses;
+
+  /// No description provided for @batchCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch code'**
+  String get batchCode;
+
+  /// No description provided for @batchCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'B and 2–4 digits, e.g. B07'**
+  String get batchCodeHint;
+
+  /// No description provided for @batchCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use B and 2–4 digits, e.g. B07.'**
+  String get batchCodeInvalid;
+
+  /// No description provided for @batchSeats.
+  ///
+  /// In en, this message translates to:
+  /// **'Seats'**
+  String get batchSeats;
+
+  /// No description provided for @seatsInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Seats must be between 1 and 500.'**
+  String get seatsInvalid;
+
+  /// No description provided for @sessionLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Session language'**
+  String get sessionLanguage;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get languageArabic;
+
+  /// No description provided for @firstDay.
+  ///
+  /// In en, this message translates to:
+  /// **'First day'**
+  String get firstDay;
+
+  /// No description provided for @weekdaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get weekdaysLabel;
+
+  /// No description provided for @pickWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one day.'**
+  String get pickWeekdays;
+
+  /// No description provided for @sessionLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length (minutes)'**
+  String get sessionLength;
+
+  /// No description provided for @lengthInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Length must be 15–480 minutes.'**
+  String get lengthInvalid;
+
+  /// No description provided for @sessionCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get sessionCountLabel;
+
+  /// No description provided for @sessionCountInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions must be 1–200.'**
+  String get sessionCountInvalid;
+
+  /// No description provided for @previewSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview schedule'**
+  String get previewSchedule;
+
+  /// No description provided for @lastSessionOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Last session {date}'**
+  String lastSessionOn(String date);
+
+  /// No description provided for @conflictCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Clashes with your other batches: {count}'**
+  String conflictCount(String count);
+
+  /// No description provided for @conflictWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Clashes with {batch}'**
+  String conflictWith(String batch);
+
+  /// No description provided for @noConflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'No clashes with your other batches.'**
+  String get noConflicts;
+
+  /// No description provided for @createBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Create batch'**
+  String get createBatch;
+
+  /// No description provided for @batchCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch saved as a draft.'**
+  String get batchCreated;
+
+  /// No description provided for @batchDraftBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This batch is a draft. Submit it so an admin can open enrollment.'**
+  String get batchDraftBody;
+
+  /// No description provided for @batchPendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'An admin is reviewing this batch.'**
+  String get batchPendingBody;
+
+  /// No description provided for @toReviewTab.
+  ///
+  /// In en, this message translates to:
+  /// **'To review'**
+  String get toReviewTab;
+
+  /// No description provided for @coursesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get coursesSection;
+
+  /// No description provided for @batchesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Batches'**
+  String get batchesSection;
+
+  /// No description provided for @noPendingReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is waiting for review.'**
+  String get noPendingReviews;
+
+  /// No description provided for @sendBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Send back'**
+  String get sendBack;
+
+  /// No description provided for @sendBackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What needs to change?'**
+  String get sendBackTitle;
+
+  /// No description provided for @sendBackNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note to the teacher'**
+  String get sendBackNote;
+
+  /// No description provided for @sendBackNoteTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least 3 characters.'**
+  String get sendBackNoteTooShort;
+
+  /// No description provided for @submittedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted {date}'**
+  String submittedOn(String date);
+
+  /// No description provided for @modulesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Modules: {count}'**
+  String modulesCount(String count);
+
+  /// No description provided for @proposedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'By {name}'**
+  String proposedBy(String name);
+
+  /// No description provided for @errCourseLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This course is published, so only an admin can change it.'**
+  String get errCourseLocked;
+
+  /// No description provided for @errCourseIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a description of at least 20 characters and one module before you submit.'**
+  String get errCourseIncomplete;
+
+  /// No description provided for @errAlreadySubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'This is already waiting for review.'**
+  String get errAlreadySubmitted;
+
+  /// No description provided for @errCourseNotPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve the course before its batches.'**
+  String get errCourseNotPublished;
+
+  /// No description provided for @errBatchLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This batch is approved, so only an admin can change it.'**
+  String get errBatchLocked;
+
+  /// No description provided for @errNotPendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'This is no longer waiting for review.'**
+  String get errNotPendingReview;
+
+  /// No description provided for @errScheduleConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'You already teach at some of these times.'**
+  String get errScheduleConflict;
+
+  /// No description provided for @errScheduleIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Not every session fits this schedule. Check the days and dates.'**
+  String get errScheduleIncomplete;
+
+  /// No description provided for @errCourseArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'This course is archived.'**
+  String get errCourseArchived;
+
+  /// No description provided for @whatYoullLearn.
+  ///
+  /// In en, this message translates to:
+  /// **'What you\'ll learn'**
+  String get whatYoullLearn;
+
+  /// No description provided for @requirementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Requirements'**
+  String get requirementsTitle;
+
+  /// No description provided for @audienceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who it\'s for'**
+  String get audienceTitle;
+
+  /// No description provided for @faqTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ'**
+  String get faqTitle;
+
+  /// No description provided for @totalHoursLive.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h live'**
+  String totalHoursLive(String hours);
+
+  /// No description provided for @ratingSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Rated {avg} out of 5 from {count} reviews'**
+  String ratingSemantics(String avg, String count);
+
+  /// No description provided for @reviewsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviewsTitle;
+
+  /// No description provided for @reviewsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews'**
+  String reviewsCount(String count);
+
+  /// No description provided for @noReviewsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet.'**
+  String get noReviewsYet;
+
+  /// No description provided for @loadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get loadMore;
+
+  /// No description provided for @writeReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a review'**
+  String get writeReview;
+
+  /// No description provided for @editReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit your review'**
+  String get editReview;
+
+  /// No description provided for @yourReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Your review'**
+  String get yourReview;
+
+  /// No description provided for @reviewBodyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'What stood out?'**
+  String get reviewBodyLabel;
+
+  /// No description provided for @ratingRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a star rating.'**
+  String get ratingRequired;
+
+  /// No description provided for @postReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Post review'**
+  String get postReview;
+
+  /// No description provided for @reviewSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for your review.'**
+  String get reviewSaved;
+
+  /// No description provided for @deleteReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete review'**
+  String get deleteReview;
+
+  /// No description provided for @deleteReviewConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your review?'**
+  String get deleteReviewConfirm;
+
+  /// No description provided for @reviewDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Review deleted.'**
+  String get reviewDeleted;
+
+  /// No description provided for @starsN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} stars'**
+  String starsN(String n);
+
+  /// No description provided for @replyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get replyAction;
+
+  /// No description provided for @replyTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply to {name}'**
+  String replyTo(String name);
+
+  /// No description provided for @teacherReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher\'s reply'**
+  String get teacherReply;
+
+  /// No description provided for @replyTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least 2 characters.'**
+  String get replyTooShort;
+
+  /// No description provided for @replySent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply posted.'**
+  String get replySent;
+
+  /// No description provided for @hideReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get hideReview;
+
+  /// No description provided for @unhideReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Unhide'**
+  String get unhideReview;
+
+  /// No description provided for @hiddenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get hiddenLabel;
+
+  /// No description provided for @relatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You might also like'**
+  String get relatedTitle;
+
+  /// No description provided for @shareCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareCourse;
+
+  /// No description provided for @saveCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveCourse;
+
+  /// No description provided for @unsaveCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from saved'**
+  String get unsaveCourse;
+
+  /// No description provided for @savedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get savedToast;
+
+  /// No description provided for @unsavedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from saved.'**
+  String get unsavedToast;
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// No description provided for @sortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortLabel;
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get sortNewest;
+
+  /// No description provided for @sortRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated'**
+  String get sortRating;
+
+  /// No description provided for @sortPriceAsc.
+  ///
+  /// In en, this message translates to:
+  /// **'Price: low to high'**
+  String get sortPriceAsc;
+
+  /// No description provided for @sortPriceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Price: high to low'**
+  String get sortPriceDesc;
+
+  /// No description provided for @sortPopular.
+  ///
+  /// In en, this message translates to:
+  /// **'Most popular'**
+  String get sortPopular;
+
+  /// No description provided for @anyOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get anyOption;
+
+  /// No description provided for @minRatingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get minRatingLabel;
+
+  /// No description provided for @ratingAtLeast.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}+ stars'**
+  String ratingAtLeast(String n);
+
+  /// No description provided for @priceRangeAed.
+  ///
+  /// In en, this message translates to:
+  /// **'Price range (AED)'**
+  String get priceRangeAed;
+
+  /// No description provided for @minPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Min'**
+  String get minPrice;
+
+  /// No description provided for @maxPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get maxPrice;
+
+  /// No description provided for @priceRangeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The minimum price is above the maximum.'**
+  String get priceRangeInvalid;
+
+  /// No description provided for @applyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Show results'**
+  String get applyFilters;
+
+  /// No description provided for @resetFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get resetFilters;
+
+  /// No description provided for @featuredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured'**
+  String get featuredTitle;
+
+  /// No description provided for @savedCoursesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved courses'**
+  String get savedCoursesTitle;
+
+  /// No description provided for @noSavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing saved yet.'**
+  String get noSavedTitle;
+
+  /// No description provided for @noSavedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the heart on a course to keep it here.'**
+  String get noSavedBody;
+
+  /// No description provided for @bulletEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Point {n} (English)'**
+  String bulletEn(String n);
+
+  /// No description provided for @bulletAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Point {n} (Arabic)'**
+  String bulletAr(String n);
+
+  /// No description provided for @addPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add point'**
+  String get addPoint;
+
+  /// No description provided for @removePoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove point'**
+  String get removePoint;
+
+  /// No description provided for @faqQuestionEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n} (English)'**
+  String faqQuestionEn(String n);
+
+  /// No description provided for @faqAnswerEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer {n} (English)'**
+  String faqAnswerEn(String n);
+
+  /// No description provided for @faqQuestionAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n} (Arabic)'**
+  String faqQuestionAr(String n);
+
+  /// No description provided for @faqAnswerAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer {n} (Arabic)'**
+  String faqAnswerAr(String n);
+
+  /// No description provided for @addQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add question'**
+  String get addQuestion;
+
+  /// No description provided for @removeQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove question'**
+  String get removeQuestion;
+
+  /// No description provided for @faqIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Each question needs an English question and answer.'**
+  String get faqIncomplete;
+
+  /// No description provided for @moduleDescriptionEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Module {n} description (English)'**
+  String moduleDescriptionEn(String n);
+
+  /// No description provided for @moduleDescriptionAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Module {n} description (Arabic)'**
+  String moduleDescriptionAr(String n);
+
+  /// No description provided for @errReviewNotEligible.
+  ///
+  /// In en, this message translates to:
+  /// **'You can review this course after attending one of its sessions.'**
+  String get errReviewNotEligible;
 }
 
 class _AppLocalizationsDelegate

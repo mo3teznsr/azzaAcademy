@@ -1,4 +1,4 @@
-import type { BatchStatus, CreateBatchInput, PreviewScheduleInput, SessionLanguage, UpdateBatchInput } from '@azza/shared';
+import type { BatchStatus, CreateBatchInput, PreviewScheduleInput, ReviewDecisionInput, SessionLanguage, UpdateBatchInput } from '@azza/shared';
 import { http, items } from './client';
 import type {
   Assignment,
@@ -29,6 +29,10 @@ export const batchesApi = {
   preview: (input: PreviewScheduleInput) => http.post<SchedulePreview>('/api/v1/batches/schedule/preview', input),
   create: (input: CreateBatchInput) => http.post<BatchDetail>('/api/v1/batches', input),
   update: (id: string, input: UpdateBatchInput) => http.patch<BatchDetail>(`/api/v1/batches/${id}`, input),
+  /** TEACHER: send their own DRAFT batch to the admins → PENDING_REVIEW. */
+  submit: (id: string) => http.post<BatchDetail>(`/api/v1/batches/${id}/submit`),
+  /** ADMIN: approve (→ ENROLLING) or send back with a note (→ DRAFT). */
+  review: (id: string, input: ReviewDecisionInput) => http.post<BatchDetail>(`/api/v1/batches/${id}/review`, input),
   roster: (id: string) => http.get<Roster>(`/api/v1/batches/${id}/roster`),
   shift: (id: string, input: { fromSessionNumber: number; days: number }) => http.post<BatchDetail>(`/api/v1/batches/${id}/shift`, input),
   enrollments: (id: string) => items(http.get<Items<BatchEnrollment>>(`/api/v1/batches/${id}/enrollments`)),

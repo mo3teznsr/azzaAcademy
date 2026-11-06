@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand inkDeep (#07110D): launch screen ground, light and dark (docs/BRAND.md). -->
+    <color name="launch_background">#FF07110D</color>
+</resources>

@@ -13,6 +13,8 @@ import { batchRoutes } from './modules/batches/batch.routes';
 import { certificateRoutes } from './modules/certificates/certificate.routes';
 import { contentRoutes } from './modules/content/content.routes';
 import { courseRoutes } from './modules/courses/course.routes';
+import { categoryRoutes } from './modules/categories/category.routes';
+import { engagementRoutes } from './modules/reviews/review.routes';
 import { meRoutes } from './modules/me/me.routes';
 import { adminFinanceRoutes, paymentRoutes } from './modules/payments/payments.routes';
 import { adminPayoutRoutes, teacherPayoutRoutes } from './modules/payouts/payout.routes';
@@ -83,7 +85,9 @@ export function createApp(container: Container) {
   });
 
   const api = new Hono<AppEnv>()
+    .route('/', engagementRoutes(services.reviews, services.savedCourses))
     .route('/courses', courseRoutes(services.courses))
+    .route('/categories', categoryRoutes(services.categories))
     .route('/batches', batchRoutes(services.batches))
     .route('/me', meRoutes(services.me, services.notifications, services.calendar))
     .route('/stats', statsRoutes(services.stats))
@@ -93,6 +97,8 @@ export function createApp(container: Container) {
     .route('/teachers', teacherRoutes(services.teachers))
     .route('/admin', adminRoutes(services.admin, container.platformSettings))
     .route('/admin', adminMediaRoutes(services.courseMedia))
+    // Teachers upload covers and intro videos for the courses they propose.
+    .route('/courses', adminMediaRoutes(services.courseMedia, ['TEACHER', 'ADMIN']))
     .route('/admin', adminFinanceRoutes(services))
     .route('/admin', adminPayoutRoutes(services.payouts))
     .route('/admin', adminReportRoutes(services.reports))

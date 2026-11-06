@@ -152,8 +152,8 @@ class _UpcomingBatchCard extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               b.isFull
-                  ? StatusChip(label: l.teacherBatchFull, color: AzzaColors.peach, textColor: AzzaColors.ink)
-                  : StatusChip(label: l.seatsLeft(f.n(b.seatsLeft)), color: AzzaColors.sage, textColor: AzzaColors.ink),
+                  ? StatusChip(label: l.teacherBatchFull, color: AzzaPalette.of(context).warningBg, textColor: AzzaPalette.of(context).warning)
+                  : StatusChip(label: l.seatsLeft(f.n(b.seatsLeft)), color: AzzaPalette.of(context).successBg, textColor: AzzaPalette.of(context).success),
             ],
           ),
           const SizedBox(height: 12),

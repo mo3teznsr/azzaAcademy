@@ -122,7 +122,7 @@ class _OrderBody extends ConsumerWidget {
         const SizedBox(height: 16),
         RaisedCard(
           key: const Key('order-rejected'),
-          color: AzzaColors.peach.withValues(alpha: 0.14),
+          color: AzzaPalette.of(context).warningBg,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(l.rejectedTitle, style: t.titleSmall),
             const SizedBox(height: 6),
@@ -174,7 +174,7 @@ class _TimelineStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AzzaPalette.of(context);
-    final color = problem ? AzzaColors.peach : (done ? AzzaColors.sage : p.line);
+    final color = problem ? p.danger : (done ? AzzaColors.green : p.line);
     return IntrinsicHeight(
       child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Column(children: [
@@ -182,7 +182,7 @@ class _TimelineStep extends StatelessWidget {
             width: 18,
             height: 18,
             decoration: BoxDecoration(shape: BoxShape.circle, color: done || problem ? color : null, border: Border.all(color: color, width: 2)),
-            child: done && !problem ? const Icon(Icons.check, size: 12, color: AzzaColors.ink) : null,
+            child: done && !problem ? const Icon(Icons.check, size: 12, color: AzzaColors.inkDeep) : null,
           ),
           if (!last) Expanded(child: Container(width: 2, color: p.line)),
         ]),

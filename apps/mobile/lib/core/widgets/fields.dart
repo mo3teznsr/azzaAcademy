@@ -58,7 +58,7 @@ class FieldActionButton extends StatelessWidget {
       padding: const EdgeInsetsDirectional.only(end: 6),
       child: TextButton(
         style: TextButton.styleFrom(
-          foregroundColor: p.isDark ? p.accent : p.text,
+          foregroundColor: p.accent,
           minimumSize: const Size(44, 40),
           padding: const EdgeInsets.symmetric(horizontal: 12),
         ),

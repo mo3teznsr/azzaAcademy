@@ -23,6 +23,8 @@ enum SessionLanguage {
 
 enum CourseStatus {
   DRAFT
+  /// A teacher's proposal waiting for an admin to approve (→ PUBLISHED) or send back (→ DRAFT).
+  PENDING_REVIEW
   PUBLISHED
   ARCHIVED
 }
@@ -35,6 +37,8 @@ enum CourseLevel {
 
 enum BatchStatus {
   DRAFT
+  /// A teacher's proposed batch waiting for an admin to approve (→ ENROLLING) or send back (→ DRAFT).
+  PENDING_REVIEW
   ENROLLING
   FULL
   RUNNING
@@ -142,6 +146,9 @@ model User {
   sessions      AuthSession[]
   accounts      Account[]
   teaching      Batch[]             @relation("BatchTeacher")
+  coursesProposed Course[]          @relation("CourseAuthor")
+  courseReviews CourseReview[]
+  savedCourses  SavedCourse[]
   enrollments   Enrollment[]
   orders        Order[]             @relation("OrderStudent")
   verifiedOrders Order[]            @relation("OrderVerifier")
@@ -221,7 +228,9 @@ model Course {
   titleAr       String?
   descriptionEn String       @default("")
   descriptionAr String?
+  /// Category slug (managed list in `Category`).
   category      String
+  categoryRef   Category     @relation(fields: [category], references: [slug], onUpdate: Cascade, onDelete: Restrict)
   level         CourseLevel
   coverStyle    String       @default("sun")
   /// Photo cover: a path under the API's `/media/` (bundled art) or an uploaded file URL. Null = typographic cover.
@@ -229,15 +238,38 @@ model Course {
   /// Intro video: an uploaded file URL (mp4/mov/webm) or an https link (YouTube, Vimeo or a direct video file).
   introVideoUrl String?
   priceFils     Int
+  /// "What you'll learn", "Requirements", "Who it's for" — one bullet per entry.
+  outcomesEn     String[]    @default([])
+  outcomesAr     String[]    @default([])
+  requirementsEn String[]    @default([])
+  requirementsAr String[]    @default([])
+  audienceEn     String[]    @default([])
+  audienceAr     String[]    @default([])
+  /// `[{ qEn, aEn, qAr?, aAr? }]`
+  faq            Json        @default("[]")
+  /// Admin-curated order on the home rail (null = not featured).
+  featuredRank   Int?
+  /// Kept in step with visible `CourseReview`s.
+  ratingAvg      Float       @default(0)
+  ratingCount    Int         @default(0)
   status        CourseStatus @default(DRAFT)
+  /// Teacher who proposed the course (null = created by an admin).
+  createdById   String?
+  createdBy     User?        @relation("CourseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  /// Why an admin sent the proposal back (cleared on resubmit).
+  reviewNote    String?
+  submittedAt   DateTime?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
   modules CourseModule[]
   batches Batch[]
   coupons Coupon[]
+  reviews CourseReview[]
+  savedBy SavedCourse[]
 
   @@index([status, category])
+  @@index([createdById])
 }
 
 model CourseModule {
@@ -247,6 +279,8 @@ model CourseModule {
   order    Int
   titleEn  String
   titleAr  String?
+  descriptionEn String?
+  descriptionAr String?
 
   @@unique([courseId, order])
 }
@@ -267,6 +301,9 @@ model Batch {
   enrollmentOpensOn  DateTime?
   enrollmentClosesOn DateTime?
   status             BatchStatus     @default(DRAFT)
+  /// Why an admin sent the teacher's proposal back (cleared on resubmit).
+  reviewNote         String?
+  submittedAt        DateTime?
   startsOn           DateTime
   endsOn             DateTime
   createdAt          DateTime        @default(now())
@@ -695,4 +732,49 @@ model Notification {
   createdAt DateTime  @default(now())
 
   @@index([userId, readAt])
+}
+
+/// Managed course categories (browse, filter, localised names).
+model Category {
+  slug      String   @id
+  nameEn    String
+  nameAr    String?
+  /// lucide icon name (web) — mobile maps it to a Material icon.
+  icon      String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  courses Course[]
+}
+
+/// One review per student per course; only students who attended a session may post.
+model CourseReview {
+  id           String    @id @default(cuid())
+  courseId     String
+  course       Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating       Int
+  body         String    @default("")
+  teacherReply String?
+  repliedAt    DateTime?
+  /// Hidden by an admin (moderation); excluded from the average.
+  hidden       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([courseId, userId])
+  @@index([courseId, hidden, createdAt])
+}
+
+model SavedCourse {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, courseId])
+  @@index([courseId])
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/utils/formatters.dart';
@@ -11,6 +12,7 @@ import '../../auth/presentation/auth_controller.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
+import 'proposal_widgets.dart';
 
 /// Batches the API scopes to the signed-in teacher (`GET /batches` → own).
 final teacherBatchesProvider = FutureProvider.autoDispose<List<Batch>>((ref) {
@@ -29,7 +31,25 @@ class TeacherBatchesScreen extends ConsumerWidget {
     final batches = ref.watch(teacherBatchesProvider);
     final now = DateTime.now();
     return Scaffold(
-      appBar: AppBar(title: Text(l.navBatches)),
+      appBar: AppBar(title: Text(l.navBatches), actions: [
+        TextButton.icon(
+          key: const Key('my-courses'),
+          style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+          onPressed: () => context.push(Routes.teacherCourses),
+          icon: const Icon(Icons.auto_stories_outlined, size: 20),
+          label: Text(l.myCoursesTitle),
+        ),
+        const SizedBox(width: 8),
+      ]),
+      floatingActionButton: FloatingActionButton.extended(
+        key: const Key('new-batch-fab'),
+        onPressed: () async {
+          await context.push(Routes.teacherNewBatch);
+          ref.invalidate(teacherBatchesProvider);
+        },
+        icon: const Icon(Icons.add_rounded),
+        label: Text(l.newBatch),
+      ),
       body: AsyncView<List<Batch>>(
         value: batches,
         onRetry: () => ref.invalidate(teacherBatchesProvider),
@@ -48,6 +68,10 @@ class TeacherBatchesScreen extends ConsumerWidget {
                     Expanded(child: Text(b.course?.title(locale) ?? '', style: Theme.of(context).textTheme.titleSmall)),
                     StatusChip.batch(context, b.status, taken: b.seatsTaken, capacity: b.capacity),
                   ]),
+                  if (b.status == BatchStatus.draft && (b.reviewNote?.isNotEmpty ?? false)) ...[
+                    const SizedBox(height: 10),
+                    ProposalNotice.changes(context, b.reviewNote!, key: Key('batch-review-note-${b.id}')),
+                  ],
                   const SizedBox(height: 8),
                   Text(scheduleLabel(f, b.schedule), style: Theme.of(context).textTheme.bodyMedium),
                   Text(
@@ -62,6 +86,7 @@ class TeacherBatchesScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
             ],
+            const SizedBox(height: 72), // clear of the FAB
           ],
         ),
       ),

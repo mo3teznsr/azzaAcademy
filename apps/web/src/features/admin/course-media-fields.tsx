@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { CourseIntroVideo } from '@/components/brand/course-intro-video';
-import { adminApi, ApiError, mediaUrl } from '@/lib/api';
-import type { CourseMediaKind } from '@/lib/api/admin';
+import { ApiError, mediaUrl } from '@/lib/api';
+import { uploadCourseMediaAsAdmin, type CourseMediaKind, type CourseMediaUploader } from '@/lib/api/courses';
 import { useI18n } from '@/lib/i18n/provider';
 
 const MB = 1024 * 1024;
@@ -19,8 +19,11 @@ const RULES: Record<CourseMediaKind, { accept: string; maxBytes: number }> = {
   'course-video': { accept: 'video/mp4,video/quicktime,video/webm', maxBytes: 200 * MB },
 };
 
-/** Uploads one file to `POST /admin/media` with progress; errors are localised from the API's `details.reason`. */
-function useCourseMediaUpload(kind: CourseMediaKind, onUploaded: (url: string) => void) {
+/**
+ * Uploads one file with progress through `uploader` (admin: `POST /admin/media`, teacher: `POST /courses/media`);
+ * errors are localised from the API's `details.reason`.
+ */
+function useCourseMediaUpload(kind: CourseMediaKind, onUploaded: (url: string) => void, uploader: CourseMediaUploader) {
   const { t, fill } = useI18n();
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +45,7 @@ function useCourseMediaUpload(kind: CourseMediaKind, onUploaded: (url: string) =
     abort.current = ctrl;
     setProgress(0);
     try {
-      const { url } = await adminApi.uploadCourseMedia(kind, file, { onProgress: setProgress, signal: ctrl.signal });
+      const { url } = await uploader(kind, file, { onProgress: setProgress, signal: ctrl.signal });
       onUploaded(url);
       toast.success(t.admin.editor.mediaUploaded);
     } catch (e) {
@@ -95,9 +98,17 @@ function UploadProgress({ value, onCancel }: { value: number; onCancel: () => vo
   );
 }
 
-export function CoverPhotoField({ value, onChange }: { value: string | null | undefined; onChange: (url: string | null) => void }) {
+export function CoverPhotoField({
+  value,
+  onChange,
+  uploader = uploadCourseMediaAsAdmin,
+}: {
+  value: string | null | undefined;
+  onChange: (url: string | null) => void;
+  uploader?: CourseMediaUploader;
+}) {
   const { t } = useI18n();
-  const media = useCourseMediaUpload('course-cover', onChange);
+  const media = useCourseMediaUpload('course-cover', onChange, uploader);
   const src = mediaUrl(value);
   const busy = media.progress !== null;
   return (
@@ -134,14 +145,16 @@ export function IntroVideoField({
   onChange,
   title,
   error,
+  uploader = uploadCourseMediaAsAdmin,
 }: {
   value: string | null | undefined;
   onChange: (url: string | null) => void;
   title: string;
   error?: string;
+  uploader?: CourseMediaUploader;
 }) {
   const { t } = useI18n();
-  const media = useCourseMediaUpload('course-video', onChange);
+  const media = useCourseMediaUpload('course-video', onChange, uploader);
   const [link, setLink] = useState('');
   const [linkError, setLinkError] = useState<string | null>(null);
   const linkId = useId();

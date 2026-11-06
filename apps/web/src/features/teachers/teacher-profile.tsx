@@ -11,6 +11,7 @@ import { ApiError, coursesApi, type TeacherProfile as Profile } from '@/lib/api'
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
+import { useCategoryLabel } from '@/components/brand/category';
 
 const STYLES = ['sun', 'sky', 'sage', 'peach'] as const;
 
@@ -38,6 +39,7 @@ export function TeacherProfile({ id }: { id: string }) {
 
 function ProfileView({ p }: { p: Profile }) {
   const { t, f, fill, pick } = useI18n();
+  const categoryLabel = useCategoryLabel();
   const money = useMoney();
   return (
     <>
@@ -85,7 +87,7 @@ function ProfileView({ p }: { p: Profile }) {
                   <CourseCover course={{ ...c, coverStyle: STYLES[i % STYLES.length] }} showMeta={false} className="h-48" />
                   <span className="flex items-center justify-between gap-2 px-2 pb-2">
                     <span className="flex min-w-0 flex-col gap-1">
-                      <span className="label-mono text-muted-foreground">{c.category}</span>
+                      <span className="label-mono text-muted-foreground">{categoryLabel(c)}</span>
                       <b className="text-lg leading-tight">{pick(c.titleEn, c.titleAr).text}</b>
                     </span>
                     <ArrowRight className="size-5 shrink-0 text-sun-fg transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" aria-hidden />

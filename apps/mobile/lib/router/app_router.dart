@@ -22,6 +22,7 @@ import '../features/certificates/presentation/certificates_screen.dart';
 import '../features/catalog/presentation/batch_schedule_screen.dart';
 import '../features/catalog/presentation/course_detail_screen.dart';
 import '../features/catalog/presentation/explore_screen.dart';
+import '../features/catalog/presentation/saved_courses_screen.dart';
 import '../features/checkout/domain/apple_iap.dart';
 import '../features/checkout/presentation/apple_payment_screen.dart';
 import '../features/checkout/presentation/bank_transfer_screen.dart';
@@ -43,7 +44,10 @@ import '../features/me/presentation/profile_photo_screen.dart';
 import '../features/me/presentation/notifications_screen.dart';
 import '../features/me/presentation/profile_screen.dart';
 import '../features/me/presentation/schedule_screen.dart';
+import '../features/teacher/presentation/course_editor_screen.dart';
 import '../features/teacher/presentation/earnings_screen.dart';
+import '../features/teacher/presentation/my_courses_screen.dart';
+import '../features/teacher/presentation/new_batch_screen.dart';
 import '../features/teacher/presentation/payout_method_screen.dart';
 import '../features/teacher/presentation/reschedule_request_screen.dart';
 import '../features/teacher/presentation/roster_screen.dart';
@@ -90,7 +94,13 @@ List<RouteBase> buildRoutes() => [
         builder: (context, state, shell) => RoleShell(shell: shell, role: Role.teacher),
         branches: [
           _branch(Routes.teacherToday, (_) => const TeacherTodayScreen()),
-          _branch(Routes.teacherBatches, (_) => const TeacherBatchesScreen()),
+          _branch(Routes.teacherBatches, (_) => const TeacherBatchesScreen(), routes: [
+            _route('new', (_) => const NewBatchScreen()),
+            _route('courses', (_) => const MyCoursesScreen(), routes: [
+              _route('new', (_) => const CourseEditorScreen()),
+              _route(':id', (s) => CourseEditorScreen(courseId: s.pathParameters['id'])),
+            ]),
+          ]),
           _branch(Routes.teacherCalendar, (_) => const ScheduleScreen(role: Role.teacher)),
           _branch(Routes.teacherEarnings, (_) => const EarningsScreen(), routes: [
             _route('payout-method', (_) => const PayoutMethodScreen()),
@@ -135,6 +145,7 @@ List<RouteBase> buildRoutes() => [
         _route('enrolled', (s) => EnrolledScreen(orderId: s.pathParameters['id']!)),
       ]),
       _route(Routes.myOrders, (_) => const MyOrdersScreen()),
+      _route(Routes.savedCourses, (_) => const SavedCoursesScreen()),
       _route(Routes.certificates, (_) => const CertificatesScreen(), routes: [
         _route(':code', (s) => CertificateDetailScreen(code: s.pathParameters['code']!)),
       ]),

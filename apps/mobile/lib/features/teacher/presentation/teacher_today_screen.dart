@@ -90,41 +90,44 @@ class _NextTake extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final s = session;
+    final p = AzzaPalette.of(context);
+    // Live: the on-air fill; otherwise the brand green with inkDeep text.
+    final fg = s.isLive ? p.onLive : AzzaColors.inkDeep;
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: s.isLive ? AzzaColors.onAir : AzzaColors.sun, borderRadius: BorderRadius.circular(AzzaSpace.radius)),
+      decoration: BoxDecoration(color: s.isLive ? p.live : AzzaColors.green, borderRadius: BorderRadius.circular(AzzaSpace.radius)),
       child: Ticker(
         builder: (context, now) {
           final open = s.lobbyOpen(now);
           final until = s.startsAt.difference(now);
           return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              if (s.isLive) const SignalMark(size: 16, color: AzzaColors.ink, live: true),
+              if (s.isLive) SignalMark(size: 16, color: fg, live: true),
               Expanded(
                 child: MonoLabel(
                   s.isLive ? '${l.liveNow} · ${Fmt.timecode(now.difference(s.startsAt))}' : (open ? l.nextTakeLobbyOpen : l.nextTakeIn(Fmt.timecode(until))),
-                  color: AzzaColors.ink,
+                  color: fg,
                 ),
               ),
-              MonoLabel(Fmt.slate(s.batchCode, s.number), color: AzzaColors.ink),
+              MonoLabel(Fmt.slate(s.batchCode, s.number), color: fg),
             ]),
             const SizedBox(height: 10),
             if (!s.isLive)
-              Text(Fmt.timecode(until.isNegative ? Duration.zero : until), style: AzzaFonts.mono(size: 44, color: AzzaColors.ink, tracking: 0)),
-            DisplayText(s.title, size: 28, color: AzzaColors.ink),
-            Text('${s.course(locale)} · ${fmt.time(s.startsAt)}–${fmt.time(s.endsAt)}', style: const TextStyle(color: AzzaColors.ink)),
+              Text(Fmt.timecode(until.isNegative ? Duration.zero : until), style: AzzaFonts.mono(size: 44, color: fg, tracking: 0)),
+            DisplayText(s.title, size: 28, color: fg),
+            Text('${s.course(locale)} · ${fmt.time(s.startsAt)}–${fmt.time(s.endsAt)}', style: TextStyle(color: fg)),
             const SizedBox(height: 14),
             Row(children: [
               Expanded(
                 child: FilledButton(
-                  style: FilledButton.styleFrom(backgroundColor: AzzaColors.ink, foregroundColor: AzzaColors.ivory),
+                  style: FilledButton.styleFrom(backgroundColor: AzzaColors.inkDeep, foregroundColor: AzzaColors.ivory),
                   onPressed: () => context.push(s.isLive ? Routes.liveRoom(s.id) : Routes.lobby(s.id)),
                   child: Text(s.isLive ? l.joinLiveRoom : l.enterLobby),
                 ),
               ),
               const SizedBox(width: 8),
               OutlinedButton(
-                style: OutlinedButton.styleFrom(foregroundColor: AzzaColors.ink, side: const BorderSide(color: AzzaColors.ink)),
+                style: OutlinedButton.styleFrom(foregroundColor: fg, side: BorderSide(color: fg)),
                 onPressed: () => context.push(Routes.sessionPrep(s.id)),
                 child: Text(l.prepTitle),
               ),

@@ -78,7 +78,7 @@ class _BankTransferScreenState extends ConsumerState<BankTransferScreen> {
                 child: Ticker(
                   builder: (_, now) => MonoLabel(
                     l.seatHeld(Fmt.holdClock(order.requireValue.expiresAt!.difference(now))),
-                    color: AzzaColors.sun,
+                    color: AzzaPalette.of(context).accent,
                   ),
                 ),
               ),
@@ -159,7 +159,7 @@ class _BankTransferScreenState extends ConsumerState<BankTransferScreen> {
               if (o.status == OrderStatus.rejected || o.status == OrderStatus.amountMismatch) ...[
                 const SizedBox(height: 12),
                 RaisedCard(
-                  color: AzzaColors.peach.withValues(alpha: 0.14),
+                  color: AzzaPalette.of(context).warningBg,
                   child: Text(o.rejectionReason ?? l.rejectedTitle, style: t.bodyMedium),
                 ),
               ],
@@ -173,7 +173,7 @@ class _BankTransferScreenState extends ConsumerState<BankTransferScreen> {
                 key: const Key('sent-transfer'),
                 onPressed: _file == null || _busy ? null : _submit,
                 child: _busy
-                    ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onAccent))
+                    ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onPrimary))
                     : Text(l.iSentTransfer),
               ),
             ])

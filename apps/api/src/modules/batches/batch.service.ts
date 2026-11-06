@@ -3,6 +3,7 @@ import {
   type BatchStatus,
   type CreateBatchInput,
   type PreviewScheduleInput,
+  type ReviewDecisionInput,
   type Role,
   type UpdateBatchInput,
 } from '@azza/shared';
@@ -23,7 +24,8 @@ export interface ScheduleConflict {
 
 /** Allowed status moves. Anything else is rejected (keeps the lifecycle explicit). */
 const TRANSITIONS: Record<BatchStatus, BatchStatus[]> = {
-  DRAFT: ['ENROLLING', 'CANCELLED'],
+  DRAFT: ['PENDING_REVIEW', 'ENROLLING', 'CANCELLED'],
+  PENDING_REVIEW: ['ENROLLING', 'DRAFT', 'CANCELLED'],
   ENROLLING: ['FULL', 'RUNNING', 'CANCELLED', 'DRAFT'],
   FULL: ['ENROLLING', 'RUNNING', 'CANCELLED'],
   RUNNING: ['COMPLETED', 'CANCELLED'],
@@ -51,27 +53,34 @@ export class BatchService {
   async get(id: string, viewer: { id: string; role: Role } | null) {
     const batch = await this.batches.findById(id);
     if (!batch) throw new NotFoundError('Batch', id);
-    if (batch.status === 'DRAFT' && viewer?.role !== 'ADMIN' && viewer?.id !== batch.teacherId) throw new NotFoundError('Batch', id);
+    if ((batch.status === 'DRAFT' || batch.status === 'PENDING_REVIEW') && viewer?.role !== 'ADMIN' && viewer?.id !== batch.teacherId) throw new NotFoundError('Batch', id);
     const seatsTaken = await this.batches.activeEnrollmentCount(id);
     return { ...batch, seatsTaken, seatsLeft: Math.max(0, batch.capacity - seatsTaken) };
   }
 
-  async preview(input: PreviewScheduleInput) {
+  /** A teacher always previews against their own calendar. */
+  async preview(input: PreviewScheduleInput, actor: { id: string; role: Role }) {
+    const teacherId = actor.role === 'TEACHER' ? actor.id : input.teacherId;
     const plan = this.generator.generate(input, input.timezone);
-    const conflicts = input.teacherId ? await this.findConflicts(input.teacherId, plan.sessions) : [];
+    const conflicts = teacherId ? await this.findConflicts(teacherId, plan.sessions) : [];
     return { ...plan, conflicts };
   }
 
-  async create(input: CreateBatchInput) {
+  /** ADMIN picks the teacher; a TEACHER proposes a DRAFT batch for themselves on a published course or one they proposed. */
+  async create(input: CreateBatchInput, actor: { id: string; role: Role }) {
     const course = await this.courses.findById(input.courseId);
     if (!course) throw new NotFoundError('Course', input.courseId);
+    const teacherId = actor.role === 'TEACHER' ? actor.id : input.teacherId;
+    if (!teacherId) throw new BusinessRuleError('Pick a teacher for this batch', 'TEACHER_REQUIRED');
+    if (actor.role === 'TEACHER' && course.status !== 'PUBLISHED' && course.createdById !== actor.id) throw new NotFoundError('Course', input.courseId);
+    if (course.status === 'ARCHIVED') throw new BusinessRuleError('This course is archived', 'COURSE_ARCHIVED');
     if (await this.batches.existsCode(input.courseId, input.code)) throw new ConflictError(`${input.code} already exists for this course`);
 
     const plan = this.generator.generate(input.schedule, input.timezone);
     if (plan.sessions.length < input.schedule.sessionCount) {
       throw new BusinessRuleError('Could not fit every session in the schedule window', 'SCHEDULE_INCOMPLETE');
     }
-    const conflicts = await this.findConflicts(input.teacherId, plan.sessions);
+    const conflicts = await this.findConflicts(teacherId, plan.sessions);
     if (conflicts.length) throw new ConflictError('Teacher is double-booked', { conflicts });
 
     const titles = input.sessionTitles ?? course.modules.map((m) => m.titleEn);
@@ -81,7 +90,7 @@ export class BatchService {
     return this.batches.create({
       courseId: input.courseId,
       code: input.code,
-      teacherId: input.teacherId,
+      teacherId,
       capacity: input.capacity,
       language: input.language,
       timezone: input.timezone,
@@ -106,7 +115,10 @@ export class BatchService {
   async update(id: string, input: UpdateBatchInput, actor: { id: string; role: Role }) {
     const batch = await this.batches.findById(id);
     if (!batch) throw new NotFoundError('Batch', id);
-    if (actor.role !== 'ADMIN') throw new ForbiddenError();
+    if (actor.role !== 'ADMIN') {
+      this.assertTeacherCanEdit(batch, actor);
+      if (input.status || input.teacherId) throw new ForbiddenError('Submit the batch for review instead');
+    }
 
     if (input.status && input.status !== batch.status && !TRANSITIONS[batch.status].includes(input.status)) {
       throw new BusinessRuleError(`Cannot move a batch from ${batch.status} to ${input.status}`, 'INVALID_TRANSITION');
@@ -121,6 +133,51 @@ export class BatchService {
       ...(enrollmentOpensOn && { enrollmentOpensOn: new Date(enrollmentOpensOn) }),
       ...(enrollmentClosesOn && { enrollmentClosesOn: new Date(enrollmentClosesOn) }),
     });
+  }
+
+  /** TEACHER: send their DRAFT batch to the admins. */
+  async submit(id: string, actor: { id: string; role: Role }) {
+    const batch = await this.batches.findById(id);
+    if (!batch) throw new NotFoundError('Batch', id);
+    this.assertTeacherCanEdit(batch, actor);
+    if (batch.status !== 'DRAFT') throw new BusinessRuleError('This batch is already waiting for review', 'ALREADY_SUBMITTED');
+    const updated = await this.batches.update(id, { status: 'PENDING_REVIEW', submittedAt: this.clock.now(), reviewNote: null });
+    await this.notifier.notifyRole('ADMIN', {
+      type: 'BATCH_SUBMITTED',
+      title: 'Batch waiting for review',
+      body: `${batch.course.titleEn} ${batch.code} was proposed by ${batch.teacher.name}`,
+      data: { batchId: id },
+    });
+    return updated;
+  }
+
+  /** ADMIN: approve (→ ENROLLING, course must be published) or send back with a note (→ DRAFT). */
+  async review(id: string, decision: ReviewDecisionInput) {
+    const batch = await this.batches.findById(id);
+    if (!batch) throw new NotFoundError('Batch', id);
+    if (batch.status !== 'PENDING_REVIEW') throw new BusinessRuleError('This batch is not waiting for review', 'NOT_PENDING_REVIEW');
+    if (decision.approve) {
+      const course = await this.courses.findById(batch.courseId);
+      if (course?.status !== 'PUBLISHED') throw new BusinessRuleError('Approve the course before its batches', 'COURSE_NOT_PUBLISHED');
+    }
+    const updated = await this.batches.update(
+      id,
+      decision.approve ? { status: 'ENROLLING', reviewNote: null } : { status: 'DRAFT', reviewNote: decision.note ?? null },
+    );
+    await this.notifier.notify([batch.teacherId], {
+      type: decision.approve ? 'BATCH_APPROVED' : 'BATCH_CHANGES_REQUESTED',
+      title: decision.approve ? 'Your batch is open for enrollment' : 'Your batch needs changes',
+      body: decision.approve ? `${batch.course.titleEn} ${batch.code}` : `${batch.course.titleEn} ${batch.code}: ${decision.note}`,
+      data: { batchId: id },
+    });
+    return updated;
+  }
+
+  private assertTeacherCanEdit(batch: { teacherId: string; status: BatchStatus }, actor: { id: string; role: Role }) {
+    if (actor.role !== 'TEACHER' || batch.teacherId !== actor.id) throw new ForbiddenError();
+    if (batch.status !== 'DRAFT' && batch.status !== 'PENDING_REVIEW') {
+      throw new BusinessRuleError('Approved batches are changed by an admin', 'BATCH_LOCKED');
+    }
   }
 
   /** TEACHER (own batch) / ADMIN: active students with attendance over delivered sessions. */

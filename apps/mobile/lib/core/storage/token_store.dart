@@ -8,7 +8,13 @@ abstract class TokenStore {
 }
 
 class SecureTokenStore implements TokenStore {
-  SecureTokenStore([FlutterSecureStorage? storage]) : _storage = storage ?? const FlutterSecureStorage();
+  SecureTokenStore([FlutterSecureStorage? storage])
+      : _storage = storage ??
+            const FlutterSecureStorage(
+              // The data-protection keychain needs a signed keychain-access-groups entitlement, which the local
+              // macOS desktop build doesn't have: writes failed and sign-in looked like "No connection".
+              mOptions: MacOsOptions(usesDataProtectionKeychain: false),
+            );
 
   static const _key = 'azza.session_token';
   final FlutterSecureStorage _storage;

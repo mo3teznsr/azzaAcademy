@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Radio } from 'lucide-react';
+import { Plus, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BatchStatusChip, Chip, SessionStatusChip } from '@/components/brand/status-chip';
 import { SessionSlate } from '@/components/brand/session-slate';
@@ -37,6 +37,20 @@ export function StudioHome() {
       <PageTitle
         kicker={`${f.dateLong(new Date())} · ${gmtOffset(tz)}`}
         title={fill(hour < 12 ? t.studio.greetingMorning : t.studio.greeting, { name: first }).replace(/[،,]\s*\./, '.')}
+        aside={
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline">
+              <Link href="/studio/courses/new">
+                <Plus /> {t.studio.proposeCourse}
+              </Link>
+            </Button>
+            <Button asChild variant="ink">
+              <Link href="/studio/batches/new">
+                <Plus /> {t.studio.newBatch}
+              </Link>
+            </Button>
+          </div>
+        }
       />
       {schedule.isPending ? (
         <LoadingBlock rows={1} height={240} />
@@ -101,7 +115,7 @@ export function StudioHome() {
       </div>
       <section aria-labelledby="mybatches" className="flex flex-col gap-4">
         <SectionHeader title={<span id="mybatches">{t.studio.myBatches}</span>} size="lg" />
-        <QueryView query={batches} isEmpty={(d) => d.items.length === 0} loading={<LoadingBlock rows={2} height={160} />} empty={<EmptyState title={t.studio.noBatches} />}>
+        <QueryView query={batches} isEmpty={(d) => d.items.length === 0} loading={<LoadingBlock rows={2} height={160} />} empty={<EmptyState title={t.studio.noBatches} action={{ label: t.studio.newBatch, href: '/studio/batches/new' }} />}>
           {(d) => (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-4">
               {d.items.map((b) => (

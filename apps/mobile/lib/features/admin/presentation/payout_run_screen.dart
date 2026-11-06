@@ -65,7 +65,8 @@ class _PayoutRunScreenState extends ConsumerState<PayoutRunScreen> {
           children: [
             StatusChip(
               label: r.status == PayoutRunStatus.draft ? l.awaitingApproval : r.status.wire,
-              color: r.status == PayoutRunStatus.draft ? AzzaColors.sun : AzzaColors.sage,
+              color: r.status == PayoutRunStatus.draft ? AzzaColors.green : AzzaPalette.of(context).successBg,
+              textColor: r.status == PayoutRunStatus.draft ? AzzaColors.inkDeep : AzzaPalette.of(context).success,
             ),
             const SizedBox(height: 12),
             MonoLabel(l.totalTeachers(f.n(r.payouts.length))),
@@ -100,14 +101,14 @@ class _PayoutRunScreenState extends ConsumerState<PayoutRunScreen> {
                         PayoutStatus.paid => l.paidLabel,
                         PayoutStatus.carriedOver => l.carriedOver,
                       },
-                      color: line.status == PayoutStatus.held ? AzzaColors.warnDeep : null,
+                      color: line.status == PayoutStatus.held ? AzzaPalette.of(context).warning : null,
                     ),
                   ]),
                 ]),
               ),
             if (r.held.isNotEmpty) ...[
               const SizedBox(height: 12),
-              RaisedCard(color: AzzaColors.peach.withValues(alpha: 0.3), child: Text(l.heldNote(f.n(r.held.length)), style: t.bodyMedium)),
+              RaisedCard(color: AzzaPalette.of(context).warningBg, child: Text(l.heldNote(f.n(r.held.length)), style: t.bodyMedium)),
             ],
           ],
         ),

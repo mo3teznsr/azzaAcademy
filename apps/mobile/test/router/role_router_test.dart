@@ -1,12 +1,15 @@
 import 'package:azza/app.dart';
 import 'package:azza/core/prefs/app_prefs.dart';
 import 'package:azza/core/providers.dart';
+import 'package:azza/core/theme/tokens.dart';
 import 'package:azza/features/admin/data/admin_repository.dart';
 import 'package:azza/features/auth/data/auth_repository.dart';
 import 'package:azza/features/auth/domain/app_user.dart';
 import 'package:azza/features/catalog/data/catalog_repository.dart';
+import 'package:azza/features/catalog/data/reviews_repository.dart';
 import 'package:azza/features/learn/data/learn_repository.dart';
 import 'package:azza/features/me/data/me_repository.dart';
+import 'package:azza/features/teacher/data/proposals_repository.dart';
 import 'package:azza/features/waitlist/data/waitlist_repository.dart';
 import 'package:azza/router/app_router.dart';
 import 'package:azza/router/routes.dart';
@@ -35,6 +38,8 @@ Future<GoRouter> bootApp(WidgetTester tester, AppUser? user, {bool onboarded = t
       waitlistRepositoryProvider.overrideWithValue(FakeWaitlistRepository()),
       catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
       adminRepositoryProvider.overrideWithValue(FakeAdminRepository()),
+      proposalsRepositoryProvider.overrideWithValue(FakeProposalsRepository()),
+      reviewsRepositoryProvider.overrideWithValue(FakeReviewsRepository()),
       realtimeClientProvider.overrideWithValue(FakeRealtimeClient()),
     ],
     child: Consumer(builder: (context, ref, _) {
@@ -79,14 +84,14 @@ void main() {
     expect(find.text('Explore'), findsNothing);
   });
 
-  testWidgets('admin lands in the admin tree on the cream ground', (tester) async {
+  testWidgets('admin lands in the admin tree on the page ground', (tester) async {
     final router = await bootApp(tester, admin);
     expect(location(router), Routes.adminOverview);
     for (final tab in ['Overview', 'Live', 'Batches', 'Approvals', 'Me']) {
       expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(tab)), findsOneWidget);
     }
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-    expect(Theme.of(tester.element(find.byWidget(scaffold))).scaffoldBackgroundColor, const Color(0xFFF5EFE4));
+    expect(Theme.of(tester.element(find.byWidget(scaffold))).scaffoldBackgroundColor, AzzaColors.page);
   });
 
   testWidgets("deep link into another role's tree bounces to own home", (tester) async {
@@ -98,5 +103,29 @@ void main() {
     router.go(Routes.teacherEarnings);
     await settle(tester);
     expect(location(router), Routes.studentHome);
+  });
+
+  testWidgets('proposal screens: teachers reach them, other roles bounce home', (tester) async {
+    final router = await bootApp(tester, teacher);
+    router.go(Routes.teacherCourses);
+    await settle(tester);
+    expect(location(router), Routes.teacherCourses);
+    expect(find.text('My courses'), findsWidgets);
+
+    router.go(Routes.teacherNewBatch);
+    await settle(tester);
+    expect(location(router), Routes.teacherNewBatch);
+    expect(find.text('New batch'), findsWidgets);
+
+    router.go(Routes.teacherNewCourse);
+    await settle(tester);
+    expect(location(router), Routes.teacherNewCourse);
+  });
+
+  testWidgets('an admin cannot open the teacher course editor', (tester) async {
+    final router = await bootApp(tester, admin);
+    router.go(Routes.teacherNewCourse);
+    await settle(tester);
+    expect(location(router), Routes.adminOverview);
   });
 }

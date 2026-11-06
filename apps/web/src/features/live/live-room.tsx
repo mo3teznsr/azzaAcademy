@@ -275,7 +275,7 @@ function Room({ session, mode }: { session: SessionDetail; mode: Mode }) {
           {join.isError && !isTerminalEdge(joinEdge) && (
             <ErrorState compact error={new ApiError(422, '', joinErrorMessage(join.error, { t, f }))} />
           )}
-          {ticket && !ticket.serverUrl && <p className="text-sm text-peach">{t.live.videoUnavailable}</p>}
+          {ticket && !ticket.serverUrl && <p className="text-sm text-peach-fg">{t.live.videoUnavailable}</p>}
           <div className="flex flex-wrap gap-3">
             {canJoin && (
               <Button size="lg" variant={isHost ? 'sun' : 'onair'} onClick={() => joinNow()} disabled={join.isPending}>

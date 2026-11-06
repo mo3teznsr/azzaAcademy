@@ -1,5 +1,6 @@
 import type { AdminCreateUserInput, BankAccountInput, CouponInput, ReviewTransferInput, Role, UpdateCouponInput } from '@azza/shared';
-import { API_URL, http, items, request, uploadWithProgress } from './client';
+import { API_URL, http, items, request } from './client';
+import { uploadCourseMediaAsAdmin, type CourseMediaKind } from './courses';
 import type {
   AdminDashboard,
   AdminReport,
@@ -17,16 +18,11 @@ import type {
   PlatformSettings,
 } from './types';
 
-export type CourseMediaKind = 'course-cover' | 'course-video';
+export type { CourseMediaKind };
 
 export const adminApi = {
   /** Course cover photo (JPG/PNG/WEBP ≤ 8 MB) or intro video (MP4/MOV/WEBM ≤ 200 MB) → the stored file URL. */
-  uploadCourseMedia: (kind: CourseMediaKind, file: File, opts?: { onProgress?: (fraction: number) => void; signal?: AbortSignal }) => {
-    const form = new FormData();
-    form.append('kind', kind);
-    form.append('file', file);
-    return uploadWithProgress<{ url: string }>('/api/v1/admin/media', form, opts);
-  },
+  uploadCourseMedia: uploadCourseMediaAsAdmin,
   dashboard: () => http.get<AdminDashboard>('/api/v1/admin/dashboard'),
   /** Inclusive `YYYY-MM-DD` days in Asia/Dubai; defaults to the last 30 days. */
   reports: (p: { from?: string; to?: string } = {}) => http.get<AdminReport>('/api/v1/admin/reports', { ...p }),

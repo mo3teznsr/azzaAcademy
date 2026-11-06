@@ -131,9 +131,9 @@ export function PermissionHelp({
   const e = t.live.edge;
   const body = block === 'missing' ? e.permMissing : block === 'busy' ? e.permBusy : e.permBody;
   return (
-    <section role="alert" className={cn('flex flex-col gap-3 rounded-[18px] border border-peach/50 bg-peach/10 p-4', className)}>
+    <section role="alert" className={cn('flex flex-col gap-3 rounded-[18px] border border-peach-fg/40 bg-peach-fg/10 p-4', className)}>
       <div className="flex items-start gap-3">
-        <ShieldAlert className="mt-0.5 size-5 shrink-0 text-peach" aria-hidden />
+        <ShieldAlert className="mt-0.5 size-5 shrink-0 text-peach-fg" aria-hidden />
         <div>
           <h2 className="font-semibold">{e.permTitle}</h2>
           <p className="text-sm text-muted-foreground">{body}</p>
@@ -206,7 +206,7 @@ export function ConnectionLost({ onRejoin, pending }: { onRejoin: () => void; pe
   const { t } = useI18n();
   return (
     <Shell>
-      <WifiOff className="size-10 text-peach" aria-hidden />
+      <WifiOff className="size-10 text-peach-fg" aria-hidden />
       <div role="alert">
         <h1 className="font-display text-3xl font-extrabold">{t.live.edge.lostTitle}</h1>
         <p className="mt-2 text-muted-foreground">{t.live.edge.lostBody}</p>

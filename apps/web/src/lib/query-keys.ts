@@ -17,6 +17,12 @@ export const qk = {
   notifications: ['me', 'notifications'] as const,
   courses: (params: object) => ['courses', params] as const,
   course: (idOrSlug: string) => ['course', idOrSlug] as const,
+  /** Public list; `all` (admin) includes hidden categories. */
+  categories: (all = false) => ['categories', all ? 'all' : 'active'] as const,
+  related: (idOrSlug: string) => ['course', idOrSlug, 'related'] as const,
+  /** Paged reviews of a course; invalidate the prefix `['reviews', courseKey]`. */
+  reviews: (idOrSlug: string) => ['reviews', idOrSlug] as const,
+  saved: ['me', 'saved-courses'] as const,
   batches: (params: object) => ['batches', params] as const,
   batch: (id: string) => ['batch', id] as const,
   roster: (id: string) => ['batch', id, 'roster'] as const,

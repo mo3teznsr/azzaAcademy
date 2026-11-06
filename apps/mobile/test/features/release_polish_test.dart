@@ -9,6 +9,7 @@ import 'package:azza/core/theme/tokens.dart';
 import 'package:azza/features/auth/data/auth_repository.dart';
 import 'package:azza/features/auth/presentation/sign_in_screen.dart';
 import 'package:azza/features/catalog/data/catalog_repository.dart';
+import 'package:azza/features/catalog/data/reviews_repository.dart';
 import 'package:azza/features/catalog/domain/catalog_models.dart';
 import 'package:azza/features/catalog/presentation/course_detail_screen.dart';
 import 'package:azza/features/checkout/data/checkout_repository.dart';
@@ -32,15 +33,15 @@ Color _ground(WidgetTester tester) =>
 
 void main() {
   group('appearance', () {
-    testWidgets('follows the phone: light → cream ground, dark → ink ground', (tester) async {
+    testWidgets('follows the phone: light → page ground, dark → inkDeep ground', (tester) async {
       tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
       addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
       await bootApp(tester, student);
-      expect(_ground(tester), AzzaColors.cream);
+      expect(_ground(tester), AzzaColors.page);
 
       tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
       await settle(tester, 10);
-      expect(_ground(tester), AzzaColors.ink);
+      expect(_ground(tester), AzzaColors.inkDeep);
     });
 
     testWidgets('Profile → Appearance → Dark is saved and wins over the phone', (tester) async {
@@ -61,17 +62,52 @@ void main() {
       expect(find.text('Dark'), findsOneWidget);
     });
 
-    test('light accents are readable as text on cream (WCAG AA)', () {
+    test('palettes meet WCAG AA: text, accent-as-text, primary and status pairs (≥ 4.5:1)', () {
       double contrast(Color a, Color b) {
         final la = a.computeLuminance(), lb = b.computeLuminance();
-        return (( la > lb ? la : lb) + 0.05) / ((la > lb ? lb : la) + 0.05);
+        return ((la > lb ? la : lb) + 0.05) / ((la > lb ? lb : la) + 0.05);
       }
 
-      for (final p in [AzzaPalette.studentLight, AzzaPalette.teacherLight, AzzaPalette.adminLight]) {
-        expect(contrast(p.accent, p.ground), greaterThanOrEqualTo(4.5));
-        expect(contrast(p.onAccent, p.accent), greaterThanOrEqualTo(4.5));
-        expect(contrast(p.text, p.ground), greaterThanOrEqualTo(4.5));
+      void aa(Color fg, Color bg, String what) =>
+          expect(contrast(fg, bg), greaterThanOrEqualTo(4.5), reason: '$what: ${contrast(fg, bg).toStringAsFixed(2)}:1');
+
+      final palettes = {
+        'student light': AzzaPalette.studentLight,
+        'teacher light': AzzaPalette.teacherLight,
+        'admin light': AzzaPalette.adminLight,
+        'student dark': AzzaPalette.studentDark,
+        'teacher dark': AzzaPalette.teacherDark,
+        'admin dark': AzzaPalette.adminDark,
+      };
+      for (final MapEntry(key: name, value: p) in palettes.entries) {
+        for (final (bg, where) in [(p.ground, 'ground'), (p.raised, 'card')]) {
+          aa(p.text, bg, '$name text on $where');
+          aa(p.muted, bg, '$name muted on $where');
+          aa(p.accent, bg, '$name accent-as-text on $where');
+          for (final (fg, what) in [(p.success, 'success'), (p.info, 'info'), (p.warning, 'warning'), (p.danger, 'danger')]) {
+            aa(fg, bg, '$name $what on $where');
+          }
+        }
+        aa(p.onAccent, p.accent, '$name onAccent on accent');
+        aa(p.onPrimary, p.primary, '$name onPrimary on primary');
+        aa(p.success, p.successBg, '$name success on its tint');
+        aa(p.info, p.infoBg, '$name info on its tint');
+        aa(p.warning, p.warningBg, '$name warning on its tint');
+        aa(p.danger, p.dangerBg, '$name danger on its tint');
       }
+      // The bright green takes inkDeep text, never white.
+      aa(AzzaColors.inkDeep, AzzaColors.green, 'inkDeep on green');
+      expect(contrast(AzzaColors.ivory, AzzaColors.green), lessThan(4.5));
+      // Light: page ground, white cards, ink text, ink primary with white text.
+      expect(AzzaPalette.studentLight.ground, AzzaColors.page);
+      expect(AzzaPalette.studentLight.raised, AzzaColors.surface);
+      expect(AzzaPalette.studentLight.primary, AzzaColors.ink);
+      // Dark: inkDeep ground, ink2 cards, cream text, green primary with inkDeep text.
+      expect(AzzaPalette.studentDark.ground, AzzaColors.inkDeep);
+      expect(AzzaPalette.studentDark.raised, AzzaColors.ink2);
+      expect(AzzaPalette.studentDark.text, AzzaColors.cream);
+      expect(AzzaPalette.studentDark.primary, AzzaColors.green);
+      expect(AzzaPalette.studentDark.onPrimary, AzzaColors.inkDeep);
     });
   });
 
@@ -80,6 +116,7 @@ void main() {
     await pumpScreen(tester, const CourseDetailScreen(courseId: 'c1'), overrides: [
       courseProvider('c1').overrideWith((ref) async => course),
       catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
+      reviewsRepositoryProvider.overrideWithValue(FakeReviewsRepository()),
       fxRatesProvider.overrideWith((ref) async => FxRates.fallback),
     ]);
     await settle(tester, 12);
@@ -162,6 +199,7 @@ void main() {
   Future<void> pumpCourse(WidgetTester tester, Course c) => pumpScreen(tester, const CourseDetailScreen(courseId: 'c1'), overrides: [
         courseProvider('c1').overrideWith((ref) async => c),
         catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
+        reviewsRepositoryProvider.overrideWithValue(FakeReviewsRepository()),
         fxRatesProvider.overrideWith((ref) async => FxRates.fallback),
       ]);
 

@@ -187,7 +187,7 @@ class _DangerZone extends ConsumerWidget {
     final l = context.l10n;
     final p = AzzaPalette.of(context);
     final t = Theme.of(context).textTheme;
-    final danger = p.isDark ? AzzaColors.peach : AzzaColors.dangerDeep;
+    final danger = p.danger;
     return Container(
       key: const Key('danger-zone'),
       padding: const EdgeInsets.all(16),

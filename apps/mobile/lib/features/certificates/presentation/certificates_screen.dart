@@ -104,7 +104,7 @@ class _EarnedCard extends ConsumerWidget {
                   children: [
                     Slate(cert.batchCode),
                     const Spacer(),
-                    if (isNew) StatusChip(label: l.certificateNew, color: AzzaColors.onAir, textColor: AzzaColors.ink),
+                    if (isNew) StatusChip(label: l.certificateNew, color: AzzaColors.green, textColor: AzzaColors.inkDeep),
                   ],
                 ),
                 const SizedBox(height: 10),

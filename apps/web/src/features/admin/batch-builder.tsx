@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,25 +18,38 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Chip } from '@/components/brand/status-chip';
 import { PageTitle, Panel, SectionHeader } from '@/components/brand/section';
 import { ErrorState, LoadingBlock } from '@/components/brand/states';
-import { adminApi, batchesApi, coursesApi, type SchedulePreview } from '@/lib/api';
+import { adminApi, batchesApi, coursesApi, type BatchDetail, type Course, type SchedulePreview } from '@/lib/api';
 import { ApiError } from '@/lib/api/client';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { sessionCode } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+import type { EditorMode } from './course-editor';
+import { useProposalError } from './proposal-review';
 
 type In = z.input<typeof createBatchInput>;
 type Out = z.output<typeof createBatchInput>;
 const ZONES = ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Africa/Cairo', 'Europe/London'];
 const today = () => new Date().toISOString().slice(0, 10);
 
-export function BatchBuilder() {
+/** `admin` picks any course and teacher; `teacher` proposes a DRAFT batch for themselves (studio). */
+export function BatchBuilder({ mode = 'admin' }: { mode?: EditorMode }) {
   const { t, f, fill } = useI18n();
   const router = useRouter();
   const qc = useQueryClient();
   const params = useSearchParams();
-  const courses = useQuery({ queryKey: qk.courses({ pageSize: 100 }), queryFn: () => coursesApi.list({ pageSize: 100 }) });
-  const teachers = useQuery({ queryKey: qk.admin.users({ role: 'TEACHER' }), queryFn: () => adminApi.users({ role: 'TEACHER', pageSize: 100 }) });
+  const errorMessage = useProposalError();
+  const teacher = mode === 'teacher';
+  const all = useQuery({ queryKey: qk.courses({ pageSize: 100 }), queryFn: () => coursesApi.list({ pageSize: 100 }) });
+  // Teachers can run any published course (the plain list) plus the ones they proposed, whatever their status.
+  const mine = useQuery({ queryKey: qk.courses({ mine: true, pageSize: 100 }), queryFn: () => coursesApi.list({ mine: true, pageSize: 100 }), enabled: teacher });
+  const courses = teacher && mine.isError ? mine : all;
+  const courseOptions = useMemo(() => {
+    const byId = new Map<string, Course>();
+    for (const c of [...(all.data?.items ?? []), ...(teacher ? (mine.data?.items ?? []) : [])]) if (c.status !== 'ARCHIVED') byId.set(c.id, c);
+    return [...byId.values()];
+  }, [all.data, mine.data, teacher]);
+  const teachers = useQuery({ queryKey: qk.admin.users({ role: 'TEACHER' }), queryFn: () => adminApi.users({ role: 'TEACHER', pageSize: 100 }), enabled: !teacher });
   const [preview, setPreview] = useState<SchedulePreview | null>(null);
 
   const form = useForm<In, unknown, Out>({
@@ -76,27 +89,42 @@ export function BatchBuilder() {
   });
 
   const create = useMutation({
-    mutationFn: (v: Out) => batchesApi.create({ ...v, schedule: { ...v.schedule, skipDates: v.schedule.skipDates.filter(Boolean) } }),
-    onSuccess: (b) => {
-      toast.success(t.admin.builder.created);
+    /** `submit` (teacher): create the draft, then send it for review. A failed submit still keeps the draft. */
+    mutationFn: async ({ v, submit }: { v: Out; submit?: boolean }): Promise<{ batch: BatchDetail; submitError: unknown }> => {
+      const batch = await batchesApi.create({ ...v, teacherId: teacher ? undefined : v.teacherId, schedule: { ...v.schedule, skipDates: v.schedule.skipDates.filter(Boolean) } });
+      if (!submit) return { batch, submitError: null };
+      try {
+        return { batch: await batchesApi.submit(batch.id), submitError: null };
+      } catch (e) {
+        return { batch, submitError: e };
+      }
+    },
+    onSuccess: ({ batch, submitError }, { submit }) => {
+      if (submitError) toast.error(errorMessage(submitError));
+      else toast.success(submit ? t.proposals.submitted : teacher ? t.proposals.batchDraftSaved : t.admin.builder.created);
       void qc.invalidateQueries({ queryKey: ['batches'] });
-      router.push(`/admin/batches/${b.id}`);
+      router.push(teacher ? `/studio/batches/${batch.id}` : `/admin/batches/${batch.id}`);
     },
     onError: (e: Error) => {
       if (e instanceof ApiError && e.status === 409) {
         const conflicts = (e.details as { conflicts?: SchedulePreview['conflicts'] } | undefined)?.conflicts;
         if (conflicts && preview) setPreview({ ...preview, conflicts });
       }
-      toast.error(e.message);
+      toast.error(errorMessage(e));
     },
   });
+  const onCreate = (submit: boolean) =>
+    form.handleSubmit((v) => {
+      if (!teacher && !v.teacherId) return form.setError('teacherId', { message: t.proposals.pickTeacher });
+      create.mutate({ v, submit });
+    })();
 
   const conflictNums = new Set(preview?.conflicts.map((c) => c.sessionNumber));
 
   return (
     <>
-      <PageTitle kicker={t.status.batch.DRAFT} title={t.admin.builder.title} />
-      <form className="grid items-start gap-5 xl:grid-cols-[1.3fr_1fr]" onSubmit={form.handleSubmit((v) => create.mutate(v))} noValidate>
+      <PageTitle kicker={t.status.batch.DRAFT} title={teacher ? t.proposals.newBatchTitle : t.admin.builder.title} />
+      <form className="grid items-start gap-5 xl:grid-cols-[1.3fr_1fr]" onSubmit={(e) => (e.preventDefault(), onCreate(false))} noValidate>
         <div className="flex flex-col gap-5">
           <Panel>
             <SectionHeader title={t.admin.builder.basics} size="sm" />
@@ -104,6 +132,8 @@ export function BatchBuilder() {
               <F label={t.admin.builder.course} error={err.courseId?.message} className="md:col-span-2">
                 {courses.isError ? (
                   <ErrorState compact error={courses.error} />
+                ) : teacher && all.isSuccess && mine.isSuccess && courseOptions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{t.proposals.noCourses}</p>
                 ) : (
                   <Controller
                     control={form.control}
@@ -114,7 +144,7 @@ export function BatchBuilder() {
                           <SelectValue placeholder="—" />
                         </SelectTrigger>
                         <SelectContent>
-                          {(courses.data?.items ?? []).map((c) => (
+                          {courseOptions.map((c) => (
                             <SelectItem key={c.id} value={c.id}>
                               {c.titleEn}
                             </SelectItem>
@@ -171,34 +201,36 @@ export function BatchBuilder() {
                   )}
                 />
               </F>
-              <F label={t.admin.builder.teacher} error={err.teacherId?.message} className="md:col-span-2">
-                {teachers.isPending ? (
-                  <LoadingBlock rows={1} height={48} />
-                ) : teachers.isError ? (
-                  <ErrorState compact error={teachers.error} />
-                ) : teachers.data.items.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">{t.admin.builder.noTeachers}</p>
-                ) : (
-                  <Controller
-                    control={form.control}
-                    name="teacherId"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={(v) => (field.onChange(v), setPreview(null))}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="—" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {teachers.data.items.map((u) => (
-                            <SelectItem key={u.id} value={u.id}>
-                              {u.name} · {u.email}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                )}
-              </F>
+              {!teacher && (
+                <F label={t.admin.builder.teacher} error={err.teacherId?.message} className="md:col-span-2">
+                  {teachers.isPending ? (
+                    <LoadingBlock rows={1} height={48} />
+                  ) : teachers.isError ? (
+                    <ErrorState compact error={teachers.error} />
+                  ) : teachers.data.items.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{t.admin.builder.noTeachers}</p>
+                  ) : (
+                    <Controller
+                      control={form.control}
+                      name="teacherId"
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={(v) => (field.onChange(v), setPreview(null))}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="—" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {teachers.data.items.map((u) => (
+                              <SelectItem key={u.id} value={u.id}>
+                                {u.name} · {u.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  )}
+                </F>
+              )}
             </div>
           </Panel>
 
@@ -290,7 +322,7 @@ export function BatchBuilder() {
               <>
                 {preview.conflicts.map((c) => (
                   <div key={c.sessionNumber} className="flex gap-2 rounded-[14px] bg-ink p-3 text-sm text-ivory">
-                    <AlertTriangle className="size-4 shrink-0 text-peach" />
+                    <AlertTriangle className="size-4 shrink-0 text-peach-fg" />
                     {fill(t.admin.builder.conflictLine, { s: sessionCode(c.sessionNumber), d: c.localDate, b: c.withBatch })}
                   </div>
                 ))}
@@ -309,11 +341,17 @@ export function BatchBuilder() {
             )}
           </Panel>
           <Panel>
-            <SectionHeader title={t.admin.builder.review} size="sm" />
+            <SectionHeader title={teacher ? t.proposals.reviewStep : t.admin.builder.review} size="sm" />
             {preview && preview.conflicts.length > 0 && <p className="text-sm text-destructive">{t.admin.builder.resolve}</p>}
-            <Button type="submit" variant="ink" size="lg" disabled={create.isPending}>
-              {create.isPending ? t.admin.builder.creating : t.admin.builder.create}
+            {teacher && <p className="text-sm text-muted-foreground">{t.proposals.draftBatch}</p>}
+            <Button type="submit" variant={teacher ? 'outline' : 'ink'} size="lg" disabled={create.isPending}>
+              {create.isPending ? t.admin.builder.creating : teacher ? t.proposals.saveBatchDraft : t.admin.builder.create}
             </Button>
+            {teacher && (
+              <Button type="button" variant="ink" size="lg" disabled={create.isPending} onClick={() => onCreate(true)}>
+                {t.proposals.createAndSubmit}
+              </Button>
+            )}
           </Panel>
         </aside>
       </form>

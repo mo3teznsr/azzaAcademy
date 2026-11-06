@@ -182,7 +182,7 @@ function ProgressCard({ p, coverStyle }: { p: CertificateProgress; coverStyle?: 
             aria-valuetext={fill(t.certificates.progress, { a: p.attended, r: p.required })}
             className="relative h-2 rounded-full bg-secondary"
           >
-            <div className={p.needed <= 0 ? 'h-2 rounded-full bg-sage' : 'h-2 rounded-full bg-sun'} style={{ width: `${pct}%` }} />
+            <div className={p.needed <= 0 ? 'h-2 rounded-full bg-green-deep' : 'h-2 rounded-full bg-green'} style={{ width: `${pct}%` }} />
             <span aria-hidden className="absolute -top-1 h-4 w-0.5 rounded bg-foreground" style={{ insetInlineStart: `calc(${mark}% - 1px)` }} />
           </div>
           <span className={p.needed > 0 && !p.reachable ? 'text-[13px] text-peach-fg' : 'text-[13px] text-muted-foreground'}>{status}</span>

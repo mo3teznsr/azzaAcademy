@@ -14,7 +14,7 @@ export class PrismaTeacherRepository {
   /** Every non-draft, non-cancelled batch of the teacher on a PUBLISHED course (courses + languages come from these). */
   publicBatches(teacherId: string) {
     return this.db.batch.findMany({
-      where: { teacherId, status: { notIn: ['DRAFT', 'CANCELLED'] }, course: { status: 'PUBLISHED' } },
+      where: { teacherId, status: { notIn: ['DRAFT', 'PENDING_REVIEW', 'CANCELLED'] }, course: { status: 'PUBLISHED' } },
       orderBy: { startsOn: 'asc' },
       select: {
         id: true,

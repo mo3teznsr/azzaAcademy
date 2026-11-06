@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { BankTransferDetails } from './bank-details';
 import { useTheme } from '@/lib/theme/provider';
 import { getStripe, stripeAppearance, stripeConfigured } from './stripe';
+import { useCategoryLabel } from '@/components/brand/category';
 
 type Choice = 'CARD' | 'WALLET' | 'BANK';
 const methodOf = (c: Choice): PaymentMethod => (c === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE');
@@ -61,6 +62,7 @@ function Stepper({ current }: { current: number }) {
 
 function Checkout({ batch }: { batch: BatchDetail }) {
   const { t, f, fill, pick } = useI18n();
+  const categoryLabel = useCategoryLabel();
   const money = useMoney();
   const router = useRouter();
   const [choice, setChoice] = useState<Choice>(stripeConfigured ? 'CARD' : 'BANK');
@@ -197,7 +199,7 @@ function Checkout({ batch }: { batch: BatchDetail }) {
             <CourseCover course={batch.course} size="sm" showMeta={false} className="h-24 w-24 shrink-0 p-2" />
             <div className="min-w-0">
               <span className="label-mono text-muted-foreground" dir="ltr">
-                {batch.course.category} · {batch.code}
+                {categoryLabel(batch.course)} · {batch.code}
               </span>
               <b className="block text-lg leading-tight">{title}</b>
               <span className="text-[13px] text-muted-foreground">

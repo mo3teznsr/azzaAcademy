@@ -22,6 +22,10 @@ import { BatchService } from './modules/batches/batch.service';
 import { ScheduleGenerator } from './modules/batches/schedule-generator';
 import { PrismaCourseRepository } from './modules/courses/course.repository';
 import { CourseService } from './modules/courses/course.service';
+import { CategoryService, PrismaCategoryRepository } from './modules/categories/category.service';
+import { PrismaReviewRepository } from './modules/reviews/review.repository';
+import { ReviewService } from './modules/reviews/review.service';
+import { SavedCourseService } from './modules/reviews/saved-course.service';
 import { PrismaAdminRepository } from './modules/admin/admin.repository';
 import { AdminService } from './modules/admin/admin.service';
 import { CourseMediaService } from './modules/admin/course-media.service';
@@ -135,6 +139,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
 
   // repositories
   const courseRepo = new PrismaCourseRepository(db);
+  const categories = new CategoryService(new PrismaCategoryRepository(db));
   const batchRepo = new PrismaBatchRepository(db);
   const notificationRepo = new PrismaNotificationRepository(db);
   const paymentsRepo = new PrismaPaymentsRepository(db);
@@ -190,7 +195,10 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
 
   const meService = new MeService(new PrismaMeRepository(db), clock, lifecycle, adapters.storage);
   const services = {
-    courses: new CourseService(courseRepo),
+    courses: new CourseService(courseRepo, notifications, clock, categories),
+    categories,
+    reviews: new ReviewService(new PrismaReviewRepository(db), notifications, () => clock.now()),
+    savedCourses: new SavedCourseService(db),
     batches: new BatchService(batchRepo, courseRepo, new ScheduleGenerator(), access, notifications, clock),
     notifications,
     me: meService,

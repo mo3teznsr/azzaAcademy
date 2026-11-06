@@ -2,12 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useDeferredValue, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { Suspense, useDeferredValue, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowDown, ArrowRight, Pause, Play, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Accordion } from './faq';
-import { CourseCover } from '@/components/brand/course-cover';
 import { SignalMark } from '@/components/brand/signal-mark';
 import { BatchStatusChip } from '@/components/brand/status-chip';
 import { EmptyState, ErrorState, LoadingGrid } from '@/components/brand/states';
@@ -16,7 +15,10 @@ import { useMoney } from '@/lib/money';
 import { batchPriceFils, describeRule } from '@/lib/schedule';
 import { useAuth } from '@/lib/auth/use-auth';
 import { gmtOffset } from '@/lib/i18n/format';
-import type { BatchSummary, Course } from '@/lib/api/types';
+import { coursesApi } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
+import { CategoryChips, FilterBar, toListParams, useCatalogFilters } from './catalog-filters';
+import { CourseCard, CourseRail } from './course-card';
 import { useCatalogCourses, useLiveNow, usePublicBatches } from './use-catalog';
 
 export function CatalogPage() {
@@ -29,7 +31,11 @@ export function CatalogPage() {
         <StartMarquee />
       </div>
       <HowItWorks />
-      <Catalog />
+      <FeaturedRail />
+      {/* The catalog reads its filters from the URL, so it renders below a Suspense boundary. */}
+      <Suspense fallback={<LoadingGrid count={6} height={380} />}>
+        <Catalog />
+      </Suspense>
       <StartingSoon />
       <Pricing />
       <Faq />
@@ -46,10 +52,10 @@ function Hero() {
   return (
     <section className="mt-6 flex flex-col gap-8">
       <div>
-        <div className="label-mono mb-4 flex flex-wrap items-center gap-2 text-onair-fg">
+        <div className="section-kicker mb-4 flex flex-wrap items-center gap-2 text-onair-fg">
           <SignalMark size={18} /> {t.nav.public.findBatch}
           {n > 0 && (
-            <span className="ms-2 inline-flex items-center gap-1.5 rounded-full bg-onair px-2.5 py-0.5 text-ink" role="status">
+            <span className="ms-2 inline-flex items-center gap-1.5 rounded-full bg-onair px-2.5 py-0.5 text-onair-ink" role="status">
               <span aria-hidden className="onair" /> {fill(t.catalog.liveNow, { n: f.number(n), p: f.number(live.data?.participants ?? 0) })}
             </span>
           )}
@@ -60,10 +66,10 @@ function Hero() {
       </div>
       {/* The photo stands on its own — no scrim, no type on it; the copy sits beside it. */}
       <div className="grid items-end gap-8 lg:grid-cols-[1.6fr_1fr]">
-        <div className="relative aspect-[16/10] overflow-hidden rounded-[28px] bg-muted lg:aspect-[16/9]">
+        <div className="relative aspect-[16/10] overflow-hidden rounded-[28px] bg-muted shadow-media lg:aspect-[16/9]">
           <Image src="/images/scenes/hero.jpg" alt="" fill priority sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover object-[70%_center]" />
         </div>
-        <div className="flex flex-col gap-6 pb-2">
+        <div className="site-entrance flex flex-col gap-6 pb-2" style={{ '--entrance-step': 3 } as CSSProperties}>
           <p className="max-w-md text-lg leading-relaxed text-muted-foreground">{t.catalog.body}</p>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
@@ -84,16 +90,17 @@ function Hero() {
 function HowItWorks() {
   const { t, f } = useI18n();
   return (
-    <section id="how" aria-labelledby="how-title" className="flex flex-col gap-6">
-      <h2 id="how-title" className="label-mono text-muted-foreground">
+    // The page's one loud moment: a whole lime band with ink-deep type (BRAND.md), the same in both themes.
+    <section id="how" aria-labelledby="how-title" className="flex flex-col gap-8 rounded-[28px] bg-lime p-[clamp(1.75rem,4vw,3.5rem)] text-ink-deep">
+      <h2 id="how-title" className="section-kicker">
         {t.catalog.howTitle}
       </h2>
-      <ol className="grid gap-px overflow-hidden rounded-[20px] border border-border bg-border md:grid-cols-3">
+      <ol className="grid gap-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-ink-deep/15">
         {t.catalog.steps.map((s, i) => (
-          <li key={s.word} className="flex flex-col gap-3 bg-background p-7">
-            <span className="timecode text-sm text-muted-foreground">{f.number(i + 1).padStart(2, f.number(0))}</span>
+          <li key={s.word} className="flex flex-col gap-3 md:px-8 md:first:ps-0 md:last:pe-0">
+            <span className="timecode text-sm opacity-75">{f.number(i + 1).padStart(2, f.number(0))}</span>
             <b className="font-display text-5xl font-extrabold">{s.word}</b>
-            <span className="text-muted-foreground">{s.text}</span>
+            <span className="text-ink-deep/80">{s.text}</span>
           </li>
         ))}
       </ol>
@@ -101,19 +108,33 @@ function HowItWorks() {
   );
 }
 
+/** Admin-picked courses (`featuredRank`), hidden when there are none. */
+function FeaturedRail() {
+  const { t } = useI18n();
+  const p = { featured: true, pageSize: 8 };
+  const q = useQuery({ queryKey: qk.courses(p), queryFn: () => coursesApi.list(p) });
+  const batches = usePublicBatches();
+  if (!q.data?.items.length) return null;
+  return (
+    <section aria-labelledby="featured-title" className="flex flex-col gap-6">
+      <div>
+        <span className="section-kicker text-sun-fg">{t.catalog.featuredKicker}</span>
+        <h2 id="featured-title" className="mt-2 font-display text-[clamp(40px,5vw,64px)] font-extrabold leading-[0.9]">
+          {t.catalog.featuredTitle}
+        </h2>
+      </div>
+      <CourseRail courses={q.data.items} byCourse={batches.byCourse} />
+    </section>
+  );
+}
+
 function Catalog() {
   const { t } = useI18n();
-  const [q, setQ] = useState('');
-  const [category, setCategory] = useState<string>('');
-  const deferredQ = useDeferredValue(q);
-  const courses = useCatalogCourses({ q: deferredQ || undefined });
+  const api = useCatalogFilters();
+  const params = useDeferredValue(useMemo(() => toListParams(api.filters), [api.filters]));
+  const courses = useCatalogCourses(params);
   const batches = usePublicBatches();
-
-  const categories = useMemo(() => {
-    const set = new Set((courses.data?.items ?? []).map((c) => c.category));
-    return [...set].sort();
-  }, [courses.data]);
-  const items = (courses.data?.items ?? []).filter((c) => !category || c.category === category);
+  const items = courses.data?.items ?? [];
 
   return (
     <section id="catalog" aria-labelledby="catalog-title" className="flex scroll-mt-8 flex-col gap-6">
@@ -126,32 +147,21 @@ function Catalog() {
           <span className="sr-only">{t.catalog.searchPlaceholder}</span>
           <input
             type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
+            value={api.filters.q}
+            onChange={(e) => api.set({ q: e.target.value })}
             placeholder={t.catalog.searchPlaceholder}
             className="min-w-0 flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground"
           />
         </label>
       </div>
-      {categories.length > 1 && (
-        <ToggleGroup type="single" value={category || 'all'} onValueChange={(v) => setCategory(v === 'all' || !v ? '' : v)} className="flex flex-wrap justify-start gap-2">
-          {['all', ...categories].map((c) => (
-            <ToggleGroupItem key={c} value={c} className="h-9 rounded-full border border-border px-4 text-sm data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-              {c === 'all' ? t.catalog.allCategories : c}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      )}
+      <CategoryChips api={api} />
+      <FilterBar api={api} />
       {courses.isPending ? (
         <LoadingGrid count={6} height={380} />
       ) : courses.isError ? (
         <ErrorState error={courses.error} onRetry={() => void courses.refetch()} />
       ) : items.length === 0 ? (
-        <EmptyState
-          title={t.catalog.emptyTitle}
-          body={t.catalog.emptyBody}
-          action={q || category ? { label: t.catalog.clearFilters, onClick: () => (setQ(''), setCategory('')) } : undefined}
-        />
+        <EmptyState title={t.catalog.emptyTitle} body={t.catalog.emptyBody} action={api.anyActive ? { label: t.catalog.clearFilters, onClick: api.clear } : undefined} />
       ) : (
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-5">
           {items.map((c) => (
@@ -162,39 +172,6 @@ function Catalog() {
         </ul>
       )}
     </section>
-  );
-}
-
-function CourseCard({ course, batches }: { course: Course; batches: BatchSummary[] }) {
-  const { t, f, pick } = useI18n();
-  const money = useMoney();
-  const title = pick(course.titleEn, course.titleAr);
-  const next = batches.find((b) => b.status === 'ENROLLING') ?? batches[0];
-  const minPrice = batches.length ? Math.min(...batches.map(batchPriceFils)) : course.priceFils;
-  return (
-    <Link href={`/courses/${course.slug}`} className="group flex h-full flex-col gap-4 rounded-[20px] bg-card p-3 no-underline transition-transform duration-300 ease-(--ease-expo) hover:-translate-y-1">
-      <CourseCover course={course} showMeta={false} className="h-56" />
-      <div className="flex flex-1 flex-col gap-2 px-2 pb-2">
-        <div className="flex items-center justify-between gap-2">
-          <span className="label-mono truncate text-muted-foreground">{course.category}</span>
-          <span className="label-mono shrink-0 rounded-full border border-border px-2.5 py-1 text-muted-foreground">{f.plural(batches.length, t.catalog.batches)}</span>
-        </div>
-        <b className="text-lg leading-tight text-foreground">{title.text}</b>
-        {title.fallback && <span className="label-mono text-muted-foreground">{t.common.englishOnly}</span>}
-        <span className="text-sm text-muted-foreground">
-          {t.status.level[course.level]} · {f.plural(course.modules.length || (next?.schedule?.sessionCount ?? 0), t.common.sessions)}
-        </span>
-        <div className="mt-auto flex items-end justify-between gap-2 border-t border-border pt-3 text-sm">
-          <span className="text-muted-foreground">
-            <span className="label-mono block">{t.catalog.nextBatch}</span>
-            <span className="text-foreground">{next ? `${next.code} · ${f.dayMonth(next.startsOn, next.timezone)}` : t.catalog.noUpcoming}</span>
-          </span>
-          <span className="text-end text-muted-foreground">
-            {t.catalog.from} <b className="block text-base text-foreground">{money.display(minPrice)}</b>
-          </span>
-        </div>
-      </div>
-    </Link>
   );
 }
 
@@ -289,7 +266,7 @@ function OnAirStrip() {
   const n = live.data?.liveSessions ?? 0;
   if (n <= 0) return null;
   return (
-    <section aria-label={t.landing.onAirNow} className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-full bg-onair px-5 py-2.5 text-ink" role="status">
+    <section aria-label={t.landing.onAirNow} className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-full bg-onair px-5 py-2.5 text-onair-ink" role="status">
       <span className="label-mono flex items-center gap-2 font-semibold">
         <span aria-hidden className="onair" /> {t.landing.onAirNow}
       </span>
@@ -364,7 +341,7 @@ function Pricing() {
     <section id="pricing" aria-labelledby="pricing-title" className="flex scroll-mt-8 flex-col gap-8">
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
         <div>
-          <span className="label-mono text-muted-foreground">{t.landing.pricingKicker}</span>
+          <span className="section-kicker text-sun-fg">{t.landing.pricingKicker}</span>
           <h2 id="pricing-title" className="mt-3 font-display text-[clamp(48px,7vw,96px)] font-extrabold leading-[0.85]">
             {t.landing.pricingTitleA}
             <br />
@@ -377,7 +354,7 @@ function Pricing() {
       </div>
       <ul className="grid gap-4 md:grid-cols-2">
         {plans.map(({ key, plan, amount, featured }) => (
-          <li key={key} className={featured ? 'flex flex-col gap-4 rounded-[24px] bg-ivory p-6 text-ink light:bg-ink light:text-ivory' : 'flex flex-col gap-4 rounded-[24px] border border-border p-6'}>
+          <li key={key} className={featured ? 'flex flex-col gap-4 rounded-[24px] bg-ivory p-6 text-ink shadow-card light:bg-ink light:text-white' : 'flex flex-col gap-4 rounded-[24px] border border-border bg-card p-6'}>
             <span className={featured ? 'label-mono text-stone-2 light:text-stone' : 'label-mono text-muted-foreground'}>{plan.name}</span>
             <b className="font-display text-4xl font-extrabold leading-none">{amount}</b>
             <p className={featured ? 'text-sm text-stone-2 light:text-stone' : 'text-sm text-muted-foreground'}>{plan.note}</p>

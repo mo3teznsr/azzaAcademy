@@ -9,13 +9,17 @@ export type Locale = (typeof LOCALES)[number];
 export const SESSION_LANGUAGES = ['AR', 'EN'] as const;
 export type SessionLanguage = (typeof SESSION_LANGUAGES)[number];
 
-export const COURSE_STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
+export const COURSE_STATUSES = ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'ARCHIVED'] as const;
 export type CourseStatus = (typeof COURSE_STATUSES)[number];
+
+/** Catalog order: newest first, best rated, cheapest, priciest, most reviewed. */
+export const COURSE_SORTS = ['newest', 'rating', 'price_asc', 'price_desc', 'popular'] as const;
+export type CourseSort = (typeof COURSE_SORTS)[number];
 
 export const COURSE_LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const;
 export type CourseLevel = (typeof COURSE_LEVELS)[number];
 
-export const BATCH_STATUSES = ['DRAFT', 'ENROLLING', 'FULL', 'RUNNING', 'COMPLETED', 'CANCELLED'] as const;
+export const BATCH_STATUSES = ['DRAFT', 'PENDING_REVIEW', 'ENROLLING', 'FULL', 'RUNNING', 'COMPLETED', 'CANCELLED'] as const;
 export type BatchStatus = (typeof BATCH_STATUSES)[number];
 
 export const SESSION_STATUSES = ['SCHEDULED', 'LIVE', 'ENDED', 'CANCELLED'] as const;

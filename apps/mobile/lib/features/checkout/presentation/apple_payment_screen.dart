@@ -155,7 +155,7 @@ class _ApplePaymentScreenState extends ConsumerState<ApplePaymentScreen> {
                 key: const Key('apple-buy'),
                 onPressed: _busy || _phase == ApplePurchasePhase.pending ? null : () => _buy(o),
                 child: _busy
-                    ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onAccent))
+                    ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onPrimary))
                     : Text(l.appStoreBuy(product!.requireValue!.price)),
               ),
             ])

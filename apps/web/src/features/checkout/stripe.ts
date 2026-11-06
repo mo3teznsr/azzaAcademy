@@ -12,19 +12,20 @@ export function getStripe(): Promise<Stripe | null> | null {
   return promise;
 }
 
-const common = { fontFamily: '"Inter Tight", system-ui, sans-serif', borderRadius: '12px', spacingUnit: '4px' };
+// The iframe can't load our next/font Almarai, so it falls back to the system face unless Elements gets `fonts`.
+const common = { fontFamily: '"Almarai", system-ui, sans-serif', borderRadius: '14px', spacingUnit: '4px' };
 
 /** Payment Element appearance tuned to the site theme (the iframe can't read our CSS variables). */
 export function stripeAppearance(theme: 'light' | 'dark') {
   return theme === 'dark'
     ? {
         theme: 'night' as const,
-        variables: { ...common, colorPrimary: '#FFD24A', colorBackground: '#1C1A18', colorText: '#FBF8F2', colorDanger: '#FF9C85' },
-        rules: { '.Input': { border: '1px solid #3A3631', padding: '14px' }, '.Label': { color: '#A39B90' } },
+        variables: { ...common, colorPrimary: '#25D366', colorBackground: '#16291F', colorText: '#F1F1E9', colorDanger: '#FF9C9C' },
+        rules: { '.Input': { border: '1px solid #33503F', padding: '14px' }, '.Label': { color: '#9DABA3' } },
       }
     : {
         theme: 'stripe' as const,
-        variables: { ...common, colorPrimary: '#121110', colorBackground: '#FBF8F2', colorText: '#121110', colorDanger: '#B3361C' },
-        rules: { '.Input': { border: '1px solid #D9D0C2', padding: '14px' }, '.Label': { color: '#6B645B' } },
+        variables: { ...common, colorPrimary: '#159454', colorBackground: '#FFFFFF', colorText: '#102018', colorDanger: '#B83232' },
+        rules: { '.Input': { border: '1px solid #D8E0D6', padding: '14px' }, '.Label': { color: '#55655C' } },
       };
 }

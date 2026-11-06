@@ -1290,5 +1290,332 @@
   "addPhotoTips": "Use a clear, recent photo of your face. Only your teachers and classmates see it.",
   "addPhotoAction": "Add photo",
   "watchIntro": "Watch the intro",
-  "watchIntroHint": "A short look at the course and the teacher"
+  "watchIntroHint": "A short look at the course and the teacher",
+  "statusPendingReview": "Waiting for review",
+  "statusPublished": "Published",
+  "statusArchived": "Archived",
+  "myCoursesTitle": "My courses",
+  "proposeCourse": "Propose a course",
+  "noProposedCourses": "You haven't proposed a course yet.",
+  "noProposedCoursesBody": "Propose a course and an admin will review it before it goes live.",
+  "changesRequested": "Changes requested",
+  "waitingForReviewBody": "An admin is reviewing this. You can still make changes.",
+  "publishedLockedBody": "This course is published. Ask an admin if it needs changes.",
+  "editCourse": "Edit course",
+  "newCourse": "New course",
+  "courseBasics": "Basics",
+  "courseTitleEn": "Title (English)",
+  "courseTitleAr": "Title (Arabic)",
+  "courseCategory": "Category",
+  "courseLevel": "Level",
+  "levelBeginner": "Beginner",
+  "levelIntermediate": "Intermediate",
+  "levelAdvanced": "Advanced",
+  "coursePriceAed": "Price (AED)",
+  "courseDescription": "Description",
+  "descriptionEn": "Description (English)",
+  "descriptionAr": "Description (Arabic)",
+  "descriptionHint": "At least 20 characters.",
+  "coverPhoto": "Cover photo",
+  "addCoverPhoto": "Add cover photo",
+  "changeCoverPhoto": "Change photo",
+  "removeCoverPhoto": "Remove photo",
+  "coverPhotoHint": "Without a photo, the course shows its title on the colour below.",
+  "coverColour": "Cover colour",
+  "coverSun": "Sun",
+  "coverSky": "Sky",
+  "coverSage": "Sage",
+  "coverPeach": "Peach",
+  "modulesTitle": "Modules",
+  "moduleTitleEn": "Module {n} (English)",
+  "@moduleTitleEn": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "moduleTitleAr": "Module {n} (Arabic)",
+  "@moduleTitleAr": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "addModule": "Add module",
+  "removeModule": "Remove module",
+  "moveUp": "Move up",
+  "moveDown": "Move down",
+  "noModulesYet": "Add at least one module before you submit.",
+  "saveDraft": "Save draft",
+  "submitForReview": "Submit for review",
+  "draftSaved": "Draft saved.",
+  "sentForReview": "Sent for review.",
+  "titleRequired": "Add an English title.",
+  "descriptionTooShort": "Write at least 20 characters in the English description.",
+  "categoryRequired": "Add a category.",
+  "priceInvalid": "Enter a price in AED.",
+  "moduleTitleRequired": "Every module needs an English title.",
+  "uploadingPhoto": "Uploading…",
+  "newBatch": "New batch",
+  "batchCourse": "Course",
+  "pickCourse": "Pick a course",
+  "noBatchableCourses": "No courses yet. Propose one first.",
+  "batchCode": "Batch code",
+  "batchCodeHint": "B and 2–4 digits, e.g. B07",
+  "batchCodeInvalid": "Use B and 2–4 digits, e.g. B07.",
+  "batchSeats": "Seats",
+  "seatsInvalid": "Seats must be between 1 and 500.",
+  "sessionLanguage": "Session language",
+  "languageEnglish": "English",
+  "languageArabic": "Arabic",
+  "firstDay": "First day",
+  "weekdaysLabel": "Days",
+  "pickWeekdays": "Pick at least one day.",
+  "sessionLength": "Length (minutes)",
+  "lengthInvalid": "Length must be 15–480 minutes.",
+  "sessionCountLabel": "Sessions",
+  "sessionCountInvalid": "Sessions must be 1–200.",
+  "previewSchedule": "Preview schedule",
+  "lastSessionOn": "Last session {date}",
+  "@lastSessionOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictCount": "Clashes with your other batches: {count}",
+  "@conflictCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictWith": "Clashes with {batch}",
+  "@conflictWith": {
+    "placeholders": {
+      "batch": {
+        "type": "String"
+      }
+    }
+  },
+  "noConflicts": "No clashes with your other batches.",
+  "createBatch": "Create batch",
+  "batchCreated": "Batch saved as a draft.",
+  "batchDraftBody": "This batch is a draft. Submit it so an admin can open enrollment.",
+  "batchPendingBody": "An admin is reviewing this batch.",
+  "toReviewTab": "To review",
+  "coursesSection": "Courses",
+  "batchesSection": "Batches",
+  "noPendingReviews": "Nothing is waiting for review.",
+  "sendBack": "Send back",
+  "sendBackTitle": "What needs to change?",
+  "sendBackNote": "Note to the teacher",
+  "sendBackNoteTooShort": "Write at least 3 characters.",
+  "submittedOn": "Submitted {date}",
+  "@submittedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "modulesCount": "Modules: {count}",
+  "@modulesCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "proposedBy": "By {name}",
+  "@proposedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errCourseLocked": "This course is published, so only an admin can change it.",
+  "errCourseIncomplete": "Add a description of at least 20 characters and one module before you submit.",
+  "errAlreadySubmitted": "This is already waiting for review.",
+  "errCourseNotPublished": "Approve the course before its batches.",
+  "errBatchLocked": "This batch is approved, so only an admin can change it.",
+  "errNotPendingReview": "This is no longer waiting for review.",
+  "errScheduleConflict": "You already teach at some of these times.",
+  "errScheduleIncomplete": "Not every session fits this schedule. Check the days and dates.",
+  "errCourseArchived": "This course is archived.",
+  "whatYoullLearn": "What you'll learn",
+  "requirementsTitle": "Requirements",
+  "audienceTitle": "Who it's for",
+  "faqTitle": "FAQ",
+  "totalHoursLive": "{hours} h live",
+  "@totalHoursLive": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "ratingSemantics": "Rated {avg} out of 5 from {count} reviews",
+  "@ratingSemantics": {
+    "placeholders": {
+      "avg": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewsTitle": "Reviews",
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "noReviewsYet": "No reviews yet.",
+  "loadMore": "Load more",
+  "writeReview": "Write a review",
+  "editReview": "Edit your review",
+  "yourReview": "Your review",
+  "reviewBodyLabel": "What stood out?",
+  "ratingRequired": "Pick a star rating.",
+  "postReview": "Post review",
+  "reviewSaved": "Thanks for your review.",
+  "deleteReview": "Delete review",
+  "deleteReviewConfirm": "Delete your review?",
+  "reviewDeleted": "Review deleted.",
+  "starsN": "{n} stars",
+  "@starsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "replyAction": "Reply",
+  "replyTo": "Reply to {name}",
+  "@replyTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherReply": "Teacher's reply",
+  "replyTooShort": "Write at least 2 characters.",
+  "replySent": "Reply posted.",
+  "hideReview": "Hide",
+  "unhideReview": "Unhide",
+  "hiddenLabel": "Hidden",
+  "relatedTitle": "You might also like",
+  "shareCourse": "Share",
+  "saveCourse": "Save",
+  "unsaveCourse": "Remove from saved",
+  "savedToast": "Saved.",
+  "unsavedToast": "Removed from saved.",
+  "filters": "Filters",
+  "sortLabel": "Sort by",
+  "sortNewest": "Newest",
+  "sortRating": "Top rated",
+  "sortPriceAsc": "Price: low to high",
+  "sortPriceDesc": "Price: high to low",
+  "sortPopular": "Most popular",
+  "anyOption": "Any",
+  "minRatingLabel": "Rating",
+  "ratingAtLeast": "{n}+ stars",
+  "@ratingAtLeast": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "priceRangeAed": "Price range (AED)",
+  "minPrice": "Min",
+  "maxPrice": "Max",
+  "priceRangeInvalid": "The minimum price is above the maximum.",
+  "applyFilters": "Show results",
+  "resetFilters": "Reset",
+  "featuredTitle": "Featured",
+  "savedCoursesTitle": "Saved courses",
+  "noSavedTitle": "Nothing saved yet.",
+  "noSavedBody": "Tap the heart on a course to keep it here.",
+  "bulletEn": "Point {n} (English)",
+  "@bulletEn": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "bulletAr": "Point {n} (Arabic)",
+  "@bulletAr": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "addPoint": "Add point",
+  "removePoint": "Remove point",
+  "faqQuestionEn": "Question {n} (English)",
+  "@faqQuestionEn": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "faqAnswerEn": "Answer {n} (English)",
+  "@faqAnswerEn": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "faqQuestionAr": "Question {n} (Arabic)",
+  "@faqQuestionAr": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "faqAnswerAr": "Answer {n} (Arabic)",
+  "@faqAnswerAr": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "addQuestion": "Add question",
+  "removeQuestion": "Remove question",
+  "faqIncomplete": "Each question needs an English question and answer.",
+  "moduleDescriptionEn": "Module {n} description (English)",
+  "@moduleDescriptionEn": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "moduleDescriptionAr": "Module {n} description (Arabic)",
+  "@moduleDescriptionAr": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "errReviewNotEligible": "You can review this course after attending one of its sessions."
 }

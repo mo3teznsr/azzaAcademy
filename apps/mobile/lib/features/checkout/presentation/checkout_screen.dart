@@ -146,7 +146,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 KeyValueRow(l.batchPrice, f.money(q.subtotalFils, currency, rate)),
                 if (q.discountFils > 0)
                   KeyValueRow('${l.discount}${_appliedCoupon.isEmpty ? '' : ' · $_appliedCoupon'}', '− ${f.money(q.discountFils, currency, rate)}',
-                      valueColor: AzzaColors.sage),
+                      valueColor: p.success),
                 if (q.vatFils > 0) KeyValueRow(l.vat, f.money(q.vatFils, currency, rate)),
                 Divider(color: p.line),
                 KeyValueRow(l.total, f.money(q.totalFils, currency, rate), emphasize: true),
@@ -173,7 +173,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
             if (_appliedCoupon.isNotEmpty && quote.hasError) ...[
               const SizedBox(height: 6),
-              Text(l.couponInvalid, style: t.bodySmall?.copyWith(color: AzzaColors.peach)),
+              Text(l.couponInvalid, style: t.bodySmall?.copyWith(color: AzzaPalette.of(context).danger)),
             ],
             SectionHeader(l.payWith),
             OptionTile(
@@ -200,7 +200,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         FilledButton(
           onPressed: _busy || !quote.hasValue ? null : () => _continue(currency),
           child: _busy
-              ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onAccent))
+              ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onPrimary))
               : Text(l.continueAmount(quote.hasValue ? f.aed(quote.requireValue.totalFils) : '…')),
         ),
       ]),
@@ -261,7 +261,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           key: const Key('checkout-continue'),
           onPressed: _busy || price == null ? null : () => _continue(DisplayCurrency.aed),
           child: _busy || loading
-              ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onAccent))
+              ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onPrimary))
               : Text(price == null ? l.enrolOnWebsite : l.appStoreBuy(price)),
         ),
       ]),

@@ -120,7 +120,7 @@ class _SessionPrepScreenState extends ConsumerState<SessionPrepScreen> {
                     _agenda = [...agenda]..removeAt(i);
                     _dirty = true;
                   }),
-                  background: Container(alignment: AlignmentDirectional.centerEnd, color: AzzaColors.peach, child: const Icon(Icons.delete_outline)),
+                  background: Container(alignment: AlignmentDirectional.centerEnd, color: AzzaPalette.of(context).dangerBg, child: Icon(Icons.delete_outline, color: AzzaPalette.of(context).danger)),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(border: Border(top: BorderSide(color: p.line))),

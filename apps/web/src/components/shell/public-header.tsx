@@ -84,7 +84,7 @@ export function PublicFooter() {
     <footer className="mt-24 border-t border-border">
       <div className="mx-auto grid w-full max-w-[1360px] gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:px-10">
         <div className="flex flex-col gap-4">
-          <LogoMark className="h-[clamp(64px,9vw,120px)] self-start text-foreground light:text-[#050A30]" />
+          <LogoMark className="h-[clamp(64px,9vw,120px)] self-start text-foreground light:text-ink" />
           <span className="sr-only">عازة Azza</span>
           <p className="max-w-xs text-sm text-muted-foreground">{t.landing.footerTagline}</p>
         </div>

@@ -163,7 +163,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
               return ListView(
                 padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
                 children: [
-                  MonoLabel(open ? l.lobbyOpenStarts(f.time(s.startsAt)) : l.lobbyStarts(f.time(s.startsAt)), color: open ? AzzaColors.sun : null),
+                  MonoLabel(open ? l.lobbyOpenStarts(f.time(s.startsAt)) : l.lobbyStarts(f.time(s.startsAt)), color: open ? AzzaPalette.of(context).accent : null),
                   const SizedBox(height: 6),
                   MonoLabel(d.slate),
                   DisplayText(s.title, size: 32),
@@ -177,7 +177,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       const PulsingDot(size: 7),
                       const SizedBox(width: 6),
-                      MonoLabel(l.edgeLiveNow, color: AzzaColors.onAir),
+                      MonoLabel(l.edgeLiveNow, color: AzzaPalette.of(context).danger),
                     ]),
                     const SizedBox(height: 12),
                   ],
@@ -257,8 +257,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
               if (host)
                 FilledButton.icon(
                   onPressed: _busy ? null : () => _enter(detail.requireValue, host: true),
-                  style: FilledButton.styleFrom(backgroundColor: AzzaColors.onAir, foregroundColor: AzzaColors.ink),
-                  icon: const SignalMark(size: 20, color: AzzaColors.ink),
+                  style: FilledButton.styleFrom(backgroundColor: AzzaPalette.of(context).live, foregroundColor: AzzaPalette.of(context).onLive),
+                  icon: SignalMark(size: 20, color: AzzaPalette.of(context).onLive),
                   label: Text(l.goLive),
                 )
               else
@@ -296,7 +296,7 @@ class _Toggle extends StatelessWidget {
       button: true,
       label: label,
       child: Material(
-        color: on ? p.raised : AzzaColors.peach.withValues(alpha: 0.16),
+        color: on ? p.raised : p.warningBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: p.line)),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),

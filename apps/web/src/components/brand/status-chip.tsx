@@ -24,15 +24,15 @@ const TONES: Record<ChipTone, string> = {
   sun: 'bg-sun text-ink',
   sage: 'bg-sage text-ink',
   peach: 'bg-peach text-ink',
-  /* Inverted chip: ivory on the ink ground, ink in light mode (admin cream keeps ivory). */
-  ivory: 'bg-ivory text-ink light:bg-ink light:text-ivory',
-  onair: 'bg-onair text-ink',
+  /* Inverted chip: white on the dark ground, ink in light mode (admin cream keeps white). */
+  ivory: 'bg-ivory text-ink light:bg-ink light:text-white',
+  onair: 'bg-onair text-onair-ink',
   outline: 'border border-muted-foreground text-muted-foreground',
   dashed: 'border border-dashed border-muted-foreground text-muted-foreground',
   dashedPeach: 'border border-dashed border-peach-fg text-peach-fg',
   strike: 'border border-border text-muted-foreground line-through',
   /* Fixed ink chip — sits on accent fills (sun / on-air banners). */
-  ink: 'bg-ink text-ivory',
+  ink: 'bg-ink text-white',
   danger: 'border border-danger-line bg-danger-bg text-danger-fg',
 };
 
@@ -74,6 +74,7 @@ export function SessionStatusChip({ state, minutes }: { state: SessionDisplaySta
 
 const BATCH_TONE: Record<BatchStatus, ChipTone> = {
   DRAFT: 'dashed',
+  PENDING_REVIEW: 'sun',
   ENROLLING: 'sage',
   FULL: 'peach',
   RUNNING: 'ivory',
@@ -119,7 +120,7 @@ export function EnrollmentStatusChip({ status }: { status: EnrollmentStatus }) {
   return <Chip tone={ENROLLMENT_TONE[status]}>{t.status.enrollment[status]}</Chip>;
 }
 
-const COURSE_TONE: Record<CourseStatus, ChipTone> = { DRAFT: 'dashed', PUBLISHED: 'sage', ARCHIVED: 'outline' };
+const COURSE_TONE: Record<CourseStatus, ChipTone> = { DRAFT: 'dashed', PENDING_REVIEW: 'sun', PUBLISHED: 'sage', ARCHIVED: 'outline' };
 export function CourseStatusChip({ status }: { status: CourseStatus }) {
   const { t } = useI18n();
   return <Chip tone={COURSE_TONE[status]}>{t.status.course[status]}</Chip>;

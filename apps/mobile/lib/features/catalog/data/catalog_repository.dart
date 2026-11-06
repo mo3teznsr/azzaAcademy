@@ -3,26 +3,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers.dart';
 import '../domain/catalog_models.dart';
+import '../domain/course_filters.dart';
 
-/// Courses & batches (`/api/v1/courses`, `/api/v1/batches`).
+/// Courses & batches (`/api/v1/courses`, `/api/v1/batches`) and categories.
 abstract class CatalogRepository {
-  Future<List<Course>> courses({String? q, String? category, String? level});
+  Future<List<Course>> courses([CourseFilters filters = const CourseFilters()]);
   Future<Course> course(String idOrSlug);
   Future<List<Batch>> batches({String? courseId, String? status, String? teacherId});
   Future<Batch> batch(String id);
+
+  /// `GET /categories` — active categories with their published-course counts.
+  Future<List<CourseCategory>> categories();
+
+  /// `GET /courses/:idOrSlug/related` (≤ 4).
+  Future<List<Course>> related(String idOrSlug);
 }
 
 class DioCatalogRepository extends DioRepository implements CatalogRepository {
   DioCatalogRepository(super.dio);
 
   @override
-  Future<List<Course>> courses({String? q, String? category, String? level}) async {
-    final items = await getItems('/api/v1/courses', query: {
-      'pageSize': 50,
-      if (q != null && q.isNotEmpty) 'q': q,
-      'category': ?category,
-      'level': ?level,
-    });
+  Future<List<Course>> courses([CourseFilters filters = const CourseFilters()]) async {
+    final items = await getItems('/api/v1/courses', query: {'pageSize': 50, ...filters.toQuery()});
     return items.map(Course.fromJson).toList();
   }
 
@@ -42,6 +44,14 @@ class DioCatalogRepository extends DioRepository implements CatalogRepository {
 
   @override
   Future<Batch> batch(String id) async => Batch.fromJson(await getJson('/api/v1/batches/$id'));
+
+  @override
+  Future<List<CourseCategory>> categories() async =>
+      (await getItems('/api/v1/categories')).map(CourseCategory.fromJson).where((c) => c.slug.isNotEmpty).toList();
+
+  @override
+  Future<List<Course>> related(String idOrSlug) async =>
+      (await getItems('/api/v1/courses/$idOrSlug/related')).map(Course.fromJson).toList();
 }
 
 final catalogRepositoryProvider = Provider<CatalogRepository>((ref) => DioCatalogRepository(ref.watch(dioProvider)));
@@ -57,4 +67,15 @@ final courseBatchesProvider = FutureProvider.autoDispose.family<List<Batch>, Str
 
 final batchProvider = FutureProvider.autoDispose.family<Batch, String>(
   (ref, id) => ref.watch(catalogRepositoryProvider).batch(id),
+);
+
+final categoriesProvider = FutureProvider.autoDispose<List<CourseCategory>>((ref) => ref.watch(catalogRepositoryProvider).categories());
+
+final relatedCoursesProvider = FutureProvider.autoDispose.family<List<Course>, String>(
+  (ref, id) => ref.watch(catalogRepositoryProvider).related(id),
+);
+
+/// `GET /courses?featured=true` (ordered by `featuredRank`).
+final featuredCoursesProvider = FutureProvider.autoDispose<List<Course>>(
+  (ref) => ref.watch(catalogRepositoryProvider).courses(const CourseFilters(featured: true)),
 );

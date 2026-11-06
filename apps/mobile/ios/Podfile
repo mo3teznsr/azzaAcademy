@@ -38,7 +38,9 @@ end
 
 
 # WebRTC-SDK sometimes lands in Pods/ as an empty, nested folder (no WebRTC.xcframework), which breaks the build
-# with "'WebRTC/WebRTC.h' file not found". Repair it from the CocoaPods cache after every install.
+# with "'WebRTC/WebRTC.h' file not found". Repair it from the CocoaPods cache in pre_install: that runs after the
+# download but before the Pods project and xcconfigs are generated, so CocoaPods still sees the xcframework and adds
+# its FRAMEWORK_SEARCH_PATHS (a post_install repair is too late and leaves flutter_webrtc without them).
 def repair_webrtc_pod
   dir = File.join(__dir__, 'Pods', 'WebRTC-SDK')
   return if !Dir.exist?(dir) || Dir.exist?(File.join(dir, 'WebRTC.xcframework'))
@@ -49,8 +51,11 @@ def repair_webrtc_pod
   puts "Repaired Pods/WebRTC-SDK from #{cached}"
 end
 
-post_install do |installer|
+pre_install do |_installer|
   repair_webrtc_pod
+end
+
+post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     # See Shims/DeviceInfoVisionShim.h (Xcode 26.0.x SDK lacks isiOSAppOnVision).

@@ -44,6 +44,19 @@
   --color-sage-fg: var(--sage-fg);
   --color-peach-fg: var(--peach-fg);
   --color-onair-fg: var(--onair-fg);
+  --color-onair-ink: var(--onair-ink);
+  --color-ink-deep: var(--ink-deep);
+  --color-green: var(--green);
+  --color-green-deep: var(--green-deep);
+  --color-green-darker: var(--green-darker);
+  --color-mint: var(--mint);
+  --color-lime: var(--lime);
+  --color-page: var(--page);
+  --color-primary-hover: var(--primary-hover);
+  --color-link: var(--link);
+  --color-focus: var(--focus);
+  --color-field-focus: var(--field-focus);
+  --color-field-halo: var(--field-halo);
   --ease-expo: var(--ease-out-expo);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -83,152 +96,185 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ---------- Azza theme tokens (Main.dc.html) ---------- */
-/* Raw palette: fixed values. Use these only where a colour must NOT follow the theme
-   (accent fills, the ink chip, the ivory "paper" cards, video chrome). Everything else
-   uses the semantic tokens below, which switch with <html data-theme="light|dark">. */
-:root {
-  --ink: #121110;
-  --ink-2: #1c1a18;
-  --ink-3: #24211e;
-  --line: #2e2b27;
-  --line-2: #3a3631;
-  --cream: #f5efe4;
-  --cream-2: #e8e0d3;
-  --cream-line: #d9d0c2;
-  --ivory: #fbf8f2;
-  --sun: #ffd24a;
-  --sky: #bfd8f2;
-  --sage: #cfe3c9;
-  --peach: #ffc7a6;
-  --onair: #ff5a36;
-  --stone: #a39b90;
-  --stone-2: #6b645b;
-  --danger-bg: #2a1410;
-  --danger-line: #5a2a20;
-  --danger-fg: #ff9c85;
-
-  --font-display: var(--font-bricolage), "Bricolage Grotesque", system-ui, sans-serif;
-  --font-body: var(--font-inter-tight), "Inter Tight", system-ui, sans-serif;
-  --font-code: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --radius: 0.75rem;
-  --chart-1: var(--sun);
-  --chart-2: var(--sky);
-  --chart-3: var(--sage);
-  --chart-4: var(--peach);
-  --chart-5: var(--onair);
+/* Shape and depth (BRAND.md): `rounded-input`, `rounded-card`, `shadow-card`, … */
+@theme {
+  --radius-control: 999px;
+  --radius-input: 14px;
+  --radius-card: 16px;
+  --radius-site-card: 18px;
+  --radius-media: 24px;
+  --radius-auth: 28px;
+  --shadow-overlay: 0 8px 24px rgba(13, 32, 21, 0.12);
+  --shadow-card: 0 12px 38px rgba(13, 32, 21, 0.1);
+  --shadow-media: 0 24px 70px rgba(13, 32, 21, 0.16);
+  --ease-entrance: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* Dark (ink) — the default before the theme script runs, the live room, and the admin sidebar. */
+/* ---------- Azza theme tokens (docs/BRAND.md: the green theme) ---------- */
+/* Raw palette: fixed values. Use these only where a colour must NOT follow the theme
+   (accent fills, the ink chip, the white "paper" cards, video chrome). Everything else
+   uses the semantic tokens below, which switch with <html data-theme="light|dark">.
+   Deep green ink carries text and the primary action; the bright green is the accent and
+   never takes white text (about 1.9:1) — it takes ink-deep text. */
+:root {
+  --ink: #102018;
+  --ink-deep: #07110d;
+  --ink-2: #16291f;
+  --ink-3: #1d3328;
+  --line: #26402f;
+  --line-2: #33503f;
+  --green: #25d366;
+  --green-deep: #159454;
+  --green-darker: #117443;
+  --mint: #57ed99;
+  /* The one loud colour: a whole section or band takes it, never a small element. */
+  --lime: #dfff69;
+  --cream: #f1f1e9;
+  --cream-2: #e9eee7;
+  --cream-line: #e6ebe4;
+  --ivory: #ffffff;
+  --page: #f5f7f3;
+  --raised: #f8f8f2;
+  --border-strong: #d8e0d6;
+  --border-soft: #eff3ed;
+  /* Accent fills. Fixed light tints so `text-ink` stays readable on them in both themes. */
+  --sun: var(--green);
+  --sky: #e8edfb;
+  --sage: #e7f8ee;
+  --peach: #fdf3df;
+  /* stone: secondary text on the ink fills; stone-2: secondary text on the white paper cards
+     (kept fixed — it only ever sits on white, where the dark-theme #7d8c84 would be 3.6:1). */
+  --stone: #9daba3;
+  --stone-2: #55655c;
+
+  --font-display: var(--font-almarai), "Almarai", system-ui, sans-serif;
+  --font-body: var(--font-almarai), "Almarai", system-ui, sans-serif;
+  --font-code: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* rounded-xl = radius × 1.4 = 16px: the card radius. */
+  --radius: calc(16px / 1.4);
+  --chart-1: var(--green);
+  --chart-2: var(--green-deep);
+  --chart-3: var(--mint);
+  --chart-4: var(--green-darker);
+  --chart-5: #2f5bd6;
+}
+
+/* Dark (ink-deep) — the default before the theme script runs, the live room, and the admin sidebar. */
 :root,
 [data-theme="dark"],
 .theme-ink {
-  --background: var(--ink);
-  --foreground: var(--ivory);
+  --background: var(--ink-deep);
+  --foreground: var(--cream);
   --card: var(--ink-2);
-  --card-foreground: var(--ivory);
-  --popover: var(--ink-2);
-  --popover-foreground: var(--ivory);
-  --primary: var(--ivory);
-  --primary-foreground: var(--ink);
-  --secondary: var(--line);
-  --secondary-foreground: var(--ivory);
+  --card-foreground: var(--cream);
+  --popover: var(--ink-3);
+  --popover-foreground: var(--cream);
+  --primary: var(--green);
+  --primary-foreground: var(--ink-deep);
+  --primary-hover: var(--mint);
+  --secondary: var(--ink-3);
+  --secondary-foreground: var(--cream);
   --muted: var(--ink-2);
-  --muted-foreground: var(--stone);
-  --accent: var(--line);
-  --accent-foreground: var(--ivory);
-  --destructive: var(--danger-fg);
+  --muted-foreground: #9daba3;
+  --accent: #123a27;
+  --accent-foreground: var(--cream);
+  --destructive: #ff9c9c;
   --border: var(--line);
   --input: var(--line-2);
-  --ring: var(--sun);
-  --sidebar: var(--ink);
-  --sidebar-foreground: var(--ivory);
-  --sidebar-primary: var(--ivory);
-  --sidebar-primary-foreground: var(--ink);
+  --ring: var(--green);
+  --sidebar: var(--ink-deep);
+  --sidebar-foreground: var(--cream);
+  --sidebar-primary: var(--green);
+  --sidebar-primary-foreground: var(--ink-deep);
   --sidebar-accent: var(--ink-2);
-  --sidebar-accent-foreground: var(--ivory);
+  --sidebar-accent-foreground: var(--cream);
   --sidebar-border: var(--line);
-  --sidebar-ring: var(--sun);
+  --sidebar-ring: var(--green);
   /* Azza semantic extras */
-  --soft-foreground: var(--cream-2);
+  --soft-foreground: #cfd8d2;
   --line-strong: var(--line-2);
   --raised-2: var(--ink-3);
-  --focus: var(--sun);
-  --link-hover: #ffe48a;
-  /* Accent colours used as TEXT on the ground. Fills (bg-sun etc.) never change. */
-  --sun-fg: var(--sun);
-  --sky-fg: var(--sky);
-  --sage-fg: var(--sage);
-  --peach-fg: var(--peach);
-  --onair-fg: var(--onair);
-  --danger-bg: #2a1410;
-  --danger-line: #5a2a20;
-  --danger-fg: #ff9c85;
+  --focus: var(--green);
+  --link: var(--mint);
+  --link-hover: var(--cream);
+  --skeleton: var(--ink-3);
+  --field-focus: var(--green);
+  --field-halo: rgb(37 211 102 / 18%);
+  /* Accent colours used as TEXT on the ground (>= 4.5:1 on ink-deep and ink-2). */
+  --sun-fg: var(--mint);
+  --sky-fg: #9db4ff;
+  --sage-fg: var(--mint);
+  --peach-fg: #f2c46b;
+  --onair-fg: #ff6b6b;
+  /* On-air fill and the text it takes. */
+  --onair: #ff6b6b;
+  --onair-ink: var(--ink-deep);
+  --danger-bg: #2a1212;
+  --danger-line: #5a2424;
+  --danger-fg: #ff9c9c;
   color-scheme: dark;
 }
 
-/* Light (cream) — student / public / teacher light mode, and the admin ground
-   (<body data-theme="cream"> so portals inherit it). */
+/* Light (page) — student / public / teacher light mode, and the admin ground
+   (<body data-theme="cream"> so portals inherit it; it now shares the light page). */
 [data-theme="light"],
 [data-theme="cream"],
 .theme-cream {
-  --background: var(--cream);
+  --background: var(--page);
   --foreground: var(--ink);
-  --card: var(--ivory);
+  --card: #ffffff;
   --card-foreground: var(--ink);
-  --popover: var(--ivory);
+  --popover: var(--raised);
   --popover-foreground: var(--ink);
   --primary: var(--ink);
-  --primary-foreground: var(--ivory);
+  --primary-foreground: #ffffff;
+  --primary-hover: var(--green-deep);
   --secondary: var(--cream-2);
   --secondary-foreground: var(--ink);
-  --muted: var(--cream-2);
-  --muted-foreground: var(--stone-2);
-  --accent: var(--cream-2);
+  --muted: var(--border-soft);
+  --muted-foreground: #55655c;
+  --accent: var(--sage);
   --accent-foreground: var(--ink);
-  --destructive: #b3361c;
+  --destructive: #b83232;
   --border: var(--cream-line);
-  --input: var(--cream-line);
-  --ring: var(--ink);
-  --sidebar: var(--ivory);
+  --input: var(--border-strong);
+  --ring: var(--green);
+  --sidebar: #ffffff;
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--ink);
-  --sidebar-primary-foreground: var(--ivory);
-  --sidebar-accent: var(--cream-2);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--sage);
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: var(--cream-line);
-  --sidebar-ring: var(--ink);
-  --soft-foreground: #3a3631;
-  --line-strong: #c4b9a8;
-  --raised-2: #efe8dc;
-  --focus: var(--ink);
-  --link-hover: var(--sun-fg);
-  /* Darkened accents: >= 4.5:1 on cream, ivory and cream-2 (see report). */
-  --sun-fg: #7a5600;
-  --sky-fg: #2b5c8a;
-  --sage-fg: #3d6a35;
-  --peach-fg: #9a4a1c;
-  --onair-fg: #b8321a;
-  --danger-bg: #fbe6df;
-  --danger-line: #e8b4a6;
-  --danger-fg: #a3311a;
+  --sidebar-ring: var(--green);
+  --soft-foreground: #33433a;
+  --line-strong: #cbd5c9;
+  --raised-2: var(--border-soft);
+  /* The bright green is 1.8:1 on the page; green-deep keeps the outline above 3:1. */
+  --focus: var(--green-deep);
+  /* green-deep is 3.6:1 on the page, so link TEXT uses green-darker (5.4:1). */
+  --link: var(--green-darker);
+  --link-hover: var(--ink);
+  --skeleton: var(--cream-2);
+  /* Inputs: green-deep border plus a 3px halo (BRAND.md shape). */
+  --field-focus: var(--green-deep);
+  --field-halo: rgb(21 148 84 / 12%);
+  /* Darkened accents: >= 4.5:1 on page, white and the light tints. */
+  --sun-fg: var(--green-darker);
+  --sky-fg: #2f5bd6;
+  --sage-fg: var(--green-darker);
+  --peach-fg: #8a5a12;
+  --onair-fg: #b83232;
+  --onair: #d64545;
+  --onair-ink: #ffffff;
+  --danger-bg: #fbe9e9;
+  --danger-line: #f0c4c4;
+  --danger-fg: #b83232;
   color-scheme: light;
 }
 
-/* Admin keeps its existing danger treatment on cream. */
-[data-theme="cream"],
-.theme-cream {
-  --danger-bg: #2a1410;
-  --danger-line: #5a2a20;
-  --danger-fg: #ff9c85;
-}
-
-/* Arabic type pairing: Readex Pro display, IBM Plex Sans Arabic body (i18n-00-system) */
-html[lang="ar"] {
-  --font-display: var(--font-readex), "Readex Pro", var(--font-bricolage), sans-serif;
-  --font-body: var(--font-plex-arabic), "IBM Plex Sans Arabic", var(--font-inter-tight), sans-serif;
-}
+/* Arabic and English share Almarai (BRAND.md type); Arabic only reads taller. */
 html[lang="ar"] body {
   line-height: 1.7;
 }
@@ -257,13 +303,24 @@ html[lang="ar"] .font-display {
   }
   a {
     text-underline-offset: 3px;
+    text-decoration-color: var(--green);
+  }
+  /* Almarai: headings 800, body 400 (BRAND.md type). Utilities still win. */
+  h1, h2, h3, h4 {
+    font-weight: 800;
+  }
+  ::placeholder {
+    color: var(--muted-foreground);
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--green) 35%, transparent);
   }
 }
 
 @layer components {
   .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.035em;
+    letter-spacing: -0.02em;
   }
   /* JetBrains Mono caps label */
   .label-mono {
@@ -278,20 +335,42 @@ html[lang="ar"] .font-display {
     direction: ltr;
     unicode-bidi: isolate;
   }
+  /* Links: green-darker on light (green-deep is under 4.5:1), mint on dark; green underline. */
   .link-sun {
-    color: var(--sun-fg);
-    font-weight: 600;
+    color: var(--link);
+    font-weight: 700;
+    text-decoration-color: var(--green);
   }
   .link-sun:hover {
     color: var(--link-hover);
-  }
-  [data-theme="light"] .link-sun:hover {
     text-decoration: underline;
+    text-decoration-color: var(--green);
   }
-  [data-theme="cream"] .link-sun,
-  .theme-cream .link-sun {
-    color: var(--ink);
-    text-decoration: underline;
+  /* Uppercase landing kicker (reference `.section-kicker`). */
+  .section-kicker {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  html[lang="ar"] .section-kicker {
+    font-size: 0.8rem;
+    letter-spacing: 0;
+  }
+  /* The ink-deep wash under copy that sits on a photo (landing hero, auth panel only —
+     never course covers). The dark end follows the copy: left in English, right in Arabic. */
+  .hero-photo-wash {
+    background:
+      linear-gradient(90deg, rgb(7 17 13 / 72%) 0%, rgb(7 17 13 / 62%) 34%, rgb(7 17 13 / 40%) 62%, rgb(7 17 13 / 8%) 100%),
+      linear-gradient(0deg, rgb(7 17 13 / 52%) 0%, transparent 48%);
+  }
+  [dir="rtl"] .hero-photo-wash {
+    background:
+      linear-gradient(270deg, rgb(7 17 13 / 72%) 0%, rgb(7 17 13 / 62%) 34%, rgb(7 17 13 / 40%) 62%, rgb(7 17 13 / 8%) 100%),
+      linear-gradient(0deg, rgb(7 17 13 / 52%) 0%, transparent 48%);
+  }
+  .auth-panel-wash {
+    background: linear-gradient(0deg, var(--ink-deep) 0%, rgb(7 17 13 / 32%) 58%, rgb(7 17 13 / 8%) 100%);
   }
 }
 
@@ -309,15 +388,21 @@ html[lang="ar"] .font-display {
 
 /* Visible keyboard focus everywhere. Unlayered so it wins over `outline-none` utilities. */
 :focus-visible {
-  /* Sun on ink; ink on cream (sun on cream is below 3:1). Follows the nearest theme scope. */
+  /* Green on ink; green-deep on the light page (bright green is below 3:1 there). Follows the nearest theme scope. */
   outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
+/* Fields show focus with their own green-deep border and halo, not the outline too. */
+:is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]):focus-visible {
+  outline: none;
+}
+
 /* Press feedback for buttons and links styled as buttons. */
+/* Hover lifts by 1px over 160ms (BRAND.md motion). */
 .press {
-  transition-property: background-color, color, border-color, scale, opacity;
-  transition-duration: 200ms, 200ms, 200ms, 100ms, 200ms;
+  transition-property: background-color, color, border-color, scale, opacity, translate;
+  transition-duration: 200ms, 200ms, 200ms, 100ms, 200ms, 160ms;
   transition-timing-function: var(--ease-out-expo);
 }
 .press:active:not(:disabled):not([aria-disabled="true"]):not([aria-haspopup]) {
@@ -347,34 +432,44 @@ html[lang="ar"] .font-display {
   80%, 100% { transform: scale(2.6); opacity: 0; }
 }
 
-/* Loading shimmer: a light sweep across the placeholder. */
+/* Loading placeholder: a soft green-grey block that breathes (reference `.skeleton`). */
 .skeleton {
-  position: relative;
-  overflow: hidden;
+  background-color: var(--skeleton);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
 }
-.skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--foreground) 7%, transparent), transparent);
-  animation: skeleton-sweep 1.4s ease-in-out infinite;
-}
-[dir="rtl"] .skeleton::after {
-  animation-direction: reverse;
-}
-@keyframes skeleton-sweep {
-  to { transform: translateX(100%); }
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }
 
-/* Entrance: rise into place. Stagger with style="--i: n". */
+/* Entrance: rise into place. Stagger with style="--i: n". Never starts at zero opacity,
+   so the largest paint lands on the first frame (BRAND.md motion). */
 .rise {
-  animation: rise 720ms var(--ease-out-expo) both;
-  animation-delay: calc(var(--i, 0) * 70ms);
+  animation: rise 720ms var(--ease-entrance) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
 }
 @keyframes rise {
-  from { opacity: 0; transform: translateY(0.35em); }
+  from { opacity: 0.35; transform: translateY(0.35em); }
   to { opacity: 1; transform: none; }
+}
+
+/* First-screen entrance blocks and masked headline lines. Stagger with
+   style="--entrance-step: n" (80ms a step). Pure CSS: no JavaScript needed to appear. */
+.site-entrance {
+  animation: site-entrance 0.8s var(--ease-entrance) both;
+  animation-delay: calc(var(--entrance-step, 0) * 80ms);
+}
+.site-mask-line {
+  animation: site-mask-line 0.9s var(--ease-entrance) both;
+  animation-delay: calc(var(--entrance-step, 0) * 80ms);
+}
+@keyframes site-entrance {
+  from { opacity: 0.35; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes site-mask-line {
+  from { transform: translateY(105%); }
+  to { transform: none; }
 }
 
 /* Marquee: the track holds the list twice; pausing freezes it in place. */
@@ -404,9 +499,10 @@ html[lang="ar"] .font-display {
 @media (prefers-reduced-motion: reduce) {
   .signal-arc-live { animation: none; }
   .onair::after { animation: none; opacity: 0; }
-  .skeleton::after { animation: none; display: none; }
-  .rise { animation: none; }
+  .skeleton { animation: none; }
+  .rise, .site-entrance, .site-mask-line { animation: none; }
   .press:active:not(:disabled) { scale: none; }
+  .press:hover { translate: none; }
   .marquee-track { animation: none; }
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }

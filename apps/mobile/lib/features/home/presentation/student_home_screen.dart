@@ -112,10 +112,11 @@ class _HeroSession extends StatelessWidget {
     final l = context.l10n;
     final live = session.isLive;
     final canJoin = session.lobbyOpen(DateTime.now());
-    final fg = live ? AzzaColors.ink : AzzaPalette.of(context).text;
+    final p = AzzaPalette.of(context);
+    final fg = live ? p.onLive : p.text;
     return RaisedCard(
       key: const Key('home-hero'),
-      color: live ? AzzaColors.onAir : null,
+      color: live ? p.live : null,
       border: !live,
       padding: const EdgeInsets.all(20),
       onTap: () => context.push(Routes.lobby(session.id)),
@@ -125,7 +126,7 @@ class _HeroSession extends StatelessWidget {
           Row(
             children: [
               if (live) ...[
-                const SignalMark(size: 18, color: AzzaColors.ink, live: true),
+                SignalMark(size: 18, color: fg, live: true),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Ticker(builder: (_, now) => MonoLabel('${l.liveNow} · ${Fmt.timecode(now.difference(session.startsAt))}', color: fg)),
@@ -141,12 +142,12 @@ class _HeroSession extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             [session.course(locale), if (session.participantCount != null) l.inRoom(fmt.n(session.participantCount!))].join(' · '),
-            style: TextStyle(color: live ? AzzaColors.ink : AzzaPalette.of(context).muted),
+            style: TextStyle(color: live ? fg : p.muted),
           ),
           if (canJoin) ...[
             const SizedBox(height: 16),
             FilledButton.icon(
-              style: live ? FilledButton.styleFrom(backgroundColor: AzzaColors.ink, foregroundColor: AzzaColors.ivory) : null,
+              style: live ? FilledButton.styleFrom(backgroundColor: AzzaColors.inkDeep, foregroundColor: AzzaColors.ivory) : null,
               onPressed: () => context.push(Routes.lobby(session.id)),
               icon: const Icon(Icons.sensors_rounded),
               label: Text(l.joinLiveRoom),
