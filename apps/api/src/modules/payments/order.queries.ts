@@ -27,6 +27,13 @@ export class OrderQueries {
     return serialize(o);
   }
 
+  /** The Stripe Checkout return page knows only the order reference. */
+  async byReference(reference: string, viewer: { id: string; role: Role }) {
+    const o = await this.db.order.findUnique({ where: { reference }, select: { id: true, userId: true } });
+    if (!o || (viewer.role !== 'ADMIN' && o.userId !== viewer.id)) throw new NotFoundError('Order', reference);
+    return this.get(o.id, viewer);
+  }
+
   async mine(userId: string) {
     const rows = await this.db.order.findMany({ where: { userId }, include: listInclude, orderBy: { createdAt: 'desc' } });
     return rows.map(serialize);

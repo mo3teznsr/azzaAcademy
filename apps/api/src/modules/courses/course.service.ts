@@ -10,6 +10,18 @@ type Actor = { id: string; role: Role };
 /** Statuses in which the proposing teacher may still change their course. */
 const TEACHER_EDITABLE = ['DRAFT', 'PENDING_REVIEW'] as const;
 
+/**
+ * The course-editing rule, shared with lessons: admins always; the proposing teacher only while their course
+ * is DRAFT or PENDING_REVIEW (403 for anyone else, 422 `COURSE_LOCKED` once published).
+ */
+export function assertCanEditCourse(course: { status: string; createdById: string | null }, actor: Actor) {
+  if (actor.role === 'ADMIN') return;
+  if (actor.role !== 'TEACHER' || course.createdById !== actor.id) throw new ForbiddenError('Only the teacher who proposed this course can change it');
+  if (!(TEACHER_EDITABLE as readonly string[]).includes(course.status)) {
+    throw new BusinessRuleError('Published courses are changed by an admin', 'COURSE_LOCKED');
+  }
+}
+
 export function slugify(title: string) {
   return (
     title
@@ -65,11 +77,9 @@ export class CourseService {
     if (actor.role !== 'ADMIN') delete input.featuredRank;
     const slug = input.slug ?? (await this.freeSlug(slugify(input.titleEn)));
     if (await this.courses.findBySlug(slug)) throw new ConflictError(`Slug "${slug}" is taken`);
-    const { priceAed, ...rest } = input;
     return this.courses.create({
-      ...rest,
+      ...input,
       slug,
-      priceFils: aedToFils(priceAed),
       ...(actor.role === 'TEACHER' && { status: 'DRAFT' as const, createdById: actor.id }),
     });
   }
@@ -87,8 +97,7 @@ export class CourseService {
     if (input.status === 'ARCHIVED' && (await this.courses.countActiveBatches(id)) > 0) {
       throw new BusinessRuleError('Close or complete active batches before archiving this course', 'COURSE_HAS_ACTIVE_BATCHES');
     }
-    const { priceAed, ...rest } = input;
-    return this.courses.update(id, { ...rest, ...(priceAed !== undefined && { priceFils: aedToFils(priceAed) }) });
+    return this.courses.update(id, input);
   }
 
   /** TEACHER: send a DRAFT proposal to the admins. */
@@ -131,10 +140,8 @@ export class CourseService {
   }
 
   private assertTeacherCanEdit(course: CourseRecord, actor: Actor) {
-    if (actor.role !== 'TEACHER' || course.createdById !== actor.id) throw new ForbiddenError('Only the teacher who proposed this course can change it');
-    if (!(TEACHER_EDITABLE as readonly string[]).includes(course.status)) {
-      throw new BusinessRuleError('Published courses are changed by an admin', 'COURSE_LOCKED');
-    }
+    if (actor.role !== 'TEACHER') throw new ForbiddenError('Only the teacher who proposed this course can change it');
+    assertCanEditCourse(course, actor);
   }
 
   private async assertCategory(slug: string) {

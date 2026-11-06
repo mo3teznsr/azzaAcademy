@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
+import '../../../router/routes.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
 import '../domain/course_filters.dart';
@@ -116,6 +118,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   ),
                 ),
                 CourseRail(railKey: const Key('featured-courses'), title: l.featuredTitle, courses: featured),
+                if (browsing) ...[
+                  const SizedBox(height: 12),
+                  CardGroup(children: [
+                    ListTile(
+                      key: const Key('explore-instructors'),
+                      minTileHeight: 56,
+                      leading: Icon(Icons.groups_2_outlined, color: AzzaPalette.of(context).accent),
+                      title: Text(l.meetInstructors),
+                      subtitle: Text(l.meetInstructorsHint),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => context.push(Routes.instructors),
+                    ),
+                  ]),
+                ],
                 const SizedBox(height: 8),
                 if (courses.hasValue) MonoLabel(l.coursesCount(f.n(courses.requireValue.length))),
                 const SizedBox(height: 8),

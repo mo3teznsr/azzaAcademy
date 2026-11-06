@@ -26,11 +26,17 @@ import { CategoryService, PrismaCategoryRepository } from './modules/categories/
 import { PrismaReviewRepository } from './modules/reviews/review.repository';
 import { ReviewService } from './modules/reviews/review.service';
 import { SavedCourseService } from './modules/reviews/saved-course.service';
+import { InstructorApplicationService } from './modules/instructors/instructor-application.service';
+import { PrismaApplicationRepository } from './modules/instructors/instructor-application.repository';
 import { PrismaAdminRepository } from './modules/admin/admin.repository';
 import { AdminService } from './modules/admin/admin.service';
 import { CourseMediaService } from './modules/admin/course-media.service';
 import { BatchAccessPolicy, PrismaBatchAccessRepository } from './modules/batches/batch-access';
 import { PrismaContentRepository } from './modules/content/content.repository';
+import { PrismaLessonRepository } from './modules/lessons/lesson.repository';
+import { LessonService } from './modules/lessons/lesson.service';
+import { PrismaQuizRepository } from './modules/quizzes/quiz.repository';
+import { QuizService } from './modules/quizzes/quiz.service';
 import { ContentService } from './modules/content/content.service';
 import { PrismaMeRepository } from './modules/me/me.repository';
 import { CalendarTokenSigner } from './modules/me/calendar-token';
@@ -176,7 +182,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const lifecycle = new EnrollmentLifecycle(paymentsRepo, machine, notifications, realtime, clock, config.WEB_URL);
   const fx = new FxService(new PrismaFxRepository(db));
   const strategies = new CheckoutStrategyRegistry([
-    new StripeCheckout(payments),
+    new StripeCheckout(payments, config.WEB_URL),
     new BankTransferCheckout(paymentsRepo, notifications, config.BANK_TRANSFER_HOLD_HOURS),
     new AppleIapCheckout(),
   ]);
@@ -199,6 +205,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     categories,
     reviews: new ReviewService(new PrismaReviewRepository(db), notifications, () => clock.now()),
     savedCourses: new SavedCourseService(db),
+    instructorApplications: new InstructorApplicationService(new PrismaApplicationRepository(db), notifications, () => clock.now()),
     batches: new BatchService(batchRepo, courseRepo, new ScheduleGenerator(), access, notifications, clock),
     notifications,
     me: meService,
@@ -223,6 +230,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     reports: new ReportService(new PrismaReportRepository(db), clock),
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock),
+    lessons: new LessonService(new PrismaLessonRepository(db)),
+    quizzes: new QuizService(new PrismaQuizRepository(db), access, notifications, clock),
     courseMedia: new CourseMediaService(adapters.storage),
     admin: new AdminService(new PrismaAdminRepository(db), new BetterAuthUserProvisioner(auth, invites, config.WEB_URL), video, clock),
   };

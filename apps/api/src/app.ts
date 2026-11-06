@@ -12,9 +12,12 @@ import { adminMediaRoutes } from './modules/admin/course-media.routes';
 import { batchRoutes } from './modules/batches/batch.routes';
 import { certificateRoutes } from './modules/certificates/certificate.routes';
 import { contentRoutes } from './modules/content/content.routes';
+import { lessonRoutes } from './modules/lessons/lesson.routes';
+import { quizRoutes } from './modules/quizzes/quiz.routes';
 import { courseRoutes } from './modules/courses/course.routes';
 import { categoryRoutes } from './modules/categories/category.routes';
 import { engagementRoutes } from './modules/reviews/review.routes';
+import { instructorApplicationRoutes } from './modules/instructors/instructor-application.routes';
 import { meRoutes } from './modules/me/me.routes';
 import { adminFinanceRoutes, paymentRoutes } from './modules/payments/payments.routes';
 import { adminPayoutRoutes, teacherPayoutRoutes } from './modules/payouts/payout.routes';
@@ -88,6 +91,7 @@ export function createApp(container: Container) {
     .route('/', engagementRoutes(services.reviews, services.savedCourses))
     .route('/courses', courseRoutes(services.courses))
     .route('/categories', categoryRoutes(services.categories))
+    .route('/instructor-applications', instructorApplicationRoutes(services.instructorApplications))
     .route('/batches', batchRoutes(services.batches))
     .route('/me', meRoutes(services.me, services.notifications, services.calendar))
     .route('/stats', statsRoutes(services.stats))
@@ -104,6 +108,8 @@ export function createApp(container: Container) {
     .route('/admin', adminReportRoutes(services.reports))
     .route('/', paymentRoutes(services))
     .route('/', contentRoutes(services.content))
+    .route('/', lessonRoutes(services.lessons))
+    .route('/', quizRoutes(services.quizzes))
     .route('/', certificateRoutes(services.certificates));
 
   app.route('/api/v1', api);

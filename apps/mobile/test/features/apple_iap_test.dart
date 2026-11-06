@@ -19,14 +19,6 @@ import '../helpers/harness.dart';
 
 const _product = 'com.futuretech.azza.seat.aed880';
 
-class _OffSheet implements PaymentSheetGateway {
-  @override
-  bool get available => true;
-  @override
-  Future<PaymentSheetOutcome> present({required String clientSecret, required String merchantName, required bool dark}) async =>
-      PaymentSheetOutcome.completed;
-}
-
 void main() {
   const course = Course(id: 'pdf', slug: 'pdf', titleEn: 'Product Design Foundations', titleAr: 'أساسيات تصميم المنتجات', priceFils: 88000);
   Batch batch({int? priceFils}) => Batch(id: 'b08', code: 'B08', courseId: 'pdf', course: course, capacity: 12, priceFils: priceFils);
@@ -57,7 +49,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository(batchList: [b ?? batch()])),
           checkoutRepositoryProvider.overrideWithValue(FakeCheckoutRepository(current: awaiting)),
-          paymentSheetGatewayProvider.overrideWithValue(_OffSheet()),
+          checkoutPageOpenerProvider.overrideWithValue((_) async => true),
           appStoreGatewayProvider.overrideWithValue(FakeAppStoreGateway(products: products)),
         ],
       );

@@ -29,6 +29,9 @@ import { gmtOffset, sessionCode } from '@/lib/i18n/format';
 import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
 import { ProposalNotice, ReviewNoteQuote, useProposalError } from '../admin/proposal-review';
+import { BatchQuizzes } from '../quizzes/batch-quizzes';
+import { AddSessionButton, MoveSessionDialog, SeatsEditor, SessionRowActions } from '../admin/batch-sessions';
+import type { LiveSession } from '@/lib/api';
 
 export function BatchWorkspace({ batchId, basePath = '/studio' }: { batchId: string; basePath?: string }) {
   const q = useQuery({ queryKey: qk.batch(batchId), queryFn: () => batchesApi.get(batchId) });
@@ -83,6 +86,7 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
   const atRisk = roster.data && roster.data.endedSessions ? roster.data.items.filter((r) => (r.attendancePercent ?? 100) < 60).length : null;
   // Proposals aren't open to students yet, so there's no lobby to open.
   const proposal = b.status === 'DRAFT' || b.status === 'PENDING_REVIEW';
+  const [moving, setMoving] = useState<LiveSession | null>(null);
 
   return (
     <>
@@ -131,11 +135,17 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
           </TabsTrigger>
           <TabsTrigger value="materials">{t.studio.batch.tabMaterials}</TabsTrigger>
           <TabsTrigger value="assignments">{t.studio.batch.tabAssignments}</TabsTrigger>
+          <TabsTrigger value="quizzes">{t.learning.studio.tab}</TabsTrigger>
         </TabsList>
         <TabsContent value="schedule" className="mt-4 flex flex-col gap-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-display text-2xl font-extrabold">{fill(t.studio.batch.seasonTitle, { n: f.number(b.sessions.length) })}</h2>
             <span className="text-sm text-muted-foreground">{t.studio.batch.rulesNote}</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] border border-border bg-card p-4">
+            {/* Approved batches' seats belong to the admins (the API answers BATCH_LOCKED). */}
+            <SeatsEditor b={b} canEdit={proposal} />
+            <AddSessionButton b={b} />
           </div>
           <ol className="flex flex-col gap-2">
             {b.sessions.map((s) => {
@@ -150,6 +160,7 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
                     sub={`${f.dayMonth(s.startsAt)} · ${f.time(s.startsAt)}–${f.time(s.endsAt)}`}
                     trailing={
                       <span className="flex items-center gap-3">
+                        <SessionRowActions session={s} admin={false} onMove={setMoving} onCancel={() => undefined} />
                         <SessionStatusChip state={st} minutes={minutesUntil(s.startsAt)} />
                         <Link href={st === 'ENDED' ? `/studio/sessions/${s.id}/report` : `/studio/sessions/${s.id}`} className={cn('text-sm font-semibold', st === 'LIVE' ? 'text-ink underline' : 'link-sun')}>
                           {st === 'ENDED' ? t.studio.report : t.studio.batch.prep}
@@ -161,6 +172,7 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
               );
             })}
           </ol>
+          <MoveSessionDialog b={b} session={moving} onClose={() => setMoving(null)} />
         </TabsContent>
         <TabsContent value="roster" className="mt-4">
           <QueryView query={roster} isEmpty={(r) => r.items.length === 0} loading={<LoadingBlock rows={4} height={48} />} empty={<EmptyState title={t.studio.batch.rosterEmpty} />}>
@@ -215,6 +227,11 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
         <TabsContent value="assignments" className="mt-4">
           <Panel>
             <Assignments b={b} />
+          </Panel>
+        </TabsContent>
+        <TabsContent value="quizzes" className="mt-4">
+          <Panel>
+            <BatchQuizzes batchId={b.id} courseId={b.course.id} />
           </Panel>
         </TabsContent>
       </Tabs>

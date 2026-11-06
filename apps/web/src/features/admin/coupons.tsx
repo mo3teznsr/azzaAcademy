@@ -443,8 +443,8 @@ function ScopeSelect({ label, value, onChange, options }: { label: string; value
   );
 }
 
-type CourseOption = { id: string; titleEn: string; titleAr: string | null; priceFils: number };
-type BatchOption = { id: string; code: string; priceFils: number | null; course: { titleEn: string; titleAr: string | null; priceFils: number } };
+type CourseOption = { id: string; titleEn: string; titleAr: string | null; priceFils: number | null };
+type BatchOption = { id: string; code: string; priceFils: number; course: { titleEn: string; titleAr: string | null } };
 
 /** "AED 880 → AED 792" on the scoped course/batch (or the first course as a sample), before VAT. */
 function PreviewLine({ draft: d, courses, batches }: { draft: Draft; courses: CourseOption[]; batches: BatchOption[] }) {
@@ -453,10 +453,11 @@ function PreviewLine({ draft: d, courses, batches }: { draft: Draft; courses: Co
   const base = useMemo(() => {
     if (d.scope === 'batch') {
       const b = batches.find((x) => x.id === d.batchId);
-      return b ? { fils: b.priceFils ?? b.course.priceFils, on: `${b.code} · ${pick(b.course.titleEn, b.course.titleAr).text}` } : null;
+      return b ? { fils: b.priceFils, on: `${b.code} · ${pick(b.course.titleEn, b.course.titleAr).text}` } : null;
     }
-    const c = d.scope === 'course' ? courses.find((x) => x.id === d.courseId) : courses[0];
-    return c ? { fils: c.priceFils, on: pick(c.titleEn, c.titleAr).text } : null;
+    // A course's "from" price (its cheapest open batch); a course with no open batch has nothing to preview.
+    const c = d.scope === 'course' ? courses.find((x) => x.id === d.courseId) : courses.find((x) => x.priceFils !== null);
+    return c && c.priceFils !== null ? { fils: c.priceFils, on: pick(c.titleEn, c.titleAr).text } : null;
   }, [d.scope, d.batchId, d.courseId, courses, batches, pick]);
 
   const value = num(d.value);

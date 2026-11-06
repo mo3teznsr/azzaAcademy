@@ -30,6 +30,195 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cancel => 'إلغاء';
 
   @override
+  String get noOpenBatchesShort => 'لا توجد دفعات مفتوحة';
+
+  @override
+  String chargedAsAed(String amount) {
+    return 'يُخصم $amount';
+  }
+
+  @override
+  String get ratesUnavailableHint =>
+      'معروض بالدرهم: أسعار الصرف غير متاحة الآن.';
+
+  @override
+  String get decrease => 'إنقاص';
+
+  @override
+  String get increase => 'زيادة';
+
+  @override
+  String get paymentPageNotOpened =>
+      'تعذّر فتح صفحة الدفع. اضغط “فتح صفحة الدفع” للمحاولة مجددًا.';
+
+  @override
+  String get payCardCheckoutSub =>
+      'بطاقة أو Apple Pay أو Google Pay عبر صفحة Stripe الآمنة · يُخصم بالدرهم';
+
+  @override
+  String get confirmingPayment => 'نتحقق من دفعتك…';
+
+  @override
+  String confirmingPaymentBody(String code, String amount) {
+    return 'أكمل دفع $amount على صفحة Stripe الآمنة. مقعدك في $code محجوز، وتتحدث هذه الشاشة فور تأكيد الدفع.';
+  }
+
+  @override
+  String get checkingPayment => 'نتحقق كل بضع ثوانٍ…';
+
+  @override
+  String get openPaymentPage => 'فتح صفحة الدفع';
+
+  @override
+  String get coursePricedPerBatch =>
+      'لا سعر هنا: تحدد سعر المقعد في كل دفعة. يرى الطلاب أقل سعر بين الدفعات المفتوحة كسعر “ابتداءً من” للدورة.';
+
+  @override
+  String get seatPriceRequired => 'أدخل سعر المقعد بالدرهم (أكثر من 0).';
+
+  @override
+  String get seatPriceAed => 'سعر المقعد (درهم)';
+
+  @override
+  String get seatPriceHint => '450';
+
+  @override
+  String get seatPriceHelper => 'ما يدفعه الطالب الواحد لهذه الدفعة، بالدرهم.';
+
+  @override
+  String get seatsHelper => 'عدد الطلاب الذين يمكنهم التسجيل (1–500).';
+
+  @override
+  String get sessionAdded => 'أُضيفت الجلسة.';
+
+  @override
+  String cancelSessionTitle(String slate) {
+    return 'إلغاء $slate؟';
+  }
+
+  @override
+  String get cancelSessionBody =>
+      'سيُبلَّغ الطلاب وتُزال الجلسة من جدولهم. لا يمكن التراجع عن ذلك.';
+
+  @override
+  String get keepSession => 'إبقاء الجلسة';
+
+  @override
+  String get cancelSession => 'إلغاء الجلسة';
+
+  @override
+  String get sessionCancelled => 'أُلغيت الجلسة.';
+
+  @override
+  String get upcomingSessions => 'الجلسات القادمة';
+
+  @override
+  String get addSession => 'إضافة جلسة';
+
+  @override
+  String get noUpcomingSessions => 'لا توجد جلسات قادمة.';
+
+  @override
+  String get moveSessionAction => 'نقل الجلسة';
+
+  @override
+  String get requestMove => 'طلب نقل';
+
+  @override
+  String showAllN(String count) {
+    return 'عرض الكل ($count)';
+  }
+
+  @override
+  String get sessionTitleRequired => 'اكتب عنوانًا للجلسة (حرفان على الأقل).';
+
+  @override
+  String get errStartInPast => 'اختر وقتًا في المستقبل.';
+
+  @override
+  String addSessionTitle(String code) {
+    return 'إضافة جلسة إلى $code';
+  }
+
+  @override
+  String get addSessionLead =>
+      'جلسة مباشرة إضافية خارج الجدول الأسبوعي: تعويض أو جلسة إضافية أو اختبار.';
+
+  @override
+  String get sessionTitleLabel => 'عنوان الجلسة';
+
+  @override
+  String get sessionTitleHint => 'تعويض: مراجعة وأسئلة';
+
+  @override
+  String get sessionDate => 'التاريخ';
+
+  @override
+  String sessionTimeOtherZone(String device, String batchZone) {
+    return 'الأوقات بتوقيت هاتفك ($device). تعمل هذه الدفعة بتوقيت $batchZone.';
+  }
+
+  @override
+  String sessionTimeZone(String zone) {
+    return 'الأوقات بتوقيت الدفعة، $zone.';
+  }
+
+  @override
+  String get sessionLengthHelper => 'من 15 إلى 480 دقيقة، بخطوات من 15.';
+
+  @override
+  String get notifyStudentsNow => 'إبلاغ الطلاب';
+
+  @override
+  String get notifyStudentsNowSub =>
+      'أرسل لهم إشعارًا وبريدًا إلكترونيًا الآن.';
+
+  @override
+  String get couldNotAddSession => 'تعذّرت إضافة الجلسة';
+
+  @override
+  String editSeatsTitle(String code) {
+    return 'المقاعد في $code';
+  }
+
+  @override
+  String editSeatsLead(String count) {
+    return 'عدد المسجلين $count. لا يمكن أن تقل المقاعد عن ذلك.';
+  }
+
+  @override
+  String get couldNotSaveSeats => 'تعذّر تغيير المقاعد';
+
+  @override
+  String get saveSeats => 'حفظ المقاعد';
+
+  @override
+  String get seatsSaved => 'حُدّثت المقاعد.';
+
+  @override
+  String get editSeats => 'تعديل المقاعد';
+
+  @override
+  String get sessionMoved => 'نُقلت الجلسة.';
+
+  @override
+  String get moveReasonHint => 'عطلة رسمية';
+
+  @override
+  String get moveSessionNow => 'نقل الجلسة';
+
+  @override
+  String get errConflict => 'يتعارض ذلك مع موعد مجدول بالفعل.';
+
+  @override
+  String get errBatchClosed =>
+      'انتهت هذه الدفعة أو أُلغيت، فلا يمكن إضافة جلسات إليها.';
+
+  @override
+  String get errCapacityTooLow =>
+      'لا يمكن أن تقل المقاعد عن عدد الطلاب المسجلين.';
+
+  @override
   String get save => 'حفظ';
 
   @override
@@ -2556,4 +2745,507 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get playRecording => 'شغّل التسجيل';
+
+  @override
+  String get instructorsTitle => 'المدرّبون';
+
+  @override
+  String get instructorsLede =>
+      'من يدرّسون مباشرةً على عزّة. افتح ملفًا لترى دوراته ودفعاته المفتوحة.';
+
+  @override
+  String get instructorsEmpty => 'لا يوجد مدرّبون بعد';
+
+  @override
+  String get meetInstructors => 'تعرّف على المدرّبين';
+
+  @override
+  String get meetInstructorsHint => 'من يدرّس على عزّة، وماذا يدرّس';
+
+  @override
+  String get allInstructors => 'كل المدرّبين';
+
+  @override
+  String instructorCoursesN(String count) {
+    return 'الدورات: $count';
+  }
+
+  @override
+  String instructorOpenBatchesN(String count) {
+    return 'الدفعات المفتوحة: $count';
+  }
+
+  @override
+  String get teachOnAzza => 'درّس على عزّة';
+
+  @override
+  String get teachRowHint => 'قدّم طلبك';
+
+  @override
+  String get teachSignUpLink => 'تريد أن تدرّس على عزّة؟';
+
+  @override
+  String get teachSignUpHint =>
+      'أنشئ حسابك أولًا، ثم افتح «أنا» ← «درّس على عزّة» لتقديم طلبك.';
+
+  @override
+  String get teachPitchTitle => 'شارك ما تعرفه، مباشرةً.';
+
+  @override
+  String get teachPitchBody =>
+      'درّس دفعات صغيرة مباشرةً لمتعلّمين في أنحاء المنطقة، بالعربية أو الإنجليزية. أخبرنا من أنت وماذا ستدرّس، ويراجع فريقنا كل طلب عادةً خلال أيام قليلة.';
+
+  @override
+  String get applySectionAbout => 'عنك';
+
+  @override
+  String get applySectionTeach => 'ما ستدرّسه';
+
+  @override
+  String get applySectionExperience => 'خبرتك';
+
+  @override
+  String get applySectionContact => 'روابط وتواصل';
+
+  @override
+  String get applyHeadline => 'العنوان التعريفي';
+
+  @override
+  String get applyHeadlineHint => 'مصممة منتجات · 8 سنوات في الوكالات';
+
+  @override
+  String get applyBio => 'نبذة قصيرة';
+
+  @override
+  String get applyBioHint =>
+      'من أنت، وكيف تدرّس، ومن تساعد. 40 حرفًا على الأقل.';
+
+  @override
+  String get applyCategories => 'الفئات (من 1 إلى 5)';
+
+  @override
+  String get applyLanguages => 'لغات التدريس';
+
+  @override
+  String get applyExperience => 'خبرة التدريس';
+
+  @override
+  String get applyExperienceHint =>
+      '3 سنوات من ورش نهاية الأسبوع لمجموعات من 20 بالغًا';
+
+  @override
+  String get applySample => 'رابط نموذج أو معرض أعمال (اختياري)';
+
+  @override
+  String get applySampleHint => 'https://example.com/portfolio';
+
+  @override
+  String get applyPhone => 'الهاتف (اختياري)';
+
+  @override
+  String get applyPhoneHint => '+971 50 123 4567';
+
+  @override
+  String get applySubmit => 'أرسل الطلب';
+
+  @override
+  String get applySent => 'أُرسل الطلب. سنخبرك بالقرار.';
+
+  @override
+  String get applyHeadlineInvalid => 'اكتب من 4 إلى 120 حرفًا.';
+
+  @override
+  String get applyBioInvalid => 'اكتب من 40 إلى 2000 حرف.';
+
+  @override
+  String get applyExperienceInvalid => 'اكتب من 20 إلى 1500 حرف.';
+
+  @override
+  String get applyCategoriesInvalid => 'اختر من فئة إلى 5 فئات.';
+
+  @override
+  String get applyLanguagesInvalid => 'اختر لغة واحدة على الأقل.';
+
+  @override
+  String get applyUrlInvalid => 'استخدم رابطًا كاملًا يبدأ بـ https://.';
+
+  @override
+  String get applyPendingTitle => 'طلبك قيد المراجعة';
+
+  @override
+  String get applyPendingBody =>
+      'سنُعلمك فور صدور القرار. وفي الأثناء، تابع تعلّمك كالمعتاد.';
+
+  @override
+  String get applyRejectedTitle => 'لم تتم الموافقة على طلبك السابق';
+
+  @override
+  String get applyRejectedLead =>
+      'ملاحظة المراجع أدناه، ويمكنك التقديم مجددًا.';
+
+  @override
+  String get applyApprovedTitle => 'يمكنك التدريس الآن';
+
+  @override
+  String get applyApprovedBody =>
+      'حساب المدرّب جاهز. حدّث حسابك لتفتح استوديو المدرّب وتقترح دورتك الأولى.';
+
+  @override
+  String get applyRefresh => 'حدّث حسابي';
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get errAlreadyInstructor => 'أنت مدرّب على عزّة بالفعل.';
+
+  @override
+  String get errApplicationPending => 'طلبك قيد المراجعة بالفعل.';
+
+  @override
+  String get errApplicationDecided => 'صدر قرار بشأن هذا الطلب بالفعل.';
+
+  @override
+  String get instructorApplicationsSection => 'طلبات التدريس';
+
+  @override
+  String get applicantExperience => 'الخبرة';
+
+  @override
+  String get openSample => 'افتح النموذج';
+
+  @override
+  String get declineApplicationTitle => 'لماذا ترفض الطلب؟';
+
+  @override
+  String get declineNoteLabel => 'ملاحظة لمقدّم الطلب';
+
+  @override
+  String get declineNoteHint => 'يرجى إضافة نموذج تدريس قصير.';
+
+  @override
+  String get sendBackNoteHint => 'أضف وحدة عن الفُرش والورق.';
+
+  @override
+  String get nameHint => 'سارة كمال';
+
+  @override
+  String get emailHint => 'name@example.com';
+
+  @override
+  String get passwordHint => 'كلمة المرور';
+
+  @override
+  String get newPasswordHint => '8 أحرف على الأقل';
+
+  @override
+  String get errQuizTimeUp => 'انتهى وقت هذه المحاولة، فسُجّلت بدرجة 0.';
+
+  @override
+  String get errQuizClosed => 'هذا الاختبار مغلق.';
+
+  @override
+  String get errNoAttemptsLeft => 'لم تتبقَّ لديك محاولات في هذا الاختبار.';
+
+  @override
+  String get errAttemptNotStarted => 'ابدأ الاختبار قبل التسليم.';
+
+  @override
+  String get lessonsTitle => 'الدروس';
+
+  @override
+  String lessonsCountN(String n) {
+    return '$n درسًا';
+  }
+
+  @override
+  String lessonNofM(String n, String m) {
+    return 'الدرس $n من $m';
+  }
+
+  @override
+  String get lessonHasVideo => 'فيديو';
+
+  @override
+  String lessonAttachmentsN(String n) {
+    return '$n مرفقات';
+  }
+
+  @override
+  String get lessonAttachments => 'المرفقات';
+
+  @override
+  String get noLessons => 'لا توجد دروس بعد';
+
+  @override
+  String get noLessonsBody => 'لم يُضف مدرّسك دروسًا لهذه الدورة بعد.';
+
+  @override
+  String get previousLesson => 'السابق';
+
+  @override
+  String get nextLesson => 'الدرس التالي';
+
+  @override
+  String get watchLessonVideo => 'شاهد فيديو الدرس';
+
+  @override
+  String get watchLessonVideoHint => 'يفتح في مشغّل الفيديو';
+
+  @override
+  String get videoOnYoutube => 'يفتح على YouTube';
+
+  @override
+  String get videoOnVimeo => 'يفتح على Vimeo';
+
+  @override
+  String get myQuizzesTitle => 'اختباراتي';
+
+  @override
+  String get quizzesTitle => 'الاختبارات';
+
+  @override
+  String get noQuizzes => 'لا توجد اختبارات بعد';
+
+  @override
+  String get noQuizzesBody => 'ستظهر هنا الاختبارات التي ينشرها مدرّسوك.';
+
+  @override
+  String get noQuestions => 'لا يحتوي هذا الاختبار على أسئلة.';
+
+  @override
+  String get quizzesToDo => 'للإنجاز';
+
+  @override
+  String get quizzesDone => 'منجزة';
+
+  @override
+  String get quizzesWebOnly =>
+      'تُنشأ الاختبارات وتُعدَّل على الويب. هنا تتابع نتائج طلابك.';
+
+  @override
+  String get quizLabel => 'اختبار';
+
+  @override
+  String get quizOpen => 'متاح';
+
+  @override
+  String get quizInProgress => 'قيد الحل';
+
+  @override
+  String get quizSubmitted => 'مُسلَّم';
+
+  @override
+  String get quizMissed => 'فائت';
+
+  @override
+  String quizQuestionsN(String n) {
+    return '$n أسئلة';
+  }
+
+  @override
+  String quizMinutesN(String n) {
+    return '$n دقيقة';
+  }
+
+  @override
+  String quizPointsN(String n) {
+    return '$n نقاط';
+  }
+
+  @override
+  String quizBest(String score) {
+    return 'الأفضل $score';
+  }
+
+  @override
+  String quizAttemptsUsed(String used, String max) {
+    return 'المحاولات $used/$max';
+  }
+
+  @override
+  String get quizQuestionsLabel => 'الأسئلة';
+
+  @override
+  String get quizPointsLabel => 'النقاط';
+
+  @override
+  String get quizTimeLimitLabel => 'المدة';
+
+  @override
+  String get quizNoTimeLimit => 'بلا حدّ زمني';
+
+  @override
+  String get quizAttemptsLabel => 'المحاولات';
+
+  @override
+  String get quizDueLabel => 'الموعد النهائي';
+
+  @override
+  String get quizBestScore => 'أفضل درجة لك';
+
+  @override
+  String get quizYourAttempts => 'محاولاتك';
+
+  @override
+  String get quizTimedOut => 'انتهى الوقت';
+
+  @override
+  String get quizStart => 'ابدأ الاختبار';
+
+  @override
+  String get quizTryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get quizResume => 'تابع المحاولة';
+
+  @override
+  String get quizClosedNote => 'هذا الاختبار مغلق.';
+
+  @override
+  String get quizNoAttemptsNote => 'استخدمت كل محاولاتك.';
+
+  @override
+  String get quizUnavailableNote => 'لا يمكن بدء هذا الاختبار الآن.';
+
+  @override
+  String get quizStartTimedTitle => 'هل تبدأ المؤقّت؟';
+
+  @override
+  String quizStartTimedBody(String minutes) {
+    return 'سيكون لديك $minutes دقيقة بعد البدء. عند انتهاء الوقت تُسلَّم إجاباتك تلقائيًا.';
+  }
+
+  @override
+  String quizQuestionNofM(String n, String m) {
+    return 'السؤال $n من $m';
+  }
+
+  @override
+  String quizQuestionN(String n) {
+    return 'السؤال $n';
+  }
+
+  @override
+  String quizAnsweredN(String n) {
+    return '$n مُجاب';
+  }
+
+  @override
+  String get quizChooseOne => 'اختر إجابة واحدة';
+
+  @override
+  String get quizChooseAll => 'اختر كل ما ينطبق';
+
+  @override
+  String get quizPrevious => 'السابق';
+
+  @override
+  String get quizNext => 'التالي';
+
+  @override
+  String get quizSubmit => 'سلِّم';
+
+  @override
+  String get quizSubmitTitle => 'هل تسلّم إجاباتك؟';
+
+  @override
+  String quizAnsweredOf(String answered, String total) {
+    return 'أجبت عن $answered من $total سؤالًا.';
+  }
+
+  @override
+  String get quizUnansweredWarning => 'الأسئلة غير المُجابة درجتها 0.';
+
+  @override
+  String get quizAutoSubmitted => 'انتهى الوقت. سُلّمت إجاباتك.';
+
+  @override
+  String get quizLeaveTitle => 'هل تغادر الاختبار؟';
+
+  @override
+  String get quizLeaveBody => 'لن تُحفظ إجاباتك في هذه الشاشة.';
+
+  @override
+  String get quizLeaveTimedBody =>
+      'لن تُحفظ إجاباتك في هذه الشاشة، ويستمر المؤقّت في العدّ.';
+
+  @override
+  String get quizKeepGoing => 'تابع';
+
+  @override
+  String get quizLeave => 'غادر';
+
+  @override
+  String quizTimeLeft(String time) {
+    return 'الوقت المتبقي $time';
+  }
+
+  @override
+  String get quizResultTitle => 'النتيجة';
+
+  @override
+  String quizAttemptN(String n) {
+    return 'المحاولة $n';
+  }
+
+  @override
+  String get quizYourScore => 'درجتك';
+
+  @override
+  String quizPointsOf(String score, String max) {
+    return '$score من $max نقاط';
+  }
+
+  @override
+  String get quizAnswersHidden =>
+      'تظهر الإجابات الصحيحة بعد الموعد النهائي، أو بعد استخدام كل محاولاتك.';
+
+  @override
+  String get quizReviewAnswers => 'راجع إجاباتك';
+
+  @override
+  String get quizCorrect => 'صحيح';
+
+  @override
+  String get quizIncorrect => 'خطأ';
+
+  @override
+  String get quizPartial => 'صحيح جزئيًا';
+
+  @override
+  String get quizNotAnswered => 'بلا إجابة';
+
+  @override
+  String get quizBackToQuiz => 'العودة إلى الاختبار';
+
+  @override
+  String get quizResultsTitle => 'نتائج الاختبار';
+
+  @override
+  String quizStudentsAttempted(String students, String attempts) {
+    return '$students طلاب حاولوا · $attempts محاولات';
+  }
+
+  @override
+  String get studentsLabel => 'الطلاب';
+
+  @override
+  String get quizAverage => 'المتوسط';
+
+  @override
+  String get quizNoAttemptsYet => 'لا محاولات بعد';
+
+  @override
+  String quizAttemptsN(String n) {
+    return '$n محاولات';
+  }
+
+  @override
+  String get quizPerQuestion => 'حسب السؤال';
+
+  @override
+  String quizCorrectOfAnswered(String correct, String answered) {
+    return '$correct من $answered صحيحة';
+  }
 }

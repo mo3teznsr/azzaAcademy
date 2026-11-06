@@ -10,6 +10,7 @@ import '../../../core/network/error_text.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../catalog/data/catalog_repository.dart';
@@ -76,7 +77,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (method == PaymentMethod.appleIap) {
         context.pushReplacement(Routes.applePayment(id), extra: true);
       } else if (method == PaymentMethod.stripe) {
-        context.pushReplacement(Routes.cardPayment(id), extra: result.clientSecret);
+        // Stripe Checkout: open the hosted page, then follow the order (the webhook marks it PAID).
+        final url = result.checkoutUrl;
+        final opened = url != null && await ref.read(checkoutPageOpenerProvider)(url);
+        if (!mounted) return;
+        if (!opened) showToast(context, context.l10n.paymentPageNotOpened);
+        context.pushReplacement(Routes.order(id), extra: url);
       } else {
         context.pushReplacement(Routes.bankTransfer(id));
       }
@@ -100,13 +106,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (usesAppStorePayments) return _buildAppStore(context, batch);
     final l = context.l10n;
     final f = ref.watch(fmtProvider);
+    final price = ref.watch(priceFormatProvider);
     final currency = ref.watch(displayCurrencyProvider);
     final fx = ref.watch(fxRatesProvider).value ?? FxRates.fallback;
-    final rate = fx.rateFor(currency);
-    final key = (batchId: widget.batchId, coupon: _appliedCoupon, currency: currency);
-    final stripe = ref.watch(paymentSheetGatewayProvider);
+    final key = (batchId: widget.batchId, coupon: _appliedCoupon, currency: price.shown);
     final quote = ref.watch(quoteProvider(key));
-    _method ??= stripe.available ? PaymentMethod.stripe : PaymentMethod.bankTransfer;
+    _method ??= PaymentMethod.stripe;
     final t = Theme.of(context).textTheme;
     final p = AzzaPalette.of(context);
 
@@ -145,18 +150,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   compact: true,
                   onRetry: () => ref.invalidate(quoteProvider(key)),
                   data: (q) => Column(children: [
-                    KeyValueRow(l.batchPrice, f.money(q.subtotalFils, currency, rate)),
+                    KeyValueRow(l.batchPrice, price.display(q.subtotalFils)),
                     if (q.discountFils > 0)
-                      KeyValueRow('${l.discount}${_appliedCoupon.isEmpty ? '' : ' · $_appliedCoupon'}', '− ${f.money(q.discountFils, currency, rate)}',
+                      KeyValueRow('${l.discount}${_appliedCoupon.isEmpty ? '' : ' · $_appliedCoupon'}', '− ${price.display(q.discountFils)}',
                           valueColor: p.success),
-                    if (q.vatFils > 0) KeyValueRow(l.vat, f.money(q.vatFils, currency, rate)),
+                    if (q.vatFils > 0) KeyValueRow(l.vat, price.display(q.vatFils)),
                     Divider(color: p.line),
-                    KeyValueRow(l.total, f.money(q.totalFils, currency, rate), emphasize: true),
+                    KeyValueRow(l.total, price.display(q.totalFils), emphasize: true),
                     const SizedBox(height: 4),
                     Text(
-                      currency.isBase ? l.chargedExact : l.chargedInAed(f.aed(q.totalFils), currency.wire, f.n(rate.toStringAsFixed(4))),
+                      key: const Key('checkout-charged'),
+                      price.converted
+                          ? l.chargedInAed(f.aed(q.totalFils), price.shown.wire, f.n(price.rate.toStringAsFixed(4)))
+                          : l.chargedExact,
                       style: t.bodySmall,
                     ),
+                    if (price.ratesMissing) Text(l.ratesUnavailableHint, key: const Key('price-rates-missing'), style: t.bodySmall),
                   ]),
                 ),
                 const SizedBox(height: 16),
@@ -183,10 +192,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             OptionTile(
               key: const Key('method-card'),
               title: l.payCard,
-              subtitle: stripe.available ? l.payCardSub : l.stripeUnavailable,
+              subtitle: l.payCardCheckoutSub,
               leading: const Icon(Icons.credit_card_rounded),
               selected: _method == PaymentMethod.stripe,
-              onTap: stripe.available ? () => setState(() => _method = PaymentMethod.stripe) : () => showToast(context, l.stripeUnavailable),
+              onTap: () => setState(() => _method = PaymentMethod.stripe),
             ),
             const SizedBox(height: 10),
             OptionTile(
@@ -202,7 +211,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       ),
       bottomNavigationBar: BottomActionBar(children: [
         FilledButton(
-          onPressed: _busy || !quote.hasValue ? null : () => _continue(currency),
+          key: const Key('checkout-continue'),
+          onPressed: _busy || !quote.hasValue ? null : () => _continue(price.shown),
           child: _busy
               ? SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: p.onPrimary))
               : Text(l.continueAmount(quote.hasValue ? f.aed(quote.requireValue.totalFils) : '…')),

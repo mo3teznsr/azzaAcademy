@@ -204,7 +204,7 @@ class CheckoutResult {
   const CheckoutResult({
     required this.order,
     this.waitlisted = false,
-    this.clientSecret,
+    this.checkoutUrl,
     this.bankAccount,
     this.reference,
     this.expiresAt,
@@ -212,12 +212,12 @@ class CheckoutResult {
     this.appAccountToken,
   });
 
-  /// 201 `{ waitlisted: false, order, enrollment, quote, clientSecret | bankAccount+reference+expiresAt | appleProductId+appAccountToken }`
+  /// 201 `{ waitlisted: false, order, enrollment, quote, checkoutUrl | bankAccount+reference+expiresAt | appleProductId+appAccountToken }`
   /// or 202 `{ waitlisted: true, enrollment }` (no order).
   factory CheckoutResult.fromJson(Json j) => CheckoutResult(
         waitlisted: boolean(j, 'waitlisted'),
         order: Order.fromJson(obj(j, 'order')),
-        clientSecret: strOrNull(j, 'clientSecret'),
+        checkoutUrl: strOrNull(j, 'checkoutUrl'),
         bankAccount: objOrNull(j, 'bankAccount') == null ? null : BankAccount.fromJson(obj(j, 'bankAccount')),
         reference: strOrNull(j, 'reference'),
         expiresAt: date(j, 'expiresAt'),
@@ -227,7 +227,8 @@ class CheckoutResult {
 
   final Order order;
   final bool waitlisted;
-  final String? clientSecret;
+  /// STRIPE: Stripe Checkout's hosted payment page (charged in AED).
+  final String? checkoutUrl;
   final BankAccount? bankAccount;
   final String? reference;
   final DateTime? expiresAt;

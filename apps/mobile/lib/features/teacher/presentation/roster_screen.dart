@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
+import '../../../router/routes.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
 import '../../../core/domain/enums.dart';
@@ -13,6 +15,8 @@ import '../../../core/network/error_text.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../data/proposals_repository.dart';
 import '../data/teacher_repository.dart';
+import '../../auth/presentation/auth_controller.dart';
+import 'batch_sessions_editor.dart';
 import 'proposal_widgets.dart';
 import 'teacher_batches_screen.dart';
 
@@ -58,7 +62,16 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(actions: [
+        TextButton.icon(
+          key: const Key('batch-quizzes'),
+          style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+          onPressed: () => context.push(Routes.batchQuizzes(widget.batchId)),
+          icon: const Icon(Icons.quiz_outlined, size: 20),
+          label: Text(l.quizzesTitle),
+        ),
+        const SizedBox(width: 8),
+      ]),
       body: AsyncView<List<RosterStudent>>(
         value: roster,
         onRetry: () => ref.invalidate(rosterProvider(widget.batchId)),
@@ -91,6 +104,7 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
                   if (batch != null) _Metric(label: l.doneLabel, value: '${f.n(batch.sessionsDone(DateTime.now()))} / ${f.n(batch.sessionCount)}'),
                 ]),
               ),
+              if (batch != null) BatchSessionsPanel(batch: batch, isAdmin: ref.watch(currentUserProvider)?.role == Role.admin),
               const SizedBox(height: 16),
               TextField(
                 onChanged: (v) => setState(() => _q = v.trim()),

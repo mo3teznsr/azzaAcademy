@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,20 +19,59 @@ import '../domain/apple_iap.dart';
 import '../domain/checkout_models.dart';
 
 /// Payment status: timeline while finance verifies, rejected / mismatch variant, success.
+/// Card (Stripe Checkout) orders are confirmed only by the webhook, so while one is open the screen polls the
+/// order every [pollEvery] and again whenever the app comes back to the foreground (the student returning from
+/// the payment page), until it is PAID, FAILED or EXPIRED.
 class OrderStatusScreen extends ConsumerStatefulWidget {
-  const OrderStatusScreen({super.key, required this.orderId});
+  const OrderStatusScreen({super.key, required this.orderId, this.checkoutUrl});
   final String orderId;
+
+  /// Stripe Checkout's page, when we just came from checkout: offered again if the student closed it.
+  final String? checkoutUrl;
+
+  static const pollEvery = Duration(seconds: 3);
+
+  /// Statuses that end a card payment; polling stops there.
+  static bool settled(OrderStatus s) =>
+      s == OrderStatus.paid || s == OrderStatus.failed || s == OrderStatus.expired || s == OrderStatus.refunded;
 
   @override
   ConsumerState<OrderStatusScreen> createState() => _OrderStatusScreenState();
 }
 
-class _OrderStatusScreenState extends ConsumerState<OrderStatusScreen> {
+class _OrderStatusScreenState extends ConsumerState<OrderStatusScreen> with WidgetsBindingObserver {
   void Function()? _unsub;
+  Timer? _poll;
+
+  bool _shouldPoll(Order? o) => o != null && o.method == PaymentMethod.stripe && !OrderStatusScreen.settled(o.status);
+
+  void _refresh() => ref.invalidate(orderProvider(widget.orderId));
+
+  /// Starts or stops the 3 s poll to match the latest order.
+  void _syncPolling(Order? o) {
+    if (_shouldPoll(o)) {
+      _poll ??= Timer.periodic(OrderStatusScreen.pollEvery, (_) {
+        if (mounted) _refresh();
+      });
+    } else {
+      _poll?.cancel();
+      _poll = null;
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _shouldPoll(ref.read(orderProvider(widget.orderId)).value)) _refresh();
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Start polling once the order loads; stop when it settles.
+    ref.listenManual(orderProvider(widget.orderId), (_, next) {
+      if (next.hasValue) _syncPolling(next.value);
+    }, fireImmediately: true);
     final rt = ref.read(realtimeClientProvider);
     rt.connect().then((_) {
       if (!mounted) return;
@@ -42,6 +83,8 @@ class _OrderStatusScreenState extends ConsumerState<OrderStatusScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _poll?.cancel();
     _unsub?.call();
     super.dispose();
   }
@@ -57,7 +100,7 @@ class _OrderStatusScreenState extends ConsumerState<OrderStatusScreen> {
         onRetry: () => ref.invalidate(orderProvider(widget.orderId)),
         data: (o) => RefreshList(
           onRefresh: () async => ref.invalidate(orderProvider(widget.orderId)),
-          children: [_OrderBody(order: o)],
+          children: [_OrderBody(order: o, checkoutUrl: widget.checkoutUrl)],
         ),
       ),
     );
@@ -65,8 +108,9 @@ class _OrderStatusScreenState extends ConsumerState<OrderStatusScreen> {
 }
 
 class _OrderBody extends ConsumerWidget {
-  const _OrderBody({required this.order});
+  const _OrderBody({required this.order, this.checkoutUrl});
   final Order order;
+  final String? checkoutUrl;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -86,6 +130,7 @@ class _OrderBody extends ConsumerWidget {
       ]);
     }
 
+    final cardPending = o.method == PaymentMethod.stripe && !OrderStatusScreen.settled(o.status);
     final problem = o.status == OrderStatus.rejected || o.status == OrderStatus.amountMismatch;
     final steps = <(String, String?, bool, bool)>[
       (l.tlOrderCreated, o.createdAt == null ? null : f.dayTime(o.createdAt!), true, false),
@@ -102,6 +147,7 @@ class _OrderBody extends ConsumerWidget {
           OrderStatus.failed => l.orderFailed,
           OrderStatus.expired => l.orderExpired,
           OrderStatus.refunded => l.orderRefunded,
+          _ when cardPending => l.confirmingPayment,
           _ => l.almostOnAir,
         },
         size: 44,
@@ -111,10 +157,28 @@ class _OrderBody extends ConsumerWidget {
         switch (o.status) {
           OrderStatus.failed => l.orderFailedBody,
           OrderStatus.expired => l.orderExpiredBody,
+          _ when cardPending => l.confirmingPaymentBody(code, f.aed(o.totalFils)),
           _ => l.verifyingBody(code, f.aed(o.totalFils)),
         },
         style: t.bodyLarge,
       ),
+      if (cardPending) ...[
+        const SizedBox(height: 16),
+        Row(key: const Key('order-polling'), children: [
+          const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+          const SizedBox(width: 10),
+          Expanded(child: Text(l.checkingPayment, style: t.bodySmall)),
+        ]),
+        if (checkoutUrl != null) ...[
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            key: const Key('order-open-payment-page'),
+            onPressed: () => ref.read(checkoutPageOpenerProvider)(checkoutUrl!),
+            icon: const Icon(Icons.open_in_new_rounded, size: 18),
+            label: Text(l.openPaymentPage),
+          ),
+        ],
+      ],
       const SizedBox(height: 12),
       if (o.method == PaymentMethod.bankTransfer && o.status != OrderStatus.expired)
         SectionCard(

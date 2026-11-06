@@ -208,9 +208,12 @@ async function ensureBatch(args: {
 }) {
   const existing = await db.batch.findUnique({ where: { courseId_code: { courseId: args.courseId, code: args.code } } });
   if (existing) return existing;
+  // Every batch carries its own price; the seed starts each batch at its course's list price.
+  const coursePrice = (await db.course.findUniqueOrThrow({ where: { id: args.courseId }, select: { priceFils: true } })).priceFils ?? 50_000;
   const created = await services.batches.create({
     courseId: args.courseId,
     code: args.code,
+    priceAed: coursePrice / 100,
     teacherId: args.teacherId,
     capacity: args.capacity,
     language: args.language,
@@ -352,7 +355,7 @@ async function main() {
     await ensurePaidEnrollment({
       userId: student.id,
       batchId: b07.id,
-      priceFils: pdf!.priceFils,
+      priceFils: pdf!.priceFils!,
       reference: `AZ-B07-${String(30_101 + i * 137)}`,
       method: bank ? 'BANK_TRANSFER' : 'STRIPE',
       bankAccountId: bank ? banks[i % 3]!.id : undefined,
@@ -387,10 +390,10 @@ async function main() {
 
   // B09 & other batches: a handful of card payments
   const smallCohorts: Array<[typeof b09, number, number, string]> = [
-    [b09, pdf!.priceFils, 7, 'B09'],
-    [arB01, arabic!.priceFils, 5, 'B01'],
-    [pyB01, python!.priceFils, 6, 'B01'],
-    [wcB01, watercolour!.priceFils, 4, 'B01'],
+    [b09, pdf!.priceFils!, 7, 'B09'],
+    [arB01, arabic!.priceFils!, 5, 'B01'],
+    [pyB01, python!.priceFils!, 6, 'B01'],
+    [wcB01, watercolour!.priceFils!, 4, 'B01'],
   ];
   for (const [batchIdx, [batch, price, count, code]] of smallCohorts.entries()) {
     for (let i = 0; i < count; i++) {
@@ -410,7 +413,7 @@ async function main() {
     await ensurePaidEnrollment({
       userId: others[10 + i]!.id,
       batchId: b08.id,
-      priceFils: pdf!.priceFils,
+      priceFils: pdf!.priceFils!,
       reference: `AZ-B08-${String(60_100 + i * 7)}`,
       method: 'STRIPE',
       paidAt: new Date(Date.UTC(2026, 9, 28 + i, 12, 0)),
@@ -423,7 +426,7 @@ async function main() {
     await ensurePaidEnrollment({
       userId: student.id,
       batchId: b06.id,
-      priceFils: pdf!.priceFils,
+      priceFils: pdf!.priceFils!,
       reference: `AZ-B06-${String(20_101 + i * 113)}`,
       method: 'STRIPE',
       paidAt: new Date(Date.UTC(2026, 7, 18 + i, 10, 0)),
@@ -435,7 +438,7 @@ async function main() {
     await ensurePaidEnrollment({
       userId: others[14 + i]!.id,
       batchId: arB02.id,
-      priceFils: arabic!.priceFils,
+      priceFils: arabic!.priceFils!,
       reference: `AZ-B02-${String(70_100 + i * 9)}`,
       method: 'STRIPE',
       paidAt: new Date(Date.UTC(2026, 9, 25 + i, 12, 0)),
@@ -594,8 +597,8 @@ const REVIEWER_EMAIL = 'appreview@azza.academy';
 async function seedAppReviewer(ctx: {
   maya: { id: string };
   lina: { id: string };
-  watercolour: { id: string; priceFils: number; slug: string };
-  pdf: { id: string; priceFils: number };
+  watercolour: { id: string; priceFils: number | null; slug: string };
+  pdf: { id: string; priceFils: number | null };
   b06: { id: string };
   b06Sessions: { id: string; number: number; startsAt: Date; endsAt: Date }[];
 }) {
@@ -629,6 +632,7 @@ async function seedAppReviewer(ctx: {
     const created = await services.batches.create({
       courseId: ctx.watercolour.id,
       code: 'B90',
+      priceAed: (ctx.watercolour.priceFils ?? 54_000) / 100,
       teacherId: ctx.maya.id,
       capacity: 1,
       language: 'EN',
@@ -643,7 +647,7 @@ async function seedAppReviewer(ctx: {
   await ensurePaidEnrollment({
     userId: reviewer.id,
     batchId: batch.id,
-    priceFils: ctx.watercolour.priceFils,
+    priceFils: ctx.watercolour.priceFils!,
     reference: 'AZ-B90-90001',
     method: 'STRIPE',
     paidAt: addMinutes(new Date(`${startsOn}T08:00:00Z`), -3 * 24 * 60),
@@ -675,7 +679,7 @@ async function seedAppReviewer(ctx: {
   await ensurePaidEnrollment({
     userId: reviewer.id,
     batchId: ctx.b06.id,
-    priceFils: ctx.pdf.priceFils,
+    priceFils: ctx.pdf.priceFils!,
     reference: 'AZ-B06-90002',
     method: 'STRIPE',
     paidAt: new Date(Date.UTC(2026, 7, 25, 10, 0)),

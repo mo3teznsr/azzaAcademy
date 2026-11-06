@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Chip } from '@/components/brand/status-chip';
+import { MoneyInput, NumberStepper } from '@/components/brand/number-stepper';
 import { PageTitle, Panel, SectionHeader } from '@/components/brand/section';
 import { ErrorState, LoadingBlock } from '@/components/brand/states';
 import { adminApi, batchesApi, coursesApi, type BatchDetail, type Course, type SchedulePreview } from '@/lib/api';
@@ -159,7 +160,22 @@ export function BatchBuilder({ mode = 'admin' }: { mode?: EditorMode }) {
                 <Input dir="ltr" {...form.register('code')} aria-invalid={!!err.code} />
               </F>
               <F label={t.admin.builder.capacity} error={err.capacity?.message}>
-                <Input type="number" min={1} {...form.register('capacity', { valueAsNumber: true })} />
+                <Controller
+                  control={form.control}
+                  name="capacity"
+                  render={({ field }) => (
+                    <NumberStepper
+                      value={field.value}
+                      onChange={field.onChange}
+                      min={1}
+                      max={500}
+                      invalid={!!err.capacity}
+                      aria-label={t.admin.builder.capacity}
+                      decLabel={t.batchOps.fewerSeats}
+                      incLabel={t.batchOps.moreSeats}
+                    />
+                  )}
+                />
               </F>
               <F label={t.admin.builder.language}>
                 <Controller
@@ -287,8 +303,14 @@ export function BatchBuilder({ mode = 'admin' }: { mode?: EditorMode }) {
           <Panel>
             <SectionHeader title={t.admin.builder.enrollment} size="sm" />
             <div className="grid gap-4 md:grid-cols-2">
-              <F label={t.admin.builder.price}>
-                <Input type="number" step="0.01" dir="ltr" {...form.register('priceAed', { setValueAs: (v: string) => (v === '' || v == null ? undefined : Number(v)) })} />
+              <F label={t.batchOps.seatPrice} hint={t.batchOps.seatPriceHint} error={err.priceAed ? t.batchOps.seatPriceRequired : undefined} htmlFor="seat-price">
+                <MoneyInput
+                  id="seat-price"
+                  required
+                  invalid={!!err.priceAed}
+                  aria-label={t.batchOps.seatPrice}
+                  {...form.register('priceAed', { setValueAs: (v: string | number) => (v === '' || v == null ? undefined : Number(v)) })}
+                />
               </F>
               <F label={t.admin.builder.minStudents}>
                 <Input type="number" min={0} {...form.register('minStudents', { valueAsNumber: true })} />
@@ -359,11 +381,14 @@ export function BatchBuilder({ mode = 'admin' }: { mode?: EditorMode }) {
   );
 }
 
-function F({ label, error, children, className }: { label: string; error?: string; children: React.ReactNode; className?: string }) {
+function F({ label, hint, error, children, className, htmlFor }: { label: string; hint?: string; error?: string; children: React.ReactNode; className?: string; htmlFor?: string }) {
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <Label className="text-[13px] text-muted-foreground">{label}</Label>
+      <Label htmlFor={htmlFor} className="text-[13px] text-muted-foreground">
+        {label}
+      </Label>
       {children}
+      {hint && !error && <span className="text-[13px] text-muted-foreground">{hint}</span>}
       {error && <span className="text-[13px] text-destructive">{error}</span>}
     </div>
   );

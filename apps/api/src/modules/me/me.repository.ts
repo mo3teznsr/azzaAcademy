@@ -119,6 +119,7 @@ export class PrismaMeRepository {
       await tx.chatMessage.deleteMany({ where: { userId } });
       await tx.sessionFeedback.deleteMany({ where: { userId } });
       await tx.submission.deleteMany({ where: { userId } });
+      await tx.quizAttempt.deleteMany({ where: { userId } });
       await tx.certificate.deleteMany({ where: { userId } });
       await tx.rescheduleRequest.deleteMany({ where: { requestedById: userId } });
 

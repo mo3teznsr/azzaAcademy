@@ -3,6 +3,7 @@ import 'package:azza/core/prefs/app_prefs.dart';
 import 'package:azza/core/providers.dart';
 import 'package:azza/core/theme/tokens.dart';
 import 'package:azza/features/admin/data/admin_repository.dart';
+import 'package:azza/features/instructors/data/instructors_repository.dart';
 import 'package:azza/features/auth/data/auth_repository.dart';
 import 'package:azza/features/auth/domain/app_user.dart';
 import 'package:azza/features/catalog/data/catalog_repository.dart';
@@ -39,6 +40,7 @@ Future<GoRouter> bootApp(WidgetTester tester, AppUser? user, {bool onboarded = t
       catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
       adminRepositoryProvider.overrideWithValue(FakeAdminRepository()),
       proposalsRepositoryProvider.overrideWithValue(FakeProposalsRepository()),
+      instructorsRepositoryProvider.overrideWithValue(FakeInstructorsRepository()),
       reviewsRepositoryProvider.overrideWithValue(FakeReviewsRepository()),
       realtimeClientProvider.overrideWithValue(FakeRealtimeClient()),
     ],

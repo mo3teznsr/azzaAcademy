@@ -1,4 +1,4 @@
-import type { BatchStatus, CreateBatchInput, PreviewScheduleInput, ReviewDecisionInput, SessionLanguage, UpdateBatchInput } from '@azza/shared';
+import type { AddSessionInput, BatchStatus, CreateBatchInput, PreviewScheduleInput, ReviewDecisionInput, SessionLanguage, UpdateBatchInput } from '@azza/shared';
 import { http, items } from './client';
 import type {
   Assignment,
@@ -7,6 +7,7 @@ import type {
   BatchSummary,
   EnrollmentRecord,
   Items,
+  LiveSession,
   Material,
   Paged,
   Roster,
@@ -34,6 +35,8 @@ export const batchesApi = {
   /** ADMIN: approve (→ ENROLLING) or send back with a note (→ DRAFT). */
   review: (id: string, input: ReviewDecisionInput) => http.post<BatchDetail>(`/api/v1/batches/${id}/review`, input),
   roster: (id: string) => http.get<Roster>(`/api/v1/batches/${id}/roster`),
+  /** ADMIN or the batch's teacher: one extra session outside the weekly rule → 201 session. */
+  addSession: (id: string, input: AddSessionInput) => http.post<LiveSession>(`/api/v1/batches/${id}/sessions`, input),
   shift: (id: string, input: { fromSessionNumber: number; days: number }) => http.post<BatchDetail>(`/api/v1/batches/${id}/shift`, input),
   enrollments: (id: string) => items(http.get<Items<BatchEnrollment>>(`/api/v1/batches/${id}/enrollments`)),
   /** Join the waitlist of a FULL batch → 201 `{ enrollment }` (WAITLISTED). */

@@ -4,13 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/money/money.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
-import '../../checkout/data/checkout_repository.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
 import 'catalog_widgets.dart';
@@ -35,8 +34,6 @@ class _BatchPickerScreenState extends ConsumerState<BatchPickerScreen> {
     final locale = ref.watch(localeProvider);
     final course = ref.watch(courseProvider(widget.courseId)).value;
     final batches = ref.watch(courseBatchesProvider(widget.courseId));
-    final currency = ref.watch(displayCurrencyProvider);
-    final fx = ref.watch(fxRatesProvider).value ?? FxRates.fallback;
     final tz = '${DateTime.now().timeZoneName} · GMT${DateTime.now().timeZoneOffset.isNegative ? '-' : '+'}${DateTime.now().timeZoneOffset.inHours.abs()}';
     final t = Theme.of(context).textTheme;
     final p = AzzaPalette.of(context);
@@ -77,7 +74,7 @@ class _BatchPickerScreenState extends ConsumerState<BatchPickerScreen> {
                   batch: b,
                   fmt: f,
                   selected: b.id == _selected,
-                  price: f.money(b.effectivePriceFils, currency, fx.rateFor(currency)),
+                  priceFils: b.effectivePriceFils,
                   onTap: () => setState(() => _selected = b.id),
                 ),
                 const SizedBox(height: 12),
@@ -112,11 +109,11 @@ class _BatchPickerScreenState extends ConsumerState<BatchPickerScreen> {
 }
 
 class _BatchOption extends StatelessWidget {
-  const _BatchOption({required this.batch, required this.fmt, required this.selected, required this.price, required this.onTap});
+  const _BatchOption({required this.batch, required this.fmt, required this.selected, required this.priceFils, required this.onTap});
   final Batch batch;
   final Fmt fmt;
   final bool selected;
-  final String price;
+  final int priceFils;
   final VoidCallback onTap;
 
   @override
@@ -159,7 +156,7 @@ class _BatchOption extends StatelessWidget {
               Row(children: [
                 Expanded(child: Text(b.teacher?.name ?? '', style: t.bodyMedium)),
                 if (b.seatsLeft > 0 && b.seatsLeft <= 5) ...[MonoLabel(l.seatsLeft(fmt.n(b.seatsLeft)), color: AzzaPalette.of(context).warning), const SizedBox(width: 10)],
-                Text(price, style: t.titleSmall),
+                Price(priceFils, style: t.titleSmall, showCharged: true, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end),
               ]),
             ]),
           ),

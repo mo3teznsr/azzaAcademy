@@ -22,6 +22,9 @@ export function PublicHeader() {
         <Link href="/#starting" className="hover:text-foreground">
           {t.nav.public.startingSoon}
         </Link>
+        <Link href="/teachers" className="hover:text-foreground">
+          {t.nav.public.teachers}
+        </Link>
         <Link href="/#how" className="hover:text-foreground">
           {t.nav.public.howItWorks}
         </Link>
@@ -75,7 +78,8 @@ export function PublicFooter() {
       title: t.landing.footerCompany,
       links: [
         { href: '/verify', label: t.landing.footerVerify },
-        { href: 'mailto:teach@azza.live', label: t.catalog.teach, external: true },
+        { href: '/teachers', label: t.nav.public.teachers },
+        { href: '/teach', label: t.catalog.teach },
         { href: 'mailto:support@azza.live', label: t.catalog.help, external: true },
       ],
     },

@@ -14,10 +14,12 @@ import { batchesApi } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { describeRule } from '@/lib/schedule';
+import { useMoney } from '@/lib/money';
 import { Pager, ReviewTabs } from './courses';
 
 export function AdminBatches() {
   const { t, f } = useI18n();
+  const money = useMoney();
   const [status, setStatus] = useState<BatchStatus | 'all'>('all');
   const [page, setPage] = useState(1);
   const params = { status: status === 'all' ? undefined : status, page, pageSize: 25 };
@@ -71,6 +73,7 @@ export function AdminBatches() {
                   <TableHead>{t.admin.batches.colSchedule}</TableHead>
                   <TableHead>{t.admin.batches.colDates}</TableHead>
                   <TableHead>{t.admin.batches.colSeats}</TableHead>
+                  <TableHead>{t.batchOps.colPrice}</TableHead>
                   <TableHead>{t.common.status}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -92,6 +95,7 @@ export function AdminBatches() {
                     <TableCell>
                       {f.number(b._count?.enrollments ?? 0)} / {f.number(b.capacity)}
                     </TableCell>
+                    <TableCell className="tabular-nums">{money.aed(b.priceFils)}</TableCell>
                     <TableCell>
                       <BatchStatusChip status={b.status} />
                     </TableCell>

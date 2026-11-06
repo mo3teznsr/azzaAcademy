@@ -1,13 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_stripe/flutter_stripe.dart' hide PaymentMethod, BankAccount;
 
 import '../../../core/money/money.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/network/app_exception.dart';
 import '../../../core/providers.dart';
+import '../../../core/utils/links.dart';
 import '../domain/checkout_models.dart';
 
 /// Checkout, orders, bank accounts, FX (`/api/v1/checkout*`, `/orders*`, `/bank-accounts`, `/fx-rates`).
@@ -95,49 +93,13 @@ final bankAccountsProvider = FutureProvider.autoDispose<List<BankAccount>>(
   (ref) => ref.watch(checkoutRepositoryProvider).bankAccounts(),
 );
 
-// ───────────────────────── Payment sheet port ─────────────────────────
+// ───────────────────────── Stripe Checkout port ─────────────────────────
 
-enum PaymentSheetOutcome { completed, cancelled }
+/// Opens Stripe Checkout's hosted page (`checkoutUrl` from `POST /checkout`). A port so screens are testable
+/// without a browser. Payment is confirmed only by the webhook; the app then follows the order's status.
+typedef CheckoutPageOpener = Future<bool> Function(String url);
 
-/// Port over Stripe's Payment Sheet so screens are testable without the SDK.
-abstract class PaymentSheetGateway {
-  bool get available;
-  Future<PaymentSheetOutcome> present({required String clientSecret, required String merchantName, required bool dark});
-}
-
-class StripePaymentSheetGateway implements PaymentSheetGateway {
-  StripePaymentSheetGateway({required this.enabled, this.merchantCountry = 'AE'});
-  final bool enabled;
-  final String merchantCountry;
-
-  @override
-  bool get available => enabled;
-
-  @override
-  Future<PaymentSheetOutcome> present({required String clientSecret, required String merchantName, required bool dark}) async {
-    if (!enabled) throw const AppException('STRIPE_DISABLED', 'Card payments are not configured.');
-    try {
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: clientSecret,
-          merchantDisplayName: merchantName,
-          style: dark ? ThemeMode.dark : ThemeMode.light,
-          applePay: Stripe.merchantIdentifier == null ? null : PaymentSheetApplePay(merchantCountryCode: merchantCountry),
-          googlePay: PaymentSheetGooglePay(merchantCountryCode: merchantCountry, currencyCode: 'AED'),
-        ),
-      );
-      await Stripe.instance.presentPaymentSheet();
-      return PaymentSheetOutcome.completed;
-    } on StripeException catch (e) {
-      if (e.error.code == FailureCode.Canceled) return PaymentSheetOutcome.cancelled;
-      throw AppException('STRIPE', e.error.localizedMessage ?? e.error.message ?? 'Payment failed.');
-    }
-  }
-}
-
-final paymentSheetGatewayProvider = Provider<PaymentSheetGateway>(
-  (ref) => StripePaymentSheetGateway(enabled: ref.watch(appConfigProvider).stripeEnabled),
-);
+final checkoutPageOpenerProvider = Provider<CheckoutPageOpener>((ref) => openInAppBrowser);
 
 // ───────────────────────── File picker port ─────────────────────────
 

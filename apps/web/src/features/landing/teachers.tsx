@@ -51,7 +51,12 @@ export function Teachers() {
               <span className="block font-light">{c.titleB}</span>
             </h2>
           </div>
-          <p className="max-w-md text-lg text-soft-foreground lg:justify-self-end">{c.body}</p>
+          <div className="flex max-w-md flex-col gap-4 lg:justify-self-end">
+            <p className="text-lg text-soft-foreground">{c.body}</p>
+            <Link href="/teachers" className="link-sun flex items-center gap-1 self-start font-bold">
+              {c.seeAll} <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
+            </Link>
+          </div>
         </div>
 
         {isPending ? (

@@ -17,13 +17,17 @@ import 'review_queue.dart';
 
 /// Alerts & approvals: teacher proposals to review, transfers to verify, payout runs, reschedule requests and other alerts.
 class ApprovalsScreen extends ConsumerWidget {
-  const ApprovalsScreen({super.key});
+  const ApprovalsScreen({super.key, this.initialTab = 0});
+
+  /// 1 opens "To review" (from an `INSTRUCTOR_APPLIED` notification).
+  final int initialTab;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     return DefaultTabController(
       length: 4,
+      initialIndex: initialTab,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.navApprovals),

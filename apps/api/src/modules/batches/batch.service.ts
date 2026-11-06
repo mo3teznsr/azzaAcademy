@@ -2,6 +2,7 @@ import {
   aedToFils,
   type BatchStatus,
   type CreateBatchInput,
+  type AddSessionInput,
   type PreviewScheduleInput,
   type ReviewDecisionInput,
   type Role,
@@ -94,14 +95,14 @@ export class BatchService {
     const first = plan.sessions[0]!;
     const last = plan.sessions.at(-1)!;
 
-    return this.batches.create({
+    const created = await this.batches.create({
       courseId: input.courseId,
       code: input.code,
       teacherId,
       capacity: input.capacity,
       language: input.language,
       timezone: input.timezone,
-      priceFils: input.priceAed ? aedToFils(input.priceAed) : undefined,
+      priceFils: aedToFils(input.priceAed),
       waitlistEnabled: input.waitlistEnabled,
       minStudents: input.minStudents,
       enrollmentOpensOn: input.enrollmentOpensOn ? new Date(input.enrollmentOpensOn) : undefined,
@@ -117,6 +118,8 @@ export class BatchService {
       },
       sessions: plan.sessions.map((s, i) => ({ ...s, title: titles[i] ?? `Session ${s.number}` })),
     });
+    await this.courses.refreshFromPrice(input.courseId);
+    return created;
   }
 
   async update(id: string, input: UpdateBatchInput, actor: { id: string; role: Role }) {
@@ -134,12 +137,43 @@ export class BatchService {
       throw new BusinessRuleError('Capacity is below the number of enrolled students', 'CAPACITY_TOO_LOW');
     }
     const { priceAed, enrollmentOpensOn, enrollmentClosesOn, ...rest } = input;
-    return this.batches.update(id, {
+    const updated = await this.batches.update(id, {
       ...rest,
       ...(priceAed !== undefined && { priceFils: aedToFils(priceAed) }),
       ...(enrollmentOpensOn && { enrollmentOpensOn: new Date(enrollmentOpensOn) }),
       ...(enrollmentClosesOn && { enrollmentClosesOn: new Date(enrollmentClosesOn) }),
     });
+    if (priceAed !== undefined || input.status) await this.courses.refreshFromPrice(batch.courseId);
+    return updated;
+  }
+
+  /** ADMIN or the batch's teacher: add one extra session (catch-up, bonus, exam) outside the weekly rule. */
+  async addSession(id: string, input: AddSessionInput, actor: { id: string; role: Role }) {
+    const batch = await this.batches.findById(id);
+    if (!batch) throw new NotFoundError('Batch', id);
+    if (actor.role !== 'ADMIN' && batch.teacherId !== actor.id) throw new ForbiddenError();
+    if (batch.status === 'COMPLETED' || batch.status === 'CANCELLED') {
+      throw new BusinessRuleError(`Cannot add sessions to a ${batch.status.toLowerCase()} batch`, 'BATCH_CLOSED');
+    }
+    const startsAt = new Date(input.startsAt);
+    if (startsAt <= this.clock.now()) throw new BusinessRuleError('Sessions cannot start in the past', 'START_IN_PAST');
+    const endsAt = new Date(startsAt.getTime() + input.durationMin * 60_000);
+    const clash = (await this.batches.teacherBusy(batch.teacherId, startsAt, endsAt)).find((b) => b.startsAt < endsAt && b.endsAt > startsAt);
+    if (clash) throw new ConflictError('Teacher is double-booked at that time', { conflicts: [{ withBatch: clash.batchCode }] });
+
+    const session = await this.batches.addSession(id, { title: input.title, startsAt, endsAt, code: batch.code });
+    if (input.notifyStudents) {
+      const students = await this.batches.activeStudentIds(id);
+      if (students.length) {
+        await this.notifier.notify(students, {
+          type: 'SESSION_ADDED',
+          title: `New session · ${batch.course.titleEn} ${batch.code}`,
+          body: `S${String(session.number).padStart(2, '0')} ${input.title}`,
+          data: { batchId: id, sessionId: session.id },
+        });
+      }
+    }
+    return session;
   }
 
   /** TEACHER: send their DRAFT batch to the admins. */
@@ -171,6 +205,7 @@ export class BatchService {
       id,
       decision.approve ? { status: 'ENROLLING', reviewNote: null } : { status: 'DRAFT', reviewNote: decision.note ?? null },
     );
+    if (decision.approve) await this.courses.refreshFromPrice(batch.courseId);
     await this.notifier.notify([batch.teacherId], {
       type: decision.approve ? 'BATCH_APPROVED' : 'BATCH_CHANGES_REQUESTED',
       title: decision.approve ? 'Your batch is open for enrollment' : 'Your batch needs changes',

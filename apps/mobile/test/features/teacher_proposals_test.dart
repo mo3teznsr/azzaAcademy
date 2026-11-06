@@ -1,6 +1,7 @@
 import 'package:azza/core/domain/enums.dart';
 import 'package:azza/core/network/app_exception.dart';
 import 'package:azza/features/admin/data/admin_repository.dart';
+import 'package:azza/features/instructors/data/instructors_repository.dart';
 import 'package:azza/features/admin/presentation/approvals_screen.dart';
 import 'package:azza/features/auth/data/auth_repository.dart';
 import 'package:azza/features/catalog/data/catalog_repository.dart';
@@ -84,7 +85,6 @@ void main() {
 
       await tester.enterText(_inEditor(const Key('course-title-en')), 'Calligraphy for beginners');
       await tester.enterText(_inEditor(const Key('course-category')), 'art');
-      await tester.enterText(_inEditor(const Key('course-price')), '450');
       await _scrollTo(tester, find.byKey(const Key('course-desc-en')), const Key('course-editor'));
       await tester.enterText(find.byKey(const Key('course-desc-en')), 'Learn the naskh script stroke by stroke.');
 
@@ -102,7 +102,7 @@ void main() {
       expect(repo.createdCourses, hasLength(1));
       final body = repo.createdCourses.single.toJson();
       expect(body['titleEn'], 'Calligraphy for beginners');
-      expect(body['priceAed'], 450);
+      expect(body.containsKey('priceAed'), isFalse, reason: 'courses have no price; seats are priced per batch');
       expect(body['level'], 'BEGINNER');
       expect(body.containsKey('status'), isFalse);
       expect(body.containsKey('slug'), isFalse);
@@ -128,7 +128,6 @@ void main() {
       await settle(tester);
       await tester.enterText(find.byKey(const Key('course-title-en')), 'Short');
       await tester.enterText(find.byKey(const Key('course-category')), 'art');
-      await tester.enterText(find.byKey(const Key('course-price')), '100');
       await _scrollTo(tester, find.byKey(const Key('module-en-0')), const Key('course-editor'));
       await tester.enterText(find.byKey(const Key('module-en-0')), 'Intro');
       await tester.tap(find.byKey(const Key('submit-course')));
@@ -163,6 +162,7 @@ void main() {
       await pumpScreen(tester, const CourseEditorScreen(courseId: 'c-back'), overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(teacher)),
         proposalsRepositoryProvider.overrideWithValue(FakeProposalsRepository()),
+      instructorsRepositoryProvider.overrideWithValue(FakeInstructorsRepository()),
         catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository(courseList: [_sentBack])),
       ]);
       await settle(tester, 8);
@@ -175,6 +175,7 @@ void main() {
       await pumpScreen(tester, const CourseEditorScreen(courseId: 'c-pub'), overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(teacher)),
         proposalsRepositoryProvider.overrideWithValue(FakeProposalsRepository()),
+      instructorsRepositoryProvider.overrideWithValue(FakeInstructorsRepository()),
         catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository(courseList: [_published])),
       ]);
       await settle(tester, 8);
@@ -197,6 +198,7 @@ void main() {
       await tester.tap(find.text('Speaking Arabic').last);
       await settle(tester);
       await tester.enterText(find.byKey(const Key('batch-code')), 'b07');
+      await tester.enterText(find.byKey(const Key('batch-price')), '450');
       await _scrollTo(tester, find.byKey(const Key('weekday-0')), const Key('new-batch'));
       await tester.tap(find.byKey(const Key('weekday-0')));
       await settle(tester);
@@ -293,6 +295,7 @@ void main() {
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(admin)),
         adminRepositoryProvider.overrideWithValue(FakeAdminRepository()),
         proposalsRepositoryProvider.overrideWithValue(repo),
+        instructorsRepositoryProvider.overrideWithValue(FakeInstructorsRepository()),
       ]);
       await settle(tester, 8);
       await tester.tap(find.text('To review'));

@@ -25,8 +25,8 @@ export function describeRule(batch: { schedule: RuleLike | null }, f: Formatters
   return `${days.join(joiner)} · ${rule.startTime}–${addMinutesHHMM(rule.startTime, rule.durationMin)}`;
 }
 
-export function batchPriceFils(batch: Pick<BatchSummary, 'priceFils' | 'course'>): number {
-  return batch.priceFils ?? batch.course.priceFils;
+export function batchPriceFils(batch: Pick<BatchSummary, 'priceFils'>): number {
+  return batch.priceFils;
 }
 
 export function minutesUntil(iso: string, now = Date.now()) {
@@ -61,3 +61,28 @@ export const toneFor = (seed: string) => {
 };
 
 export const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Offset (ms) of `timeZone` from UTC at instant `at`. */
+function zoneOffsetMs(timeZone: string, at: number): number {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(new Date(at));
+  const n = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  return Date.UTC(n('year'), n('month') - 1, n('day'), n('hour') % 24, n('minute'), n('second')) - Math.floor(at / 1000) * 1000;
+}
+
+/** "2026-11-12" + "19:00" read as wall time in `timeZone` → ISO instant (null when unparsable). */
+export function zonedToUtcIso(date: string, time: string, timeZone: string): string | null {
+  const [y, mo, d] = date.split('-').map(Number);
+  const [h, mi] = time.split(':').map(Number);
+  if (![y, mo, d, h, mi].every((v) => Number.isFinite(v))) return null;
+  const wall = Date.UTC(y!, mo! - 1, d!, h!, mi!);
+  let at = wall - zoneOffsetMs(timeZone, wall);
+  at = wall - zoneOffsetMs(timeZone, at); // second pass settles DST edges
+  return new Date(at).toISOString();
+}
+
+/** ISO instant → `{ date: 'YYYY-MM-DD', time: 'HH:MM' }` as wall time in `timeZone`. */
+export function zonedParts(iso: string, timeZone: string): { date: string; time: string } {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(iso));
+  const v = (type: string) => parts.find((p) => p.type === type)?.value ?? '00';
+  return { date: `${v('year')}-${v('month')}-${v('day')}`, time: `${v('hour')}:${v('minute')}` };
+}

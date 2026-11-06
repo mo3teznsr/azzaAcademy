@@ -12,6 +12,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/utils/device_timezone.dart';
 import '../../../core/utils/digits.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/count_stepper.dart';
 import '../../../core/widgets/ui.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../catalog/domain/catalog_models.dart';
@@ -32,7 +33,8 @@ class NewBatchScreen extends ConsumerStatefulWidget {
 
 class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
   final _code = TextEditingController();
-  final _seats = TextEditingController(text: '12');
+  final _price = TextEditingController();
+  int _seats = 12;
   final _timezone = TextEditingController();
   final _duration = TextEditingController(text: '90');
   final _sessions = TextEditingController(text: '8');
@@ -65,7 +67,7 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
 
   @override
   void dispose() {
-    for (final c in [_code, _seats, _timezone, _duration, _sessions]) {
+    for (final c in [_code, _price, _timezone, _duration, _sessions]) {
       c.dispose();
     }
     super.dispose();
@@ -74,6 +76,12 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
   String get _hhmm => '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
 
   int? _int(TextEditingController c) => int.tryParse(c.text.trim());
+
+  /// Seat price in AED, or null when empty / not a positive number.
+  num? get _priceAed {
+    final v = num.tryParse(_price.text.trim().replaceAll(',', '.'));
+    return v == null || v <= 0 ? null : v;
+  }
 
   /// The first schedule problem, or null.
   String? _scheduleProblem() {
@@ -116,8 +124,10 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
     final l = context.l10n;
     if (_courseId == null) return showToast(context, l.pickCourse);
     if (!BatchDraft.codePattern.hasMatch(_code.text.trim())) return showToast(context, l.batchCodeInvalid);
-    final seats = _int(_seats);
-    if (seats == null || seats < 1 || seats > 500) return showToast(context, l.seatsInvalid);
+    final price = _priceAed;
+    if (price == null) return showToast(context, l.seatPriceRequired);
+    final seats = _seats;
+    if (seats < 1 || seats > 500) return showToast(context, l.seatsInvalid);
     final problem = _scheduleProblem();
     if (problem != null) return showToast(context, problem);
     setState(() => _creating = true);
@@ -126,6 +136,7 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
             courseId: _courseId!,
             code: _code.text.trim(),
             capacity: seats,
+            priceAed: price,
             language: _language,
             timezone: _timezone.text.trim(),
             schedule: _schedule(),
@@ -249,9 +260,7 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-            child: TextField(
+        TextField(
               key: const Key('batch-code'),
               controller: _code,
               readOnly: locked,
@@ -265,23 +274,42 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
               decoration: fieldDecoration(
                 label: l.batchCode,
                 icon: Icons.tag_rounded,
+                hint: 'B07',
                 helper: l.batchCodeHint,
                 action: locked ? null : ClearFieldButton(controller: _code),
               ),
             ),
+        const SizedBox(height: 12),
+        TextField(
+          key: const Key('batch-price'),
+          controller: _price,
+          readOnly: locked,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+          textDirection: TextDirection.ltr,
+          onChanged: (_) => setState(() {}),
+          decoration: fieldDecoration(
+            label: l.seatPriceAed,
+            icon: Icons.sell_outlined,
+            hint: l.seatPriceHint,
+            helper: l.seatPriceHelper,
+            prefixText: 'AED ',
+            action: locked ? null : ClearFieldButton(controller: _price),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              key: const Key('batch-seats'),
-              controller: _seats,
-              readOnly: locked,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: fieldDecoration(label: l.batchSeats, icon: Icons.event_seat_outlined),
-            ),
-          ),
-        ]),
+        ),
+        const SizedBox(height: 12),
+        CountStepper(
+          key: const ValueKey('batch-seats'),
+          label: l.batchSeats,
+          icon: Icons.event_seat_outlined,
+          value: _seats,
+          min: 1,
+          max: 500,
+          helper: l.seatsHelper,
+          arabicDigits: f.arabicDigits,
+          enabled: !locked,
+          onChanged: (v) => setState(() => _seats = v),
+        ),
         const SizedBox(height: 12),
         DropdownButtonFormField<SessionLanguage>(
           key: const Key('batch-language'),

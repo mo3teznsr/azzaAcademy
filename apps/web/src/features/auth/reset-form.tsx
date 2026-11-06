@@ -6,11 +6,10 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { authClient } from '@/lib/auth/client';
 import { useI18n } from '@/lib/i18n/provider';
-import { AuthShell, FieldError, FormBanner } from './auth-shell';
+import { AuthShell, FormBanner } from './auth-shell';
+import { Field, PasswordInput } from './fields';
 import { resetSchema, type ResetValues } from './schemas';
 
 export function ResetForm() {
@@ -40,26 +39,18 @@ export function ResetForm() {
       ) : (
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
           {error && <FormBanner tone="error">{error}</FormBanner>}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password" className="text-[13px] text-muted-foreground">
-              {t.auth.reset.password}
-            </Label>
-            <Input id="password" type="password" autoComplete="new-password" {...form.register('password')} />
-            <FieldError message={errors.password && t.auth.errors.minPassword} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="confirm" className="text-[13px] text-muted-foreground">
-              {t.auth.reset.confirm}
-            </Label>
-            <Input id="confirm" type="password" autoComplete="new-password" {...form.register('confirm')} />
-            <FieldError message={errors.confirm && t.auth.errors.mismatch} />
-          </div>
+          <Field id="password" label={t.auth.reset.password} error={errors.password && t.auth.errors.minPassword}>
+            <PasswordInput id="password" autoComplete="new-password" placeholder={t.auth.placeholders.newPassword} invalid={!!errors.password} {...form.register('password')} />
+          </Field>
+          <Field id="confirm" label={t.auth.reset.confirm} error={errors.confirm && t.auth.errors.mismatch}>
+            <PasswordInput id="confirm" autoComplete="new-password" placeholder={t.auth.placeholders.confirm} invalid={!!errors.confirm} {...form.register('confirm')} />
+          </Field>
           <Button type="submit" size="lg" disabled={isSubmitting || !token}>
             {t.auth.reset.submit}
           </Button>
         </form>
       )}
-      <Link href="/sign-in" className="link-sun text-sm">
+      <Link href="/sign-in" className="link-sun self-center text-sm">
         {t.auth.forgot.back}
       </Link>
     </AuthShell>

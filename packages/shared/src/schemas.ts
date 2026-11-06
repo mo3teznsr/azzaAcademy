@@ -69,6 +69,8 @@ export type DeleteAccountInput = z.infer<typeof deleteAccountInput>;
 
 // ---------- Courses ----------
 export const courseModuleInput = z.object({
+  /** An existing module's id: the module (and its lessons) is kept and updated. Omit for a new module. */
+  id: id.optional(),
   titleEn: z.string().min(2),
   titleAr: z.string().optional(),
   descriptionEn: z.string().max(1000).optional(),
@@ -105,7 +107,6 @@ export const createCourseInput = z.object({
     .refine((v) => parseCourseVideoUrl(v) !== null, 'Must be an uploaded video, a YouTube or Vimeo link, or an https link to an mp4 / mov / webm file')
     .nullable()
     .optional(),
-  priceAed: z.number().positive(),
   modules: z.array(courseModuleInput).default([]),
   outcomesEn: bullets,
   outcomesAr: bullets,
@@ -183,7 +184,8 @@ export const createBatchInput = z.object({
   capacity: z.number().int().min(1).max(500),
   language: z.enum(SESSION_LANGUAGES),
   timezone: ianaTimezone,
-  priceAed: z.number().positive().optional(),
+  /** Seat price in AED. Every batch has its own price; the course shows the lowest as "from". */
+  priceAed: z.number().positive(),
   waitlistEnabled: z.boolean().default(true),
   minStudents: z.number().int().min(0).default(0),
   enrollmentOpensOn: isoDate.optional(),
@@ -198,6 +200,15 @@ export const updateBatchInput = createBatchInput
   .partial()
   .extend({ status: z.enum(BATCH_STATUSES).optional() });
 export type UpdateBatchInput = z.infer<typeof updateBatchInput>;
+
+/** `POST /batches/:id/sessions` — one extra live session outside the weekly rule (catch-up, bonus, exam). */
+export const addSessionInput = z.object({
+  startsAt: z.iso.datetime(),
+  durationMin: z.number().int().min(15).max(480),
+  title: z.string().trim().min(2).max(120),
+  notifyStudents: z.boolean().default(true),
+});
+export type AddSessionInput = z.infer<typeof addSessionInput>;
 
 export const previewScheduleInput = scheduleRuleInput.extend({ timezone: ianaTimezone, teacherId: id.optional() });
 export type PreviewScheduleInput = z.infer<typeof previewScheduleInput>;
@@ -420,3 +431,101 @@ export const reportQuery = z.object({
   to: isoDate.optional(),
 });
 export type ReportQuery = z.infer<typeof reportQuery>;
+
+// ---------- Join as instructor ----------
+export const instructorApplicationInput = z.object({
+  headline: z.string().trim().min(4).max(120),
+  bio: z.string().trim().min(40).max(2000),
+  categories: z.array(z.string().min(2)).min(1).max(5),
+  languages: z.array(z.enum(SESSION_LANGUAGES)).min(1),
+  experience: z.string().trim().min(20).max(1500),
+  sampleUrl: z.url({ protocol: /^https$/ }).max(500).optional(),
+  phone: z.string().trim().max(30).optional(),
+});
+export type InstructorApplicationInput = z.infer<typeof instructorApplicationInput>;
+
+// ---------- Lessons & quizzes ----------
+/** A lesson attachment: a titled https link (slides, a PDF, a repo…). */
+export const lessonAttachment = z.object({
+  title: z.string().trim().min(1).max(120),
+  url: z.url({ protocol: /^https?$/ }).max(500),
+});
+export type LessonAttachment = z.infer<typeof lessonAttachment>;
+
+/** Lesson video: an uploaded course video, a YouTube / Vimeo link or an https mp4 / mov / webm (same rules as `introVideoUrl`). */
+const lessonVideoUrl = z
+  .string()
+  .max(500)
+  .refine((v) => parseCourseVideoUrl(v) !== null, 'Must be an uploaded video, a YouTube or Vimeo link, or an https link to an mp4 / mov / webm file');
+
+export const lessonInput = z.object({
+  titleEn: z.string().trim().min(2).max(160),
+  titleAr: z.string().trim().max(160).optional(),
+  /** Markdown. */
+  bodyEn: z.string().max(50_000).default(''),
+  bodyAr: z.string().max(50_000).optional(),
+  videoUrl: lessonVideoUrl.nullable().optional(),
+  attachments: z.array(lessonAttachment).max(20).default([]),
+  /** Position in the module; omitted = last. */
+  order: z.number().int().min(0).optional(),
+});
+export type LessonInput = z.infer<typeof lessonInput>;
+export const updateLessonInput = lessonInput.partial();
+export type UpdateLessonInput = z.infer<typeof updateLessonInput>;
+
+/** PUT …/lessons/order — every lesson id of the module, in the new order. */
+export const reorderLessonsInput = z.object({ ids: z.array(id).min(1).max(200) });
+export type ReorderLessonsInput = z.infer<typeof reorderLessonsInput>;
+
+export const QUIZ_QUESTION_TYPES = ['SINGLE', 'MULTIPLE', 'TRUE_FALSE'] as const;
+export type QuizQuestionType = (typeof QUIZ_QUESTION_TYPES)[number];
+export const QUIZ_STATUSES = ['DRAFT', 'PUBLISHED'] as const;
+export type QuizStatus = (typeof QUIZ_STATUSES)[number];
+
+const shortId = z.string().regex(/^[A-Za-z0-9_-]{1,40}$/);
+
+export const quizOptionInput = z.object({
+  /** Kept when editing; the API assigns one when missing. */
+  id: shortId.optional(),
+  textEn: z.string().trim().min(1).max(500),
+  textAr: z.string().trim().max(500).optional(),
+  correct: z.boolean().default(false),
+});
+
+export const quizQuestionInput = z
+  .object({
+    id: shortId.optional(),
+    type: z.enum(QUIZ_QUESTION_TYPES),
+    promptEn: z.string().trim().min(1).max(2000),
+    promptAr: z.string().trim().max(2000).optional(),
+    points: z.number().int().min(1).max(100).default(1),
+    options: z.array(quizOptionInput).min(2).max(8),
+  })
+  .superRefine((q, ctx) => {
+    const correct = q.options.filter((o) => o.correct).length;
+    if (q.type === 'TRUE_FALSE' && q.options.length !== 2) ctx.addIssue({ code: 'custom', path: ['options'], message: 'True/false has exactly two options' });
+    if (q.type !== 'MULTIPLE' && correct !== 1) ctx.addIssue({ code: 'custom', path: ['options'], message: 'Mark exactly one correct option' });
+    if (q.type === 'MULTIPLE' && correct < 1) ctx.addIssue({ code: 'custom', path: ['options'], message: 'Mark at least one correct option' });
+  });
+export type QuizQuestionInput = z.infer<typeof quizQuestionInput>;
+
+export const quizInput = z.object({
+  title: z.string().trim().min(2).max(160),
+  description: z.string().max(5000).default(''),
+  /** Optional link to a module of the batch's course. */
+  moduleId: id.nullable().optional(),
+  dueAt: z.iso.datetime().nullable().optional(),
+  /** Minutes; null = untimed. */
+  timeLimitMin: z.number().int().min(1).max(600).nullable().optional(),
+  maxAttempts: z.number().int().min(1).max(20).default(1),
+  questions: z.array(quizQuestionInput).max(100).default([]),
+});
+export type QuizInput = z.infer<typeof quizInput>;
+export const updateQuizInput = quizInput.partial();
+export type UpdateQuizInput = z.infer<typeof updateQuizInput>;
+
+/** POST /quizzes/:id/attempts — selected option ids per question id (one id for single choice and true/false). */
+export const quizSubmissionInput = z.object({
+  answers: z.record(z.string(), z.array(z.string().max(40)).max(8)),
+});
+export type QuizSubmissionInput = z.infer<typeof quizSubmissionInput>;

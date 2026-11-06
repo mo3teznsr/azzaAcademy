@@ -21,7 +21,7 @@ import { RatingInline } from '@/components/brand/rating';
 import { ApiError, batchesApi, coursesApi, meApi, type BatchDetail, type Course } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
-import { useMoney } from '@/lib/money';
+import { Price } from '@/components/brand/price';
 import { useAuth } from '@/lib/auth/use-auth';
 import { gmtOffset, sessionCode } from '@/lib/i18n/format';
 import { batchPriceFils, describeRule, minutesUntil, sessionState } from '@/lib/schedule';
@@ -148,6 +148,17 @@ function CourseView({ course }: { course: Course }) {
                   <span className="flex flex-col gap-1">
                     <b className="text-lg">{pick(m.titleEn, m.titleAr).text}</b>
                     {desc && <span className="text-[15px] text-muted-foreground">{desc}</span>}
+                    {/* Syllabus preview: lesson titles only; the lessons open to enrolled students. */}
+                    {!!m.lessons?.length && (
+                      <ol aria-label={t.learning.lessons.title} className="mt-1 flex flex-col gap-1 text-[14px] text-muted-foreground">
+                        {m.lessons.map((l) => (
+                          <li key={l.id} className="flex gap-2">
+                            <span className="size-1.5 shrink-0 translate-y-2 rounded-full bg-green" aria-hidden />
+                            {pick(l.titleEn, l.titleAr).text}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
                   </span>
                 </li>
               );
@@ -332,7 +343,6 @@ function BatchSchedule({ batchId, tz }: { batchId: string; tz: string }) {
 
 function SeatPanel({ batchId, tz }: { batchId: string; tz: string }) {
   const { t, f, fill } = useI18n();
-  const money = useMoney();
   const { isSignedIn, user } = useAuth();
   const q = useBatch(batchId);
   const qc = useQueryClient();
@@ -391,10 +401,7 @@ function SeatPanel({ batchId, tz }: { batchId: string; tz: string }) {
       </dl>
       <div className="flex items-end justify-between">
         <span className="text-sm text-stone-2">{t.course.total}</span>
-        <span className="text-end">
-          <b className="font-display text-4xl font-extrabold">{money.display(price)}</b>
-          {money.currency !== 'AED' && <span className="block text-xs text-stone-2">{fill(t.money.charged, { amount: money.aed(price) })}</span>}
-        </span>
+        <Price fils={price} align="end" amountClassName="font-display text-4xl font-extrabold" noteClassName="text-stone-2" />
       </div>
       {myStatus === 'ACTIVE' ? (
         <Button asChild variant="ink" size="lg">

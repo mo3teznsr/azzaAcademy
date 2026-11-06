@@ -26,14 +26,21 @@ import '../features/catalog/presentation/saved_courses_screen.dart';
 import '../features/checkout/domain/apple_iap.dart';
 import '../features/checkout/presentation/apple_payment_screen.dart';
 import '../features/checkout/presentation/bank_transfer_screen.dart';
-import '../features/checkout/presentation/card_payment_screen.dart';
 import '../features/checkout/presentation/checkout_screen.dart';
 import '../features/checkout/presentation/enrolled_screen.dart';
 import '../features/checkout/presentation/my_orders_screen.dart';
 import '../features/checkout/presentation/order_status_screen.dart';
 import '../features/home/presentation/student_home_screen.dart';
+import '../features/instructors/presentation/instructors_screen.dart';
+import '../features/instructors/presentation/teach_screen.dart';
 import '../features/learn/presentation/assignments_screen.dart';
 import '../features/learn/presentation/library_screen.dart';
+import '../features/learn/presentation/course_lessons_screen.dart';
+import '../features/learn/presentation/lesson_screen.dart';
+import '../features/learn/presentation/my_quizzes_screen.dart';
+import '../features/learn/presentation/quiz_result_screen.dart';
+import '../features/learn/presentation/quiz_screen.dart';
+import '../features/learn/presentation/quiz_take_screen.dart';
 import '../features/live/presentation/after_session_screen.dart';
 import '../features/live/presentation/attendance_summary_screen.dart';
 import '../features/live/presentation/live_room_screen.dart';
@@ -44,12 +51,14 @@ import '../features/me/presentation/profile_photo_screen.dart';
 import '../features/me/presentation/notifications_screen.dart';
 import '../features/me/presentation/profile_screen.dart';
 import '../features/me/presentation/schedule_screen.dart';
+import '../features/teacher/presentation/batch_quizzes_screen.dart';
 import '../features/teacher/presentation/course_editor_screen.dart';
 import '../features/teacher/presentation/earnings_screen.dart';
 import '../features/teacher/presentation/my_courses_screen.dart';
 import '../features/teacher/presentation/teacher_recordings_screen.dart';
 import '../features/teacher/presentation/new_batch_screen.dart';
 import '../features/teacher/presentation/payout_method_screen.dart';
+import '../features/teacher/presentation/quiz_results_screen.dart';
 import '../features/teacher/presentation/reschedule_request_screen.dart';
 import '../features/teacher/presentation/roster_screen.dart';
 import '../features/teacher/presentation/session_prep_screen.dart';
@@ -120,7 +129,7 @@ List<RouteBase> buildRoutes() => [
           _branch(Routes.adminBatches, (_) => const AdminBatchesScreen(), routes: [
             _route(':id', (s) => BatchQuickViewScreen(batchId: s.pathParameters['id']!)),
           ]),
-          _branch(Routes.adminApprovals, (_) => const ApprovalsScreen(), routes: [
+          _branch(Routes.adminApprovals, (s) => ApprovalsScreen(initialTab: s.uri.queryParameters['tab'] == 'review' ? 1 : 0), routes: [
             _route('transfers/:orderId', (s) => TransferVerifyScreen(orderId: s.pathParameters['orderId']!)),
             _route('payout-runs/:id', (s) => PayoutRunScreen(runId: s.pathParameters['id']!)),
           ]),
@@ -131,17 +140,25 @@ List<RouteBase> buildRoutes() => [
       // ── Shared routes (outside the shells) ──
       _route('/courses/:id', (s) => CourseDetailScreen(courseId: s.pathParameters['id']!), routes: [
         _route('batches', (s) => BatchPickerScreen(courseId: s.pathParameters['id']!)),
+        _route('lessons', (s) => CourseLessonsScreen(courseId: s.pathParameters['id']!), routes: [
+          _route(':lessonId', (s) => LessonScreen(courseId: s.pathParameters['id']!, lessonId: s.pathParameters['lessonId']!)),
+        ]),
       ]),
       _route('/batches/:id/schedule', (s) => BatchScheduleScreen(batchId: s.pathParameters['id']!)),
       _route('/batches/:id/roster', (s) => RosterScreen(batchId: s.pathParameters['id']!)),
+      _route('/batches/:id/quizzes', (s) => BatchQuizzesScreen(batchId: s.pathParameters['id']!)),
+      _route(Routes.myQuizzes, (_) => const MyQuizzesScreen(), routes: [
+        _route(':id', (s) => QuizScreen(quizId: s.pathParameters['id']!), routes: [
+          _route('take', (s) => QuizTakeScreen(quizId: s.pathParameters['id']!)),
+          _route('attempts/:attemptId', (s) => QuizResultScreen(quizId: s.pathParameters['id']!, attemptId: s.pathParameters['attemptId']!)),
+          _route('results', (s) => QuizResultsScreen(quizId: s.pathParameters['id']!)),
+        ]),
+      ]),
       _route('/checkout/:batchId', (s) => CheckoutScreen(batchId: s.pathParameters['batchId']!)),
-      _route('/orders/:id', (s) => OrderStatusScreen(orderId: s.pathParameters['id']!), routes: [
-        // iOS sells seats only through In-App Purchase: card / bank-transfer screens are unreachable there.
-        GoRoute(
-          path: 'card',
-          redirect: _appStoreOnly,
-          builder: (_, s) => CardPaymentScreen(orderId: s.pathParameters['id']!, clientSecret: s.extra as String?),
-        ),
+      // `extra`: Stripe Checkout's page URL right after a card checkout (offered again if the student closed it).
+      _route('/orders/:id', (s) => OrderStatusScreen(orderId: s.pathParameters['id']!, checkoutUrl: s.extra is String ? s.extra as String : null),
+          routes: [
+        // iOS sells seats only through In-App Purchase: the bank-transfer screen is unreachable there.
         GoRoute(path: 'bank-transfer', redirect: _appStoreOnly, builder: (_, s) => BankTransferScreen(orderId: s.pathParameters['id']!)),
         _route('app-store', (s) => ApplePaymentScreen(orderId: s.pathParameters['id']!, autoStart: s.extra == true)),
         _route('enrolled', (s) => EnrolledScreen(orderId: s.pathParameters['id']!)),
@@ -151,6 +168,8 @@ List<RouteBase> buildRoutes() => [
       _route(Routes.certificates, (_) => const CertificatesScreen(), routes: [
         _route(':code', (s) => CertificateDetailScreen(code: s.pathParameters['code']!)),
       ]),
+      _route(Routes.instructors, (_) => const InstructorsScreen()),
+      _route(Routes.teachOnAzza, (_) => const TeachScreen()),
       _route('/teachers/:id', (s) => TeacherProfileScreen(teacherId: s.pathParameters['id']!)),
       _route('/sessions/:id/lobby', (s) => LobbyScreen(sessionId: s.pathParameters['id']!)),
       _route('/sessions/:id/live', (s) => LiveRoomScreen(sessionId: s.pathParameters['id']!, options: s.extra as JoinOptions?)),

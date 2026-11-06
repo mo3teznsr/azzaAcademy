@@ -97,6 +97,11 @@ function notificationHref(type: string, data: unknown): string | null {
       return '/studio/recordings';
     case 'RECORDING_READY':
       return sessionId ? `/library/${sessionId}` : '/library';
+    case 'INSTRUCTOR_APPLIED':
+      return '/admin/instructors';
+    case 'INSTRUCTOR_APPROVED':
+    case 'INSTRUCTOR_DECLINED':
+      return '/teach';
     default:
       return null;
   }

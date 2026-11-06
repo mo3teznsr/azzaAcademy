@@ -21,7 +21,7 @@ export interface NewBatchData {
   capacity: number;
   language: SessionLanguage;
   timezone: string;
-  priceFils?: number;
+  priceFils: number;
   waitlistEnabled: boolean;
   minStudents: number;
   enrollmentOpensOn?: Date;
@@ -120,6 +120,34 @@ export class PrismaBatchRepository {
   }
 
   /** Teacher's sessions overlapping [from, to) — used for conflict detection. */
+  /** Appends one session (next number), stretches the batch end date and the rule's session count. */
+  async addSession(batchId: string, d: { title: string; startsAt: Date; endsAt: Date; code: string }) {
+    return this.db.$transaction(async (tx) => {
+      const last = await tx.liveSession.aggregate({ where: { batchId }, _max: { number: true } });
+      const number = (last._max.number ?? 0) + 1;
+      const session = await tx.liveSession.create({
+        data: {
+          batchId,
+          number,
+          title: d.title,
+          startsAt: d.startsAt,
+          endsAt: d.endsAt,
+          roomName: `${d.code.toLowerCase()}-s${String(number).padStart(2, '0')}-${crypto.randomUUID().slice(0, 8)}`,
+        },
+      });
+      const batch = await tx.batch.findUniqueOrThrow({ where: { id: batchId }, select: { endsOn: true, startsOn: true } });
+      await tx.batch.update({
+        where: { id: batchId },
+        data: {
+          ...(d.endsAt > batch.endsOn && { endsOn: d.endsAt }),
+          ...(d.startsAt < batch.startsOn && { startsOn: d.startsAt }),
+        },
+      });
+      await tx.scheduleRule.updateMany({ where: { batchId }, data: { sessionCount: { increment: 1 } } });
+      return session;
+    });
+  }
+
   async teacherBusy(teacherId: string, from: Date, to: Date, excludeBatchId?: string): Promise<TeacherBusySlot[]> {
     const rows = await this.db.liveSession.findMany({
       where: {

@@ -7,14 +7,19 @@ import '../../../core/network/error_text.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/links.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
+import '../../catalog/data/catalog_repository.dart';
+import '../../instructors/data/instructors_repository.dart';
+import '../../instructors/domain/instructor_models.dart';
+import '../../instructors/presentation/instructors_screen.dart';
 import '../../teacher/data/proposals_repository.dart';
 import '../../teacher/presentation/proposal_widgets.dart';
 
-/// Admin: teachers' course and batch proposals waiting for a decision.
+/// Admin: instructor applications and teachers' course and batch proposals waiting for a decision.
 class ReviewQueueTab extends ConsumerWidget {
   const ReviewQueueTab({super.key});
 
@@ -23,22 +28,29 @@ class ReviewQueueTab extends ConsumerWidget {
     final l = context.l10n;
     final courses = ref.watch(pendingCoursesProvider);
     final batches = ref.watch(pendingBatchesProvider);
+    final applications = ref.watch(pendingApplicationsProvider);
     Future<void> refresh() async {
       ref
         ..invalidate(pendingCoursesProvider)
-        ..invalidate(pendingBatchesProvider);
+        ..invalidate(pendingBatchesProvider)
+        ..invalidate(pendingApplicationsProvider);
     }
 
     return AsyncView<List<Course>>(
       value: courses,
       onRetry: refresh,
-      isEmpty: (list) => list.isEmpty && (batches.value?.isEmpty ?? false),
+      isEmpty: (list) => list.isEmpty && (batches.value?.isEmpty ?? false) && (applications.value?.isEmpty ?? false),
       empty: EmptyState(title: l.noPendingReviews, icon: Icons.task_alt_rounded),
       data: (courseList) {
         final batchList = batches.value ?? const <Batch>[];
+        final applicationList = applications.value ?? const <InstructorApplication>[];
         return RefreshList(
           onRefresh: refresh,
           children: [
+            if (applicationList.isNotEmpty) ...[
+              SectionHeader(l.instructorApplicationsSection, padding: const EdgeInsets.only(top: 4, bottom: 10)),
+              for (final a in applicationList) PendingApplicationTile(application: a),
+            ],
             if (courseList.isNotEmpty) ...[
               SectionHeader(l.coursesSection, padding: const EdgeInsets.only(top: 4, bottom: 10)),
               for (final c in courseList) PendingCourseTile(course: c),
@@ -48,6 +60,7 @@ class ReviewQueueTab extends ConsumerWidget {
               for (final b in batchList) PendingBatchTile(batch: b),
             ],
             if (batches.hasError) ErrorState(error: batches.error!, onRetry: refresh),
+            if (applications.hasError) ErrorState(error: applications.error!, onRetry: refresh),
           ],
         );
       },
@@ -57,10 +70,12 @@ class ReviewQueueTab extends ConsumerWidget {
 
 /// Approve / Send back row shared by both tiles.
 class _Decision extends StatelessWidget {
-  const _Decision({required this.id, required this.busy, required this.onDecide});
+  const _Decision({required this.id, required this.busy, required this.onDecide, this.rejectLabel, this.keyPrefix = ''});
   final String id;
   final bool busy;
   final void Function(bool approve) onDecide;
+  final String? rejectLabel;
+  final String keyPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -68,16 +83,16 @@ class _Decision extends StatelessWidget {
     return Row(children: [
       Expanded(
         child: OutlinedButton(
-          key: Key('send-back-$id'),
+          key: Key(keyPrefix.isEmpty ? 'send-back-$id' : '${keyPrefix}decline-$id'),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           onPressed: busy ? null : () => onDecide(false),
-          child: Text(l.sendBack),
+          child: Text(rejectLabel ?? l.sendBack),
         ),
       ),
       const SizedBox(width: 8),
       Expanded(
         child: FilledButton(
-          key: Key('approve-$id'),
+          key: Key('${keyPrefix}approve-$id'),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           onPressed: busy ? null : () => onDecide(true),
           child: Text(l.approve),
@@ -156,7 +171,7 @@ class _PendingCourseTileState extends ConsumerState<PendingCourseTile> {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(c.title(locale), style: t.titleSmall),
                 const SizedBox(height: 2),
-                MonoLabel([if (c.categoryName(locale).isNotEmpty) c.categoryName(locale), levelLabel(l, c.level), f.aed(c.priceFils)].join(' · ')),
+                MonoLabel([if (c.categoryName(locale).isNotEmpty) c.categoryName(locale), levelLabel(l, c.level), if (c.priceFils != null) l.fromPrice(f.aed(c.priceFils!))].join(' · ')),
               ]),
             ),
           ]),
@@ -235,11 +250,18 @@ class _PendingBatchTileState extends ConsumerState<PendingBatchTile> {
 }
 
 /// Asks the admin what needs to change. Returns the note (≥3 characters), or null when cancelled.
-Future<String?> showSendBackDialog(BuildContext context) =>
-    showDialog<String>(context: context, builder: (_) => const _SendBackDialog());
+Future<String?> showSendBackDialog(BuildContext context, {String? title, String? label, String? hint, String? confirm}) =>
+    showDialog<String>(
+      context: context,
+      builder: (_) => _SendBackDialog(title: title, label: label, hint: hint, confirm: confirm),
+    );
 
 class _SendBackDialog extends StatefulWidget {
-  const _SendBackDialog();
+  const _SendBackDialog({this.title, this.label, this.hint, this.confirm});
+  final String? title;
+  final String? label;
+  final String? hint;
+  final String? confirm;
 
   @override
   State<_SendBackDialog> createState() => _SendBackDialogState();
@@ -265,7 +287,7 @@ class _SendBackDialogState extends State<_SendBackDialog> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return AlertDialog(
-      title: Text(l.sendBackTitle),
+      title: Text(widget.title ?? l.sendBackTitle),
       content: TextField(
         key: const Key('send-back-note'),
         controller: _note,
@@ -277,7 +299,12 @@ class _SendBackDialogState extends State<_SendBackDialog> {
         onChanged: (_) {
           if (_error != null) setState(() => _error = null);
         },
-        decoration: fieldDecoration(label: l.sendBackNote, icon: Icons.edit_note_rounded, action: ClearFieldButton(controller: _note))
+        decoration: fieldDecoration(
+          label: widget.label ?? l.sendBackNote,
+          icon: Icons.edit_note_rounded,
+          hint: widget.hint ?? l.sendBackNoteHint,
+          action: ClearFieldButton(controller: _note),
+        )
             .copyWith(errorText: _error),
       ),
       actions: [
@@ -286,9 +313,109 @@ class _SendBackDialogState extends State<_SendBackDialog> {
           key: const Key('confirm-send-back'),
           style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
           onPressed: _send,
-          child: Text(l.sendBack),
+          child: Text(widget.confirm ?? l.sendBack),
         ),
       ],
+    );
+  }
+}
+
+/// A student's application to teach: who, what and why, with Approve / Decline (a note is required to decline).
+class PendingApplicationTile extends ConsumerStatefulWidget {
+  const PendingApplicationTile({super.key, required this.application});
+  final InstructorApplication application;
+
+  @override
+  ConsumerState<PendingApplicationTile> createState() => _PendingApplicationTileState();
+}
+
+class _PendingApplicationTileState extends ConsumerState<PendingApplicationTile> {
+  bool _busy = false;
+
+  Future<void> _onDecide(bool approve) async {
+    final l = context.l10n;
+    String? note;
+    if (!approve) {
+      note = await showSendBackDialog(
+        context,
+        title: l.declineApplicationTitle,
+        label: l.declineNoteLabel,
+        hint: l.declineNoteHint,
+        confirm: l.decline,
+      );
+      if (note == null) return;
+    }
+    setState(() => _busy = true);
+    try {
+      await ref.read(instructorsRepositoryProvider).review(widget.application.id, approve: approve, note: note);
+      ref.invalidate(pendingApplicationsProvider);
+      if (mounted) showToast(context, l.reviewDone);
+    } catch (e) {
+      if (mounted) showToast(context, errorText(context, e));
+      ref.invalidate(pendingApplicationsProvider);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final f = ref.watch(fmtProvider);
+    final locale = ref.watch(localeProvider);
+    final categories = ref.watch(categoriesProvider).value ?? const <CourseCategory>[];
+    final p = AzzaPalette.of(context);
+    final t = Theme.of(context).textTheme;
+    final a = widget.application;
+    final user = a.user;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: RaisedCard(
+        key: Key('pending-application-${a.id}'),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            InitialsAvatar(user?.name ?? '?', size: 44, color: p.accent, imageUrl: user?.image),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(user?.name ?? '', style: t.titleSmall),
+                if (user != null) Text(user.email, style: t.bodySmall?.copyWith(color: p.muted)),
+              ]),
+            ),
+          ]),
+          const SizedBox(height: 12),
+          Text(a.headline, style: t.titleSmall),
+          const SizedBox(height: 4),
+          Text(a.bio, style: t.bodySmall),
+          if (a.categories.isNotEmpty || a.languages.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(spacing: 6, runSpacing: 6, children: [
+              for (final slug in a.categories)
+                StatusChip(label: categoryName(categories, slug, locale), color: p.successBg, textColor: p.success),
+              for (final lang in a.languages) StatusChip(label: languageLabel(l, lang), look: ChipLook.outline, color: p.text),
+            ]),
+          ],
+          const SizedBox(height: 10),
+          MonoLabel(l.applicantExperience),
+          const SizedBox(height: 2),
+          Text(a.experience, style: t.bodySmall),
+          if (a.phone != null) ...[const SizedBox(height: 6), Text(a.phone!, style: t.bodySmall, textDirection: TextDirection.ltr)],
+          if (a.createdAt != null) ...[const SizedBox(height: 6), Text(l.submittedOn(f.shortDate(a.createdAt!)), style: t.bodySmall)],
+          if (a.sampleUrl != null)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: Key('application-sample-${a.id}'),
+                style: TextButton.styleFrom(minimumSize: const Size(48, 44), padding: EdgeInsets.zero),
+                onPressed: () => openExternal(context, a.sampleUrl),
+                icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                label: Text(l.openSample),
+              ),
+            ),
+          const SizedBox(height: 12),
+          _Decision(id: a.id, busy: _busy, onDecide: _onDecide, rejectLabel: l.decline, keyPrefix: 'application-'),
+        ]),
+      ),
     );
   }
 }

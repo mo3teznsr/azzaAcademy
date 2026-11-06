@@ -10,7 +10,7 @@ import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states'
 import { ApiError, coursesApi, type TeacherProfile as Profile } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
-import { useMoney } from '@/lib/money';
+import { Price } from '@/components/brand/price';
 import { useCategoryLabel } from '@/components/brand/category';
 
 const STYLES = ['sun', 'sky', 'sage', 'peach'] as const;
@@ -40,7 +40,6 @@ export function TeacherProfile({ id }: { id: string }) {
 function ProfileView({ p }: { p: Profile }) {
   const { t, f, fill, pick } = useI18n();
   const categoryLabel = useCategoryLabel();
-  const money = useMoney();
   return (
     <>
       <section aria-labelledby="teacher-name" className="grid items-end gap-8 pt-6 md:grid-cols-[auto_1fr]">
@@ -125,7 +124,7 @@ function ProfileView({ p }: { p: Profile }) {
                   {fill(t.teacherProfile.starts, { d: f.dayMonth(b.startsOn, b.timezone) })} · {t.status.sessionLanguage[b.language]}
                 </span>
                 <div className="mt-auto flex items-end justify-between gap-2 border-t border-border pt-3">
-                  <b className="text-lg">{money.aed(b.priceFils)}</b>
+                  <Price fils={b.priceFils} className="text-lg font-bold" />
                   <Link href={`/courses/${b.courseSlug}?batch=${b.id}`} className="link-sun inline-flex min-h-11 items-center text-sm">
                     {t.teacherProfile.viewBatch}
                   </Link>

@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { CreditCard, Landmark, Smartphone, ShieldCheck } from 'lucide-react';
 import type { CheckoutInput, PaymentMethod } from '@azza/shared';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CourseCover } from '@/components/brand/course-cover';
+import { Price } from '@/components/brand/price';
 import { ErrorState, LoadingBlock } from '@/components/brand/states';
 import { CurrencySwitcher } from '@/components/brand/switchers';
 import { batchesApi, checkoutApi, isStripeResult, type BatchDetail, type CheckoutResult, type Quote } from '@/lib/api';
@@ -22,8 +22,6 @@ import { useMoney } from '@/lib/money';
 import { describeRule } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
 import { BankTransferDetails } from './bank-details';
-import { useTheme } from '@/lib/theme/provider';
-import { getStripe, stripeAppearance, stripeConfigured } from './stripe';
 import { useCategoryLabel } from '@/components/brand/category';
 
 type Choice = 'CARD' | 'WALLET' | 'BANK';
@@ -65,11 +63,12 @@ function Checkout({ batch }: { batch: BatchDetail }) {
   const categoryLabel = useCategoryLabel();
   const money = useMoney();
   const router = useRouter();
-  const [choice, setChoice] = useState<Choice>(stripeConfigured ? 'CARD' : 'BANK');
+  const [choice, setChoice] = useState<Choice>('CARD');
   const [couponDraft, setCouponDraft] = useState('');
   const [coupon, setCoupon] = useState<string | undefined>();
   const [bankAccountId, setBankAccountId] = useState<string | undefined>();
   const [result, setResult] = useState<CheckoutResult | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
 
   const input: CheckoutInput = { batchId: batch.id, method: methodOf(choice), couponCode: coupon, displayCurrency: money.currency, bankAccountId };
   const quote = useQuery({
@@ -82,7 +81,15 @@ function Checkout({ batch }: { batch: BatchDetail }) {
 
   const start = useMutation({
     mutationFn: () => checkoutApi.checkout({ ...input, bankAccountId: choice === 'BANK' ? selectedBank : undefined }),
-    onSuccess: setResult,
+    onSuccess: (r) => {
+      // Card / wallets: Stripe's hosted page takes over; the webhook confirms the order, /checkout/return shows it.
+      if (isStripeResult(r)) {
+        setRedirecting(true);
+        window.location.assign(r.checkoutUrl);
+        return;
+      }
+      setResult(r);
+    },
   });
 
   const total = quote.data?.totalFils;
@@ -116,8 +123,8 @@ function Checkout({ batch }: { batch: BatchDetail }) {
               <RadioGroup value={choice} onValueChange={(v) => setChoice(v as Choice)} className="grid gap-3">
                 {(
                   [
-                    { v: 'CARD', icon: CreditCard, title: t.checkout.card, sub: t.checkout.cardSub, disabled: !stripeConfigured },
-                    { v: 'WALLET', icon: Smartphone, title: t.checkout.wallets, sub: t.checkout.walletsSub, disabled: !stripeConfigured },
+                    { v: 'CARD', icon: CreditCard, title: t.checkout.card, sub: t.checkout.cardSub, disabled: false },
+                    { v: 'WALLET', icon: Smartphone, title: t.checkout.wallets, sub: t.checkout.walletsSub, disabled: false },
                     { v: 'BANK', icon: Landmark, title: t.checkout.bank, sub: t.checkout.bankSub, disabled: false },
                   ] as const
                 ).map((o) => (
@@ -138,7 +145,6 @@ function Checkout({ batch }: { batch: BatchDetail }) {
                   </label>
                 ))}
               </RadioGroup>
-              {!stripeConfigured && <p className="text-sm text-peach-fg">{t.checkout.stripeMissing}</p>}
 
               {choice === 'BANK' && (
                 <div className="flex flex-col gap-2">
@@ -166,20 +172,18 @@ function Checkout({ batch }: { batch: BatchDetail }) {
               )}
 
               {start.isError && <ErrorState compact error={start.error} />}
-              <Button
-                size="lg"
-                onClick={() => start.mutate()}
-                disabled={start.isPending || quote.isError || (choice === 'BANK' ? !selectedBank : !stripeConfigured)}
-              >
-                {start.isPending ? t.checkout.paying : choice === 'BANK' ? t.checkout.getBankDetails : t.checkout.continueCard}
+              <Button size="lg" onClick={() => start.mutate()} disabled={start.isPending || redirecting || quote.isError || (choice === 'BANK' && !selectedBank)}>
+                {redirecting ? t.checkoutReturn.redirecting : start.isPending ? t.checkout.paying : choice === 'BANK' ? t.checkout.getBankDetails : t.checkout.continueCard}
               </Button>
+              {choice !== 'BANK' && (
+                <p className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                  <ShieldCheck className="size-4 shrink-0" /> {t.checkout.secured}
+                </p>
+              )}
             </>
           )}
 
           {result?.waitlisted && <WaitlistedNotice code={batch.code} />}
-          {result && isStripeResult(result) && (
-            <StripePayment clientSecret={result.clientSecret} orderId={result.order.id} totalFils={result.order.totalFils} />
-          )}
           {result && !result.waitlisted && !isStripeResult(result) && (
             <BankTransferDetails
               order={result.order}
@@ -260,7 +264,7 @@ function couponError(error: unknown, messages: Record<string, string>, withAmoun
 }
 
 function Summary({ quote, pending, error }: { quote: Quote | undefined; pending: boolean; error: unknown }) {
-  const { t, f, fill } = useI18n();
+  const { t, fill } = useI18n();
   const money = useMoney();
   if (pending) return <LoadingBlock rows={3} height={28} />;
   if (error || !quote) return <ErrorState compact error={couponError(error, t.checkout.couponErrors, (template, fils) => fill(template, { amount: money.aed(fils) })) ?? error ?? new Error(t.checkout.quoteError)} />;
@@ -277,78 +281,11 @@ function Summary({ quote, pending, error }: { quote: Quote | undefined; pending:
       ))}
       <div className="mt-2 flex items-end justify-between gap-2 border-t border-border pt-3">
         <dt className="font-semibold">{t.checkout.total}</dt>
-        <dd className="text-end">
-          <b className="font-display text-3xl font-extrabold">{money.aed(quote.totalFils)}</b>
-          {quote.display.currency !== 'AED' && (
-            <span className="block text-xs text-muted-foreground">
-              {fill(t.checkout.rateNote, {
-                amount: `${quote.display.currency} ${f.number(quote.display.amount, { maximumFractionDigits: 2 })}`,
-                rate: f.number(quote.display.rate, { maximumFractionDigits: 4 }),
-                cur: quote.display.currency,
-              })}
-            </span>
-          )}
+        <dd>
+          <Price fils={quote.totalFils} align="end" amountClassName="font-display text-3xl font-extrabold" />
         </dd>
       </div>
     </dl>
-  );
-}
-
-function StripePayment({ clientSecret, orderId, totalFils }: { clientSecret: string; orderId: string; totalFils: number }) {
-  const { t, locale } = useI18n();
-  const { resolved } = useTheme();
-  const stripe = getStripe();
-  if (!stripe) return <p className="text-sm text-peach-fg">{t.checkout.stripeMissing}</p>;
-  return (
-    <Elements stripe={stripe} options={{ clientSecret, appearance: stripeAppearance(resolved), locale: locale === 'ar' ? 'ar' : 'en' }}>
-      <StripeForm orderId={orderId} totalFils={totalFils} />
-    </Elements>
-  );
-}
-
-function StripeForm({ orderId, totalFils }: { orderId: string; totalFils: number }) {
-  const { t, fill } = useI18n();
-  const money = useMoney();
-  const stripe = useStripe();
-  const elements = useElements();
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function pay(e: React.FormEvent) {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-    setBusy(true);
-    setError(null);
-    const { error: err } = await stripe.confirmPayment({
-      elements,
-      confirmParams: { return_url: `${window.location.origin}/orders/${orderId}` },
-      redirect: 'if_required',
-    });
-    setBusy(false);
-    if (err) setError(err.message ?? t.checkout.orderFailedSub);
-    else router.push(`/orders/${orderId}`);
-  }
-
-  return (
-    <form onSubmit={pay} className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-display text-2xl font-extrabold">{t.checkout.cardDetails}</h3>
-        <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-          <ShieldCheck className="size-4" /> {t.checkout.secured}
-        </span>
-      </div>
-      <PaymentElement />
-      {error && (
-        <div role="alert" className="rounded-[14px] border border-danger-line bg-danger-bg p-3 text-sm text-danger-fg">
-          <b>{error}</b> {t.checkout.orderFailedSub}
-        </div>
-      )}
-      <p className="text-[13px] text-muted-foreground">{t.checkout.threeDs}</p>
-      <Button type="submit" size="lg" disabled={!stripe || busy}>
-        {busy ? t.checkout.paying : fill(t.checkout.pay, { amount: money.aed(totalFils) })}
-      </Button>
-    </form>
   );
 }
 

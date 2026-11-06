@@ -188,3 +188,63 @@ Teachers draft courses and batches; admins approve them.
 - `GET /api/v1/courses/:idOrSlug/related` → `{ items }` (≤ 4: same category, then same level).
 - Reviews: `GET /api/v1/courses/:idOrSlug/reviews?page` → `{ items, total, summary: { ratingAvg, ratingCount, distribution }, mine, canReview }`; `PUT /courses/:id/reviews/mine` (STUDENT with an ACTIVE enrollment in a batch that has delivered a session, else 422 `REVIEW_NOT_ELIGIBLE`) `{ rating 1–5, body }`; `DELETE /courses/:id/reviews/mine`; `POST /reviews/:id/reply` (a teacher of the course or ADMIN) `{ reply }`; `PATCH /reviews/:id` (ADMIN) `{ hidden }`. Hidden reviews leave the average.
 - Saved courses: `GET /api/v1/me/saved-courses`, `PUT|DELETE /api/v1/courses/:id/save`.
+
+## Instructors
+
+- `GET /api/v1/teachers` (public) → `{ items: [{ id, name, image, headline, languages: ('AR'|'EN')[], categories: string[] (slugs), courses: [{ id, slug, titleEn, titleAr }], openBatches }] }` — non-banned teachers, those with open batches first.
+- `GET /api/v1/instructor-applications/mine` (signed in) → `{ application: null | { id, status: PENDING|APPROVED|REJECTED, reviewNote, headline, bio, categories, languages, experience, sampleUrl, phone, createdAt, decidedAt } }`.
+- `POST /api/v1/instructor-applications` (signed-in STUDENT) body `instructorApplicationInput` `{ headline 4–120, bio 40–2000, categories: slug[] 1–5, languages: ('AR'|'EN')[] ≥1, experience 20–1500, sampleUrl?: https URL, phone? }` → 201. 422 `ALREADY_INSTRUCTOR` for teachers/admins, 409 `CONFLICT` while one is PENDING. Admins get `INSTRUCTOR_APPLIED`.
+- ADMIN: `GET /api/v1/instructor-applications?status=PENDING|APPROVED|REJECTED`, `POST /api/v1/instructor-applications/:id/review` `{ approve, note? }` (note ≥ 3 to decline). Approve → the user's role becomes TEACHER (empty headline/bio filled from the application) and they get `INSTRUCTOR_APPROVED`; decline → `INSTRUCTOR_DECLINED` with the note, and they may apply again. 422 `APPLICATION_DECIDED` if already decided.
+
+## Pricing lives on the batch
+
+- Students buy a seat in a **batch**. `createBatchInput.priceAed` is **required**; `createCourseInput` no longer takes a price.
+- `Course.priceFils` is now the derived **"from" price**: the lowest price among the course's ENROLLING/FULL/RUNNING batches (null when none). The API recomputes it whenever a batch is created, re-priced, approved or changes status. Catalog sort/filter by price use it.
+- Checkout always charges `batch.priceFils` (minus coupons).
+
+## Card payments: Stripe Checkout
+
+- `POST /api/v1/checkout` with `method: 'STRIPE'` now returns `{ order, checkoutUrl }` (no `clientSecret`). Redirect the browser (web) or open it in the system browser / in-app browser tab (mobile).
+- Stripe's hosted page charges AED. Payment is confirmed **only** by the webhook (`POST /api/webhooks/stripe`): `checkout.session.completed` (paid) / `checkout.session.async_payment_succeeded` → order PAID + enrollment ACTIVE; `checkout.session.async_payment_failed` / `checkout.session.expired` → order FAILED (the seat hold stays until it expires, so the student can retry). Subscribe these events in the Stripe dashboard.
+- Return URLs: `${WEB_URL}/checkout/return?ref=<order reference>` (and `&cancelled=1` on cancel). `GET /api/v1/orders/by-reference/:ref` (owner/admin) returns the order so the page can show "confirming…" until the webhook lands.
+- Dev without Stripe keys: the fake gateway returns the success URL directly; confirm with a fake webhook body `{ "type": "payment.succeeded", "checkoutSessionId": "cs_dev_<ref>" }`.
+
+## Batch sessions
+
+- `POST /api/v1/batches/:id/sessions` (ADMIN or the batch's teacher) `{ startsAt (ISO), durationMin 15–480, title, notifyStudents }` → 201 session. Adds one session outside the weekly rule (next number), stretches the batch dates and the rule's session count, checks teacher clashes (409 `CONFLICT` with `details.conflicts`), refuses past times (422 `START_IN_PAST`) and closed batches (422 `BATCH_CLOSED`). Students get `SESSION_ADDED`.
+- Existing: `POST /sessions/:id/reschedule` (move), `POST /sessions/:id/cancel` (ADMIN), and seats via `PATCH /batches/:id { capacity }` (cannot go below enrolled).
+
+## Lessons & quizzes
+
+**Lessons** are part of the course curriculum: each `CourseModule` has ordered lessons with markdown text, an optional video and links. They are written under the course-editing rule (ADMIN always; the proposing TEACHER only while the course is `DRAFT`/`PENDING_REVIEW`, else 403 / 422 `COURSE_LOCKED`).
+Saving a course (`PATCH /courses/:id` with `modules`) now keeps modules by `id` (`courseModuleInput.id`), so their lessons survive; modules left out are deleted with their lessons. Clients that send no ids keep the existing modules by position.
+
+| | |
+|---|---|
+| `GET /api/v1/courses/:idOrSlug` | public; `modules[].lessons: [{ id, order, titleEn, titleAr }]` (titles only, the syllabus preview) |
+| `GET /api/v1/courses/:idOrSlug/lessons` | ADMIN, the proposing teacher, a teacher of a batch of the course, or a student with an ACTIVE enrollment in any batch of it (else 403) → `{ course: { id, slug, titleEn, titleAr, status }, modules: [{ id, order, titleEn, titleAr, descriptionEn, descriptionAr, lessons: [{ id, moduleId, order, titleEn, titleAr, bodyEn, bodyAr, videoUrl, attachments: [{ title, url }], createdAt, updatedAt }] }] }` |
+| `POST /api/v1/courses/:courseId/modules/:moduleId/lessons` | `lessonInput` `{ titleEn, titleAr?, bodyEn (markdown), bodyAr?, videoUrl? (same rules as `introVideoUrl`: uploaded course video, YouTube, Vimeo, https mp4/mov/webm; null = none), attachments: [{ title, url (http/https) }] ≤ 20, order? (default last) }` → 201 lesson. 404 when the module is not in the course |
+| `PATCH …/lessons/:lessonId` | `updateLessonInput` (partial; `order` is ignored, use the reorder call) → lesson |
+| `DELETE …/lessons/:lessonId` | → `{ ok: true }` (the rest are renumbered) |
+| `PUT …/lessons/order` | `reorderLessonsInput` `{ ids }` — every lesson id of the module once, in the new order (422 `LESSON_ORDER_MISMATCH`) → `{ items }` |
+
+**Quizzes** are auto-graded and belong to a batch, optionally linked to a module of its course. Authors: the batch teacher and ADMIN. Takers: students with an ACTIVE enrollment, PUBLISHED quizzes only (drafts are 404 to them).
+- Questions (`quizQuestionInput`): `type` `SINGLE` | `MULTIPLE` | `TRUE_FALSE`, `promptEn`, `promptAr?`, `points` 1–100 (default 1), `options` 2–8 `{ id?, textEn, textAr?, correct }` (exactly one correct for SINGLE/TRUE_FALSE, which has exactly 2 options; ≥ 1 for MULTIPLE). Ids are kept when sent back, assigned when missing. Stored as validated JSON on the quiz.
+- **Grading:** SINGLE / TRUE_FALSE: full points for exactly the correct option. MULTIPLE (partial credit): `points × max(0, (right − wrong) ÷ correct options)`, rounded to 2 decimals; a question is `correct` only with full points.
+- **Attempts:** `maxAttempts` (default 1) counts every attempt, the open one included. **Time limit** (`timeLimitMin`, null = untimed) is checked on the server: deadline = `startedAt + limit`, capped by `dueAt`; submissions later than deadline + 30 s are refused (422 `QUIZ_TIME_UP`) and the attempt is kept with score 0 (`timedOut: true`). An abandoned open attempt is closed the same way when the student returns.
+- **Answer hiding:** students never get `options[].correct`. Per-question correctness and the answer key (`attempts[].questions`, `answerKey`) appear only when `reveal` is true: after `dueAt`, or once all of the student's attempts are submitted.
+
+| | |
+|---|---|
+| `GET /api/v1/batches/:id/quizzes` | teacher/ADMIN: all, each `{ …quiz without questions, questionCount, totalPoints, attemptCount, studentsAttempted }`; student: PUBLISHED, each with `mine` (below) |
+| `POST /api/v1/batches/:id/quizzes` | teacher/ADMIN, `quizInput` `{ title, description, moduleId?, dueAt?, timeLimitMin?, maxAttempts, questions }` → 201 quiz (`DRAFT`). 422 `MODULE_NOT_IN_COURSE` |
+| `PATCH /api/v1/batches/:id/quizzes/:quizId` | `updateQuizInput`; 422 `QUIZ_HAS_ATTEMPTS` when changing `questions` after someone started |
+| `DELETE /api/v1/batches/:id/quizzes/:quizId` | → `{ ok: true }` (attempts go too) |
+| `POST /api/v1/batches/:id/quizzes/:quizId/publish` | → quiz (`PUBLISHED`, `publishedAt`). 422 `QUIZ_EMPTY`, `ALREADY_PUBLISHED`. ACTIVE students get `QUIZ_PUBLISHED` (`data: { quizId, batchId }`; in-app, realtime, push) |
+| `POST /api/v1/batches/:id/quizzes/:quizId/unpublish` | back to `DRAFT`; 422 `QUIZ_HAS_ATTEMPTS` |
+| `GET /api/v1/quizzes/:id` | teacher/ADMIN: the full quiz with answers + `totalPoints`, `attemptCount`, `hasAttempts`. Student → `{ quiz (questions without `correct`, `questionCount`, `totalPoints`), progress, reveal, openAttempt: { id, number, startedAt, deadline } \| null, attempts: [{ id, number, startedAt, submittedAt, score, maxScore, percent, timedOut, questions?: [{ questionId, selected, correct, earned, points, correctOptionIds }] }], answerKey?: { [questionId]: optionId[] } }` |
+| `POST /api/v1/quizzes/:id/start` | student: opens an attempt (returns the open one if any) → the student view. 422 `QUIZ_CLOSED` (past `dueAt`), `NO_ATTEMPTS_LEFT` |
+| `POST /api/v1/quizzes/:id/attempts` | student, `quizSubmissionInput` `{ answers: { [questionId]: optionId[] } }` → 201 student view + `result` (the graded attempt). Untimed quizzes may skip `start`; timed ones get 422 `ATTEMPT_NOT_STARTED`. Also 422 `QUIZ_TIME_UP`, `QUIZ_CLOSED`, `NO_ATTEMPTS_LEFT` |
+| `GET /api/v1/quizzes/:id/results` | teacher/ADMIN → `{ quiz, summary: { students, submitted, averagePercent }, students: [{ user{id,name,email,image}, attempts, bestScore, bestPercent, lastSubmittedAt }], questions: [{ questionId, type, promptEn, promptAr, points, answered, correct, rate (0–1) }] }` (ACTIVE students; rates use each student's best attempt) |
+| `GET /api/v1/me/quizzes` | PUBLISHED quizzes of my ACTIVE batches → `{ items: [{ …quiz without questions, questionCount, totalPoints, batch{ id, code, course{id,slug,titleEn,titleAr} }, mine }] }` |
+`mine` / `progress` = `{ status: OPEN | IN_PROGRESS | SUBMITTED | MISSED, attemptsUsed (submitted), attemptsLeft, canStart, bestScore, bestPercent, maxScore }`.

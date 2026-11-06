@@ -11,7 +11,7 @@ import { Logo } from '@/components/brand/signal-mark';
 import { LocaleSwitcher, CurrencySwitcher } from '@/components/brand/switchers';
 import { ThemeMenu } from '@/components/brand/theme-switcher';
 import { Chip } from '@/components/brand/status-chip';
-import { adminApi } from '@/lib/api';
+import { adminApi, instructorsApi } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import type { Dictionary } from '@/lib/i18n/dictionaries/en';
@@ -33,6 +33,18 @@ function LiveBadge() {
   if (!n) return null;
   return (
     <Chip tone="onair" dot className="ms-auto">
+      {n}
+    </Chip>
+  );
+}
+
+/** Pending instructor applications (admin nav). Shares the queue's cache key, so reviewing updates it. */
+function ApplicationsBadge() {
+  const q = useQuery({ queryKey: qk.admin.instructorApplications('PENDING'), queryFn: () => instructorsApi.list('PENDING'), refetchInterval: 60_000, retry: false });
+  const n = q.data?.length ?? 0;
+  if (!n) return null;
+  return (
+    <Chip tone="sun" className="ms-auto">
       {n}
     </Chip>
   );
@@ -67,6 +79,7 @@ function SideNav({ groups, variant, onNavigate }: { groups: NavGroup[]; variant:
                 <Icon className="size-5 shrink-0" strokeWidth={1.8} />
                 <span className="truncate">{item.label}</span>
                 {item.badge === 'live' && <LiveBadge />}
+                {item.badge === 'applications' && <ApplicationsBadge />}
               </Link>
             );
           })}

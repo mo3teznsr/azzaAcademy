@@ -18,6 +18,7 @@ import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
 import { useNow } from '@/lib/use-now';
 import { useEnrollments, useMyAssignments, useMySchedule, useRecordings } from './hooks';
 import { WaitlistPanel } from '../waitlist/waitlist-panel';
+import { QuizzesDuePanel } from '../quizzes/my-quizzes';
 import { useCategoryLabel } from '@/components/brand/category';
 
 export function LearnDashboard() {
@@ -82,6 +83,7 @@ export function LearnDashboard() {
           )}
         </Panel>
         <DueSoon />
+        <QuizzesDuePanel />
         <RecentRecordings />
       </div>
     </>
@@ -235,9 +237,14 @@ function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
             </div>
             <div className="mt-auto flex items-center justify-between gap-2 text-[13px]">
               <span className="text-muted-foreground">{enrollment.nextSession ? fill(t.learn.next, { d: f.dateTime(enrollment.nextSession.startsAt) }) : ''}</span>
-              <Link href={`/schedule?batch=${b.id}`} className="link-sun">
-                {t.learn.openBatch}
-              </Link>
+              <span className="flex items-center gap-3">
+                <Link href={`/learn/courses/${b.course.id}`} className="link-sun">
+                  {t.learning.lessons.open}
+                </Link>
+                <Link href={`/schedule?batch=${b.id}`} className="link-sun">
+                  {t.learn.openBatch}
+                </Link>
+              </span>
             </div>
           </>
         ) : (

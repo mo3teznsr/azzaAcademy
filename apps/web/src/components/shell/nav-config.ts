@@ -6,6 +6,7 @@ import {
   BookOpen,
   CalendarDays,
   ClipboardList,
+  ListChecks,
   Compass,
   Home,
   Landmark,
@@ -23,6 +24,7 @@ import {
   Heart,
   Shapes,
   ArrowLeftRight,
+  GraduationCap,
   type LucideIcon, Clapperboard } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/dictionaries/en';
 
@@ -31,7 +33,8 @@ export interface NavItem {
   label: string;
   icon: LucideIcon;
   exact?: boolean;
-  badge?: 'live' | 'count';
+  /** `live` = rooms on air; `applications` = pending instructor applications. */
+  badge?: 'live' | 'count' | 'applications';
 }
 export interface NavGroup {
   label?: string;
@@ -47,6 +50,7 @@ export const studentNav = (t: Dictionary): NavGroup[] => [
       { href: '/library', label: t.nav.student.library, icon: Library },
       { href: '/saved', label: t.nav.student.saved, icon: Heart },
       { href: '/assignments', label: t.nav.student.assignments, icon: ClipboardList },
+      { href: '/quizzes', label: t.learning.quizzes.nav, icon: ListChecks },
       { href: '/certificates', label: t.nav.student.certificates, icon: Award },
       { href: '/settings', label: t.nav.student.settings, icon: Settings },
     ],
@@ -76,6 +80,7 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
       { href: '/admin/categories', label: t.nav.admin.categories, icon: Shapes },
       { href: '/admin/live', label: t.nav.admin.live, icon: Radio, badge: 'live' },
       { href: '/admin/people', label: t.nav.admin.people, icon: Users },
+      { href: '/admin/instructors', label: t.nav.admin.instructors, icon: GraduationCap, badge: 'applications' },
     ],
   },
   {

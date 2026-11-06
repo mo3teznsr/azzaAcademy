@@ -10,7 +10,7 @@ import { ErrorState, LoadingBlock } from '@/components/brand/states';
 import { checkoutApi, type Order } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
-import { useMoney } from '@/lib/money';
+import { Price } from '@/components/brand/price';
 import { useSocketEvent } from '@/lib/realtime/socket';
 import { BankTransferDetails } from './bank-details';
 
@@ -18,7 +18,6 @@ const FINAL = new Set(['PAID', 'FAILED', 'REJECTED', 'EXPIRED', 'REFUNDED']);
 
 export function OrderPage({ id }: { id: string }) {
   const { t, f, fill } = useI18n();
-  const money = useMoney();
   const qc = useQueryClient();
   const q = useQuery({
     queryKey: qk.order(id),
@@ -49,7 +48,9 @@ export function OrderPage({ id }: { id: string }) {
         <dl className="mt-6 grid gap-4 sm:grid-cols-3">
           <div>
             <dt className="label-mono opacity-70">{t.checkout.total}</dt>
-            <dd className="font-semibold">{money.aed(o.totalFils)}</dd>
+            <dd className="font-semibold">
+              <Price fils={o.totalFils} noteClassName="opacity-80 text-current" />
+            </dd>
           </div>
           <div>
             <dt className="label-mono opacity-70">{t.admin.payments.colMethod}</dt>

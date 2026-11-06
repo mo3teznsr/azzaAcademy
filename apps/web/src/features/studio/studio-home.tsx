@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Price } from '@/components/brand/price';
 import { BatchStatusChip, Chip, SessionStatusChip } from '@/components/brand/status-chip';
 import { SessionSlate } from '@/components/brand/session-slate';
 import { PageTitle, Panel, SectionHeader } from '@/components/brand/section';
@@ -128,7 +129,7 @@ export function StudioHome() {
                   </div>
                   <b>{pick(b.course.titleEn, b.course.titleAr).text}</b>
                   <span className="text-[13px] text-muted-foreground">{describeRule(b, f)}</span>
-                  <dl className="grid grid-cols-2 gap-2 text-sm">
+                  <dl className="grid grid-cols-3 gap-2 text-sm">
                     <div>
                       <dt className="label-mono text-muted-foreground">{t.studio.seats}</dt>
                       <dd>
@@ -138,6 +139,12 @@ export function StudioHome() {
                     <div>
                       <dt className="label-mono text-muted-foreground">{t.studio.sessions}</dt>
                       <dd>{f.number(b._count?.sessions ?? b.schedule?.sessionCount ?? 0)}</dd>
+                    </div>
+                    <div>
+                      <dt className="label-mono text-muted-foreground">{t.batchOps.colPrice}</dt>
+                      <dd>
+                        <Price fils={b.priceFils} compact />
+                      </dd>
                     </div>
                   </dl>
                 </Link>

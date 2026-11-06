@@ -69,6 +69,8 @@ export interface CourseModule {
   titleAr: string | null;
   descriptionEn: string | null;
   descriptionAr: string | null;
+  /** Lesson titles (the public syllabus preview); bodies come from `learningApi.lessons`. */
+  lessons?: Array<{ id: string; order: number; titleEn: string; titleAr: string | null }>;
 }
 
 /** Managed course category, as embedded on a course (`categoryRef`). */
@@ -110,7 +112,8 @@ export interface Course {
   coverImageUrl: string | null;
   /** Uploaded video URL, or a YouTube / Vimeo / direct https link; null = none. Classify with `parseCourseVideoUrl`. */
   introVideoUrl: string | null;
-  priceFils: number;
+  /** "From" price: the lowest price among open (ENROLLING/FULL/RUNNING) batches; null when none. */
+  priceFils: number | null;
   outcomesEn: string[];
   outcomesAr: string[];
   requirementsEn: string[];
@@ -155,7 +158,8 @@ export interface BatchSummary {
   capacity: number;
   language: SessionLanguage;
   timezone: string;
-  priceFils: number | null;
+  /** Seat price; pricing lives on the batch. */
+  priceFils: number;
   waitlistEnabled: boolean;
   minStudents: number;
   enrollmentOpensOn: ISODate | null;
@@ -475,7 +479,8 @@ export interface EnrollmentRecord {
 }
 
 export type CheckoutResult =
-  | { waitlisted: false; order: CreatedOrder; enrollment: EnrollmentRecord; quote: Quote; clientSecret: string }
+  /** STRIPE: redirect to Stripe Checkout; the order turns PAID only via the webhook. */
+  | { waitlisted: false; order: CreatedOrder; enrollment: EnrollmentRecord; quote: Quote; checkoutUrl: string }
   | { waitlisted: false; order: CreatedOrder; enrollment: EnrollmentRecord; quote: Quote; bankAccount: BankAccount; reference: string; expiresAt: ISODate }
   | { waitlisted: true; enrollment: EnrollmentRecord };
 

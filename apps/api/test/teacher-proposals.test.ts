@@ -52,6 +52,7 @@ class InMemoryCourses implements CourseRepository {
   async related() {
     return [];
   }
+  async refreshFromPrice() {}
 }
 
 const draft = createCourseInput.parse({ titleEn: 'Arabic Calligraphy Basics', category: 'arts', level: 'BEGINNER', priceAed: 900 });
@@ -93,7 +94,7 @@ describe('teacher course proposals', () => {
     expect(await codeOf(service.update(c.id, { titleEn: 'Mine now' }, omar))).toBe('FORBIDDEN');
     await service.submit(c.id, lina);
     await service.review(c.id, { approve: true });
-    expect(await codeOf(service.update(c.id, { priceAed: 1 }, lina))).toBe('COURSE_LOCKED');
+    expect(await codeOf(service.update(c.id, { titleEn: 'Renamed' }, lina))).toBe('COURSE_LOCKED');
   });
 
   test('admin sends back with a note (→ DRAFT) or approves (→ PUBLISHED); the teacher is told', async () => {
@@ -134,7 +135,7 @@ describe('teacher batch proposals', () => {
     return { service, notifier, courseRepo };
   }
   const input = {
-    courseId: 'c1', code: 'B12', teacherId: 'someone-else', capacity: 12, language: 'EN' as const, timezone: 'Asia/Dubai',
+    courseId: 'c1', code: 'B12', teacherId: 'someone-else', capacity: 12, priceAed: 450, language: 'EN' as const, timezone: 'Asia/Dubai',
     waitlistEnabled: true, minStudents: 0,
     schedule: { weekdays: [2, 4], startTime: '19:00', durationMin: 90, sessionCount: 4, startsOn: '2026-12-01', skipDates: [] },
   };

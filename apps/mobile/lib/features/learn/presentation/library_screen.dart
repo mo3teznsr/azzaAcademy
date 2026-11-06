@@ -71,7 +71,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ],
               ),
             ),
-            Expanded(child: _BatchLibrary(batchId: batchId)),
+            Expanded(child: _BatchLibrary(batchId: batchId, courseId: active.where((e) => e.batch.id == batchId).firstOrNull?.batch.courseId ?? active.first.batch.courseId)),
           ]);
         },
       ),
@@ -80,8 +80,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 }
 
 class _BatchLibrary extends ConsumerWidget {
-  const _BatchLibrary({required this.batchId});
+  const _BatchLibrary({required this.batchId, required this.courseId});
   final String batchId;
+  final String courseId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -98,6 +99,26 @@ class _BatchLibrary extends ConsumerWidget {
         ref.invalidate(materialsProvider(batchId));
       },
       children: [
+        Row(children: [
+          Expanded(
+            child: _StudyTile(
+              key: const Key('library-lessons'),
+              icon: Icons.menu_book_outlined,
+              label: l.lessonsTitle,
+              onTap: () => context.push(Routes.courseLessons(courseId)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _StudyTile(
+              key: const Key('library-quizzes'),
+              icon: Icons.quiz_outlined,
+              label: l.myQuizzesTitle,
+              onTap: () => context.push(Routes.myQuizzes),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 12),
         AsyncView<List<Recording>>(
           value: recordings,
           compact: true,
@@ -162,6 +183,29 @@ class _BatchLibrary extends ConsumerWidget {
           ]),
         ),
       ],
+    );
+  }
+}
+
+/// A shortcut into the course's lessons or the student's quizzes.
+class _StudyTile extends StatelessWidget {
+  const _StudyTile({super.key, required this.icon, required this.label, required this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = AzzaPalette.of(context);
+    return RaisedCard(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      child: Row(children: [
+        Icon(icon, color: p.success, size: 22),
+        const SizedBox(width: 10),
+        Expanded(child: Text(label, style: Theme.of(context).textTheme.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
+        Icon(Icons.chevron_right_rounded, color: p.muted, size: 20),
+      ]),
     );
   }
 }

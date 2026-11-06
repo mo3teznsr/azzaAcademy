@@ -139,7 +139,7 @@ export function AdminCourses() {
                       </Link>
                     </TableCell>
                     <TableCell>{t.status.level[c.level]}</TableCell>
-                    <TableCell>{money.aed(c.priceFils)}</TableCell>
+                    <TableCell>{c.priceFils === null ? <span className="text-muted-foreground">{t.money.noOpenBatches}</span> : fill(t.money.fromPrice, { amount: money.aed(c.priceFils) })}</TableCell>
                     <TableCell>{f.dayMonth(c.createdAt)}</TableCell>
                     <TableCell>
                       <CourseStatusChip status={c.status} />

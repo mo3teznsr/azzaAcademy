@@ -147,12 +147,11 @@ describe('apple in-app purchase flow', () => {
       status: 'ENROLLING',
       capacity: 2,
       waitlistEnabled: true,
-      priceFils: null,
+      priceFils: 88_000,
       timezone: 'Asia/Dubai',
       teacherId: 'lina',
       courseId: 'pdf',
       courseTitle: 'Product Design Foundations',
-      coursePriceFils: 88_000,
       firstSessionAt: new Date('2026-12-01T14:00:00Z'),
     });
     repo.coupons.push({ id: 'c1', code: 'WELCOME10', percentOff: 10, amountOffFils: null, active: true, startsOn: null, expiresOn: null, maxRedemptions: 5, redemptions: 0, perUserLimit: 1, minOrderFils: null, courseId: null, batchId: null });
@@ -161,7 +160,7 @@ describe('apple in-app purchase flow', () => {
     tokens = 0;
     checkout = new CheckoutService(
       repo,
-      new CheckoutStrategyRegistry([new StripeCheckout(new FakePaymentGateway()), new AppleIapCheckout(60, () => `AAAAAAAA-0000-4000-8000-00000000000${++tokens}`)]),
+      new CheckoutStrategyRegistry([new StripeCheckout(new FakePaymentGateway(), 'https://azza.test'), new AppleIapCheckout(60, () => `AAAAAAAA-0000-4000-8000-00000000000${++tokens}`)]),
       new PriceCalculator(5),
       { rateFor: async () => 1 },
       machine,

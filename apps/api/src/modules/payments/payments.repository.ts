@@ -9,12 +9,11 @@ export interface SaleBatch {
   status: BatchStatus;
   capacity: number;
   waitlistEnabled: boolean;
-  priceFils: number | null;
+  priceFils: number;
   timezone: string;
   teacherId: string;
   courseId: string;
   courseTitle: string;
-  coursePriceFils: number;
   firstSessionAt: Date | null;
 }
 
@@ -44,6 +43,7 @@ export interface OrderRecord {
   fxRate: number;
   couponCode: string | null;
   stripePaymentIntentId: string | null;
+  stripeCheckoutSessionId: string | null;
   appleProductId: string | null;
   appleAppAccountToken: string | null;
   appleTransactionId: string | null;
@@ -75,6 +75,7 @@ export type NewOrder = Pick<
   | 'fxRate'
   | 'couponCode'
   | 'stripePaymentIntentId'
+  | 'stripeCheckoutSessionId'
   | 'appleProductId'
   | 'appleAppAccountToken'
   | 'bankAccountId'
@@ -129,6 +130,7 @@ export interface PaymentsRepository {
   createOrder(data: NewOrder): Promise<OrderRecord>;
   findOrder(id: string): Promise<OrderRecord | null>;
   findOrderByPaymentIntent(paymentIntentId: string): Promise<OrderRecord | null>;
+  findOrderByCheckoutSession(sessionId: string): Promise<OrderRecord | null>;
   findOrderByAppleTransaction(transactionId: string): Promise<OrderRecord | null>;
   findOrderByAppleToken(appAccountToken: string): Promise<OrderRecord | null>;
   /** The student's newest APPLE_IAP order for this product that is not PAID/REFUNDED (fallback when a transaction has no token). */
@@ -173,6 +175,7 @@ const orderFields = {
   fxRate: true,
   couponCode: true,
   stripePaymentIntentId: true,
+  stripeCheckoutSessionId: true,
   appleProductId: true,
   appleAppAccountToken: true,
   appleTransactionId: true,
@@ -206,13 +209,13 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
         priceFils: true,
         timezone: true,
         teacherId: true,
-        course: { select: { id: true, titleEn: true, priceFils: true } },
+        course: { select: { id: true, titleEn: true } },
         sessions: { where: { status: { not: 'CANCELLED' } }, orderBy: { startsAt: 'asc' }, take: 1, select: { startsAt: true } },
       },
     });
     if (!b) return null;
     const { course, sessions, ...rest } = b;
-    return { ...rest, courseId: course.id, courseTitle: course.titleEn, coursePriceFils: course.priceFils, firstSessionAt: sessions[0]?.startsAt ?? null };
+    return { ...rest, courseId: course.id, courseTitle: course.titleEn, firstSessionAt: sessions[0]?.startsAt ?? null };
   }
 
   heldSeats(batchId: string, excludeUserId?: string) {
@@ -268,6 +271,11 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
   async findOrder(id: string) {
     const o = await this.db.order.findUnique({ where: { id }, select: orderFields });
     return o && toOrder(o);
+  }
+
+  async findOrderByCheckoutSession(sessionId: string) {
+    const o = await this.db.order.findUnique({ where: { stripeCheckoutSessionId: sessionId }, select: orderFields });
+    return o as OrderRecord | null;
   }
 
   async findOrderByPaymentIntent(paymentIntentId: string) {

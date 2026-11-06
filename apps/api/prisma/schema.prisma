@@ -148,6 +148,7 @@ model User {
   teaching      Batch[]             @relation("BatchTeacher")
   coursesProposed Course[]          @relation("CourseAuthor")
   courseReviews CourseReview[]
+  instructorApplications InstructorApplication[] @relation("Applicant")
   savedCourses  SavedCourse[]
   enrollments   Enrollment[]
   orders        Order[]             @relation("OrderStudent")
@@ -167,6 +168,7 @@ model User {
   rescheduleDecisions RescheduleRequest[] @relation("RescheduleDecider")
   certificates  Certificate[]
   couponRedemptions CouponRedemption[]
+  quizAttempts  QuizAttempt[]
 
   @@map("user")
 }
@@ -237,7 +239,9 @@ model Course {
   coverImageUrl String?
   /// Intro video: an uploaded file URL (mp4/mov/webm) or an https link (YouTube, Vimeo or a direct video file).
   introVideoUrl String?
-  priceFils     Int
+  /// "From" price: the lowest price among the course's public batches, kept in step by the API.
+  /// Students buy a seat in a batch; the batch carries the real price. Null while no batch is public.
+  priceFils     Int?
   /// "What you'll learn", "Requirements", "Who it's for" — one bullet per entry.
   outcomesEn     String[]    @default([])
   outcomesAr     String[]    @default([])
@@ -282,6 +286,9 @@ model CourseModule {
   descriptionEn String?
   descriptionAr String?
 
+  lessons Lesson[]
+  quizzes Quiz[]
+
   @@unique([courseId, order])
 }
 
@@ -295,7 +302,8 @@ model Batch {
   capacity           Int
   language           SessionLanguage
   timezone           String
-  priceFils          Int?
+  /// Price of a seat in this batch (fils, AED). Required: enrollment is to a batch, not a course.
+  priceFils          Int
   waitlistEnabled    Boolean         @default(true)
   minStudents        Int             @default(0)
   enrollmentOpensOn  DateTime?
@@ -317,6 +325,7 @@ model Batch {
   earnings    Earning[]
   certificates Certificate[]
   coupons     Coupon[]
+  quizzes     Quiz[]
 
   @@unique([courseId, code])
   @@index([teacherId, status])
@@ -410,6 +419,8 @@ model Order {
   fxRate                Decimal       @default(1) @db.Decimal(12, 6)
   couponCode            String?
   stripePaymentIntentId String?       @unique
+  /// Stripe Checkout (hosted page) session; the webhook confirms payment against it.
+  stripeCheckoutSessionId String?     @unique
   /// Apple In-App Purchase (iOS): consumable product for the batch's price tier, the per-order
   /// appAccountToken passed to StoreKit, and the verified transaction (unique → idempotent verify).
   appleProductId             String?
@@ -777,4 +788,115 @@ model SavedCourse {
 
   @@id([userId, courseId])
   @@index([courseId])
+}
+
+enum InstructorApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// "Join as instructor": a signed-in learner applies; an admin approves (→ role TEACHER) or declines with a note.
+model InstructorApplication {
+  id          String                      @id @default(cuid())
+  userId      String
+  user        User                        @relation("Applicant", fields: [userId], references: [id], onDelete: Cascade)
+  headline    String
+  bio         String
+  /// Category slugs the applicant wants to teach.
+  categories  String[]                    @default([])
+  /// Teaching languages: 'AR' | 'EN'.
+  languages   String[]                    @default([])
+  experience  String
+  /// Portfolio, sample lesson or LinkedIn (https).
+  sampleUrl   String?
+  phone       String?
+  status      InstructorApplicationStatus @default(PENDING)
+  reviewNote  String?
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId])
+}
+
+// ───────────────────────── Lessons & quizzes ─────────────────────────
+
+/** Self-paced reading for a course module: markdown, an optional video and links. Part of the course curriculum. */
+model Lesson {
+  id          String       @id @default(cuid())
+  moduleId    String
+  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  order       Int
+  titleEn     String
+  titleAr     String?
+  /// Markdown.
+  bodyEn      String       @default("")
+  bodyAr      String?
+  /// Uploaded course video, YouTube / Vimeo link or https mp4 / mov / webm (`parseCourseVideoUrl`).
+  videoUrl    String?
+  /// `[{ title, url }]`
+  attachments Json         @default("[]")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([moduleId, order])
+}
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// An auto-graded quiz on a batch.
+/// Questions live in `questions` (validated JSON, `quizQuestionInput` in @azza/shared) rather than a QuizQuestion table:
+/// they are always read, edited and graded together with their quiz, never queried on their own, and each attempt
+/// stores its own per-question results, so reports never join back into question rows.
+model Quiz {
+  id           String        @id @default(cuid())
+  batchId      String
+  batch        Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  moduleId     String?
+  module       CourseModule? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  title        String
+  description  String        @default("")
+  /// `[{ id, type: SINGLE|MULTIPLE|TRUE_FALSE, promptEn, promptAr?, points, options: [{ id, textEn, textAr?, correct }] }]`
+  questions    Json          @default("[]")
+  status       QuizStatus    @default(DRAFT)
+  dueAt        DateTime?
+  /// Minutes; null = untimed.
+  timeLimitMin Int?
+  maxAttempts  Int           @default(1)
+  publishedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  attempts QuizAttempt[]
+
+  @@index([batchId, status])
+}
+
+/// One try at a quiz. Open while `submittedAt` is null.
+model QuizAttempt {
+  id          String    @id @default(cuid())
+  quizId      String
+  quiz        Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  number      Int
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+  /// `{ [questionId]: optionId[] }`
+  answers     Json      @default("{}")
+  /// `[{ questionId, correct, earned, points }]`, frozen at grading.
+  results     Json      @default("[]")
+  score       Float?
+  maxScore    Int       @default(0)
+  /// Submitted after the time limit (plus grace): scored 0.
+  timedOut    Boolean   @default(false)
+
+  @@unique([quizId, userId, number])
+  @@index([userId])
 }
