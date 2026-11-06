@@ -27,7 +27,7 @@ export function Hero() {
       <Kicker className="text-muted-foreground">{h.kicker}</Kicker>
       <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-14">
         <div className="flex flex-col justify-between gap-10">
-          <h1 id="hero-title" aria-label={h.title} className="font-display text-[clamp(56px,9.6vw,156px)] font-extrabold leading-[0.86] tracking-[-0.035em]">
+          <h1 id="hero-title" aria-label={h.title} className="font-display text-[clamp(48px,8.4vw,132px)] font-extrabold leading-[0.86] tracking-[-0.035em]">
             {h.lines.map((line, i) => (
               <span key={line} aria-hidden className="landing-mask">
                 <span

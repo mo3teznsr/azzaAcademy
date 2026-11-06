@@ -161,10 +161,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderRefunded => 'Refunded';
 
   @override
-  String get splashTagline => 'Live cohorts · since 2026';
+  String get splashTagline => 'Live online courses · Arabic & English';
 
   @override
-  String get splashLine => 'Learn live, with a batch that shows up.';
+  String get splashLine => 'Learn live, with a real teacher.';
 
   @override
   String get chooseLanguage => 'Choose your language';

@@ -3,7 +3,7 @@ type LegalSection = { heading: string; paragraphs?: string[]; points?: string[] 
 
 /** English dictionary — the source of truth for the shape (ar.ts must match `Dictionary`). */
 const en = {
-  meta: { title: 'Azza — Learn live, in batches', description: 'Live cohort courses. Pick a course, pick the batch that fits your week.' },
+  meta: { title: 'Azza — Live online courses with a real teacher', description: 'Learn live in a small class, at the same time every week, in Arabic or English. Every class is recorded for you.' },
   common: {
     loading: 'Loading…',
     retry: 'Try again',
@@ -108,7 +108,7 @@ const en = {
     method: { STRIPE: 'Card · Stripe', BANK_TRANSFER: 'Bank transfer', APPLE_IAP: 'App Store (iOS)' },
   },
   nav: {
-    public: { courses: 'Courses', startingSoon: 'Starting soon', howItWorks: 'How it works', teachers: 'Teachers', signIn: 'Sign in', findBatch: 'Find a batch', myLearning: 'My learning' },
+    public: { courses: 'Courses', startingSoon: 'Starting soon', howItWorks: 'How it works', teachers: 'Teachers', signIn: 'Sign in', findBatch: 'Browse courses', myLearning: 'My learning' },
     student: { home: 'Home', explore: 'Explore', schedule: 'Schedule', library: 'Library', assignments: 'Assignments', certificates: 'Certificates', settings: 'Settings', saved: 'Saved' },
     teacher: { studio: 'Studio', courses: 'My courses', grading: 'Grading', earnings: 'Earnings', settings: 'Profile & bank' },
     admin: {
@@ -1246,15 +1246,15 @@ const en = {
     pauseScrolling: 'Pause scrolling',
     starts: 'starts {d}',
     hero: {
-      kicker: 'Programme · live classes in small groups',
-      title: 'A class that waits for you.',
-      lines: ['A class', 'that waits', 'for you.'],
-      body: 'Live courses in small groups, at a fixed time each week, with a real teacher who knows your name. Not a library of videos: a room you join.',
-      primary: 'Find your batch',
-      secondary: 'What starts soon',
+      kicker: 'Live online courses · Arabic & English',
+      title: 'Learn live, with a real teacher, in a small class.',
+      lines: ['Learn live.', 'Real teacher.', 'Small class.'],
+      body: 'Join the same small group at the same time every week, with a teacher who knows your name. Missed a class? The recording is waiting in your library.',
+      primary: 'Browse courses',
+      secondary: 'See what starts soon',
       photoAlt: 'Placeholder photo of a fictional person: a teacher talks to her class from a small home studio in the evening.',
-      nextDoors: 'Next doors open · {code} · {when}',
-      offAir: 'Doors open at the batch time',
+      nextDoors: 'Next class starts {when}',
+      offAir: 'Every class starts at its set time',
     },
     house: {
       kicker: 'Act 1 · The house fills',

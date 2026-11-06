@@ -401,13 +401,13 @@ abstract class AppLocalizations {
   /// No description provided for @splashTagline.
   ///
   /// In en, this message translates to:
-  /// **'Live cohorts · since 2026'**
+  /// **'Live online courses · Arabic & English'**
   String get splashTagline;
 
   /// No description provided for @splashLine.
   ///
   /// In en, this message translates to:
-  /// **'Learn live, with a batch that shows up.'**
+  /// **'Learn live, with a real teacher.'**
   String get splashLine;
 
   /// No description provided for @chooseLanguage.

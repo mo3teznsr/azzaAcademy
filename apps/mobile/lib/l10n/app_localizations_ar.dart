@@ -161,10 +161,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderRefunded => 'مسترد';
 
   @override
-  String get splashTagline => 'دفعات مباشرة · منذ ٢٠٢٦';
+  String get splashTagline =>
+      'دورات مباشرة عبر الإنترنت · بالعربية والإنجليزية';
 
   @override
-  String get splashLine => 'تعلّم مباشرةً، مع دفعة تحضر فعلًا.';
+  String get splashLine => 'تعلّم مباشرةً، مع معلّم حقيقي.';
 
   @override
   String get chooseLanguage => 'اختر لغتك';
