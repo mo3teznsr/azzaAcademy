@@ -23,6 +23,7 @@ abstract final class Routes {
   static const teacherBatches = '/teacher/batches';
   static const teacherNewBatch = '/teacher/batches/new';
   static const teacherCourses = '/teacher/batches/courses';
+  static const teacherRecordings = '/teacher/batches/recordings';
   static const teacherNewCourse = '/teacher/batches/courses/new';
   static String teacherCourse(String id) => '/teacher/batches/courses/$id';
   static const teacherCalendar = '/teacher/calendar';

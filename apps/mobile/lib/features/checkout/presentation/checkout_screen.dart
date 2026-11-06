@@ -137,44 +137,48 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   ),
                 ),
             ]),
-            const SizedBox(height: 20),
-            AsyncView<Quote>(
-              value: quote,
-              compact: true,
-              onRetry: () => ref.invalidate(quoteProvider(key)),
-              data: (q) => Column(children: [
-                KeyValueRow(l.batchPrice, f.money(q.subtotalFils, currency, rate)),
-                if (q.discountFils > 0)
-                  KeyValueRow('${l.discount}${_appliedCoupon.isEmpty ? '' : ' · $_appliedCoupon'}', '− ${f.money(q.discountFils, currency, rate)}',
-                      valueColor: p.success),
-                if (q.vatFils > 0) KeyValueRow(l.vat, f.money(q.vatFils, currency, rate)),
-                Divider(color: p.line),
-                KeyValueRow(l.total, f.money(q.totalFils, currency, rate), emphasize: true),
-                const SizedBox(height: 4),
-                Text(
-                  currency.isBase ? l.chargedExact : l.chargedInAed(f.aed(q.totalFils), currency.wire, f.n(rate.toStringAsFixed(4))),
-                  style: t.bodySmall,
+            SectionCard(
+              margin: const EdgeInsets.only(top: 20),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                AsyncView<Quote>(
+                  value: quote,
+                  compact: true,
+                  onRetry: () => ref.invalidate(quoteProvider(key)),
+                  data: (q) => Column(children: [
+                    KeyValueRow(l.batchPrice, f.money(q.subtotalFils, currency, rate)),
+                    if (q.discountFils > 0)
+                      KeyValueRow('${l.discount}${_appliedCoupon.isEmpty ? '' : ' · $_appliedCoupon'}', '− ${f.money(q.discountFils, currency, rate)}',
+                          valueColor: p.success),
+                    if (q.vatFils > 0) KeyValueRow(l.vat, f.money(q.vatFils, currency, rate)),
+                    Divider(color: p.line),
+                    KeyValueRow(l.total, f.money(q.totalFils, currency, rate), emphasize: true),
+                    const SizedBox(height: 4),
+                    Text(
+                      currency.isBase ? l.chargedExact : l.chargedInAed(f.aed(q.totalFils), currency.wire, f.n(rate.toStringAsFixed(4))),
+                      style: t.bodySmall,
+                    ),
+                  ]),
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _coupon,
+                  textCapitalization: TextCapitalization.characters,
+                  onSubmitted: (_) => setState(() => _appliedCoupon = _coupon.text.trim().toUpperCase()),
+                  decoration: fieldDecoration(
+                    label: l.coupon,
+                    icon: Icons.local_offer_outlined,
+                    action: FieldActionButton(
+                      label: l.apply,
+                      onPressed: () => setState(() => _appliedCoupon = _coupon.text.trim().toUpperCase()),
+                    ),
+                  ),
+                ),
+                if (_appliedCoupon.isNotEmpty && quote.hasError) ...[
+                  const SizedBox(height: 6),
+                  Text(l.couponInvalid, style: t.bodySmall?.copyWith(color: AzzaPalette.of(context).danger)),
+                ],
               ]),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _coupon,
-              textCapitalization: TextCapitalization.characters,
-              onSubmitted: (_) => setState(() => _appliedCoupon = _coupon.text.trim().toUpperCase()),
-              decoration: fieldDecoration(
-                label: l.coupon,
-                icon: Icons.local_offer_outlined,
-                action: FieldActionButton(
-                  label: l.apply,
-                  onPressed: () => setState(() => _appliedCoupon = _coupon.text.trim().toUpperCase()),
-                ),
-              ),
-            ),
-            if (_appliedCoupon.isNotEmpty && quote.hasError) ...[
-              const SizedBox(height: 6),
-              Text(l.couponInvalid, style: t.bodySmall?.copyWith(color: AzzaPalette.of(context).danger)),
-            ],
             SectionHeader(l.payWith),
             OptionTile(
               key: const Key('method-card'),

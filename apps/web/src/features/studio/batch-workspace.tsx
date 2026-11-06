@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BatchStatusChip, SessionStatusChip } from '@/components/brand/status-chip';
 import { SessionSlate } from '@/components/brand/session-slate';
-import { StatTile } from '@/components/brand/section';
+import { Panel, StatTile } from '@/components/brand/section';
 import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { EmptyState, ErrorState, LoadingBlock, QueryView } from '@/components/brand/states';
 import { batchesApi, type BatchDetail } from '@/lib/api';
@@ -165,6 +165,7 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
         <TabsContent value="roster" className="mt-4">
           <QueryView query={roster} isEmpty={(r) => r.items.length === 0} loading={<LoadingBlock rows={4} height={48} />} empty={<EmptyState title={t.studio.batch.rosterEmpty} />}>
             {({ items: list }) => (
+              <Panel className="p-2">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -202,14 +203,19 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
                   ))}
                 </TableBody>
               </Table>
+              </Panel>
             )}
           </QueryView>
         </TabsContent>
         <TabsContent value="materials" className="mt-4">
-          <Materials b={b} />
+          <Panel>
+            <Materials b={b} />
+          </Panel>
         </TabsContent>
         <TabsContent value="assignments" className="mt-4">
-          <Assignments b={b} />
+          <Panel>
+            <Assignments b={b} />
+          </Panel>
         </TabsContent>
       </Tabs>
     </>
@@ -316,7 +322,7 @@ export function Materials({ b, sessionId }: { b: BatchDetail; sessionId?: string
       ) : (
         <ul className="flex flex-col gap-2">
           {list.map((m) => (
-            <li key={m.id} className="flex items-center gap-3 rounded-[14px] bg-card p-3.5">
+            <li key={m.id} className="flex items-center gap-3 rounded-[14px] border border-border bg-card p-3.5">
               <span className="label-mono w-16 shrink-0 text-muted-foreground">{t.status.material[m.kind]}</span>
               <b className="min-w-0 flex-1 truncate">{m.title}</b>
               <span className="font-mono text-xs text-muted-foreground" dir="ltr">
@@ -400,7 +406,7 @@ function Assignments({ b }: { b: BatchDetail }) {
         {(list) => (
           <ul className="flex flex-col gap-2">
             {list.map((a) => (
-              <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-card p-4">
+              <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-border bg-card p-4">
                 <div>
                   <b className="block">{a.title}</b>
                   <span className="text-sm text-muted-foreground">{fill(t.assignments.due, { d: f.dateTime(a.dueAt) })}</span>

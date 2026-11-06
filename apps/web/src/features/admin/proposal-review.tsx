@@ -41,7 +41,7 @@ export function ProposalNotice({
     <section
       role={tone === 'sentBack' ? 'alert' : 'status'}
       className={cn(
-        'flex flex-wrap items-start gap-4 rounded-[20px] p-5',
+        'flex flex-wrap items-start gap-4 rounded-xl p-5',
         tone === 'pending' && 'bg-sun text-ink',
         tone === 'sentBack' && 'bg-peach text-ink',
         tone === 'neutral' && 'border border-border bg-card',

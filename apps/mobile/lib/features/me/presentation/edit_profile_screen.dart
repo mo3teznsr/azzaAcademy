@@ -101,75 +101,91 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           const Center(child: AvatarEditor()),
           const SizedBox(height: 8),
           Center(child: Text(l.changePhoto, style: t.bodySmall)),
-          SectionHeader(l.profileSection),
-          TextField(
-            key: const Key('profile-name'),
-            controller: _name,
-            textCapitalization: TextCapitalization.words,
-            autofillHints: const [AutofillHints.name],
-            decoration: fieldDecoration(label: l.fullName, icon: Icons.person_outline_rounded, action: ClearFieldButton(controller: _name)),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _email,
-            readOnly: true,
-            enableInteractiveSelection: true,
-            decoration: fieldDecoration(
-              label: l.email,
-              icon: Icons.mail_outline_rounded,
-              helper: l.emailLockedNote,
-              action: user?.emailVerified ?? true ? Icon(Icons.verified_outlined, color: p.accent, size: 20) : null,
+          SectionCard(
+            title: l.profileSection,
+            margin: const EdgeInsets.only(top: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  key: const Key('profile-name'),
+                  controller: _name,
+                  textCapitalization: TextCapitalization.words,
+                  autofillHints: const [AutofillHints.name],
+                  decoration: fieldDecoration(
+                    label: l.fullName,
+                    icon: Icons.person_outline_rounded,
+                    action: ClearFieldButton(controller: _name),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _email,
+                  readOnly: true,
+                  enableInteractiveSelection: true,
+                  decoration: fieldDecoration(
+                    label: l.email,
+                    icon: Icons.mail_outline_rounded,
+                    helper: l.emailLockedNote,
+                    action: user?.emailVerified ?? true ? Icon(Icons.verified_outlined, color: p.accent, size: 20) : null,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                InputDecorator(
+                  decoration: fieldDecoration(
+                    label: l.timezone,
+                    icon: Icons.public_rounded,
+                    helper: l.timezoneHint,
+                    action: _device != null && _device != _timezone
+                        ? FieldActionButton(key: const Key('use-device-timezone'), label: l.useThisPhone, onPressed: () => setState(() => _timezone = _device!))
+                        : null,
+                  ),
+                  child: Text(_timezone.isEmpty ? '—' : _timezone, style: t.bodyLarge),
+                ),
+                const SizedBox(height: 16),
+                FilledButton(key: const Key('profile-save'), onPressed: _saving ? null : _save, child: Text(l.saveChanges)),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          InputDecorator(
-            decoration: fieldDecoration(
-              label: l.timezone,
-              icon: Icons.public_rounded,
-              helper: l.timezoneHint,
-              action: _device != null && _device != _timezone
-                  ? FieldActionButton(
-                      key: const Key('use-device-timezone'),
-                      label: l.useThisPhone,
-                      onPressed: () => setState(() => _timezone = _device!),
-                    )
-                  : null,
+          SectionCard(
+            title: l.changePassword,
+            child: Form(
+              key: _passwordForm,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  PasswordField(
+                    key: const Key('current-password'),
+                    controller: _current,
+                    label: l.currentPassword,
+                    textInputAction: TextInputAction.next,
+                    validator: (v) => (v ?? '').isEmpty ? l.currentPasswordRequired : null,
+                  ),
+                  const SizedBox(height: 12),
+                  PasswordField(
+                    key: const Key('new-password'),
+                    controller: _next,
+                    label: l.newPassword,
+                    newPassword: true,
+                    helper: l.changePasswordNote,
+                    onSubmitted: (_) => _changePassword(),
+                    validator: (v) => (v ?? '').length < 8 ? l.passwordTooShort : null,
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    key: const Key('change-password'),
+                    onPressed: _changingPassword ? null : _changePassword,
+                    icon: const Icon(Icons.key_rounded, size: 18),
+                    label: Text(l.changePassword),
+                  ),
+                ],
+              ),
             ),
-            child: Text(_timezone.isEmpty ? '—' : _timezone, style: t.bodyLarge),
           ),
-          const SizedBox(height: 16),
-          FilledButton(key: const Key('profile-save'), onPressed: _saving ? null : _save, child: Text(l.saveChanges)),
-          SectionHeader(l.changePassword),
-          Form(
-            key: _passwordForm,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              PasswordField(
-                key: const Key('current-password'),
-                controller: _current,
-                label: l.currentPassword,
-                textInputAction: TextInputAction.next,
-                validator: (v) => (v ?? '').isEmpty ? l.currentPasswordRequired : null,
-              ),
-              const SizedBox(height: 12),
-              PasswordField(
-                key: const Key('new-password'),
-                controller: _next,
-                label: l.newPassword,
-                newPassword: true,
-                helper: l.changePasswordNote,
-                onSubmitted: (_) => _changePassword(),
-                validator: (v) => (v ?? '').length < 8 ? l.passwordTooShort : null,
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                key: const Key('change-password'),
-                onPressed: _changingPassword ? null : _changePassword,
-                icon: const Icon(Icons.key_rounded, size: 18),
-                label: Text(l.changePassword),
-              ),
-            ]),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 4, top: 24, bottom: 8),
+            child: Text(l.dangerZone, style: t.titleSmall?.copyWith(color: p.muted)),
           ),
-          SectionHeader(l.dangerZone),
           _DangerZone(isStudent: user?.role == Role.student),
         ],
       ),
@@ -192,26 +208,35 @@ class _DangerZone extends ConsumerWidget {
       key: const Key('danger-zone'),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AzzaSpace.radiusSm),
+        color: p.raised,
+        borderRadius: BorderRadius.circular(AzzaSpace.radius),
         border: Border.all(color: danger.withValues(alpha: 0.6)),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Icon(Icons.warning_amber_rounded, color: danger, size: 20),
-          const SizedBox(width: 8),
-          Expanded(child: Text(l.deleteAccount, style: t.titleSmall)),
-        ]),
-        const SizedBox(height: 6),
-        Text(isStudent ? l.deleteAccountSummary : l.deleteAccountTeacher, style: t.bodySmall),
-        const SizedBox(height: 14),
-        OutlinedButton.icon(
-          key: const Key('delete-account'),
-          style: OutlinedButton.styleFrom(foregroundColor: danger, side: BorderSide(color: danger)),
-          onPressed: () => confirmDeleteAccount(context, ref),
-          icon: const Icon(Icons.delete_forever_outlined, size: 18),
-          label: Text(l.deleteAccount),
-        ),
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: danger, size: 20),
+              const SizedBox(width: 8),
+              Expanded(child: Text(l.deleteAccount, style: t.titleSmall)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(isStudent ? l.deleteAccountSummary : l.deleteAccountTeacher, style: t.bodySmall),
+          const SizedBox(height: 14),
+          OutlinedButton.icon(
+            key: const Key('delete-account'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: danger,
+              side: BorderSide(color: danger),
+            ),
+            onPressed: () => confirmDeleteAccount(context, ref),
+            icon: const Icon(Icons.delete_forever_outlined, size: 18),
+            label: Text(l.deleteAccount),
+          ),
+        ],
+      ),
     );
   }
 }

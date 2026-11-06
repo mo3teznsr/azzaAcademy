@@ -27,7 +27,7 @@ export function SessionSlate({
     <div
       className={cn(
         'flex items-center gap-3.5 rounded-[14px] p-3.5',
-        live ? 'bg-onair text-onair-ink' : 'bg-card',
+        live ? 'bg-onair text-onair-ink' : 'border border-border bg-card',
         state === 'MOVED' && 'border border-dashed border-peach-fg bg-transparent',
         state === 'CANCELLED' && 'opacity-60',
         className,

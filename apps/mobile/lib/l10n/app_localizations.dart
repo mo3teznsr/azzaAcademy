@@ -401,13 +401,13 @@ abstract class AppLocalizations {
   /// No description provided for @splashTagline.
   ///
   /// In en, this message translates to:
-  /// **'Live cohorts · since 2026'**
+  /// **'Live online courses · Arabic & English'**
   String get splashTagline;
 
   /// No description provided for @splashLine.
   ///
   /// In en, this message translates to:
-  /// **'Learn live, with a batch that shows up.'**
+  /// **'Learn live, with a real teacher.'**
   String get splashLine;
 
   /// No description provided for @chooseLanguage.
@@ -4603,6 +4603,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You can review this course after attending one of its sessions.'**
   String get errReviewNotEligible;
+
+  /// No description provided for @teacherRecordingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your recordings'**
+  String get teacherRecordingsTitle;
+
+  /// No description provided for @teacherRecordingsLede.
+  ///
+  /// In en, this message translates to:
+  /// **'Every session you teach is recorded automatically when you press Start. Recordings show here once processed, usually within the hour.'**
+  String get teacherRecordingsLede;
+
+  /// No description provided for @teacherRecordingsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recordings yet'**
+  String get teacherRecordingsEmpty;
+
+  /// No description provided for @shareRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Share or save the recording'**
+  String get shareRecording;
+
+  /// No description provided for @playRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Play recording'**
+  String get playRecording;
 }
 
 class _AppLocalizationsDelegate

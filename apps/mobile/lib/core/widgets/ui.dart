@@ -264,6 +264,72 @@ class RaisedCard extends StatelessWidget {
   }
 }
 
+/// A content section on a card (BRAND.md: white/ink2 surface, 16px radius, soft border).
+/// [title] sits inside the card, so a screen reads as a stack of cards rather than loose text on the ground.
+class SectionCard extends StatelessWidget {
+  const SectionCard({super.key, this.title, this.trailing, required this.child, this.padding = const EdgeInsets.all(16), this.margin = const EdgeInsets.only(top: 12)});
+  final String? title;
+  final Widget? trailing;
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry margin;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = AzzaPalette.of(context);
+    return Container(
+      margin: margin,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: p.raised,
+        borderRadius: BorderRadius.circular(AzzaSpace.radius),
+        border: Border.all(color: p.line),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
+        if (title != null) ...[
+          Row(children: [
+            Expanded(child: Text(title!, style: Theme.of(context).textTheme.titleMedium)),
+            ?trailing,
+          ]),
+          const SizedBox(height: 12),
+        ],
+        child,
+      ]),
+    );
+  }
+}
+
+/// A list of tappable rows on one card, divided by hairlines; [title] is the small label above the card.
+class CardGroup extends StatelessWidget {
+  const CardGroup({super.key, this.title, required this.children});
+  final String? title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = AzzaPalette.of(context);
+    final rows = children.where((w) => w is! SizedBox || (w.width ?? 1) > 0).toList();
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (title != null)
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: 4, top: 24, bottom: 8),
+          child: Text(title!, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: p.muted)),
+        ),
+      Material(
+        color: p.raised,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AzzaSpace.radius), side: BorderSide(color: p.line)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(children: [
+          for (var i = 0; i < rows.length; i++) ...[
+            if (i > 0) Divider(height: 1, thickness: 1, indent: 16, endIndent: 16, color: p.line),
+            rows[i],
+          ],
+        ]),
+      ),
+    ]);
+  }
+}
+
 class SectionHeader extends StatelessWidget {
   const SectionHeader(this.title, {super.key, this.action, this.onAction, this.padding = const EdgeInsets.only(top: 28, bottom: 12)});
   final String title;

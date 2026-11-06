@@ -74,36 +74,43 @@ class _PayoutRunScreenState extends ConsumerState<PayoutRunScreen> {
             Text('${f.shortDate(r.periodStart)}–${f.shortDate(r.periodEnd)}', style: t.bodySmall),
             const SizedBox(height: 16),
             if (r.payouts.isEmpty) EmptyState(title: l.emptyGeneric),
-            for (final line in r.payouts)
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(border: Border(top: BorderSide(color: p.line))),
-                child: Row(children: [
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(line.teacherName, style: t.titleSmall),
-                      Text(
-                        [
-                          ?line.bankName,
-                          if (line.adjustmentsFils != 0) '${line.adjustmentsFils > 0 ? '+' : '−'} ${f.aed(line.adjustmentsFils.abs())}',
-                          ?line.holdReason,
-                        ].join(' · '),
-                        style: t.bodySmall,
-                      ),
-                    ]),
-                  ),
-                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text(f.aed(line.netFils), style: t.titleSmall),
-                    MonoLabel(
-                      switch (line.status) {
-                        PayoutStatus.ready => l.ready,
-                        PayoutStatus.held => l.held,
-                        PayoutStatus.paid => l.paidLabel,
-                        PayoutStatus.carriedOver => l.carriedOver,
-                      },
-                      color: line.status == PayoutStatus.held ? AzzaPalette.of(context).warning : null,
+            if (r.payouts.isNotEmpty)
+              SectionCard(
+                margin: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  for (final (i, line) in r.payouts.indexed)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+                      child: Row(children: [
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(line.teacherName, style: t.titleSmall),
+                            Text(
+                              [
+                                ?line.bankName,
+                                if (line.adjustmentsFils != 0) '${line.adjustmentsFils > 0 ? '+' : '−'} ${f.aed(line.adjustmentsFils.abs())}',
+                                ?line.holdReason,
+                              ].join(' · '),
+                              style: t.bodySmall,
+                            ),
+                          ]),
+                        ),
+                        Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                          Text(f.aed(line.netFils), style: t.titleSmall),
+                          MonoLabel(
+                            switch (line.status) {
+                              PayoutStatus.ready => l.ready,
+                              PayoutStatus.held => l.held,
+                              PayoutStatus.paid => l.paidLabel,
+                              PayoutStatus.carriedOver => l.carriedOver,
+                            },
+                            color: line.status == PayoutStatus.held ? AzzaPalette.of(context).warning : null,
+                          ),
+                        ]),
+                      ]),
                     ),
-                  ]),
                 ]),
               ),
             if (r.held.isNotEmpty) ...[

@@ -57,8 +57,8 @@
   "orderRejected": "Rejected",
   "orderExpired": "Expired",
   "orderRefunded": "Refunded",
-  "splashTagline": "Live cohorts · since 2026",
-  "splashLine": "Learn live, with a batch that shows up.",
+  "splashTagline": "Live online courses · Arabic & English",
+  "splashLine": "Learn live, with a real teacher.",
   "chooseLanguage": "Choose your language",
   "leftToRight": "Left to right",
   "rightToLeft": "Right to left",
@@ -1617,5 +1617,10 @@
       }
     }
   },
-  "errReviewNotEligible": "You can review this course after attending one of its sessions."
+  "errReviewNotEligible": "You can review this course after attending one of its sessions.",
+  "teacherRecordingsTitle": "Your recordings",
+  "teacherRecordingsLede": "Every session you teach is recorded automatically when you press Start. Recordings show here once processed, usually within the hour.",
+  "teacherRecordingsEmpty": "No recordings yet",
+  "shareRecording": "Share or save the recording",
+  "playRecording": "Play recording"
 }

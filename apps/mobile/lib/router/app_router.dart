@@ -47,6 +47,7 @@ import '../features/me/presentation/schedule_screen.dart';
 import '../features/teacher/presentation/course_editor_screen.dart';
 import '../features/teacher/presentation/earnings_screen.dart';
 import '../features/teacher/presentation/my_courses_screen.dart';
+import '../features/teacher/presentation/teacher_recordings_screen.dart';
 import '../features/teacher/presentation/new_batch_screen.dart';
 import '../features/teacher/presentation/payout_method_screen.dart';
 import '../features/teacher/presentation/reschedule_request_screen.dart';
@@ -96,6 +97,7 @@ List<RouteBase> buildRoutes() => [
           _branch(Routes.teacherToday, (_) => const TeacherTodayScreen()),
           _branch(Routes.teacherBatches, (_) => const TeacherBatchesScreen(), routes: [
             _route('new', (_) => const NewBatchScreen()),
+            _route('recordings', (_) => const TeacherRecordingsScreen()),
             _route('courses', (_) => const MyCoursesScreen(), routes: [
               _route('new', (_) => const CourseEditorScreen()),
               _route(':id', (s) => CourseEditorScreen(courseId: s.pathParameters['id'])),

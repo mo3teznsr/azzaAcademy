@@ -32,6 +32,12 @@ class TeacherBatchesScreen extends ConsumerWidget {
     final now = DateTime.now();
     return Scaffold(
       appBar: AppBar(title: Text(l.navBatches), actions: [
+        IconButton(
+          key: const Key('teacher-recordings'),
+          tooltip: l.teacherRecordingsTitle,
+          onPressed: () => context.push(Routes.teacherRecordings),
+          icon: const Icon(Icons.video_library_outlined),
+        ),
         TextButton.icon(
           key: const Key('my-courses'),
           style: TextButton.styleFrom(minimumSize: const Size(44, 44)),

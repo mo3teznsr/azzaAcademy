@@ -262,8 +262,11 @@ class CourseRail extends ConsumerWidget {
 
 /// One call-sheet row: slate, time, title, subtitle, status.
 class SessionRow extends StatelessWidget {
-  const SessionRow({super.key, required this.session, required this.fmt, this.onTap, this.subtitle, this.showDay = false});
+  const SessionRow({super.key, required this.session, required this.fmt, this.onTap, this.subtitle, this.showDay = false, this.padding = const EdgeInsets.symmetric(vertical: 14)});
   final SessionSummary session;
+  /// Use [inCard] padding when the row sits in a [CardGroup].
+  final EdgeInsetsGeometry padding;
+  static const inCard = EdgeInsets.symmetric(horizontal: 16, vertical: 14);
   final Fmt fmt;
   final VoidCallback? onTap;
   final String? subtitle;
@@ -275,9 +278,9 @@ class SessionRow extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: padding == inCard ? null : BorderRadius.circular(14),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: padding,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

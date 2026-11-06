@@ -64,7 +64,7 @@ class TeacherProfileScreen extends ConsumerWidget {
                 ],
               ),
             ],
-            if (tp.bio != null) ...[SectionHeader(l.teacherAbout), Text(tp.bio!, style: t.bodyLarge)],
+            if (tp.bio != null) SectionCard(title: l.teacherAbout, margin: const EdgeInsets.only(top: 24), child: Text(tp.bio!, style: t.bodyLarge)),
             if (tp.courses.isNotEmpty) ...[
               SectionHeader(l.teacherCourses),
               SizedBox(

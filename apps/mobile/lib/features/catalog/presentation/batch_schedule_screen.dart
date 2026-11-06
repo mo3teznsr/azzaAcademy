@@ -53,7 +53,6 @@ class BatchScheduleScreen extends ConsumerWidget {
           final ran = b.sessionsDone(now);
           final left = b.sessions.length - ran;
           final t = Theme.of(context).textTheme;
-          final p = AzzaPalette.of(context);
           return ListView(
             padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
             children: [
@@ -69,18 +68,22 @@ class BatchScheduleScreen extends ConsumerWidget {
                   child: Text(l.joiningLate(f.n(ran), f.n(left)), style: t.bodyMedium),
                 ),
               ],
-              const SizedBox(height: 12),
-              if (b.sessions.isEmpty) EmptyState(title: l.emptyGeneric),
-              for (final s in b.sessions)
-                DecoratedBox(
-                  decoration: BoxDecoration(border: Border(top: BorderSide(color: p.line))),
-                  child: SessionRow(
-                    session: s,
-                    fmt: f,
-                    showDay: true,
-                    subtitle: f.shortDate(s.startsAt),
-                    onTap: enrolled ? () => context.push(s.status == SessionStatus.ended ? Routes.afterSession(s.id) : Routes.lobby(s.id)) : null,
-                  ),
+              const SizedBox(height: 16),
+              if (b.sessions.isEmpty)
+                EmptyState(title: l.emptyGeneric)
+              else
+                CardGroup(
+                  children: [
+                    for (final s in b.sessions)
+                      SessionRow(
+                        session: s,
+                        fmt: f,
+                        showDay: true,
+                        padding: SessionRow.inCard,
+                        subtitle: f.shortDate(s.startsAt),
+                        onTap: enrolled ? () => context.push(s.status == SessionStatus.ended ? Routes.afterSession(s.id) : Routes.lobby(s.id)) : null,
+                      ),
+                  ],
                 ),
             ],
           );

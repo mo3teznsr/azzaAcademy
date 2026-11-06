@@ -50,8 +50,10 @@ class CourseDetailScreen extends ConsumerWidget {
             for (final b in list)
               if (b.teacher != null) b.teacher!.id: b.teacher!,
           };
-          final sessions = list.isEmpty ? null : list.first.sessionCount;
-          final first = list.isEmpty ? null : list.first;
+          // Summarise the batch a student would actually join: the next one open for enrollment, not a private or past one.
+          final open = list.where((b) => b.status == BatchStatus.enrolling).toList()..sort((a, b) => (a.startsOn ?? DateTime(9999)).compareTo(b.startsOn ?? DateTime(9999)));
+          final first = open.isNotEmpty ? open.first : (list.isEmpty ? null : list.first);
+          final sessions = first?.sessionCount;
           final minutes = first == null ? 0 : first.sessionCount * first.schedule.durationMin;
           final t = Theme.of(context).textTheme;
           final p = AzzaPalette.of(context);
@@ -101,94 +103,120 @@ class CourseDetailScreen extends ConsumerWidget {
                         StatusChip(label: l.certificate, look: ChipLook.outline, color: p.muted),
                       ],
                     ),
-                    for (final teacher in teachers.values) ...[
-                      const SizedBox(height: 10),
-                      Semantics(
-                        button: true,
-                        hint: l.teacherViewProfile,
-                        child: InkWell(
-                          key: Key('teacher-row-${teacher.id}'),
-                          borderRadius: BorderRadius.circular(AzzaSpace.radiusSm),
-                          onTap: () => context.push(Routes.teacher(teacher.id)),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              children: [
-                                InitialsAvatar(teacher.name, color: coverColor(c.coverStyle), imageUrl: teacher.image),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                    if (teachers.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      CardGroup(
+                        children: [
+                          for (final teacher in teachers.values)
+                            Semantics(
+                              button: true,
+                              hint: l.teacherViewProfile,
+                              child: InkWell(
+                                key: Key('teacher-row-${teacher.id}'),
+                                onTap: () => context.push(Routes.teacher(teacher.id)),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  child: Row(
                                     children: [
-                                      Text(teacher.name, style: t.titleSmall),
-                                      Text(
-                                        l.teaches(list.where((b) => b.teacher?.id == teacher.id).map((b) => b.code).join(', ')),
-                                        style: t.bodySmall,
+                                      InitialsAvatar(teacher.name, color: coverColor(c.coverStyle), imageUrl: teacher.image),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(teacher.name, style: t.titleSmall),
+                                            Text(
+                                              l.teaches(list.where((b) => b.teacher?.id == teacher.id).map((b) => b.code).join(', ')),
+                                              style: t.bodySmall,
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                      Icon(Icons.chevron_right_rounded, color: p.muted),
                                     ],
                                   ),
                                 ),
-                                Icon(Icons.chevron_right_rounded, color: p.muted),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
+                        ],
                       ),
                     ],
+                    const SizedBox(height: 12),
                     for (final (key, title, items) in [
                       ('outcomes', l.whatYoullLearn, c.outcomes(locale)),
                       ('requirements', l.requirementsTitle, c.requirements(locale)),
                       ('audience', l.audienceTitle, c.audience(locale)),
                     ])
-                      if (items.isNotEmpty) ...[
-                        SectionHeader(title, key: Key('section-$key')),
-                        for (final o in items) _Bullet(text: o),
-                      ],
-                    if (c.modules.isNotEmpty) ...[
-                      SectionHeader(l.syllabusN(f.n(c.modules.length))),
-                      for (final (i, m) in c.modules.indexed)
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            border: Border(top: BorderSide(color: p.line)),
+                      if (items.isNotEmpty)
+                        SectionCard(
+                          key: Key('section-$key'),
+                          title: title,
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [for (final o in items) _Bullet(text: o)],
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: 40,
-                                child: Text((i + 1).toString().padLeft(2, '0'), style: AzzaFonts.mono(size: 13, color: p.muted)),
-                              ),
-                              Expanded(
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  Text(m.title(locale), style: t.titleSmall),
-                                  if (m.description(locale) != null) ...[
-                                    const SizedBox(height: 4),
-                                    Text(m.description(locale)!, style: t.bodySmall),
+                        ),
+                    if (c.modules.isNotEmpty)
+                      SectionCard(
+                        title: l.syllabusN(f.n(c.modules.length)),
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 2),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (final (i, m) in c.modules.indexed)
+                              Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  border: i == 0 ? null : Border(top: BorderSide(color: p.line)),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      width: 40,
+                                      child: Text((i + 1).toString().padLeft(2, '0'), style: AzzaFonts.mono(size: 13, color: p.muted)),
+                                    ),
+                                    Expanded(
+                                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                        Text(m.title(locale), style: t.titleSmall),
+                                        if (m.description(locale) != null) ...[
+                                          const SizedBox(height: 4),
+                                          Text(m.description(locale)!, style: t.bodySmall),
+                                        ],
+                                      ]),
+                                    ),
                                   ],
-                                ]),
+                                ),
                               ),
-                            ],
-                          ),
+                          ],
                         ),
-                    ],
-                    if (c.faq.isNotEmpty) ...[
-                      SectionHeader(l.faqTitle, key: const Key('section-faq')),
-                      for (final (i, q) in c.faq.indexed)
-                        Theme(
-                          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                          child: ExpansionTile(
-                            key: Key('faq-$i'),
-                            tilePadding: EdgeInsets.zero,
-                            childrenPadding: const EdgeInsets.only(bottom: 12),
-                            expandedAlignment: AlignmentDirectional.centerStart,
-                            shape: Border(top: BorderSide(color: p.line)),
-                            collapsedShape: Border(top: BorderSide(color: p.line)),
-                            title: Text(q.question(locale), style: t.titleSmall),
-                            children: [Text(q.answer(locale), style: t.bodyMedium)],
-                          ),
+                      ),
+                    if (c.faq.isNotEmpty)
+                      SectionCard(
+                        key: const Key('section-faq'),
+                        title: l.faqTitle,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (final (i, q) in c.faq.indexed)
+                              Theme(
+                                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                                child: ExpansionTile(
+                                  key: Key('faq-$i'),
+                                  tilePadding: EdgeInsets.zero,
+                                  childrenPadding: const EdgeInsets.only(bottom: 12),
+                                  expandedAlignment: AlignmentDirectional.centerStart,
+                                  shape: i == 0 ? const Border() : Border(top: BorderSide(color: p.line)),
+                                  collapsedShape: i == 0 ? const Border() : Border(top: BorderSide(color: p.line)),
+                                  title: Text(q.question(locale), style: t.titleSmall),
+                                  children: [Text(q.answer(locale), style: t.bodyMedium)],
+                                ),
+                              ),
+                          ],
                         ),
-                    ],
+                      ),
                     CourseReviewsSection(
                       course: c,
                       canReply: user?.role == Role.teacher && (c.createdById == user!.id || teachers.containsKey(user.id)),

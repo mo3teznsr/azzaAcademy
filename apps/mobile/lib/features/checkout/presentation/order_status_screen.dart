@@ -115,9 +115,14 @@ class _OrderBody extends ConsumerWidget {
         },
         style: t.bodyLarge,
       ),
-      const SizedBox(height: 24),
+      const SizedBox(height: 12),
       if (o.method == PaymentMethod.bankTransfer && o.status != OrderStatus.expired)
-        for (final (i, s) in steps.indexed) _TimelineStep(title: s.$1, sub: s.$2, done: s.$3, problem: s.$4, last: i == steps.length - 1),
+        SectionCard(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            for (final (i, s) in steps.indexed) _TimelineStep(title: s.$1, sub: s.$2, done: s.$3, problem: s.$4, last: i == steps.length - 1),
+          ]),
+        ),
       if (problem) ...[
         const SizedBox(height: 16),
         RaisedCard(

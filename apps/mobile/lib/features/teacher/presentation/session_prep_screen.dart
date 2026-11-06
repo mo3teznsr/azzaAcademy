@@ -111,44 +111,61 @@ class _SessionPrepScreenState extends ConsumerState<SessionPrepScreen> {
             children: [
               MonoLabel('${d.slate} · ${f.dayTime(d.session.startsAt)}'),
               DisplayText(d.session.title, size: 30),
-              SectionHeader(l.runOfShow(f.n(total))),
-              for (final (i, b) in agenda.indexed)
-                Dismissible(
-                  key: ValueKey('${b.minute}-${b.label}-$i'),
-                  direction: DismissDirection.endToStart,
-                  onDismissed: (_) => setState(() {
-                    _agenda = [...agenda]..removeAt(i);
-                    _dirty = true;
-                  }),
-                  background: Container(alignment: AlignmentDirectional.centerEnd, color: AzzaPalette.of(context).dangerBg, child: Icon(Icons.delete_outline, color: AzzaPalette.of(context).danger)),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(border: Border(top: BorderSide(color: p.line))),
-                    child: Row(children: [
-                      SizedBox(width: 64, child: Text(Fmt.timecode(Duration(minutes: b.minute)).substring(0, 5), style: AzzaFonts.mono(size: 14, color: p.accent, tracking: 0))),
-                      Expanded(child: Text(b.label, style: t.titleSmall)),
-                      MonoLabel('${f.n((i + 1 < agenda.length ? agenda[i + 1].minute : total) - b.minute)} min'),
-                    ]),
+              SectionCard(
+                title: l.runOfShow(f.n(total)),
+                margin: const EdgeInsets.only(top: 24),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  for (final (i, b) in agenda.indexed)
+                    Dismissible(
+                      key: ValueKey('${b.minute}-${b.label}-$i'),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (_) => setState(() {
+                        _agenda = [...agenda]..removeAt(i);
+                        _dirty = true;
+                      }),
+                      background: Container(alignment: AlignmentDirectional.centerEnd, color: AzzaPalette.of(context).dangerBg, child: Icon(Icons.delete_outline, color: AzzaPalette.of(context).danger)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+                        child: Row(children: [
+                          SizedBox(width: 64, child: Text(Fmt.timecode(Duration(minutes: b.minute)).substring(0, 5), style: AzzaFonts.mono(size: 14, color: p.accent, tracking: 0))),
+                          Expanded(child: Text(b.label, style: t.titleSmall)),
+                          MonoLabel('${f.n((i + 1 < agenda.length ? agenda[i + 1].minute : total) - b.minute)} min'),
+                        ]),
+                      ),
+                    ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(onPressed: () => _addBlock(total), child: Text(l.addBlock)),
                   ),
+                ]),
+              ),
+              if (d.materials.isEmpty)
+                SectionCard(title: l.filesForStudents, child: Text(l.noMaterials, style: t.bodySmall))
+              else
+                CardGroup(
+                  title: l.filesForStudents,
+                  children: [
+                    for (final m in d.materials)
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        leading: Slate(m.kind),
+                        title: Text(m.title),
+                        trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+                        onTap: () => openExternal(context, m.url),
+                      ),
+                  ],
                 ),
-              TextButton(onPressed: () => _addBlock(total), child: Text(l.addBlock)),
-              SectionHeader(l.filesForStudents),
-              if (d.materials.isEmpty) Text(l.noMaterials, style: t.bodySmall),
-              for (final m in d.materials)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Slate(m.kind),
-                  title: Text(m.title),
-                  trailing: const Icon(Icons.open_in_new_rounded, size: 18),
-                  onTap: () => openExternal(context, m.url),
+              SectionCard(
+                title: l.privateNotes,
+                child: TextField(
+                  controller: _notes,
+                  maxLines: 5,
+                  minLines: 3,
+                  decoration: fieldDecoration(label: l.privateNotes, icon: Icons.sticky_note_2_outlined, labelIsHint: true),
+                  onChanged: (_) => setState(() => _dirty = true),
                 ),
-              SectionHeader(l.privateNotes),
-              TextField(
-                controller: _notes,
-                maxLines: 5,
-                minLines: 3,
-                decoration: fieldDecoration(label: l.privateNotes, icon: Icons.sticky_note_2_outlined, labelIsHint: true),
-                onChanged: (_) => setState(() => _dirty = true),
               ),
             ],
           );

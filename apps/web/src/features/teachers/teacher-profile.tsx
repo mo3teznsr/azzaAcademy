@@ -83,7 +83,7 @@ function ProfileView({ p }: { p: Profile }) {
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-4">
             {p.courses.map((c, i) => (
               <li key={c.id}>
-                <Link href={`/courses/${c.slug}`} className="group flex flex-col gap-3 rounded-[20px] bg-card p-3 text-foreground no-underline">
+                <Link href={`/courses/${c.slug}`} className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-3 text-foreground no-underline">
                   <CourseCover course={{ ...c, coverStyle: STYLES[i % STYLES.length] }} showMeta={false} className="h-48" />
                   <span className="flex items-center justify-between gap-2 px-2 pb-2">
                     <span className="flex min-w-0 flex-col gap-1">

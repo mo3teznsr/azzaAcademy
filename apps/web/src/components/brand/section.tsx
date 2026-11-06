@@ -16,9 +16,10 @@ export function SectionHeader({ title, href, linkLabel, as: As = 'h2', size = 'm
   );
 }
 
+/** The card surface (BRAND.md): `bg-card`, a 1px line, the 16px card radius. Light: white on the page; dark: ink2 on inkDeep. */
 export function Panel({ children, className, as: As = 'section', ...rest }: { children: ReactNode; className?: string; as?: 'section' | 'div' | 'article' } & React.HTMLAttributes<HTMLElement>) {
   return (
-    <As className={cn('flex min-w-0 flex-col gap-4 rounded-[20px] border border-border p-6 in-data-[theme=cream]:border-transparent in-data-[theme=cream]:bg-card light:border-transparent light:bg-card', className)} {...rest}>
+    <As className={cn('flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-card p-6 text-card-foreground', className)} {...rest}>
       {children}
     </As>
   );
@@ -28,8 +29,8 @@ export function StatTile({ label, value, sub, tone = 'default', className }: { l
   return (
     <div
       className={cn(
-        'flex flex-col gap-2 rounded-[20px] p-5',
-        tone === 'default' && 'bg-card',
+        'flex flex-col gap-2 rounded-xl p-5',
+        tone === 'default' && 'border border-border bg-card',
         (tone === 'ink' || tone === 'live') && 'bg-ink text-ivory',
         className,
       )}

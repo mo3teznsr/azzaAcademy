@@ -264,7 +264,7 @@ function KpiTile({ k, cur, prev }: { k: keyof ReportKpis; cur: number; prev: num
   const Icon = dir === 'up' ? ArrowUp : dir === 'down' ? ArrowDown : Minus;
   const label = dir === 'up' ? fill(t.reports.up, { v: deltaText }) : dir === 'down' ? fill(t.reports.down, { v: deltaText }) : dir === 'flat' ? t.reports.flat : t.reports.noBaseline;
   return (
-    <div className="flex flex-col gap-2 rounded-[20px] bg-card p-5">
+    <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5">
       <span className="label-mono text-muted-foreground">{t.reports.kpi[k]}</span>
       <div className={cn('font-display leading-none font-extrabold', MONEY_KEYS.has(k) ? 'text-3xl' : 'text-[44px]')}>{value}</div>
       <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">

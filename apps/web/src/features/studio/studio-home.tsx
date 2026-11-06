@@ -97,7 +97,7 @@ export function StudioHome() {
           ) : (
             <ul className="flex flex-col gap-2">
               {ended.map((s) => (
-                <li key={s.id} className="flex items-center justify-between gap-3 rounded-[14px] bg-card p-3.5">
+                <li key={s.id} className="flex items-center justify-between gap-3 rounded-[14px] border border-border bg-card p-3.5">
                   <div className="min-w-0">
                     <b className="block truncate text-[15px]">
                       <bdi dir="ltr">{slate(s.batch.code, s.number)}</bdi> · {s.title}
@@ -119,7 +119,7 @@ export function StudioHome() {
           {(d) => (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-4">
               {d.items.map((b) => (
-                <Link key={b.id} href={`/studio/batches/${b.id}`} className="flex flex-col gap-3 rounded-[20px] bg-card p-5 text-foreground no-underline hover:bg-accent">
+                <Link key={b.id} href={`/studio/batches/${b.id}`} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 text-foreground no-underline transition-shadow duration-200 hover:shadow-card">
                   <div className="flex items-center justify-between">
                     <b className="font-display text-3xl font-extrabold" dir="ltr">
                       {b.code}

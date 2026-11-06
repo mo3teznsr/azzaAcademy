@@ -1,5 +1,5 @@
-import { CatalogPage } from '@/features/catalog/catalog-page';
+import { LandingPage } from '@/features/landing/landing-page';
 
 export default function HomePage() {
-  return <CatalogPage />;
+  return <LandingPage />;
 }

@@ -207,184 +207,192 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
           ),
         );
 
+    Widget section(String? title, List<Widget> children) => SectionCard(
+          title: title,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+        );
+
     final children = <Widget>[
       if (_created != null) ...[
         _CreatedCard(batch: _created!, submitting: _submitting, onSubmit: _submit),
         const SizedBox(height: 8),
       ],
-      AsyncView<List<Course>>(
-        value: courses,
-        onRetry: () => ref.invalidate(batchableCoursesProvider),
-        isEmpty: (list) => list.isEmpty,
-        empty: EmptyState(title: l.noBatchableCourses, icon: Icons.auto_stories_outlined),
-        data: (list) => DropdownButtonFormField<String>(
-          key: const Key('batch-course'),
-          initialValue: _courseId,
-          isExpanded: true,
-          hint: Text(l.pickCourse),
-          decoration: fieldDecoration(label: l.batchCourse, icon: Icons.auto_stories_outlined),
-          items: [
-            for (final c in list)
-              DropdownMenuItem(
-                value: c.id,
-                child: Text(
-                  c.status == CourseStatus.published ? c.title(locale) : '${c.title(locale)} · ${_statusWord(l, c.status)}',
-                  overflow: TextOverflow.ellipsis,
+      section(null, [
+        AsyncView<List<Course>>(
+          value: courses,
+          onRetry: () => ref.invalidate(batchableCoursesProvider),
+          isEmpty: (list) => list.isEmpty,
+          empty: EmptyState(title: l.noBatchableCourses, icon: Icons.auto_stories_outlined),
+          data: (list) => DropdownButtonFormField<String>(
+            key: const Key('batch-course'),
+            initialValue: _courseId,
+            isExpanded: true,
+            hint: Text(l.pickCourse),
+            decoration: fieldDecoration(label: l.batchCourse, icon: Icons.auto_stories_outlined),
+            items: [
+              for (final c in list)
+                DropdownMenuItem(
+                  value: c.id,
+                  child: Text(
+                    c.status == CourseStatus.published ? c.title(locale) : '${c.title(locale)} · ${_statusWord(l, c.status)}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-          ],
-          onChanged: locked
-              ? null
-              : (id) => setState(() {
-                    _courseId = id;
-                    final course = list.where((c) => c.id == id).firstOrNull;
-                    if (course != null && course.modules.isNotEmpty) _sessions.text = '${course.modules.length}';
-                  }),
-        ),
-      ),
-      const SizedBox(height: 12),
-      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(
-          child: TextField(
-            key: const Key('batch-code'),
-            controller: _code,
-            readOnly: locked,
-            textCapitalization: TextCapitalization.characters,
-            textDirection: TextDirection.ltr,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[bB0-9]')),
-              LengthLimitingTextInputFormatter(5),
-              TextInputFormatter.withFunction((_, v) => v.copyWith(text: v.text.toUpperCase())),
             ],
-            decoration: fieldDecoration(
-              label: l.batchCode,
-              icon: Icons.tag_rounded,
-              helper: l.batchCodeHint,
-              action: locked ? null : ClearFieldButton(controller: _code),
+            onChanged: locked
+                ? null
+                : (id) => setState(() {
+                      _courseId = id;
+                      final course = list.where((c) => c.id == id).firstOrNull;
+                      if (course != null && course.modules.isNotEmpty) _sessions.text = '${course.modules.length}';
+                    }),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: TextField(
+              key: const Key('batch-code'),
+              controller: _code,
+              readOnly: locked,
+              textCapitalization: TextCapitalization.characters,
+              textDirection: TextDirection.ltr,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[bB0-9]')),
+                LengthLimitingTextInputFormatter(5),
+                TextInputFormatter.withFunction((_, v) => v.copyWith(text: v.text.toUpperCase())),
+              ],
+              decoration: fieldDecoration(
+                label: l.batchCode,
+                icon: Icons.tag_rounded,
+                helper: l.batchCodeHint,
+                action: locked ? null : ClearFieldButton(controller: _code),
+              ),
             ),
           ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              key: const Key('batch-seats'),
+              controller: _seats,
+              readOnly: locked,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: fieldDecoration(label: l.batchSeats, icon: Icons.event_seat_outlined),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<SessionLanguage>(
+          key: const Key('batch-language'),
+          initialValue: _language,
+          isExpanded: true,
+          decoration: fieldDecoration(label: l.sessionLanguage, icon: Icons.record_voice_over_outlined),
+          items: [for (final lang in SessionLanguage.values) DropdownMenuItem(value: lang, child: Text(languageLabel(l, lang)))],
+          onChanged: locked ? null : (v) => setState(() => _language = v ?? _language),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: TextField(
-            key: const Key('batch-seats'),
-            controller: _seats,
-            readOnly: locked,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: fieldDecoration(label: l.batchSeats, icon: Icons.event_seat_outlined),
+        const SizedBox(height: 12),
+        TextField(
+          key: const Key('batch-timezone'),
+          controller: _timezone,
+          readOnly: locked,
+          textDirection: TextDirection.ltr,
+          onChanged: (_) => _changed(),
+          decoration: fieldDecoration(
+            label: l.timezone,
+            icon: Icons.public_rounded,
+            action: !locked && _device != null && _device != _timezone.text
+                ? FieldActionButton(
+                    label: l.useThisPhone,
+                    onPressed: () {
+                      setState(() => _timezone.text = _device!);
+                      _changed();
+                    },
+                  )
+                : null,
           ),
         ),
       ]),
-      const SizedBox(height: 12),
-      DropdownButtonFormField<SessionLanguage>(
-        key: const Key('batch-language'),
-        initialValue: _language,
-        isExpanded: true,
-        decoration: fieldDecoration(label: l.sessionLanguage, icon: Icons.record_voice_over_outlined),
-        items: [for (final lang in SessionLanguage.values) DropdownMenuItem(value: lang, child: Text(languageLabel(l, lang)))],
-        onChanged: locked ? null : (v) => setState(() => _language = v ?? _language),
-      ),
-      const SizedBox(height: 12),
-      TextField(
-        key: const Key('batch-timezone'),
-        controller: _timezone,
-        readOnly: locked,
-        textDirection: TextDirection.ltr,
-        onChanged: (_) => _changed(),
-        decoration: fieldDecoration(
-          label: l.timezone,
-          icon: Icons.public_rounded,
-          action: !locked && _device != null && _device != _timezone.text
-              ? FieldActionButton(
-                  label: l.useThisPhone,
-                  onPressed: () {
-                    setState(() => _timezone.text = _device!);
-                    _changed();
-                  },
-                )
-              : null,
-        ),
-      ),
 
-      SectionHeader(l.navSchedule),
-      Row(children: [
-        Expanded(
-          child: tappable(
-            key: const Key('batch-start-date'),
-            label: l.firstDay,
-            icon: Icons.event_outlined,
-            value: f.dayLabel(_startsOn),
-            onTap: _pickDate,
+      section(l.navSchedule, [
+        Row(children: [
+          Expanded(
+            child: tappable(
+              key: const Key('batch-start-date'),
+              label: l.firstDay,
+              icon: Icons.event_outlined,
+              value: f.dayLabel(_startsOn),
+              onTap: _pickDate,
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: tappable(
-            key: const Key('batch-start-time'),
-            label: l.startTime,
-            icon: Icons.schedule_rounded,
-            value: _hhmm.digits(f.arabicDigits),
-            onTap: _pickTime,
+          const SizedBox(width: 12),
+          Expanded(
+            child: tappable(
+              key: const Key('batch-start-time'),
+              label: l.startTime,
+              icon: Icons.schedule_rounded,
+              value: _hhmm.digits(f.arabicDigits),
+              onTap: _pickTime,
+            ),
           ),
-        ),
+        ]),
+        const SizedBox(height: 14),
+        MonoLabel(l.weekdaysLabel),
+        const SizedBox(height: 6),
+        Wrap(spacing: 8, runSpacing: 4, children: [
+          for (var d = 0; d < 7; d++)
+            FilterChip(
+              key: Key('weekday-$d'),
+              // 2023-01-01 is a Sunday (API: 0 = Sunday).
+              label: Text(DateFormat('EEE', locale.wire).format(DateTime(2023, 1, 1 + d)).digits(f.arabicDigits)),
+              selected: _weekdays.contains(d),
+              showCheckmark: false,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: locked
+                  ? null
+                  : (on) {
+                      setState(() => on ? _weekdays.add(d) : _weekdays.remove(d));
+                      _changed();
+                    },
+            ),
+        ]),
+        const SizedBox(height: 14),
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: TextField(
+              key: const Key('batch-duration'),
+              controller: _duration,
+              readOnly: locked,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (_) => _changed(),
+              decoration: fieldDecoration(label: l.sessionLength, icon: Icons.timelapse_rounded),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              key: const Key('batch-sessions'),
+              controller: _sessions,
+              readOnly: locked,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (_) => _changed(),
+              decoration: fieldDecoration(label: l.sessionCountLabel, icon: Icons.format_list_numbered_rounded),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 14),
+        if (!locked)
+          BusyButton(
+            key: const Key('preview-schedule'),
+            label: l.previewSchedule,
+            icon: Icons.calendar_view_week_rounded,
+            filled: false,
+            busy: _previewing,
+            onPressed: _runPreview,
+          ),
       ]),
-      const SizedBox(height: 14),
-      MonoLabel(l.weekdaysLabel),
-      const SizedBox(height: 6),
-      Wrap(spacing: 8, runSpacing: 4, children: [
-        for (var d = 0; d < 7; d++)
-          FilterChip(
-            key: Key('weekday-$d'),
-            // 2023-01-01 is a Sunday (API: 0 = Sunday).
-            label: Text(DateFormat('EEE', locale.wire).format(DateTime(2023, 1, 1 + d)).digits(f.arabicDigits)),
-            selected: _weekdays.contains(d),
-            showCheckmark: false,
-            materialTapTargetSize: MaterialTapTargetSize.padded,
-            onSelected: locked
-                ? null
-                : (on) {
-                    setState(() => on ? _weekdays.add(d) : _weekdays.remove(d));
-                    _changed();
-                  },
-          ),
-      ]),
-      const SizedBox(height: 14),
-      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(
-          child: TextField(
-            key: const Key('batch-duration'),
-            controller: _duration,
-            readOnly: locked,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (_) => _changed(),
-            decoration: fieldDecoration(label: l.sessionLength, icon: Icons.timelapse_rounded),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: TextField(
-            key: const Key('batch-sessions'),
-            controller: _sessions,
-            readOnly: locked,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (_) => _changed(),
-            decoration: fieldDecoration(label: l.sessionCountLabel, icon: Icons.format_list_numbered_rounded),
-          ),
-        ),
-      ]),
-      const SizedBox(height: 14),
-      if (!locked)
-        BusyButton(
-          key: const Key('preview-schedule'),
-          label: l.previewSchedule,
-          icon: Icons.calendar_view_week_rounded,
-          filled: false,
-          busy: _previewing,
-          onPressed: _runPreview,
-        ),
       if (_preview != null) ...[
         const SizedBox(height: 16),
         _PreviewList(preview: _preview!, startTime: _hhmm),
@@ -445,32 +453,38 @@ class _PreviewList extends ConsumerWidget {
           icon: Icons.event_busy_rounded,
           tint: p.danger,
         ),
-      const SizedBox(height: 8),
-      for (final s in preview.sessions)
-        Builder(builder: (context) {
-          final c = preview.conflictFor(s.number);
-          return Container(
-            constraints: const BoxConstraints(minHeight: 44),
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: p.line))),
-            child: Row(children: [
-              SizedBox(width: 44, child: MonoLabel('S${f.n(s.number)}')),
-              Expanded(child: Text('${day(s.localDate)} · ${startTime.digits(f.arabicDigits)}', style: t.bodyMedium)),
-              if (c != null) MonoLabel(l.conflictWith(c.withBatch), color: clash),
-            ]),
-          );
-        }),
-      // A clash reported by "Create batch" before any preview: list it on its own.
-      if (preview.sessions.isEmpty)
-        for (final c in conflicts)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(children: [
-              SizedBox(width: 44, child: MonoLabel('S${f.n(c.sessionNumber)}')),
-              Expanded(child: Text(day(c.localDate), style: t.bodyMedium)),
-              MonoLabel(l.conflictWith(c.withBatch), color: clash),
-            ]),
-          ),
+      if (preview.sessions.isNotEmpty || conflicts.isNotEmpty)
+        SectionCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            for (final (i, s) in preview.sessions.indexed)
+              Builder(builder: (context) {
+                final c = preview.conflictFor(s.number);
+                return Container(
+                  constraints: const BoxConstraints(minHeight: 44),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+                  child: Row(children: [
+                    SizedBox(width: 44, child: MonoLabel('S${f.n(s.number)}')),
+                    Expanded(child: Text('${day(s.localDate)} · ${startTime.digits(f.arabicDigits)}', style: t.bodyMedium)),
+                    if (c != null) MonoLabel(l.conflictWith(c.withBatch), color: clash),
+                  ]),
+                );
+              }),
+            // A clash reported by "Create batch" before any preview: list it on its own.
+            if (preview.sessions.isEmpty)
+              for (final (i, c) in conflicts.indexed)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+                  child: Row(children: [
+                    SizedBox(width: 44, child: MonoLabel('S${f.n(c.sessionNumber)}')),
+                    Expanded(child: Text(day(c.localDate), style: t.bodyMedium)),
+                    MonoLabel(l.conflictWith(c.withBatch), color: clash),
+                  ]),
+                ),
+          ]),
+        ),
     ]);
   }
 }

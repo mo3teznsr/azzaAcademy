@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -89,7 +91,15 @@ export function SessionReport({ sessionId }: { sessionId: string }) {
         <StatTile
           label={t.studio.reportPage.recording}
           value={<span className="text-2xl">{session.recordingUrl ? '●' : '…'}</span>}
-          sub={session.recordingUrl ? t.studio.reportPage.recordingReady : t.studio.reportPage.recordingProcessing}
+          sub={
+            session.recordingUrl ? (
+              <Link href={`/studio/recordings/${session.id}`} className="link-sun font-semibold">
+                {t.studio.reportPage.watchRecording}
+              </Link>
+            ) : (
+              t.studio.reportPage.recordingProcessing
+            )
+          }
         />
       </section>
       <Panel>

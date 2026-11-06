@@ -107,6 +107,8 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       try {
         await pump(tester, products: {_product: const StoreProduct(id: _product, title: 'Seat', price: 'AED 924.99')});
+        // The price summary sits on a card now, so the payment options start lower on the page.
+        await tester.scrollUntilVisible(find.byKey(const Key('method-bank')), 200, scrollable: find.byType(Scrollable).first);
         expect(find.byKey(const Key('method-card')), findsOneWidget);
         expect(find.byKey(const Key('method-bank')), findsOneWidget);
         expect(find.byKey(const Key('method-app-store')), findsNothing);

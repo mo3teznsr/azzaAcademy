@@ -20,7 +20,7 @@ export function FeedbackCard({ sessionId }: { sessionId: string }) {
   const m = useMutation({ mutationFn: () => sessionsApi.feedback(sessionId, sessionFeedbackInput.parse({ rating, tags, comment: comment || undefined })) });
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-5 rounded-[28px] bg-card p-8">
+    <div className="mx-auto flex w-full max-w-lg flex-col gap-5 rounded-[28px] border border-border bg-card p-8">
       <span className="label-mono text-muted-foreground">{t.live.ended}</span>
       <h1 className="font-display text-4xl font-extrabold">{t.live.feedbackTitle}</h1>
       {m.isSuccess ? (

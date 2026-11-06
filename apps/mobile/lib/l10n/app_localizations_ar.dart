@@ -161,10 +161,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderRefunded => 'مسترد';
 
   @override
-  String get splashTagline => 'دفعات مباشرة · منذ ٢٠٢٦';
+  String get splashTagline =>
+      'دورات مباشرة عبر الإنترنت · بالعربية والإنجليزية';
 
   @override
-  String get splashLine => 'تعلّم مباشرةً، مع دفعة تحضر فعلًا.';
+  String get splashLine => 'تعلّم مباشرةً، مع معلّم حقيقي.';
 
   @override
   String get chooseLanguage => 'اختر لغتك';
@@ -2539,4 +2540,20 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get errReviewNotEligible =>
       'يمكنك تقييم هذه الدورة بعد حضور إحدى جلساتها.';
+
+  @override
+  String get teacherRecordingsTitle => 'تسجيلاتك';
+
+  @override
+  String get teacherRecordingsLede =>
+      'تُسجَّل كل حصّة تقدّمها تلقائيًا عند الضغط على «ابدأ». تظهر التسجيلات هنا بعد معالجتها، عادةً خلال ساعة.';
+
+  @override
+  String get teacherRecordingsEmpty => 'لا توجد تسجيلات بعد';
+
+  @override
+  String get shareRecording => 'شارك التسجيل أو احفظه';
+
+  @override
+  String get playRecording => 'شغّل التسجيل';
 }

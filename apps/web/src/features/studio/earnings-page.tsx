@@ -55,7 +55,7 @@ export function EarningsPage() {
             <p className="text-muted-foreground">{t.studio.earnings.howBody}</p>
             <ol className="grid gap-3 md:grid-cols-4">
               {t.studio.earnings.howSteps.map((s, i) => (
-                <li key={s.k} className="rounded-2xl bg-card p-4">
+                <li key={s.k} className="rounded-xl border border-border bg-card p-4">
                   <span className="timecode text-sm text-muted-foreground">{f.number(i + 1)}</span>
                   <b className="mt-1 block">{s.k}</b>
                   <span className="text-sm text-muted-foreground">{s.v}</span>
@@ -112,7 +112,7 @@ export function EarningsPage() {
               ) : (
                 <ul className="flex flex-col gap-2">
                   {q.data.ledger.slice(0, 20).map((l) => (
-                    <li key={l.id} className="flex items-center justify-between gap-3 rounded-[14px] bg-card p-3.5">
+                    <li key={l.id} className="flex items-center justify-between gap-3 rounded-[14px] border border-border bg-card p-3.5">
                       <div className="min-w-0">
                         <b className="block truncate">
                           {l.session ? (
@@ -143,7 +143,7 @@ export function EarningsPage() {
                   {(list) => (
                     <ul className="flex flex-col gap-2">
                       {list.map((p) => (
-                        <li key={p.id} className="flex items-center justify-between gap-3 rounded-[14px] bg-card p-3.5">
+                        <li key={p.id} className="flex items-center justify-between gap-3 rounded-[14px] border border-border bg-card p-3.5">
                           <span>
                             <b className="block">{p.paidAt ? f.dayMonth(p.paidAt) : '—'}</b>
                             {p.run && (

@@ -290,6 +290,15 @@ export class SessionService {
       egressId = (await this.video.startRecording(s.roomName)).egressId;
     } catch (err) {
       console.error(`[session] recording failed to start for ${s.roomName}`, err);
+      // The class goes ahead, but the teacher must know there will be no recording.
+      await this.notifier
+        .notify([user.id], {
+          type: 'RECORDING_NOT_STARTED',
+          title: 'This session is not being recorded',
+          body: `${s.batch.course.titleEn} ${s.batch.code}: recording could not start. Students won't get a replay unless you share one.`,
+          data: { sessionId: s.id },
+        })
+        .catch(() => undefined);
     }
     const updated = await this.repo.update(id, { status: 'LIVE', startedAt: now, egressId });
     if (s.batch.status === 'ENROLLING' || s.batch.status === 'FULL') await this.repo.setBatchStatus(s.batchId, 'RUNNING');
@@ -467,6 +476,14 @@ export class SessionService {
           body: `${s.batch.course.titleEn} ${s.batch.code} S${String(s.number).padStart(2, '0')}`,
           data: { sessionId: s.id },
         }, { channels: ['in-app', 'realtime'] });
+        // The teacher gets their own alert: it opens the studio recordings, not the student library.
+        const teachers = [...new Set([s.batch.teacherId, s.hostId].filter((v): v is string => !!v))];
+        await this.notifier.notify(teachers, {
+          type: 'RECORDING_READY_TEACHER',
+          title: `Recording ready · ${s.title}`,
+          body: `${s.batch.course.titleEn} ${s.batch.code} S${String(s.number).padStart(2, '0')} — watch or download it in your studio`,
+          data: { sessionId: s.id, batchId: s.batchId },
+        });
         return { handled: true };
       }
       case 'room_finished': {

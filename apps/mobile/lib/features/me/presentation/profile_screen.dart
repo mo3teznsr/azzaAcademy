@@ -37,65 +37,105 @@ class ProfileScreen extends ConsumerWidget {
     final batches = user.role == Role.student ? ref.watch(enrollmentsProvider).value?.where((e) => e.isActive).length : null;
 
     Widget row(String label, String value, {VoidCallback? onTap, IconData? icon}) => ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: icon == null ? null : Icon(icon, color: p.muted),
-          title: Text(label),
-          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-            Text(value, style: t.bodySmall),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      minTileHeight: 56,
+      leading: icon == null ? null : Icon(icon, color: p.muted),
+      title: Text(label),
+      // Capped so a long value ("Photo, password, delete") ellipsizes instead of crowding out the label.
+      trailing: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 170),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(value, style: t.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ),
             if (onTap != null) const Icon(Icons.chevron_right_rounded),
-          ]),
-          onTap: onTap,
-        );
+          ],
+        ),
+      ),
+      onTap: onTap,
+    );
 
     return Scaffold(
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 16, AzzaSpace.gutter, 32),
           children: [
-            Row(children: [
-              InitialsAvatar(user.name, size: 64, color: p.accent, imageUrl: user.image),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  DisplayText(user.name, size: 26),
-                  Text([user.email, if (batches != null) l.batchesN(f.n(batches))].join(' · '), style: t.bodySmall),
-                ]),
-              ),
-            ]),
-            const SizedBox(height: 24),
-            row(l.accountTitle, l.accountRowHint, icon: Icons.manage_accounts_outlined, onTap: () => context.push(Routes.editProfile)),
-            row(l.timezone, user.timezone, icon: Icons.public_rounded, onTap: () => context.push(Routes.editProfile)),
-            row(l.language, locale == AppLocale.ar ? 'العربية' : 'English',
-                icon: Icons.translate_rounded, onTap: () => context.push(Routes.languageSettings)),
-            row(l.appearance, _modeLabel(l, ref.watch(themeModeProvider)),
-                icon: Icons.contrast_rounded, onTap: () => _pickThemeMode(context, ref)),
-            if (user.role == Role.student)
-              row(l.displayCurrency, currency.wire, icon: Icons.currency_exchange_rounded, onTap: () => _pickCurrency(context, ref)),
-            SectionHeader(l.notifications),
-            if (push.enabled)
-              row(
-                l.pushNotifications,
-                switch (ref.watch(pushPermittedProvider).value) { true => l.pushOn, false => l.pushOff, null => '' },
-                icon: Icons.notifications_none_rounded,
-                onTap: () => _openNotificationSettings(context, ref),
-              ),
-            row(l.inbox, '', icon: Icons.inbox_outlined, onTap: () => context.push(Routes.notifications)),
-            SectionHeader(l.account),
-            row(l.savedCoursesTitle, '', icon: Icons.favorite_border_rounded, onTap: () => context.push(Routes.savedCourses)),
-            if (user.role == Role.student) ...[
-              row(l.myOrders, '', icon: Icons.receipt_long_outlined, onTap: () => context.push(Routes.myOrders)),
-              row(l.certificatesTitle, '', icon: Icons.workspace_premium_outlined, onTap: () => context.push(Routes.certificates)),
-              row(l.assignments, '', icon: Icons.assignment_outlined, onTap: () => context.push(Routes.assignments)),
-            ],
-            if (user.role == Role.teacher)
-              row(l.payoutMethod, '', icon: Icons.account_balance_outlined, onTap: () => context.go(Routes.teacherPayoutMethod)),
-            SectionHeader(l.legal),
-            row(l.privacyPolicy, '', icon: Icons.privacy_tip_outlined,
-                onTap: () => openExternal(context, ref.read(appConfigProvider).privacyUrl)),
-            row(l.termsOfService, '', icon: Icons.description_outlined,
-                onTap: () => openExternal(context, ref.read(appConfigProvider).termsUrl)),
-            row(l.contactSupport, AppConfig.supportEmail, icon: Icons.mail_outline_rounded,
-                onTap: () => openExternal(context, 'mailto:${AppConfig.supportEmail}')),
+            Row(
+              children: [
+                InitialsAvatar(user.name, size: 64, color: p.accent, imageUrl: user.image),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DisplayText(user.name, size: 26),
+                      Text([user.email, if (batches != null) l.batchesN(f.n(batches))].join(' · '), style: t.bodySmall),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            CardGroup(
+              children: [
+                row(l.accountTitle, l.accountRowHint, icon: Icons.manage_accounts_outlined, onTap: () => context.push(Routes.editProfile)),
+                row(l.timezone, user.timezone, icon: Icons.public_rounded, onTap: () => context.push(Routes.editProfile)),
+                row(
+                  l.language,
+                  locale == AppLocale.ar ? 'العربية' : 'English',
+                  icon: Icons.translate_rounded,
+                  onTap: () => context.push(Routes.languageSettings),
+                ),
+                row(l.appearance, _modeLabel(l, ref.watch(themeModeProvider)), icon: Icons.contrast_rounded, onTap: () => _pickThemeMode(context, ref)),
+                if (user.role == Role.student)
+                  row(l.displayCurrency, currency.wire, icon: Icons.currency_exchange_rounded, onTap: () => _pickCurrency(context, ref)),
+              ],
+            ),
+            CardGroup(
+              title: l.notifications,
+              children: [
+                if (push.enabled)
+                  row(
+                    l.pushNotifications,
+                    switch (ref.watch(pushPermittedProvider).value) {
+                      true => l.pushOn,
+                      false => l.pushOff,
+                      null => '',
+                    },
+                    icon: Icons.notifications_none_rounded,
+                    onTap: () => _openNotificationSettings(context, ref),
+                  ),
+                row(l.inbox, '', icon: Icons.inbox_outlined, onTap: () => context.push(Routes.notifications)),
+              ],
+            ),
+            CardGroup(
+              title: l.account,
+              children: [
+                row(l.savedCoursesTitle, '', icon: Icons.favorite_border_rounded, onTap: () => context.push(Routes.savedCourses)),
+                if (user.role == Role.student) ...[
+                  row(l.myOrders, '', icon: Icons.receipt_long_outlined, onTap: () => context.push(Routes.myOrders)),
+                  row(l.certificatesTitle, '', icon: Icons.workspace_premium_outlined, onTap: () => context.push(Routes.certificates)),
+                  row(l.assignments, '', icon: Icons.assignment_outlined, onTap: () => context.push(Routes.assignments)),
+                ],
+                if (user.role == Role.teacher)
+                  row(l.payoutMethod, '', icon: Icons.account_balance_outlined, onTap: () => context.go(Routes.teacherPayoutMethod)),
+              ],
+            ),
+            CardGroup(
+              title: l.legal,
+              children: [
+                row(l.privacyPolicy, '', icon: Icons.privacy_tip_outlined, onTap: () => openExternal(context, ref.read(appConfigProvider).privacyUrl)),
+                row(l.termsOfService, '', icon: Icons.description_outlined, onTap: () => openExternal(context, ref.read(appConfigProvider).termsUrl)),
+                row(
+                  l.contactSupport,
+                  AppConfig.supportEmail,
+                  icon: Icons.mail_outline_rounded,
+                  onTap: () => openExternal(context, 'mailto:${AppConfig.supportEmail}'),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               key: const Key('sign-out'),
@@ -125,10 +165,10 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   static String _modeLabel(AppLocalizations l, ThemeMode m) => switch (m) {
-        ThemeMode.light => l.themeLight,
-        ThemeMode.dark => l.themeDark,
-        ThemeMode.system => l.themeSystem,
-      };
+    ThemeMode.light => l.themeLight,
+    ThemeMode.dark => l.themeDark,
+    ThemeMode.system => l.themeSystem,
+  };
 
   Future<void> _pickThemeMode(BuildContext context, WidgetRef ref) async {
     final l = context.l10n;
@@ -136,16 +176,19 @@ class ProfileScreen extends ConsumerWidget {
     final picked = await showModalBottomSheet<ThemeMode>(
       context: context,
       builder: (context) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          for (final m in const [ThemeMode.system, ThemeMode.light, ThemeMode.dark])
-            ListTile(
-              key: Key('theme-${m.name}'),
-              title: Text(_modeLabel(l, m)),
-              subtitle: m == ThemeMode.system ? Text(l.themeSystemHint) : null,
-              trailing: m == current ? const Icon(Icons.check_rounded) : null,
-              onTap: () => Navigator.pop(context, m),
-            ),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final m in const [ThemeMode.system, ThemeMode.light, ThemeMode.dark])
+              ListTile(
+                key: Key('theme-${m.name}'),
+                title: Text(_modeLabel(l, m)),
+                subtitle: m == ThemeMode.system ? Text(l.themeSystemHint) : null,
+                trailing: m == current ? const Icon(Icons.check_rounded) : null,
+                onTap: () => Navigator.pop(context, m),
+              ),
+          ],
+        ),
       ),
     );
     if (picked != null) await ref.read(themeModeProvider.notifier).set(picked);
@@ -156,14 +199,13 @@ class ProfileScreen extends ConsumerWidget {
     final picked = await showModalBottomSheet<DisplayCurrency>(
       context: context,
       builder: (context) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          for (final c in DisplayCurrency.values)
-            ListTile(
-              title: Text(c.wire),
-              trailing: c == current ? const Icon(Icons.check_rounded) : null,
-              onTap: () => Navigator.pop(context, c),
-            ),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final c in DisplayCurrency.values)
+              ListTile(title: Text(c.wire), trailing: c == current ? const Icon(Icons.check_rounded) : null, onTap: () => Navigator.pop(context, c)),
+          ],
+        ),
       ),
     );
     if (picked == null) return;

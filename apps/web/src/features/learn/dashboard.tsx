@@ -206,7 +206,7 @@ function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
   const att = done ? Math.round((enrollment.progress.sessionsAttended / done) * 100) : undefined;
   const active = enrollment.status === 'ACTIVE';
   return (
-    <article className="flex min-w-0 flex-wrap overflow-hidden rounded-[20px] bg-card">
+    <article className="flex min-w-0 flex-wrap overflow-hidden rounded-xl border border-border bg-card">
       <CourseCover course={b.course} size="sm" showMeta={false} className="min-h-[220px] flex-[0_0_168px] rounded-none" />
       <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-3 p-5">
         <div className="flex items-center justify-between gap-2">
@@ -270,7 +270,7 @@ function DueSoon() {
       ) : (
         <ul className="flex flex-col gap-2">
           {due.map((a) => (
-            <li key={a.id} className="flex items-center justify-between gap-3 rounded-[14px] bg-card p-3.5">
+            <li key={a.id} className="flex items-center justify-between gap-3 rounded-[14px] border border-border bg-card p-3.5">
               <div className="min-w-0">
                 <b className="block truncate text-[15px]">{a.title}</b>
                 <span className="text-[13px] text-muted-foreground">
@@ -297,7 +297,7 @@ function RecentRecordings() {
           <ul className="flex flex-col gap-2">
             {list.slice(0, 4).map((r) => (
               <li key={r.id}>
-                <Link href={`/library/${r.id}`} className="flex items-center gap-3 rounded-[14px] bg-card p-3 no-underline hover:bg-accent">
+                <Link href={`/library/${r.id}`} className="flex items-center gap-3 rounded-[14px] border border-border bg-card p-3 no-underline hover:bg-accent">
                   <CourseCover course={r.batch.course} size="sm" showMeta={false} className="h-14 w-20 shrink-0 p-2 text-[10px] [&>span]:text-base" />
                   <div className="min-w-0">
                     <b className="block truncate text-[15px] text-foreground">{r.title}</b>
