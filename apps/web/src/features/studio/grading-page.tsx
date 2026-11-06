@@ -264,7 +264,7 @@ function ReviewPane({ item, onReturned }: { item: QueueItem; onReturned: () => v
         </div>
       </header>
       <span className="text-[13px] text-muted-foreground">{fill(t.grading.due, { d: f.dateTime(a.dueAt) })}</span>
-      <section aria-labelledby="sub-title" className="flex flex-col gap-3 rounded-[16px] bg-card p-4">
+      <section aria-labelledby="sub-title" className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
         <h3 id="sub-title" className="label-mono text-muted-foreground">
           {t.grading.submission}
         </h3>

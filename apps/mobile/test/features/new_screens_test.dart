@@ -183,7 +183,7 @@ void main() {
 
     testWidgets('Arabic (RTL) position label', (tester) async {
       await pumpSection(tester, locale: const Locale('ar'));
-      expect(find.text('رقم ٣ في الدور · من ٧'), findsOneWidget);
+      expect(find.text('رقم 3 في الدور · من 7'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

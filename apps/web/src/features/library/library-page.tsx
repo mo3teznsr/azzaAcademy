@@ -46,7 +46,7 @@ export function LibraryPage() {
               const durationMin = r.endedAt ? Math.round((new Date(r.endedAt).getTime() - new Date(r.startsAt).getTime()) / 60000) : 0;
               return (
               <li key={r.id}>
-                <Link href={`/library/${r.id}`} className="group flex flex-col gap-3 no-underline">
+                <Link href={`/library/${r.id}`} className="group flex h-full flex-col gap-3 rounded-xl border border-border bg-card p-3 no-underline transition-shadow duration-200 hover:shadow-card">
                   <div className="relative">
                     <CourseCover course={r.batch.course} size="md" className="h-40" />
                     <span className="absolute inset-0 grid place-items-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
@@ -55,8 +55,8 @@ export function LibraryPage() {
                       </span>
                     </span>
                   </div>
-                  <b className="text-foreground">{r.title}</b>
-                  <span className="text-[13px] text-muted-foreground">
+                  <b className="px-1 text-foreground">{r.title}</b>
+                  <span className="px-1 pb-1 text-[13px] text-muted-foreground">
                     <bdi dir="ltr">
                       {r.batch.code}·{sessionCode(r.number)}
                     </bdi>{' '}

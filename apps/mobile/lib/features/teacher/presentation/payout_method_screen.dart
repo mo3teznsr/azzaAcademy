@@ -60,38 +60,42 @@ class PayoutMethodScreen extends ConsumerWidget {
               ]),
             ),
           ),
-          SectionHeader(l.history),
-          AsyncView<List<PayoutEntry>>(
-            value: payouts,
-            compact: true,
-            onRetry: () => ref.invalidate(payoutsProvider),
-            isEmpty: (list) => list.isEmpty,
-            empty: Text(l.noPayouts, style: t.bodySmall),
-            data: (list) => Column(children: [
-              for (final e in list)
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(border: Border(top: BorderSide(color: p.line))),
-                  child: Row(children: [
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(e.paidAt != null ? f.shortDate(e.paidAt!) : (e.periodEnd != null ? f.monthYear(e.periodEnd!) : '—'), style: t.titleSmall),
-                        if (e.reference != null) MonoLabel(e.reference!),
-                        if (e.holdReason != null) Text(e.holdReason!, style: t.bodySmall),
+          SectionCard(
+            title: l.history,
+            margin: const EdgeInsets.only(top: 24),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: AsyncView<List<PayoutEntry>>(
+              value: payouts,
+              compact: true,
+              onRetry: () => ref.invalidate(payoutsProvider),
+              isEmpty: (list) => list.isEmpty,
+              empty: Text(l.noPayouts, style: t.bodySmall),
+              data: (list) => Column(children: [
+                for (final (i, e) in list.indexed)
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+                    child: Row(children: [
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(e.paidAt != null ? f.shortDate(e.paidAt!) : (e.periodEnd != null ? f.monthYear(e.periodEnd!) : '—'), style: t.titleSmall),
+                          if (e.reference != null) MonoLabel(e.reference!),
+                          if (e.holdReason != null) Text(e.holdReason!, style: t.bodySmall),
+                        ]),
+                      ),
+                      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                        Text(f.aed(e.amountFils), style: t.titleSmall),
+                        MonoLabel(switch (e.status) {
+                          PayoutStatus.paid => l.paidLabel,
+                          PayoutStatus.held => l.held,
+                          PayoutStatus.carriedOver => l.carriedOver,
+                          PayoutStatus.ready => l.ready,
+                        }),
                       ]),
-                    ),
-                    Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                      Text(f.aed(e.amountFils), style: t.titleSmall),
-                      MonoLabel(switch (e.status) {
-                        PayoutStatus.paid => l.paidLabel,
-                        PayoutStatus.held => l.held,
-                        PayoutStatus.carriedOver => l.carriedOver,
-                        PayoutStatus.ready => l.ready,
-                      }),
                     ]),
-                  ]),
-                ),
-            ]),
+                  ),
+              ]),
+            ),
           ),
         ],
       ),

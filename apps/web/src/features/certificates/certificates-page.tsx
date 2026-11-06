@@ -69,7 +69,7 @@ export function CertificatesPage() {
           <section aria-labelledby="progress" className="flex flex-col gap-4">
             <SectionHeader title={<span id="progress">{t.certificates.inProgress}</span>} />
             {q.data.inProgress.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t.certificates.noProgress}</p>
+              <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">{t.certificates.noProgress}</p>
             ) : (
               <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,420px),1fr))] gap-4">
                 {q.data.inProgress.map((p) => (
@@ -103,7 +103,7 @@ function CertificateCard({ cert, coverStyle, onPrint }: { cert: Certificate; cov
     }
   };
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[20px] bg-card">
+    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
       <CourseCover course={cover(cert.course, coverStyle)} showMeta={false} className="h-36 rounded-none" />
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-start justify-between gap-3">
@@ -153,7 +153,7 @@ function ProgressCard({ p, coverStyle }: { p: CertificateProgress; coverStyle?: 
   const course = pick(p.course.titleEn, p.course.titleAr).text || p.courseTitle;
   const status = p.needed <= 0 ? t.certificates.met : !p.reachable ? fill(t.certificates.unreachable, { r: f.number(p.required) }) : f.plural(p.needed, t.certificates.needMore);
   return (
-    <article className="flex min-w-0 overflow-hidden rounded-[20px] bg-card">
+    <article className="flex min-w-0 overflow-hidden rounded-xl border border-border bg-card">
       <CourseCover course={cover(p.course, coverStyle)} size="sm" showMeta={false} className="w-28 shrink-0 rounded-none sm:w-36" />
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
         <div className="flex items-baseline justify-between gap-2">

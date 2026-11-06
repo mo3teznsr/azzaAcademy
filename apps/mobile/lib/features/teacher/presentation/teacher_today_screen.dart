@@ -28,7 +28,6 @@ class TeacherTodayScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final upcoming = ref.watch(upcomingScheduleProvider);
     final now = DateTime.now();
-    final p = AzzaPalette.of(context);
     final t = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -61,11 +60,18 @@ class TeacherTodayScreen extends ConsumerWidget {
                 ]),
                 if (later.isNotEmpty) ...[
                   SectionHeader(l.laterToday, action: l.navCalendar, onAction: () => context.go(Routes.teacherCalendar)),
-                  for (final s in later)
-                    DecoratedBox(
-                      decoration: BoxDecoration(border: Border(top: BorderSide(color: p.line))),
-                      child: SessionRow(session: s, fmt: f, subtitle: s.course(locale), onTap: () => context.push(Routes.sessionPrep(s.id))),
-                    ),
+                  CardGroup(
+                    children: [
+                      for (final s in later)
+                        SessionRow(
+                          session: s,
+                          fmt: f,
+                          subtitle: s.course(locale),
+                          padding: SessionRow.inCard,
+                          onTap: () => context.push(Routes.sessionPrep(s.id)),
+                        ),
+                    ],
+                  ),
                 ],
                 if (todays.isEmpty && next != null) ...[
                   const SizedBox(height: 16),
@@ -152,7 +158,7 @@ class _Stat extends StatelessWidget {
       child: Container(
         margin: const EdgeInsetsDirectional.only(end: 10),
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(border: Border.all(color: p.line), borderRadius: BorderRadius.circular(16)),
+        decoration: BoxDecoration(color: p.raised, border: Border.all(color: p.line), borderRadius: BorderRadius.circular(AzzaSpace.radius)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           MonoLabel(label),
           DisplayText(value, size: 30),

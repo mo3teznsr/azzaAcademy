@@ -109,11 +109,15 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                   children: [
                     for (final e in byDay.entries) ...[
                       Padding(
-                        padding: const EdgeInsets.only(top: 8, bottom: 4),
+                        padding: const EdgeInsetsDirectional.only(start: 4, top: 12, bottom: 8),
                         child: MonoLabel(e.key == today ? '${l.today} · ${f.dayLabel(e.key)}' : f.dayLabel(e.key), color: e.key == today ? p.accent : null),
                       ),
-                      for (final s in e.value)
-                        SessionRow(session: s, fmt: f, subtitle: s.course(locale), onTap: () => context.push(_routeFor(s))),
+                      CardGroup(
+                        children: [
+                          for (final s in e.value)
+                            SessionRow(session: s, fmt: f, subtitle: s.course(locale), padding: SessionRow.inCard, onTap: () => context.push(_routeFor(s))),
+                        ],
+                      ),
                     ],
                   ],
                 );

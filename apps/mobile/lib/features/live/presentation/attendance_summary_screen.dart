@@ -92,41 +92,49 @@ class _AttendanceSummaryScreenState extends ConsumerState<AttendanceSummaryScree
                 const SizedBox(height: 6),
                 DisplayText(l.attendanceSummary, size: 34),
                 Text(d.session.title, style: t.bodySmall),
-                const SizedBox(height: 16),
-                Row(children: [
-                  for (final m in AttendanceMark.values)
-                    Expanded(
-                      child: Column(children: [
-                        DisplayText(f.n(count(m)), size: 30, color: m == AttendanceMark.absent ? p.muted : _color(m)),
-                        MonoLabel(_label(l, m), size: 9),
-                      ]),
-                    ),
-                ]),
+                SectionCard(
+                  margin: const EdgeInsets.only(top: 16),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    Row(children: [
+                      for (final m in AttendanceMark.values)
+                        Expanded(
+                          child: Column(children: [
+                            DisplayText(f.n(count(m)), size: 30, color: m == AttendanceMark.absent ? p.muted : _color(m)),
+                            MonoLabel(_label(l, m), size: 9),
+                          ]),
+                        ),
+                    ]),
+                    const SizedBox(height: 12),
+                    Text(l.attendanceRule, style: t.bodySmall),
+                  ]),
+                ),
                 const SizedBox(height: 12),
-                Text(l.attendanceRule, style: t.bodySmall),
-                const SizedBox(height: 12),
-                if (list.isEmpty) EmptyState(title: l.noStudents),
-                for (final r in marked)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: InitialsAvatar(r.name, size: 36),
-                    title: Text(r.name),
-                    subtitle: MonoLabel(
-                      [
-                        if (r.joinedAt != null) '${f.time(r.joinedAt!)}–${r.leftAt == null ? '' : f.time(r.leftAt!)}',
-                        '${f.n((r.seconds / 60).round())} min',
-                      ].join(' · '),
-                    ),
-                    trailing: ActionChip(
-                      label: Text(_label(l, r.mark)),
-                      backgroundColor: _color(r.mark).withValues(alpha: 0.2),
-                      side: BorderSide(color: _color(r.mark)),
-                      onPressed: () => setState(() {
-                        final next = AttendanceMark.values[(r.mark.index + 1) % AttendanceMark.values.length];
-                        _edits[r.userId] = next;
-                      }),
-                    ),
-                  ),
+                if (list.isEmpty)
+                  EmptyState(title: l.noStudents)
+                else
+                  CardGroup(children: [
+                    for (final r in marked)
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        leading: InitialsAvatar(r.name, size: 36),
+                        title: Text(r.name),
+                        subtitle: MonoLabel(
+                          [
+                            if (r.joinedAt != null) '${f.time(r.joinedAt!)}–${r.leftAt == null ? '' : f.time(r.leftAt!)}',
+                            '${f.n((r.seconds / 60).round())} min',
+                          ].join(' · '),
+                        ),
+                        trailing: ActionChip(
+                          label: Text(_label(l, r.mark)),
+                          backgroundColor: _color(r.mark).withValues(alpha: 0.2),
+                          side: BorderSide(color: _color(r.mark)),
+                          onPressed: () => setState(() {
+                            final next = AttendanceMark.values[(r.mark.index + 1) % AttendanceMark.values.length];
+                            _edits[r.userId] = next;
+                          }),
+                        ),
+                      ),
+                  ]),
                 const SizedBox(height: 16),
                 RaisedCard(
                   child: Row(children: [

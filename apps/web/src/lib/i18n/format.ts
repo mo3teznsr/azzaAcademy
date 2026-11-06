@@ -2,9 +2,9 @@ import type { Locale } from '@azza/shared';
 
 export type PluralForms = Partial<Record<Intl.LDMLPluralRule, string>> & { other: string };
 
-/** Locale-aware formatters. Arabic uses Arabic-Indic digits; timecodes/slates stay Latin (i18n-00-system). */
+/** Locale-aware formatters. Arabic uses Western digits too (docs/BRAND.md: Western digits everywhere, even in Arabic runs). */
 export function makeFormatters(locale: Locale, timeZone?: string) {
-  const tag = locale === 'ar' ? 'ar-EG-u-nu-arab' : 'en-GB';
+  const tag = locale === 'ar' ? 'ar-AE-u-nu-latn' : 'en-GB';
   const tz = safeTz(timeZone);
   const plural = new Intl.PluralRules(locale);
   const cache = new Map<string, Intl.DateTimeFormat>();

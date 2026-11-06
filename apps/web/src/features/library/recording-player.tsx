@@ -275,7 +275,7 @@ function BatchMaterials({ batchId, sessionId }: { batchId: string; sessionId: st
         <ul className="flex flex-col gap-2">
           {list.map((m) => (
             <li key={m.id}>
-              <a href={m.url} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-3 rounded-[14px] bg-card p-3.5 text-foreground no-underline hover:bg-accent">
+              <a href={m.url} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-3 rounded-[14px] border border-border bg-card p-3.5 text-foreground no-underline hover:bg-accent">
                 <span className="label-mono w-16 shrink-0 text-muted-foreground">{t.status.material[m.kind]}</span>
                 <b className="min-w-0 flex-1 truncate">{m.title}</b>
                 {m.session && (

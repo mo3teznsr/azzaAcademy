@@ -71,7 +71,7 @@ export function CourseReviews({ courseId, canReply, canModerate }: { courseId: s
       </div>
       <div className="flex flex-col gap-4">
         {reviews.length === 0 ? (
-          <p className="text-muted-foreground">{t.reviews.empty}</p>
+          <p className="rounded-xl border border-dashed border-border p-6 text-muted-foreground">{t.reviews.empty}</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {reviews.map((r) => (
@@ -105,7 +105,7 @@ export function ReviewModeration({ courseId }: { courseId: string }) {
         {f.plural(first.total, t.reviews.count)} · {t.reviews.moderationNote}
       </p>
       {reviews.length === 0 ? (
-        <p className="text-muted-foreground">{t.reviews.empty}</p>
+        <p className="rounded-xl border border-dashed border-border p-6 text-muted-foreground">{t.reviews.empty}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {reviews.map((r) => (
@@ -128,7 +128,7 @@ function RatingSummaryBlock({ summary }: { summary: RatingSummary }) {
   const { t, f, fill } = useI18n();
   const { ratingAvg, ratingCount, distribution } = summary;
   return (
-    <div className="flex flex-col gap-4 rounded-[20px] bg-card p-6">
+    <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
       <div className="flex items-end gap-4">
         <b className="font-display text-7xl font-extrabold leading-none">{ratingCount ? f.number(ratingAvg, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '—'}</b>
         <div className="flex flex-col gap-1 pb-1">
@@ -203,7 +203,7 @@ function MyReviewForm({ courseId, mine }: { courseId: string; mine: CourseReview
   });
   return (
     <form
-      className="flex flex-col gap-4 rounded-[20px] border border-border p-6"
+      className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6"
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
@@ -266,7 +266,7 @@ function ReviewItem({ review: r, courseId, canReply, canModerate }: { review: Co
     onError: (e) => toast.error(reviewError(e)),
   });
   return (
-    <article className={cn('flex flex-col gap-3 rounded-[20px] bg-card p-5', r.hidden && 'opacity-70')}>
+    <article className={cn('flex flex-col gap-3 rounded-xl border border-border bg-card p-5', r.hidden && 'opacity-70')}>
       <header className="flex flex-wrap items-center gap-3">
         <InitialsAvatar name={r.user.name} src={r.user.image} size={36} />
         <span className="min-w-0 flex-1">

@@ -1,0 +1,48 @@
+{
+  "artDirection": "Documentary editorial photography for Azza (عازة), a live-class platform in the UAE. Shot on a 35mm lens at eye level, available light only: warm practical lamps, the last blue of an evening window, screen glow on faces. Colour grade: deep green-ink shadows (#07110D to #102018), cream highlights (#F1F1E9), one touch of fresh green from a plant or fabric; slightly desaturated, fine film grain, shallow depth of field. Gulf settings: modern apartments and villas in Dubai, Sharjah and Abu Dhabi, majlis cushions, sadu-pattern textiles, arabic coffee dallah or karak tea, palm shadows. Real, ordinary adults mid-moment (not posing, not looking at the camera), natural skin texture, modest everyday clothing, a mix of Emirati, Arab, South Asian and expat faces. Feels like a theatre's backstage programme photo: quiet, intimate, at a fixed time in the evening.",
+  "avoid": "No text, letters, numbers, captions, subtitles or readable UI anywhere (screens show only soft blurred video tiles); no logos, watermarks or brand marks; no stock 'student smiling at a laptop' pose; nobody looking into the camera; no purple or blue edtech gradients; no floating 3D books, graduation caps, trophies, medals or stars; no lecture halls or classrooms with rows of desks; no cartoon or 3D render look; no uncanny faces, extra fingers or warped hands; no busy collage.",
+  "slots": [
+    {
+      "id": "on-air",
+      "path": "public/images/landing/on-air.jpg",
+      "aspect": "4:5",
+      "width": 1400,
+      "prompt": "A fictional Arab woman teacher in her late 30s, hair covered with a loose cream shawl, seated at a desk in a small home studio in the evening, mid-sentence and gesturing with one open hand toward a laptop webcam just off-frame. A warm paper lamp behind her, a pothos plant on a shelf, a mug and an open spiral notebook with unreadable pencil marks. Her face is lit by the soft screen glow; the background falls into deep green-ink shadow. Taken from slightly to the side, as if from the doorway."
+    },
+    {
+      "id": "room",
+      "path": "public/images/landing/room.jpg",
+      "aspect": "16:9",
+      "width": 2000,
+      "prompt": "Over-the-shoulder view from behind a fictional male teacher in his 40s (South Asian, short grey-flecked beard, rolled sleeves) in a dim home study at night, looking at a large monitor that shows a gallery of about eight small, softly blurred video tiles of adult learners in their own homes, one tile slightly highlighted green as someone raises a hand. A desk microphone, a cup of karak tea, a window with distant city lights. The monitor content is soft and has no readable text. Warm lamp on the left, green-ink shadows."
+    },
+    {
+      "id": "evening",
+      "path": "public/images/landing/evening.jpg",
+      "aspect": "3:2",
+      "width": 1800,
+      "prompt": "A fictional Emirati man in his early 30s in a white kandura, sitting cross-legged on majlis floor cushions late in the evening, earbuds in, watching a class recording on a tablet propped against a cushion, a pen in hand above an open notebook. A small dallah coffee pot and two finjan cups on a tray, a sadu-pattern cushion, a single warm floor lamp, the rest of the room in deep green shadow. Calm, focused, a little tired after work. The tablet screen shows only a soft blurred figure."
+    },
+    {
+      "id": "gallery",
+      "path": "public/images/landing/gallery.jpg",
+      "aspect": "4:3",
+      "width": 1600,
+      "prompt": "Close, slightly high-angle shot of a laptop on a kitchen counter in a Dubai apartment at dusk, the screen showing a small video-call gallery of six adults in their homes, all softly out of focus, one of them laughing. In the foreground, the blurred hand of a fictional woman learner (Filipina, 30s) reaching for a glass of mint lemonade; a basil plant by the window. No readable text or interface labels on screen; the tiles are just soft faces and warm rooms."
+    },
+    {
+      "id": "finish",
+      "path": "public/images/landing/finish.jpg",
+      "aspect": "4:5",
+      "width": 1400,
+      "prompt": "A fictional Egyptian woman in her mid 40s with reading glasses pushed up into her hair, at a dining table at night, holding up a single sheet of thick cream paper toward her teenage daughter who leans in over her shoulder, both quietly proud; the paper is seen edge-on and slightly from behind so nothing on it is visible. A closed laptop, a notebook full of tabs, a bowl of dates. Warm pendant light from above, green-ink shadows around the edges."
+    },
+    {
+      "id": "teach",
+      "path": "public/images/landing/teach.jpg",
+      "aspect": "4:5",
+      "width": 1400,
+      "prompt": "A fictional Lebanese man in his early 50s, cardigan over a shirt, standing at a tall table in a sunlit corner of his home in the late afternoon, sketching a course plan on large sheets of paper with a pencil, sticky notes and index cards spread out, all handwriting soft and illegible. A laptop open to the side with a dark screen, a tall monstera plant, long palm-leaf shadows across the wall. He is thinking, pencil to lip, looking down at the paper."
+    }
+  ]
+}

@@ -57,9 +57,10 @@ class ThemeModeController extends Notifier<ThemeMode> {
 final themeModeProvider = NotifierProvider<ThemeModeController, ThemeMode>(ThemeModeController.new);
 
 /// Arabic-Indic numerals (٠١٢٣) toggle; only applied while the locale is Arabic.
+/// Off by default: the brand uses Western digits everywhere, even inside Arabic (docs/BRAND.md).
 class ArabicDigitsController extends Notifier<bool> {
   @override
-  bool build() => ref.watch(sharedPreferencesProvider).getBool(_Keys.arabicDigits) ?? true;
+  bool build() => ref.watch(sharedPreferencesProvider).getBool(_Keys.arabicDigits) ?? false;
 
   Future<void> set(bool value) async {
     state = value;

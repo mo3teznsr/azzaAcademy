@@ -7,6 +7,8 @@ export interface BatchFilter {
   teacherId?: string;
   status?: BatchStatus;
   statuses?: BatchStatus[];
+  /** Public statuses OR any batch taught by this user (a teacher browsing a course page). */
+  visibleTo?: { teacherId: string; statuses: BatchStatus[] };
   language?: SessionLanguage;
   skip: number;
   take: number;
@@ -57,6 +59,7 @@ export class PrismaBatchRepository {
       ...(f.teacherId && { teacherId: f.teacherId }),
       ...(f.language && { language: f.language }),
       ...(f.status ? { status: f.status } : f.statuses ? { status: { in: f.statuses } } : {}),
+      ...(f.visibleTo && { OR: [{ status: { in: f.visibleTo.statuses } }, { teacherId: f.visibleTo.teacherId }] }),
     };
     const [items, total] = await this.db.$transaction([
       this.db.batch.findMany({ where, include: summary, skip: f.skip, take: f.take, orderBy: { startsOn: 'asc' } }),

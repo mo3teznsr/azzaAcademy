@@ -83,11 +83,14 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
                 DisplayText(l.rosterTitle(batch.code), size: 34),
               ],
               const SizedBox(height: 16),
-              Row(children: [
-                _Metric(label: l.enrolledLabel, value: '${f.n(enrolled.length)}${batch == null ? '' : ' / ${f.n(batch.capacity)}'}'),
-                _Metric(label: l.avgAttendance, value: avg == null ? '—' : f.percent(avg)),
-                if (batch != null) _Metric(label: l.doneLabel, value: '${f.n(batch.sessionsDone(DateTime.now()))} / ${f.n(batch.sessionCount)}'),
-              ]),
+              SectionCard(
+                margin: EdgeInsets.zero,
+                child: Row(children: [
+                  _Metric(label: l.enrolledLabel, value: '${f.n(enrolled.length)}${batch == null ? '' : ' / ${f.n(batch.capacity)}'}'),
+                  _Metric(label: l.avgAttendance, value: avg == null ? '—' : f.percent(avg)),
+                  if (batch != null) _Metric(label: l.doneLabel, value: '${f.n(batch.sessionsDone(DateTime.now()))} / ${f.n(batch.sessionCount)}'),
+                ]),
+              ),
               const SizedBox(height: 16),
               TextField(
                 onChanged: (v) => setState(() => _q = v.trim()),
@@ -108,21 +111,25 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
                     onSelected: (_) => setState(() => _filter = flt),
                   ),
               ]),
-              const SizedBox(height: 8),
-              if (shown.isEmpty) EmptyState(title: l.noStudents),
-              for (final s in shown)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: InitialsAvatar(s.name, size: 40),
-                  title: Text(s.name, style: t.titleSmall),
-                  subtitle: Text(s.note ?? s.email, style: t.bodySmall),
-                  trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    if (s.attendancePct != null)
-                      Text(f.percent(s.attendancePct!), style: t.titleSmall?.copyWith(color: s.atRisk ? AzzaPalette.of(context).danger : null)),
-                    if (s.atRisk) MonoLabel(l.atRisk, color: AzzaPalette.of(context).danger),
-                    if (s.waitlisted) MonoLabel(l.waitlist),
-                  ]),
-                ),
+              const SizedBox(height: 12),
+              if (shown.isEmpty)
+                EmptyState(title: l.noStudents)
+              else
+                CardGroup(children: [
+                  for (final s in shown)
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      leading: InitialsAvatar(s.name, size: 40),
+                      title: Text(s.name, style: t.titleSmall),
+                      subtitle: Text(s.note ?? s.email, style: t.bodySmall),
+                      trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
+                        if (s.attendancePct != null)
+                          Text(f.percent(s.attendancePct!), style: t.titleSmall?.copyWith(color: s.atRisk ? AzzaPalette.of(context).danger : null)),
+                        if (s.atRisk) MonoLabel(l.atRisk, color: AzzaPalette.of(context).danger),
+                        if (s.waitlisted) MonoLabel(l.waitlist),
+                      ]),
+                    ),
+                ]),
             ],
           );
         },

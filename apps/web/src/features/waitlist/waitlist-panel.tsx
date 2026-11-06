@@ -77,7 +77,7 @@ function PromotedCard({ p }: { p: WaitlistPromotion }) {
   const expired = secs <= 0;
   const course = pick(p.course.titleEn, p.course.titleAr).text || p.courseTitle;
   return (
-    <article className="flex h-full flex-col gap-4 rounded-[20px] bg-sun p-5 text-ink">
+    <article className="flex h-full flex-col gap-4 rounded-xl bg-sun p-5 text-ink">
       <div className="flex items-center justify-between gap-2">
         <Chip tone="ink">{t.waitlist.promotedTitle}</Chip>
         <b className="font-display text-2xl leading-none font-extrabold" dir="ltr">
@@ -127,7 +127,7 @@ function WaitingCard({ w, coverStyle }: { w: WaitlistEntry; coverStyle?: string 
     onError: (e: Error) => toast.error(e.message),
   });
   return (
-    <article className="flex h-full min-w-0 overflow-hidden rounded-[20px] bg-card">
+    <article className="flex h-full min-w-0 overflow-hidden rounded-xl border border-border bg-card">
       <CourseCover course={{ ...w.course, coverStyle: coverStyle ?? 'peach' }} size="sm" showMeta={false} className="w-44 shrink-0 rounded-none max-sm:w-32" />
       <div className="flex min-w-0 flex-1 flex-col gap-2 p-5">
         <div className="flex items-center justify-between gap-2">

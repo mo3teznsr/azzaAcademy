@@ -76,18 +76,56 @@ const CATEGORIES = [
   { slug: 'personal-growth', nameEn: 'Personal growth', nameAr: 'تطوير الذات', icon: 'sprout', order: 7 },
 ];
 
-/** Rich detail for the catalog demo (outcomes, requirements, audience, FAQ). */
-const DETAIL = {
-  outcomesEn: ['Run user interviews and turn them into insights', 'Sketch, wireframe and prototype in Figma', 'Present a portfolio-ready case study'],
-  outcomesAr: ['إجراء مقابلات المستخدمين وتحويلها إلى رؤى', 'الرسم والتخطيط والنماذج الأولية في Figma', 'تقديم دراسة حالة جاهزة لملف الأعمال'],
-  requirementsEn: ['A laptop with a modern browser', 'No design experience needed'],
-  requirementsAr: ['حاسوب محمول بمتصفح حديث', 'لا تحتاج إلى خبرة سابقة في التصميم'],
-  audienceEn: ['Career switchers into product design', 'Developers and PMs who work with designers'],
-  audienceAr: ['من يرغب في الانتقال إلى تصميم المنتجات', 'المطورون ومديرو المنتجات الذين يعملون مع المصممين'],
-  faq: [
-    { qEn: 'What if I miss a session?', aEn: 'Every session is recorded and stays in your library.', qAr: 'ماذا لو فاتتني جلسة؟', aAr: 'كل جلسة مسجلة وتبقى في مكتبتك.' },
-    { qEn: 'Do I get a certificate?', aEn: 'Yes — attend most sessions and pass the assignments.', qAr: 'هل أحصل على شهادة؟', aAr: 'نعم — احضر معظم الجلسات واجتز الواجبات.' },
-  ],
+type CourseDetail = {
+  outcomesEn: string[]; outcomesAr: string[];
+  requirementsEn: string[]; requirementsAr: string[];
+  audienceEn: string[]; audienceAr: string[];
+  faq: Array<{ qEn: string; aEn: string; qAr: string; aAr: string }>;
+};
+
+const FAQ_COMMON = [
+  { qEn: 'What if I miss a session?', aEn: 'Every session is recorded and stays in your library.', qAr: 'ماذا لو فاتتني جلسة؟', aAr: 'كل جلسة مسجلة وتبقى في مكتبتك.' },
+  { qEn: 'Do I get a certificate?', aEn: 'Yes — attend most sessions and pass the assignments.', qAr: 'هل أحصل على شهادة؟', aAr: 'نعم — احضر معظم الجلسات واجتز الواجبات.' },
+];
+
+/** Rich detail for the catalog demo (outcomes, requirements, audience, FAQ), one per course. */
+const DETAIL: Record<string, CourseDetail> = {
+  'product-design-foundations': {
+    outcomesEn: ['Run user interviews and turn them into insights', 'Sketch, wireframe and prototype in Figma', 'Present a portfolio-ready case study'],
+    outcomesAr: ['إجراء مقابلات المستخدمين وتحويلها إلى رؤى', 'الرسم والتخطيط والنماذج الأولية في Figma', 'تقديم دراسة حالة جاهزة لملف الأعمال'],
+    requirementsEn: ['A laptop with a modern browser', 'No design experience needed'],
+    requirementsAr: ['حاسوب محمول بمتصفح حديث', 'لا تحتاج إلى خبرة سابقة في التصميم'],
+    audienceEn: ['Career switchers into product design', 'Developers and PMs who work with designers'],
+    audienceAr: ['من يرغب في الانتقال إلى تصميم المنتجات', 'المطورون ومديرو المنتجات الذين يعملون مع المصممين'],
+    faq: FAQ_COMMON,
+  },
+  'spoken-arabic-a1': {
+    outcomesEn: ['Hold a short everyday conversation in Gulf Arabic', 'Count, tell the time and shop at the market', 'Introduce yourself and your family'],
+    outcomesAr: ['إجراء محادثة يومية قصيرة باللهجة الخليجية', 'العد ومعرفة الوقت والتسوق في السوق', 'التعريف بنفسك وبعائلتك'],
+    requirementsEn: ['No Arabic needed — we start from greetings', 'A microphone for speaking practice'],
+    requirementsAr: ['لا تحتاج إلى معرفة العربية — نبدأ من التحيات', 'ميكروفون لتمارين المحادثة'],
+    audienceEn: ['Newcomers to the UAE and the Gulf', 'Heritage learners who understand but rarely speak'],
+    audienceAr: ['القادمون الجدد إلى الإمارات والخليج', 'من يفهم العربية لكنه نادرًا ما يتحدثها'],
+    faq: FAQ_COMMON,
+  },
+  'python-for-data-l2': {
+    outcomesEn: ['Clean, join and reshape real datasets with pandas', 'Plot clear charts and explain them', 'Ship a small data project end to end'],
+    outcomesAr: ['تنظيف البيانات الحقيقية ودمجها وإعادة تشكيلها باستخدام pandas', 'رسم مخططات واضحة وشرحها', 'إنجاز مشروع بيانات صغير من البداية إلى النهاية'],
+    requirementsEn: ['Python basics: variables, loops, functions', 'A laptop that can run Jupyter'],
+    requirementsAr: ['أساسيات بايثون: المتغيرات والحلقات والدوال', 'حاسوب يمكنه تشغيل Jupyter'],
+    audienceEn: ['Analysts moving from spreadsheets to code', 'Developers who want practical data skills'],
+    audienceAr: ['المحللون المنتقلون من الجداول إلى البرمجة', 'المطورون الراغبون في مهارات بيانات عملية'],
+    faq: FAQ_COMMON,
+  },
+  'watercolour-l1': {
+    outcomesEn: ['Lay flat and graded washes with control', 'Paint wet-in-wet and build layers', 'Finish a loose botanical piece'],
+    outcomesAr: ['وضع طبقات لونية مستوية ومتدرجة بتحكم', 'الرسم بتقنية الرطب على الرطب وبناء الطبقات', 'إنهاء لوحة نباتية بأسلوب حر'],
+    requirementsEn: ['Watercolour paper, a round brush and a basic paint set', 'No drawing experience needed'],
+    requirementsAr: ['ورق ألوان مائية وفرشاة دائرية وعلبة ألوان أساسية', 'لا تحتاج إلى خبرة في الرسم'],
+    audienceEn: ['Complete beginners who want a calm creative hobby', 'Sketchers ready to add colour'],
+    audienceAr: ['المبتدئون الباحثون عن هواية إبداعية هادئة', 'من يرسم بالقلم ويريد إضافة الألوان'],
+    faq: FAQ_COMMON,
+  },
 };
 
 const COURSES = [
@@ -147,7 +185,7 @@ async function ensureCategories() {
 
 async function ensureCourse(c: (typeof COURSES)[number]) {
   const { modules, ...rest } = c;
-  const data = { ...rest, ...DETAIL };
+  const data = { ...rest, ...DETAIL[c.slug] };
   return db.course.upsert({
     where: { slug: c.slug },
     create: { ...data, status: 'PUBLISHED', modules: { create: modules.map((titleEn, order) => ({ order, titleEn })) } },

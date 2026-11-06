@@ -124,36 +124,36 @@ class _BatchLibrary extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
               ],
-              SectionHeader(l.allRecordingsN(f.n(list.length))),
-              for (final r in list)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Slate('S${r.number.toString().padLeft(2, '0')}'),
-                  title: Text(r.title, style: t.titleSmall),
-                  subtitle: Text(
-                    [
-                      if (r.recordedAt != null) f.shortDate(r.recordedAt!),
-                      if (r.durationSec != null) '${f.n((r.durationSec! / 60).round())} min',
-                      if (r.url == null) l.recordingProcessing,
-                    ].join(' · '),
+              CardGroup(title: l.allRecordingsN(f.n(list.length)), children: [
+                for (final r in list)
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    leading: Slate('S${r.number.toString().padLeft(2, '0')}'),
+                    title: Text(r.title, style: t.titleSmall),
+                    subtitle: Text(
+                      [
+                        if (r.recordedAt != null) f.shortDate(r.recordedAt!),
+                        if (r.durationSec != null) '${f.n((r.durationSec! / 60).round())} min',
+                        if (r.url == null) l.recordingProcessing,
+                      ].join(' · '),
+                    ),
+                    trailing: Icon(r.url == null ? Icons.hourglass_top_rounded : Icons.play_circle_outline_rounded),
+                    onTap: r.url == null ? null : () => openExternal(context, r.url),
                   ),
-                  trailing: Icon(r.url == null ? Icons.hourglass_top_rounded : Icons.play_circle_outline_rounded),
-                  onTap: r.url == null ? null : () => openExternal(context, r.url),
-                ),
+              ]),
             ]);
           },
         ),
-        SectionHeader(l.materials),
         AsyncView(
           value: materials,
           compact: true,
           onRetry: () => ref.invalidate(materialsProvider(batchId)),
           isEmpty: (List<CourseMaterial> list) => list.isEmpty,
-          empty: Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Text(l.noMaterials, style: t.bodySmall)),
-          data: (List<CourseMaterial> list) => Column(children: [
+          empty: SectionCard(title: l.materials, margin: const EdgeInsets.only(top: 24), child: Text(l.noMaterials, style: t.bodySmall)),
+          data: (List<CourseMaterial> list) => CardGroup(title: l.materials, children: [
             for (final m in list)
               ListTile(
-                contentPadding: EdgeInsets.zero,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 leading: Slate(m.kind),
                 title: Text(m.title, style: t.titleSmall),
                 trailing: const Icon(Icons.open_in_new_rounded, size: 18),

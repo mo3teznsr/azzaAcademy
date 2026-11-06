@@ -111,7 +111,7 @@ export function SchedulePage() {
                     onClick={() => setSelected(key)}
                     className={cn(
                       'flex min-h-20 flex-col items-start gap-1 rounded-xl p-2 text-start transition-colors',
-                      isSel ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent',
+                      isSel ? 'border border-transparent bg-primary text-primary-foreground' : 'border border-border bg-card hover:bg-accent',
                       !inMonth && 'opacity-40',
                     )}
                   >
@@ -138,7 +138,7 @@ export function SchedulePage() {
               ) : (
                 selectedItems.map((s) => <DayDetail key={s.id} s={s} />)
               )}
-              <div className="mt-2 flex flex-col gap-2 rounded-2xl bg-card p-4">
+              <div className="mt-2 flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
                 <b>{t.schedule.syncTitle}</b>
                 <span className="text-sm text-muted-foreground">{t.schedule.syncBody}</span>
                 <CalendarSubscribe />
@@ -180,7 +180,7 @@ function DayDetail({ s }: { s: ScheduleItem }) {
   const { t, f, fill, pick } = useI18n();
   const state = sessionState(s);
   return (
-    <div className={cn('flex flex-col gap-3 rounded-2xl p-4', state === 'LIVE' ? 'bg-onair text-onair-ink' : 'bg-card')}>
+    <div className={cn('flex flex-col gap-3 rounded-xl p-4', state === 'LIVE' ? 'bg-onair text-onair-ink' : 'border border-border bg-card')}>
       <div className="flex items-center justify-between gap-2">
         <span className="label-mono" dir="ltr">
           {s.batch.code}·{sessionCode(s.number)} · {f.time(s.startsAt)}–{f.time(s.endsAt)}

@@ -147,14 +147,18 @@ class _BankTransferScreenState extends ConsumerState<BankTransferScreen> {
                   ]);
                 },
               ),
-              const SizedBox(height: 20),
-              Text(l.uploadReceipt, style: t.bodySmall),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                key: const Key('choose-receipt'),
-                onPressed: _pick,
-                icon: Icon(_file == null ? Icons.upload_file_rounded : Icons.check_circle_rounded),
-                label: Text(_file?.name ?? l.chooseFile, overflow: TextOverflow.ellipsis),
+              SectionCard(
+                margin: const EdgeInsets.only(top: 12),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  Text(l.uploadReceipt, style: t.bodySmall),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    key: const Key('choose-receipt'),
+                    onPressed: _pick,
+                    icon: Icon(_file == null ? Icons.upload_file_rounded : Icons.check_circle_rounded),
+                    label: Text(_file?.name ?? l.chooseFile, overflow: TextOverflow.ellipsis),
+                  ),
+                ]),
               ),
               if (o.status == OrderStatus.rejected || o.status == OrderStatus.amountMismatch) ...[
                 const SizedBox(height: 12),

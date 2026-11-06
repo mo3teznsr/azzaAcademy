@@ -69,25 +69,31 @@ class EarningsScreen extends ConsumerWidget {
                 const SizedBox(width: 10),
                 _Card(label: l.lifetimePaid, value: Money.aedCompact(e.lifetimePaidFils, arabicDigits: f.arabicDigits), sub: '${l.availableLabel} ${f.aed(e.availableFils)}'),
               ]),
-              SectionHeader(l.byBatch),
-              if (e.batches.isEmpty) Text(l.emptyGeneric, style: t.bodySmall),
-              for (final b in e.batches)
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(border: Border(top: BorderSide(color: p.line))),
-                  child: Row(children: [
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('${b.code} · ${b.title(ref.watch(localeProvider))}', style: t.titleSmall),
-                        Text(
-                          [l.sessionsDelivered(f.n(b.sessionsDelivered)), if (b.perSessionFils != null) '${f.aed(b.perSessionFils!)} / S'].join(' · '),
-                          style: t.bodySmall,
+              SectionCard(
+                title: l.byBatch,
+                margin: const EdgeInsets.only(top: 24),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  if (e.batches.isEmpty) Padding(padding: const EdgeInsets.only(bottom: 12), child: Text(l.emptyGeneric, style: t.bodySmall)),
+                  for (final (i, b) in e.batches.indexed)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+                      child: Row(children: [
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text('${b.code} · ${b.title(ref.watch(localeProvider))}', style: t.titleSmall),
+                            Text(
+                              [l.sessionsDelivered(f.n(b.sessionsDelivered)), if (b.perSessionFils != null) '${f.aed(b.perSessionFils!)} / S'].join(' · '),
+                              style: t.bodySmall,
+                            ),
+                          ]),
                         ),
+                        Text(f.aed(b.amountFils), style: t.titleSmall),
                       ]),
                     ),
-                    Text(f.aed(b.amountFils), style: t.titleSmall),
-                  ]),
-                ),
+                ]),
+              ),
               const SizedBox(height: 16),
               Text(l.netRevenueNote, style: t.bodySmall),
             ],

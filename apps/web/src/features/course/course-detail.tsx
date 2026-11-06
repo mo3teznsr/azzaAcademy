@@ -15,6 +15,7 @@ import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { SessionSlate } from '@/components/brand/session-slate';
 import { SessionStatusChip, Chip } from '@/components/brand/status-chip';
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states';
+import { Panel } from '@/components/brand/section';
 import { useCategoryLabel } from '@/components/brand/category';
 import { RatingInline } from '@/components/brand/rating';
 import { ApiError, batchesApi, coursesApi, meApi, type BatchDetail, type Course } from '@/lib/api';
@@ -134,15 +135,15 @@ function CourseView({ course }: { course: Course }) {
       </section>
 
       {course.modules.length > 0 && (
-        <section aria-labelledby="syllabus" className="flex flex-col gap-4">
+        <Panel aria-labelledby="syllabus" className="gap-2">
           <h2 id="syllabus" className="label-mono text-muted-foreground">
             {fill(t.course.syllabus, { n: f.number(course.modules.length) })}
           </h2>
-          <ol className="grid gap-px overflow-hidden rounded-[20px] border border-border bg-border sm:grid-cols-2">
+          <ol className="grid gap-x-10 sm:grid-cols-2">
             {course.modules.map((m) => {
               const desc = pick(m.descriptionEn, m.descriptionAr).text;
               return (
-                <li key={m.id} className="flex items-baseline gap-4 bg-background p-5">
+                <li key={m.id} className="flex items-baseline gap-4 border-t border-border py-4 first:border-t-0 sm:nth-2:border-t-0">
                   <span className="timecode text-sm text-muted-foreground">M{String(m.order + 1).padStart(2, '0')}</span>
                   <span className="flex flex-col gap-1">
                     <b className="text-lg">{pick(m.titleEn, m.titleAr).text}</b>
@@ -152,7 +153,7 @@ function CourseView({ course }: { course: Course }) {
               );
             })}
           </ol>
-        </section>
+        </Panel>
       )}
 
       {(outcomes.length > 0 || requirements.length > 0 || audience.length > 0) && (
@@ -214,12 +215,12 @@ function CourseView({ course }: { course: Course }) {
       </section>
 
       {course.faq.length > 0 && (
-        <section aria-labelledby="course-faq" className="grid gap-10 lg:grid-cols-[1fr_1.4fr]">
+        <Panel aria-labelledby="course-faq" className="grid gap-x-10 gap-y-2 lg:grid-cols-[1fr_1.4fr] lg:p-8">
           <h2 id="course-faq" className="font-display text-[44px] font-extrabold leading-none">
             {t.course.faqTitle}
           </h2>
-          <Accordion items={course.faq.map((q) => ({ q: pick(q.qEn, q.qAr).text, a: pick(q.aEn, q.aAr).text }))} />
-        </section>
+          <Accordion className="border-t-0" items={course.faq.map((q) => ({ q: pick(q.qEn, q.qAr).text, a: pick(q.aEn, q.aAr).text }))} />
+        </Panel>
       )}
 
       <RelatedCourses courseId={course.id} />
@@ -228,8 +229,9 @@ function CourseView({ course }: { course: Course }) {
 }
 
 function BulletBlock({ id, title, items, tone }: { id: string; title: string; items: string[]; tone?: 'sun' }) {
+  // The outcomes card is the green-filled one (inkDeep text, never white); the rest are plain cards.
   return (
-    <section aria-labelledby={id} className={tone === 'sun' ? 'flex flex-col gap-4 rounded-[20px] bg-sun p-6 text-ink' : 'flex flex-col gap-4 rounded-[20px] border border-border p-6'}>
+    <Panel aria-labelledby={id} className={tone === 'sun' ? 'border-transparent bg-sun text-ink-deep' : undefined}>
       <h2 id={id} className="font-display text-2xl font-extrabold">
         {title}
       </h2>
@@ -241,7 +243,7 @@ function BulletBlock({ id, title, items, tone }: { id: string; title: string; it
           </li>
         ))}
       </ul>
-    </section>
+    </Panel>
   );
 }
 

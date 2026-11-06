@@ -39,7 +39,7 @@ export function OrderPage({ id }: { id: string }) {
       <span className="label-mono text-muted-foreground" dir="ltr">
         {fill(t.checkout.orderTitle, { ref: o.reference })}
       </span>
-      <div className={tone === 'good' ? 'rounded-[28px] bg-sage p-8 text-ink' : tone === 'bad' ? 'rounded-[28px] border border-danger-line bg-danger-bg p-8' : 'rounded-[28px] bg-card p-8'}>
+      <div className={tone === 'good' ? 'rounded-[28px] bg-sage p-8 text-ink' : tone === 'bad' ? 'rounded-[28px] border border-danger-line bg-danger-bg p-8' : 'rounded-[28px] border border-border bg-card p-8'}>
         <div className="flex items-center justify-between gap-3">
           <SignalMark state={tone === 'good' ? 'live' : tone === 'bad' ? 'ended' : 'starting'} size={36} />
           <OrderStatusChip status={o.status} />

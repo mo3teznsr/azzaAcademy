@@ -272,8 +272,8 @@ void main() {
 
     testWidgets('categories render their localised names, with counts', (tester) async {
       await pumpExplore(tester, locale: 'ar', featured: const [Course(id: 'c9', slug: 'f', titleEn: 'Featured one', titleAr: 'دورة مختارة', category: 'design')]);
-      expect(find.text('التصميم ٣'), findsOneWidget);
-      expect(find.text('اللغات ٢'), findsOneWidget);
+      expect(find.text('التصميم 3'), findsOneWidget);
+      expect(find.text('اللغات 2'), findsOneWidget);
       expect(find.textContaining('التصميم ·'), findsWidgets, reason: 'course card meta line');
       expect(find.byKey(const Key('featured-courses')), findsOneWidget);
       expect(find.text('دورة مختارة'), findsWidgets);

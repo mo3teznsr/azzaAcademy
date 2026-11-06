@@ -54,7 +54,7 @@ function CourseRow({ c }: { c: Course }) {
   const categoryLabel = useCategoryLabel();
   const sentBack = c.status === 'DRAFT' && !!c.reviewNote;
   return (
-    <article className="flex flex-col gap-3 rounded-[20px] bg-card p-4">
+    <article className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
       <Link href={`/studio/courses/${c.id}`} className="flex items-center gap-4 text-foreground no-underline">
         <CourseCover course={c} size="sm" showMeta={false} className="h-16 w-16 shrink-0 rounded-xl p-1.5 [&>span]:text-[11px]" />
         <span className="min-w-0 flex-1">

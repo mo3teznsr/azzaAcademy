@@ -22,6 +22,9 @@ export interface ScheduleConflict {
   withBatch: string;
 }
 
+/** What students and visitors can see in the catalog. */
+const PUBLIC_STATUSES: BatchStatus[] = ['ENROLLING', 'FULL', 'RUNNING'];
+
 /** Allowed status moves. Anything else is rejected (keeps the lifecycle explicit). */
 const TRANSITIONS: Record<BatchStatus, BatchStatus[]> = {
   DRAFT: ['PENDING_REVIEW', 'ENROLLING', 'CANCELLED'],
@@ -44,10 +47,14 @@ export class BatchService {
   ) {}
 
   list(filter: BatchFilter, viewer: { id: string; role: Role } | null) {
+    // A teacher's own workspace lists their batches; on a course page they see what students see, plus their own.
+    if (viewer?.role === 'TEACHER' && filter.courseId && filter.teacherId !== viewer.id) {
+      return this.batches.list({ ...filter, teacherId: undefined, status: undefined, visibleTo: { teacherId: viewer.id, statuses: PUBLIC_STATUSES } });
+    }
     if (viewer?.role === 'TEACHER') return this.batches.list({ ...filter, teacherId: viewer.id });
     if (viewer?.role === 'ADMIN') return this.batches.list(filter);
     // public / students: only batches people can see in the catalog
-    return this.batches.list({ ...filter, status: undefined, statuses: ['ENROLLING', 'FULL', 'RUNNING'] });
+    return this.batches.list({ ...filter, status: undefined, statuses: PUBLIC_STATUSES });
   }
 
   async get(id: string, viewer: { id: string; role: Role } | null) {

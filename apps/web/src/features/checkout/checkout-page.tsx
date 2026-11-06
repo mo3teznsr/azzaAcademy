@@ -191,7 +191,7 @@ function Checkout({ batch }: { batch: BatchDetail }) {
           )}
         </section>
 
-        <aside className="flex h-fit flex-col gap-5 rounded-[24px] bg-card p-6 lg:sticky lg:top-6" aria-labelledby="summary">
+        <aside className="flex h-fit flex-col gap-5 rounded-[24px] border border-border bg-card p-6 lg:sticky lg:top-6" aria-labelledby="summary">
           <h2 id="summary" className="label-mono text-muted-foreground">
             {t.checkout.summary}
           </h2>

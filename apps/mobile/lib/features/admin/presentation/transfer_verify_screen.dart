@@ -98,13 +98,16 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
                   if (o.receiptUrl != null) const Icon(Icons.open_in_new_rounded),
                 ]),
               ),
-              const SizedBox(height: 12),
-              KeyValueRow(l.studentLabel, o.student?.name ?? '—'),
-              KeyValueRow(l.batchLabel, '${o.batch?.course?.title(locale) ?? ''} · ${o.batch?.code ?? ''}'),
-              KeyValueRow(l.reference, o.reference, mono: true),
-              if (o.bankAccount != null) KeyValueRow(l.bankName, o.bankAccount!.bankName),
-              KeyValueRow(l.expected, f.aed(o.totalFils), emphasize: true),
-              const SizedBox(height: 8),
+              SectionCard(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  KeyValueRow(l.studentLabel, o.student?.name ?? '—'),
+                  KeyValueRow(l.batchLabel, '${o.batch?.course?.title(locale) ?? ''} · ${o.batch?.code ?? ''}'),
+                  KeyValueRow(l.reference, o.reference, mono: true),
+                  if (o.bankAccount != null) KeyValueRow(l.bankName, o.bankAccount!.bankName),
+                  KeyValueRow(l.expected, f.aed(o.totalFils), emphasize: true),
+                ]),
+              ),
+              const SizedBox(height: 16),
               TextField(
                 controller: _received,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),

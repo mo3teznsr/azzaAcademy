@@ -44,7 +44,7 @@ export function AssignmentsPage() {
             const sub = a.mySubmission;
             const overdue = !sub && new Date(a.dueAt).getTime() < now;
             return (
-              <li key={a.id} className="flex flex-wrap items-center gap-4 rounded-2xl bg-card p-5">
+              <li key={a.id} className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-card p-5">
                 <div className="min-w-0 flex-1">
                   <span className="label-mono text-muted-foreground" dir="ltr">
                     {a.enrollment.batch.code}

@@ -38,7 +38,7 @@ class NotificationsScreen extends ConsumerWidget {
             final p = AzzaPalette.of(context);
             final live = n.type.contains('LIVE');
             return ListTile(
-              contentPadding: EdgeInsets.zero,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               leading: SignalMark(size: 22, color: live ? AzzaColors.onAir : (n.read ? p.line : p.accent), live: live && !n.read),
               title: Text(n.title, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: n.read ? p.muted : p.text)),
               subtitle: Text(n.body, maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -54,8 +54,8 @@ class NotificationsScreen extends ConsumerWidget {
           return RefreshList(
             onRefresh: () async => ref.invalidate(notificationsProvider),
             children: [
-              if (todays.isNotEmpty) ...[MonoLabel(l.today), ...todays.map(tile)],
-              if (earlier.isNotEmpty) ...[const SizedBox(height: 16), MonoLabel(l.earlier), ...earlier.map(tile)],
+              if (todays.isNotEmpty) CardGroup(title: l.today, children: [...todays.map(tile)]),
+              if (earlier.isNotEmpty) CardGroup(title: l.earlier, children: [...earlier.map(tile)]),
             ],
           );
         },

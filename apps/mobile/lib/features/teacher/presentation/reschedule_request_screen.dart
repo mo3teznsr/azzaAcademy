@@ -156,11 +156,10 @@ class _MyRequests extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final mine = (ref.watch(myRescheduleRequestsProvider).value ?? const <RescheduleRequest>[]).where((r) => r.sessionId == sessionId).toList();
     if (mine.isEmpty) return const SizedBox.shrink();
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      SectionHeader(l.myRescheduleRequests),
+    return CardGroup(title: l.myRescheduleRequests, children: [
       for (final r in mine)
         ListTile(
-          contentPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(f.dayTime(r.startsAt)),
           subtitle: r.decisionNote == null && r.reason == null ? null : Text(r.decisionNote ?? r.reason!, style: t.bodySmall),
           trailing: StatusChip(

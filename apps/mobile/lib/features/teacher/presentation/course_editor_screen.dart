@@ -413,6 +413,12 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
           decoration: fieldDecoration(label: label, icon: icon, helper: helper, action: ro ? null : ClearFieldButton(controller: c)),
         );
 
+    Widget section(String title, List<Widget> children, {double top = 12}) => SectionCard(
+          title: title,
+          margin: EdgeInsets.only(top: top),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+        );
+
     return [
       if (_status == CourseStatus.draft && (_reviewNote?.isNotEmpty ?? false)) ...[
         ProposalNotice.changes(context, _reviewNote!),
@@ -428,233 +434,242 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
       ],
       if (_id != null) Align(alignment: AlignmentDirectional.centerStart, child: StatusChip.course(context, _status)),
 
-      SectionHeader(l.courseBasics, padding: const EdgeInsets.only(top: 16, bottom: 12)),
-      field(_titleEn, l.courseTitleEn, Icons.title_rounded, key: const Key('course-title-en'), direction: TextDirection.ltr),
-      const SizedBox(height: 12),
-      field(_titleAr, l.courseTitleAr, Icons.translate_rounded, key: const Key('course-title-ar'), direction: TextDirection.rtl),
-      const SizedBox(height: 12),
-      if (categories.isNotEmpty && (knownCategory || _category.text.isEmpty))
-        DropdownButtonFormField<String>(
-          key: const Key('course-category'),
-          initialValue: knownCategory ? _category.text : null,
+      section(l.courseBasics, top: 16, [
+        field(_titleEn, l.courseTitleEn, Icons.title_rounded, key: const Key('course-title-en'), direction: TextDirection.ltr),
+        const SizedBox(height: 12),
+        field(_titleAr, l.courseTitleAr, Icons.translate_rounded, key: const Key('course-title-ar'), direction: TextDirection.rtl),
+        const SizedBox(height: 12),
+        if (categories.isNotEmpty && (knownCategory || _category.text.isEmpty))
+          DropdownButtonFormField<String>(
+            key: const Key('course-category'),
+            initialValue: knownCategory ? _category.text : null,
+            isExpanded: true,
+            decoration: fieldDecoration(label: l.courseCategory, icon: Icons.category_outlined),
+            items: [for (final c in categories) DropdownMenuItem(value: c.slug, child: Text(c.name(locale)))],
+            onChanged: ro ? null : (v) => setState(() => _category.text = v ?? ''),
+          )
+        else
+          field(_category, l.courseCategory, Icons.category_outlined, key: const Key('course-category')),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<CourseLevel>(
+          key: const Key('course-level'),
+          initialValue: _level,
           isExpanded: true,
-          decoration: fieldDecoration(label: l.courseCategory, icon: Icons.category_outlined),
-          items: [for (final c in categories) DropdownMenuItem(value: c.slug, child: Text(c.name(locale)))],
-          onChanged: ro ? null : (v) => setState(() => _category.text = v ?? ''),
-        )
-      else
-        field(_category, l.courseCategory, Icons.category_outlined, key: const Key('course-category')),
-      const SizedBox(height: 12),
-      DropdownButtonFormField<CourseLevel>(
-        key: const Key('course-level'),
-        initialValue: _level,
-        isExpanded: true,
-        decoration: fieldDecoration(label: l.courseLevel, icon: Icons.signal_cellular_alt_rounded),
-        items: [for (final lv in CourseLevel.values) DropdownMenuItem(value: lv, child: Text(levelLabel(l, lv)))],
-        onChanged: ro ? null : (v) => setState(() => _level = v ?? _level),
-      ),
-      const SizedBox(height: 12),
-      field(
-        _price,
-        l.coursePriceAed,
-        Icons.payments_outlined,
-        key: const Key('course-price'),
-        keyboard: const TextInputType.numberWithOptions(decimal: true),
-        formatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-        direction: TextDirection.ltr,
-      ),
+          decoration: fieldDecoration(label: l.courseLevel, icon: Icons.signal_cellular_alt_rounded),
+          items: [for (final lv in CourseLevel.values) DropdownMenuItem(value: lv, child: Text(levelLabel(l, lv)))],
+          onChanged: ro ? null : (v) => setState(() => _level = v ?? _level),
+        ),
+        const SizedBox(height: 12),
+        field(
+          _price,
+          l.coursePriceAed,
+          Icons.payments_outlined,
+          key: const Key('course-price'),
+          keyboard: const TextInputType.numberWithOptions(decimal: true),
+          formatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+          direction: TextDirection.ltr,
+        ),
+      ]),
 
-      SectionHeader(l.courseDescription),
-      field(_descEn, l.descriptionEn, Icons.notes_rounded,
-          key: const Key('course-desc-en'), maxLines: 8, minLines: 3, helper: l.descriptionHint, direction: TextDirection.ltr),
-      const SizedBox(height: 12),
-      field(_descAr, l.descriptionAr, Icons.notes_rounded, key: const Key('course-desc-ar'), maxLines: 8, minLines: 3, direction: TextDirection.rtl),
+      section(l.courseDescription, [
+        field(_descEn, l.descriptionEn, Icons.notes_rounded,
+            key: const Key('course-desc-en'), maxLines: 8, minLines: 3, helper: l.descriptionHint, direction: TextDirection.ltr),
+        const SizedBox(height: 12),
+        field(_descAr, l.descriptionAr, Icons.notes_rounded, key: const Key('course-desc-ar'), maxLines: 8, minLines: 3, direction: TextDirection.rtl),
+      ]),
 
-      SectionHeader(l.coverPhoto),
-      if (_coverUrl == null) Text(l.coverPhotoHint, style: t.bodySmall),
-      if (!ro) ...[
-        const SizedBox(height: 8),
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          OutlinedButton.icon(
-            key: const Key('pick-cover'),
-            style: OutlinedButton.styleFrom(minimumSize: const Size(44, 48)),
-            onPressed: _uploading ? null : _pickCover,
-            icon: _uploading
-                ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.add_photo_alternate_outlined, size: 18),
-            label: Text(_uploading ? l.uploadingPhoto : (_coverUrl == null ? l.addCoverPhoto : l.changeCoverPhoto)),
-          ),
-          if (_coverUrl != null)
-            TextButton.icon(
-              key: const Key('remove-cover'),
-              style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
-              onPressed: _uploading ? null : () => setState(() => _coverUrl = null),
-              icon: const Icon(Icons.hide_image_outlined, size: 18),
-              label: Text(l.removeCoverPhoto),
+      section(l.coverPhoto, [
+        if (_coverUrl == null) Text(l.coverPhotoHint, style: t.bodySmall),
+        if (!ro) ...[
+          const SizedBox(height: 8),
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            OutlinedButton.icon(
+              key: const Key('pick-cover'),
+              style: OutlinedButton.styleFrom(minimumSize: const Size(44, 48)),
+              onPressed: _uploading ? null : _pickCover,
+              icon: _uploading
+                  ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.add_photo_alternate_outlined, size: 18),
+              label: Text(_uploading ? l.uploadingPhoto : (_coverUrl == null ? l.addCoverPhoto : l.changeCoverPhoto)),
             ),
-        ]),
-      ],
-      const SizedBox(height: 14),
-      MonoLabel(l.coverColour),
-      const SizedBox(height: 8),
-      Wrap(spacing: 10, children: [
-        for (final (style, name) in [('sun', l.coverSun), ('sky', l.coverSky), ('sage', l.coverSage), ('peach', l.coverPeach)])
-          Semantics(
-            button: true,
-            selected: _coverStyle == style,
-            label: name,
-            child: InkWell(
-              key: Key('cover-style-$style'),
-              customBorder: const CircleBorder(),
-              onTap: ro ? null : () => setState(() => _coverStyle = style),
-              child: SizedBox.square(
-                dimension: 48,
-                child: Center(
-                  child: AnimatedContainer(
-                    duration: AzzaMotion.quick,
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: coverColor(style),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: _coverStyle == style ? p.text : p.line, width: _coverStyle == style ? 2.5 : 1),
+            if (_coverUrl != null)
+              TextButton.icon(
+                key: const Key('remove-cover'),
+                style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
+                onPressed: _uploading ? null : () => setState(() => _coverUrl = null),
+                icon: const Icon(Icons.hide_image_outlined, size: 18),
+                label: Text(l.removeCoverPhoto),
+              ),
+          ]),
+        ],
+        const SizedBox(height: 14),
+        MonoLabel(l.coverColour),
+        const SizedBox(height: 8),
+        Wrap(spacing: 10, children: [
+          for (final (style, name) in [('sun', l.coverSun), ('sky', l.coverSky), ('sage', l.coverSage), ('peach', l.coverPeach)])
+            Semantics(
+              button: true,
+              selected: _coverStyle == style,
+              label: name,
+              child: InkWell(
+                key: Key('cover-style-$style'),
+                customBorder: const CircleBorder(),
+                onTap: ro ? null : () => setState(() => _coverStyle = style),
+                child: SizedBox.square(
+                  dimension: 48,
+                  child: Center(
+                    child: AnimatedContainer(
+                      duration: AzzaMotion.quick,
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: coverColor(style),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: _coverStyle == style ? p.text : p.line, width: _coverStyle == style ? 2.5 : 1),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
+        ]),
       ]),
 
-      SectionHeader(l.modulesTitle),
-      if (_modules.isEmpty) Text(l.noModulesYet, style: t.bodySmall),
-      for (final (i, m) in _modules.indexed)
-        Padding(
-          key: m.key,
-          padding: const EdgeInsets.only(bottom: 14),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              Expanded(child: MonoLabel('${i + 1}')),
-              if (!ro) ...[
-                IconButton(
-                  tooltip: l.moveUp,
-                  onPressed: i == 0 ? null : () => _moveModule(i, -1),
-                  icon: const Icon(Icons.arrow_upward_rounded, size: 20),
-                ),
-                IconButton(
-                  tooltip: l.moveDown,
-                  onPressed: i == _modules.length - 1 ? null : () => _moveModule(i, 1),
-                  icon: const Icon(Icons.arrow_downward_rounded, size: 20),
-                ),
-                IconButton(
-                  key: Key('remove-module-$i'),
-                  tooltip: l.removeModule,
-                  onPressed: () => _removeModule(i),
-                  icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                ),
-              ],
-            ]),
-            field(m.en, l.moduleTitleEn('${i + 1}'), Icons.view_module_outlined, key: Key('module-en-$i'), direction: TextDirection.ltr),
-            const SizedBox(height: 8),
-            field(m.ar, l.moduleTitleAr('${i + 1}'), Icons.translate_rounded, key: Key('module-ar-$i'), direction: TextDirection.rtl),
-            const SizedBox(height: 8),
-            field(m.descEn, l.moduleDescriptionEn('${i + 1}'), Icons.notes_rounded,
-                key: Key('module-desc-en-$i'), maxLines: 4, minLines: 1, direction: TextDirection.ltr),
-            const SizedBox(height: 8),
-            field(m.descAr, l.moduleDescriptionAr('${i + 1}'), Icons.notes_rounded,
-                key: Key('module-desc-ar-$i'), maxLines: 4, minLines: 1, direction: TextDirection.rtl),
-          ]),
-        ),
-      if (!ro)
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: TextButton.icon(
-            key: const Key('add-module'),
-            style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
-            onPressed: () => setState(() => _modules.add(_ModuleRow())),
-            icon: const Icon(Icons.add_rounded),
-            label: Text(l.addModule),
-          ),
-        ),
-
-      // ── "What you'll learn", requirements, audience ──
-      for (final (kind, title) in [
-        (_ListKind.outcomes, l.whatYoullLearn),
-        (_ListKind.requirements, l.requirementsTitle),
-        (_ListKind.audience, l.audienceTitle),
-      ]) ...[
-        SectionHeader(title),
-        for (final (i, r) in _lists[kind]!.indexed)
-          Padding(
-            key: r.key,
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(
-                child: Column(children: [
-                  field(r.c[0], l.bulletEn('${i + 1}'), Icons.check_rounded, key: Key('${kind.name}-en-$i'), direction: TextDirection.ltr),
-                  const SizedBox(height: 8),
-                  field(r.c[1], l.bulletAr('${i + 1}'), Icons.translate_rounded, key: Key('${kind.name}-ar-$i'), direction: TextDirection.rtl),
-                ]),
-              ),
-              if (!ro)
-                IconButton(
-                  tooltip: l.removePoint,
-                  onPressed: () => setState(() => _removeRow(_lists[kind]!, i)),
-                  icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                ),
+      section(l.modulesTitle, [
+        if (_modules.isEmpty) Text(l.noModulesYet, style: t.bodySmall),
+        for (final (i, m) in _modules.indexed)
+          Container(
+            key: m.key,
+            margin: const EdgeInsets.only(bottom: 14),
+            padding: EdgeInsets.only(top: i == 0 ? 0 : 6),
+            decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Row(children: [
+                Expanded(child: MonoLabel('${i + 1}')),
+                if (!ro) ...[
+                  IconButton(
+                    tooltip: l.moveUp,
+                    onPressed: i == 0 ? null : () => _moveModule(i, -1),
+                    icon: const Icon(Icons.arrow_upward_rounded, size: 20),
+                  ),
+                  IconButton(
+                    tooltip: l.moveDown,
+                    onPressed: i == _modules.length - 1 ? null : () => _moveModule(i, 1),
+                    icon: const Icon(Icons.arrow_downward_rounded, size: 20),
+                  ),
+                  IconButton(
+                    key: Key('remove-module-$i'),
+                    tooltip: l.removeModule,
+                    onPressed: () => _removeModule(i),
+                    icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                  ),
+                ],
+              ]),
+              field(m.en, l.moduleTitleEn('${i + 1}'), Icons.view_module_outlined, key: Key('module-en-$i'), direction: TextDirection.ltr),
+              const SizedBox(height: 8),
+              field(m.ar, l.moduleTitleAr('${i + 1}'), Icons.translate_rounded, key: Key('module-ar-$i'), direction: TextDirection.rtl),
+              const SizedBox(height: 8),
+              field(m.descEn, l.moduleDescriptionEn('${i + 1}'), Icons.notes_rounded,
+                  key: Key('module-desc-en-$i'), maxLines: 4, minLines: 1, direction: TextDirection.ltr),
+              const SizedBox(height: 8),
+              field(m.descAr, l.moduleDescriptionAr('${i + 1}'), Icons.notes_rounded,
+                  key: Key('module-desc-ar-$i'), maxLines: 4, minLines: 1, direction: TextDirection.rtl),
             ]),
           ),
         if (!ro)
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(
-              key: Key('add-${kind.name}'),
+              key: const Key('add-module'),
               style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
-              onPressed: () => setState(() => _lists[kind]!.add(_Row(['', '']))),
+              onPressed: () => setState(() => _modules.add(_ModuleRow())),
               icon: const Icon(Icons.add_rounded),
-              label: Text(l.addPoint),
+              label: Text(l.addModule),
             ),
           ),
-      ],
+      ]),
+
+      // ── "What you'll learn", requirements, audience ──
+      for (final (kind, title) in [
+        (_ListKind.outcomes, l.whatYoullLearn),
+        (_ListKind.requirements, l.requirementsTitle),
+        (_ListKind.audience, l.audienceTitle),
+      ])
+        section(title, [
+          for (final (i, r) in _lists[kind]!.indexed)
+            Padding(
+              key: r.key,
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Expanded(
+                  child: Column(children: [
+                    field(r.c[0], l.bulletEn('${i + 1}'), Icons.check_rounded, key: Key('${kind.name}-en-$i'), direction: TextDirection.ltr),
+                    const SizedBox(height: 8),
+                    field(r.c[1], l.bulletAr('${i + 1}'), Icons.translate_rounded, key: Key('${kind.name}-ar-$i'), direction: TextDirection.rtl),
+                  ]),
+                ),
+                if (!ro)
+                  IconButton(
+                    tooltip: l.removePoint,
+                    onPressed: () => setState(() => _removeRow(_lists[kind]!, i)),
+                    icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                  ),
+              ]),
+            ),
+          if (!ro)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: Key('add-${kind.name}'),
+                style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
+                onPressed: () => setState(() => _lists[kind]!.add(_Row(['', '']))),
+                icon: const Icon(Icons.add_rounded),
+                label: Text(l.addPoint),
+              ),
+            ),
+        ]),
 
       // ── FAQ ──
-      SectionHeader(l.faqTitle),
-      for (final (i, r) in _faq.indexed)
-        Padding(
-          key: r.key,
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              Expanded(child: MonoLabel('${i + 1}')),
-              if (!ro)
-                IconButton(
-                  tooltip: l.removeQuestion,
-                  onPressed: () => setState(() => _removeRow(_faq, i)),
-                  icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                ),
+      section(l.faqTitle, [
+        for (final (i, r) in _faq.indexed)
+          Container(
+            key: r.key,
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(top: i == 0 ? 0 : 6),
+            decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Row(children: [
+                Expanded(child: MonoLabel('${i + 1}')),
+                if (!ro)
+                  IconButton(
+                    tooltip: l.removeQuestion,
+                    onPressed: () => setState(() => _removeRow(_faq, i)),
+                    icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                  ),
+              ]),
+              field(r.c[0], l.faqQuestionEn('${i + 1}'), Icons.help_outline_rounded, key: Key('faq-q-en-$i'), direction: TextDirection.ltr),
+              const SizedBox(height: 8),
+              field(r.c[1], l.faqAnswerEn('${i + 1}'), Icons.notes_rounded,
+                  key: Key('faq-a-en-$i'), maxLines: 5, minLines: 2, direction: TextDirection.ltr),
+              const SizedBox(height: 8),
+              field(r.c[2], l.faqQuestionAr('${i + 1}'), Icons.help_outline_rounded, key: Key('faq-q-ar-$i'), direction: TextDirection.rtl),
+              const SizedBox(height: 8),
+              field(r.c[3], l.faqAnswerAr('${i + 1}'), Icons.notes_rounded,
+                  key: Key('faq-a-ar-$i'), maxLines: 5, minLines: 2, direction: TextDirection.rtl),
             ]),
-            field(r.c[0], l.faqQuestionEn('${i + 1}'), Icons.help_outline_rounded, key: Key('faq-q-en-$i'), direction: TextDirection.ltr),
-            const SizedBox(height: 8),
-            field(r.c[1], l.faqAnswerEn('${i + 1}'), Icons.notes_rounded,
-                key: Key('faq-a-en-$i'), maxLines: 5, minLines: 2, direction: TextDirection.ltr),
-            const SizedBox(height: 8),
-            field(r.c[2], l.faqQuestionAr('${i + 1}'), Icons.help_outline_rounded, key: Key('faq-q-ar-$i'), direction: TextDirection.rtl),
-            const SizedBox(height: 8),
-            field(r.c[3], l.faqAnswerAr('${i + 1}'), Icons.notes_rounded,
-                key: Key('faq-a-ar-$i'), maxLines: 5, minLines: 2, direction: TextDirection.rtl),
-          ]),
-        ),
-      if (!ro)
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: TextButton.icon(
-            key: const Key('add-faq'),
-            style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
-            onPressed: () => setState(() => _faq.add(_Row(['', '', '', '']))),
-            icon: const Icon(Icons.add_rounded),
-            label: Text(l.addQuestion),
           ),
-        ),
+        if (!ro)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              key: const Key('add-faq'),
+              style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
+              onPressed: () => setState(() => _faq.add(_Row(['', '', '', '']))),
+              icon: const Icon(Icons.add_rounded),
+              label: Text(l.addQuestion),
+            ),
+          ),
+      ]),
     ];
   }
 

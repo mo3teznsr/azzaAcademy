@@ -108,34 +108,38 @@ class _CourseReviewsSectionState extends ConsumerState<CourseReviewsSection> {
     final page = ref.watch(courseReviewsProvider(_id));
     final data = page.value;
     if (data == null) {
-      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        SectionHeader(l.reviewsTitle),
-        if (page.hasError) ErrorState(error: page.error!, onRetry: _reload) else const LoadingState(),
-      ]);
+      return SectionCard(
+        title: l.reviewsTitle,
+        margin: const EdgeInsets.only(top: 24),
+        child: page.hasError ? ErrorState(error: page.error!, onRetry: _reload) : const LoadingState(),
+      );
     }
     final items = [...data.items, ..._more];
     final hasMore = items.length < data.total;
     return Column(key: const Key('course-reviews'), crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      SectionHeader(l.reviewsTitle),
-      if (data.ratingCount > 0) _Summary(page: data) else Text(l.noReviewsYet, style: Theme.of(context).textTheme.bodyMedium),
-      if (data.canReview || data.mine != null) ...[
-        const SizedBox(height: 14),
-        if (data.mine != null)
-          _ReviewTile(
-            review: data.mine!,
-            mine: true,
-            onEdit: () => _write(data.mine),
-          )
-        else
-          OutlinedButton.icon(
-            key: const Key('write-review'),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            onPressed: () => _write(null),
-            icon: const Icon(Icons.rate_review_outlined, size: 18),
-            label: Text(l.writeReview),
-          ),
-      ],
-      const SizedBox(height: 8),
+      SectionCard(
+        title: l.reviewsTitle,
+        margin: const EdgeInsets.only(top: 24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          if (data.ratingCount > 0) _Summary(page: data) else Text(l.noReviewsYet, style: Theme.of(context).textTheme.bodyMedium),
+          if (data.canReview && data.mine == null) ...[
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              key: const Key('write-review'),
+              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              onPressed: () => _write(null),
+              icon: const Icon(Icons.rate_review_outlined, size: 18),
+              label: Text(l.writeReview),
+            ),
+          ],
+        ]),
+      ),
+      if (data.mine != null)
+        _ReviewTile(
+          review: data.mine!,
+          mine: true,
+          onEdit: () => _write(data.mine),
+        ),
       for (final r in items)
         if (r.id != data.mine?.id)
           _ReviewTile(
@@ -145,7 +149,7 @@ class _CourseReviewsSectionState extends ConsumerState<CourseReviewsSection> {
           ),
       if (hasMore)
         Padding(
-          padding: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.only(top: 12),
           child: TextButton(
             key: const Key('load-more-reviews'),
             style: TextButton.styleFrom(minimumSize: const Size.fromHeight(48)),
@@ -225,10 +229,8 @@ class _ReviewTile extends ConsumerWidget {
     final p = AzzaPalette.of(context);
     final t = Theme.of(context).textTheme;
     final r = review;
-    return Container(
+    return SectionCard(
       key: Key('review-${r.id}'),
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(border: Border(top: BorderSide(color: p.line))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           InitialsAvatar(r.userName, size: 36, imageUrl: r.userImage),
@@ -249,9 +251,9 @@ class _ReviewTile extends ConsumerWidget {
         if (r.body.isNotEmpty) ...[const SizedBox(height: 8), Text(r.body, style: t.bodyMedium)],
         if (r.teacherReply != null && r.teacherReply!.isNotEmpty)
           Container(
-            margin: const EdgeInsetsDirectional.only(top: 10, start: 16),
+            margin: const EdgeInsets.only(top: 10),
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: p.raised, borderRadius: BorderRadius.circular(AzzaSpace.radiusSm), border: Border.all(color: p.line)),
+            decoration: BoxDecoration(color: p.ground, borderRadius: BorderRadius.circular(AzzaSpace.radiusSm)),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               MonoLabel(l.teacherReply),
               const SizedBox(height: 4),
