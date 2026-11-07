@@ -11,6 +11,8 @@ import '../../../core/widgets/ui.dart';
 import '../../live/data/session_repository.dart';
 import '../../live/domain/live_models.dart';
 import '../../me/data/me_repository.dart';
+import '../../../core/domain/enums.dart';
+import '../../auth/presentation/auth_controller.dart';
 import '../data/teacher_repository.dart';
 
 /// Reschedule request: teacher proposes, admin approves, students get notified.
@@ -23,6 +25,8 @@ class RescheduleRequestScreen extends ConsumerStatefulWidget {
 }
 
 class _RescheduleRequestScreenState extends ConsumerState<RescheduleRequestScreen> {
+  bool get _isAdmin => ref.read(currentUserProvider)?.role == Role.admin;
+
   DateTime? _day;
   TimeOfDay? _time;
   final _reason = TextEditingController();
@@ -49,7 +53,9 @@ class _RescheduleRequestScreenState extends ConsumerState<RescheduleRequestScree
           );
       if (!mounted) return;
       ref.invalidate(myRescheduleRequestsProvider);
-      showToast(context, context.l10n.requestSent);
+      ref.invalidate(sessionDetailProvider(widget.sessionId));
+      // Admins move the session directly; a teacher's move is a request the admins approve.
+      showToast(context, _isAdmin ? context.l10n.sessionMoved : context.l10n.requestSent);
       context.pop();
     } catch (e) {
       if (mounted) showToast(context, errorText(context, e));
@@ -65,6 +71,7 @@ class _RescheduleRequestScreenState extends ConsumerState<RescheduleRequestScree
     final detail = ref.watch(sessionDetailProvider(widget.sessionId));
     final p = AzzaPalette.of(context);
     final t = Theme.of(context).textTheme;
+    final admin = ref.watch(currentUserProvider)?.role == Role.admin;
 
     return Scaffold(
       appBar: AppBar(title: Text(l.moveSession)),
@@ -128,17 +135,31 @@ class _RescheduleRequestScreenState extends ConsumerState<RescheduleRequestScree
                 ),
               ]),
               const SizedBox(height: 20),
-              TextField(controller: _reason, decoration: fieldDecoration(label: l.reason, icon: Icons.edit_note_rounded)),
+              TextField(
+                controller: _reason,
+                decoration: fieldDecoration(label: l.reason, icon: Icons.edit_note_rounded, hint: l.moveReasonHint, action: ClearFieldButton(controller: _reason)),
+              ),
               const SizedBox(height: 8),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(l.notifyStudents), value: _notify, onChanged: (v) => setState(() => _notify = v)),
-              Text(l.adminReviews, style: t.bodySmall),
-              _MyRequests(sessionId: widget.sessionId),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(admin ? l.notifyStudentsNow : l.notifyStudents),
+                value: _notify,
+                onChanged: (v) => setState(() => _notify = v),
+              ),
+              if (!admin) ...[
+                Text(l.adminReviews, style: t.bodySmall),
+                _MyRequests(sessionId: widget.sessionId),
+              ],
             ],
           );
         },
       ),
       bottomNavigationBar: BottomActionBar(children: [
-        FilledButton(onPressed: _day == null || _time == null || _busy ? null : _send, child: Text(l.sendToAdmin)),
+        FilledButton(
+          key: const Key('send-move'),
+          onPressed: _day == null || _time == null || _busy ? null : _send,
+          child: Text(admin ? l.moveSessionNow : l.sendToAdmin),
+        ),
       ]),
     );
   }

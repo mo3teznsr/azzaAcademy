@@ -49,7 +49,7 @@ export class CheckoutService {
   /** Prices a batch for an (optional) student; refuses an inapplicable coupon with `COUPON_INVALID` + `details.reason`. */
   async quote(input: Pick<CheckoutInput, 'batchId' | 'couponCode' | 'displayCurrency'>, batch?: SaleBatch, userId?: string | null): Promise<Quote> {
     const b = batch ?? (await this.sellableBatch(input.batchId));
-    const priceFils = PriceCalculator.basePrice(b.priceFils, b.coursePriceFils);
+    const priceFils = b.priceFils;
     let coupon = null;
     if (input.couponCode) {
       coupon = await this.repo.findCoupon(input.couponCode);
@@ -116,6 +116,7 @@ export class CheckoutService {
       fxRate: quote.display.rate,
       couponCode: quote.couponCode,
       stripePaymentIntentId: started.stripePaymentIntentId ?? null,
+      stripeCheckoutSessionId: started.stripeCheckoutSessionId ?? null,
       appleProductId: started.appleProductId ?? null,
       appleAppAccountToken: started.appleAppAccountToken ?? null,
       bankAccountId: started.bankAccountId ?? null,
@@ -221,13 +222,15 @@ export class CheckoutService {
 
   /** Stripe webhook. Idempotent: replays of an already-applied event are no-ops. */
   async handlePaymentEvent(evt: PaymentWebhookEvent) {
-    if (evt.type === 'ignored' || !evt.paymentIntentId) return { handled: false };
-    const order = await this.repo.findOrderByPaymentIntent(evt.paymentIntentId);
+    if (evt.type === 'ignored' || (!evt.paymentIntentId && !evt.checkoutSessionId)) return { handled: false };
+    const order =
+      (evt.checkoutSessionId ? await this.repo.findOrderByCheckoutSession(evt.checkoutSessionId) : null) ??
+      (evt.paymentIntentId ? await this.repo.findOrderByPaymentIntent(evt.paymentIntentId) : null);
     if (!order) return { handled: false };
 
     if (evt.type === 'payment.succeeded') {
       if (order.status === 'PAID' || order.status === 'REFUNDED') return { handled: true, duplicate: true };
-      await this.confirmPaid(order, { feeFils: evt.feeFils ?? 0 });
+      await this.confirmPaid(order, { feeFils: evt.feeFils ?? 0, ...(evt.paymentIntentId && !order.stripePaymentIntentId && { stripePaymentIntentId: evt.paymentIntentId }) });
       return { handled: true };
     }
     if (evt.type === 'payment.failed') {

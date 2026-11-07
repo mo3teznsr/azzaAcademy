@@ -33,12 +33,11 @@ function setup(capacity = 2) {
     status: 'ENROLLING',
     capacity,
     waitlistEnabled: true,
-    priceFils: null,
+    priceFils: 88_000,
     timezone: 'Asia/Dubai',
     teacherId: 'lina',
     courseId: 'pdf',
     courseTitle: 'Product Design Foundations',
-    coursePriceFils: 88_000,
     firstSessionAt: new Date('2026-12-01T14:00:00Z'),
   });
   repo.bankAccounts.push({ id: 'enbd', bankName: 'Emirates NBD', accountName: 'Co', iban: 'AE000000000000000000001', swift: 'EBILAEAD', branch: null, instructions: null, currency: 'AED', active: true, sortOrder: 0 });
@@ -49,7 +48,7 @@ function setup(capacity = 2) {
   let n = 0;
   checkout = new CheckoutService(
     repo,
-    new CheckoutStrategyRegistry([new StripeCheckout(gateway), new BankTransferCheckout(repo, notifier, 48)]),
+    new CheckoutStrategyRegistry([new StripeCheckout(gateway, 'https://azza.test'), new BankTransferCheckout(repo, notifier, 48)]),
     new PriceCalculator(5),
     { rateFor: async () => 1 },
     machine,
@@ -158,7 +157,7 @@ describe('enrollment lifecycle', () => {
     if (res.waitlisted) throw new Error();
     expect(res.order.totalFils).toBe(83_160);
     expect(statusOf('sara')).toBe('PENDING_PAYMENT');
-    const evt = { type: 'payment.succeeded' as const, paymentIntentId: res.order.stripePaymentIntentId!, feeFils: 2_500 };
+    const evt = { type: 'payment.succeeded' as const, checkoutSessionId: res.order.stripeCheckoutSessionId!, paymentIntentId: `pi_${res.order.reference}`, feeFils: 2_500 };
     expect(await checkout.handlePaymentEvent(evt)).toEqual({ handled: true });
     expect(await checkout.handlePaymentEvent(evt)).toEqual({ handled: true, duplicate: true });
     expect(statusOf('sara')).toBe('ACTIVE');
@@ -170,7 +169,7 @@ describe('enrollment lifecycle', () => {
   test('coupon redemption is recorded per student and enforces the per-student limit', async () => {
     const res = await checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED', couponCode: 'WELCOME10' });
     if (res.waitlisted) throw new Error();
-    await checkout.handlePaymentEvent({ type: 'payment.succeeded', paymentIntentId: res.order.stripePaymentIntentId! });
+    await checkout.handlePaymentEvent({ type: 'payment.succeeded', checkoutSessionId: res.order.stripeCheckoutSessionId!, paymentIntentId: `pi_${res.order.reference}` });
     expect(repo.redemptions).toEqual([{ couponId: 'c1', userId: 'sara', orderId: res.order.id, discountFils: 8_800 }]);
     await expect(checkout.quote({ batchId: 'b08', couponCode: 'WELCOME10', displayCurrency: 'AED' }, undefined, 'sara')).rejects.toMatchObject({
       code: 'COUPON_INVALID',
@@ -193,19 +192,19 @@ describe('enrollment lifecycle', () => {
     const res = await checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED' });
     await expect(checkout.checkout('sara', { batchId: 'b08', method: 'BANK_TRANSFER', displayCurrency: 'AED' })).rejects.toMatchObject({ status: 409 });
     if (res.waitlisted) throw new Error();
-    await checkout.handlePaymentEvent({ type: 'payment.succeeded', paymentIntentId: res.order.stripePaymentIntentId! });
+    await checkout.handlePaymentEvent({ type: 'payment.succeeded', checkoutSessionId: res.order.stripeCheckoutSessionId!, paymentIntentId: `pi_${res.order.reference}` });
     await expect(checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED' })).rejects.toMatchObject({ status: 409 });
   });
 
   test('full refund → REFUNDED, Stripe refund issued and teacher earnings reversed', async () => {
     const res = await checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED' });
     if (res.waitlisted) throw new Error();
-    await checkout.handlePaymentEvent({ type: 'payment.succeeded', paymentIntentId: res.order.stripePaymentIntentId! });
+    await checkout.handlePaymentEvent({ type: 'payment.succeeded', checkoutSessionId: res.order.stripeCheckoutSessionId!, paymentIntentId: `pi_${res.order.reference}` });
     await expect(finance.refund(res.order.id, { amountAed: 1000, reason: 'too much' })).rejects.toMatchObject({ code: 'REFUND_TOO_LARGE' });
     const out = await finance.refund(res.order.id, { amountAed: 924, reason: 'Moved abroad' });
     expect(out.order.status).toBe('REFUNDED');
     expect(out.manual).toBe(false);
-    expect(gateway.refunds).toEqual([{ paymentIntentId: res.order.stripePaymentIntentId!, amountFils: 92_400 }]);
+    expect(gateway.refunds).toEqual([{ paymentIntentId: `pi_${res.order.reference}`, amountFils: 92_400 }]);
     expect(statusOf('sara')).toBe('REFUNDED');
     expect(reversals).toHaveLength(1);
   });

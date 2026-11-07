@@ -16,6 +16,7 @@ export interface CheckoutStart {
   orderStatus: OrderStatus;
   expiresAt: Date | null;
   stripePaymentIntentId?: string;
+  stripeCheckoutSessionId?: string;
   bankAccountId?: string;
   appleProductId?: string;
   appleAppAccountToken?: string;

@@ -140,6 +140,330 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @noOpenBatchesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'No open batches'**
+  String get noOpenBatchesShort;
+
+  /// No description provided for @chargedAsAed.
+  ///
+  /// In en, this message translates to:
+  /// **'Charged as {amount}'**
+  String chargedAsAed(String amount);
+
+  /// No description provided for @ratesUnavailableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown in AED: exchange rates are unavailable right now.'**
+  String get ratesUnavailableHint;
+
+  /// No description provided for @decrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease'**
+  String get decrease;
+
+  /// No description provided for @increase.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase'**
+  String get increase;
+
+  /// No description provided for @paymentPageNotOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the payment page. Tap “Open payment page” to try again.'**
+  String get paymentPageNotOpened;
+
+  /// No description provided for @payCardCheckoutSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Card, Apple Pay or Google Pay on Stripe\'s secure page · charged in AED'**
+  String get payCardCheckoutSub;
+
+  /// No description provided for @confirmingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming your payment…'**
+  String get confirmingPayment;
+
+  /// No description provided for @confirmingPaymentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish paying {amount} on Stripe\'s secure page. Your seat in {code} is held, and this screen updates as soon as the payment is confirmed.'**
+  String confirmingPaymentBody(String code, String amount);
+
+  /// No description provided for @checkingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking every few seconds…'**
+  String get checkingPayment;
+
+  /// No description provided for @openPaymentPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Open payment page'**
+  String get openPaymentPage;
+
+  /// No description provided for @coursePricedPerBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No price here: you set the seat price on each batch. Students see the lowest open batch as the course\'s “from” price.'**
+  String get coursePricedPerBatch;
+
+  /// No description provided for @seatPriceRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a seat price in AED (more than 0).'**
+  String get seatPriceRequired;
+
+  /// No description provided for @seatPriceAed.
+  ///
+  /// In en, this message translates to:
+  /// **'Seat price (AED)'**
+  String get seatPriceAed;
+
+  /// No description provided for @seatPriceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'450'**
+  String get seatPriceHint;
+
+  /// No description provided for @seatPriceHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'What one student pays for this batch. Charged in AED.'**
+  String get seatPriceHelper;
+
+  /// No description provided for @seatsHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'How many students can enrol (1–500).'**
+  String get seatsHelper;
+
+  /// No description provided for @sessionAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Session added.'**
+  String get sessionAdded;
+
+  /// No description provided for @cancelSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel {slate}?'**
+  String cancelSessionTitle(String slate);
+
+  /// No description provided for @cancelSessionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Students are notified and the session leaves their schedule. This can\'t be undone.'**
+  String get cancelSessionBody;
+
+  /// No description provided for @keepSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep session'**
+  String get keepSession;
+
+  /// No description provided for @cancelSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel session'**
+  String get cancelSession;
+
+  /// No description provided for @sessionCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Session cancelled.'**
+  String get sessionCancelled;
+
+  /// No description provided for @upcomingSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming sessions'**
+  String get upcomingSessions;
+
+  /// No description provided for @addSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Add session'**
+  String get addSession;
+
+  /// No description provided for @noUpcomingSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming sessions.'**
+  String get noUpcomingSessions;
+
+  /// No description provided for @moveSessionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Move session'**
+  String get moveSessionAction;
+
+  /// No description provided for @requestMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a move'**
+  String get requestMove;
+
+  /// No description provided for @showAllN.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all {count}'**
+  String showAllN(String count);
+
+  /// No description provided for @sessionTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the session a title (at least 2 characters).'**
+  String get sessionTitleRequired;
+
+  /// No description provided for @errStartInPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a time in the future.'**
+  String get errStartInPast;
+
+  /// No description provided for @addSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a session to {code}'**
+  String addSessionTitle(String code);
+
+  /// No description provided for @addSessionLead.
+  ///
+  /// In en, this message translates to:
+  /// **'An extra live session outside the weekly schedule: a catch-up, a bonus or an exam.'**
+  String get addSessionLead;
+
+  /// No description provided for @sessionTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Session title'**
+  String get sessionTitleLabel;
+
+  /// No description provided for @sessionTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Catch-up: review and Q&A'**
+  String get sessionTitleHint;
+
+  /// No description provided for @sessionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get sessionDate;
+
+  /// No description provided for @sessionTimeOtherZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Times are in your phone\'s timezone ({device}). This batch runs in {batchZone}.'**
+  String sessionTimeOtherZone(String device, String batchZone);
+
+  /// No description provided for @sessionTimeZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Times are in the batch timezone, {zone}.'**
+  String sessionTimeZone(String zone);
+
+  /// No description provided for @sessionLengthHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'15 to 480 minutes, in steps of 15.'**
+  String get sessionLengthHelper;
+
+  /// No description provided for @notifyStudentsNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify students'**
+  String get notifyStudentsNow;
+
+  /// No description provided for @notifyStudentsNowSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Send them a notification and an email now.'**
+  String get notifyStudentsNowSub;
+
+  /// No description provided for @couldNotAddSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add the session'**
+  String get couldNotAddSession;
+
+  /// No description provided for @editSeatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Seats in {code}'**
+  String editSeatsTitle(String code);
+
+  /// No description provided for @editSeatsLead.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} students are enrolled. Seats can\'t go below that.'**
+  String editSeatsLead(String count);
+
+  /// No description provided for @couldNotSaveSeats.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t change the seats'**
+  String get couldNotSaveSeats;
+
+  /// No description provided for @saveSeats.
+  ///
+  /// In en, this message translates to:
+  /// **'Save seats'**
+  String get saveSeats;
+
+  /// No description provided for @seatsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Seats updated.'**
+  String get seatsSaved;
+
+  /// No description provided for @editSeats.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit seats'**
+  String get editSeats;
+
+  /// No description provided for @sessionMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Session moved.'**
+  String get sessionMoved;
+
+  /// No description provided for @moveReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Public holiday'**
+  String get moveReasonHint;
+
+  /// No description provided for @moveSessionNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Move session'**
+  String get moveSessionNow;
+
+  /// No description provided for @errConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'That clashes with something already scheduled.'**
+  String get errConflict;
+
+  /// No description provided for @errBatchClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This batch has ended or was cancelled, so it can\'t take new sessions.'**
+  String get errBatchClosed;
+
+  /// No description provided for @errCapacityTooLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Seats can\'t go below the number of enrolled students.'**
+  String get errCapacityTooLow;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:
@@ -4633,6 +4957,906 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play recording'**
   String get playRecording;
+
+  /// No description provided for @instructorsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructors'**
+  String get instructorsTitle;
+
+  /// No description provided for @instructorsLede.
+  ///
+  /// In en, this message translates to:
+  /// **'The people who teach live on Azza. Open a profile to see their courses and open batches.'**
+  String get instructorsLede;
+
+  /// No description provided for @instructorsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No instructors yet'**
+  String get instructorsEmpty;
+
+  /// No description provided for @meetInstructors.
+  ///
+  /// In en, this message translates to:
+  /// **'Meet the instructors'**
+  String get meetInstructors;
+
+  /// No description provided for @meetInstructorsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Who teaches on Azza, and what'**
+  String get meetInstructorsHint;
+
+  /// No description provided for @allInstructors.
+  ///
+  /// In en, this message translates to:
+  /// **'All instructors'**
+  String get allInstructors;
+
+  /// No description provided for @instructorCoursesN.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} courses'**
+  String instructorCoursesN(String count);
+
+  /// No description provided for @instructorOpenBatchesN.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} open batches'**
+  String instructorOpenBatchesN(String count);
+
+  /// No description provided for @teachOnAzza.
+  ///
+  /// In en, this message translates to:
+  /// **'Teach on Azza'**
+  String get teachOnAzza;
+
+  /// No description provided for @teachRowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get teachRowHint;
+
+  /// No description provided for @teachSignUpLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Want to teach on Azza?'**
+  String get teachSignUpLink;
+
+  /// No description provided for @teachSignUpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account first, then open Me → Teach on Azza to apply.'**
+  String get teachSignUpHint;
+
+  /// No description provided for @teachPitchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share what you know, live.'**
+  String get teachPitchTitle;
+
+  /// No description provided for @teachPitchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Teach small live batches to learners across the region, in Arabic or English. Tell us who you are and what you\'d teach; our team reviews every application, usually within a few days.'**
+  String get teachPitchBody;
+
+  /// No description provided for @applySectionAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About you'**
+  String get applySectionAbout;
+
+  /// No description provided for @applySectionTeach.
+  ///
+  /// In en, this message translates to:
+  /// **'What you\'d teach'**
+  String get applySectionTeach;
+
+  /// No description provided for @applySectionExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Your experience'**
+  String get applySectionExperience;
+
+  /// No description provided for @applySectionContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Links and contact'**
+  String get applySectionContact;
+
+  /// No description provided for @applyHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Headline'**
+  String get applyHeadline;
+
+  /// No description provided for @applyHeadlineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Product designer · 8 years at agencies'**
+  String get applyHeadlineHint;
+
+  /// No description provided for @applyBio.
+  ///
+  /// In en, this message translates to:
+  /// **'Short bio'**
+  String get applyBio;
+
+  /// No description provided for @applyBioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Who you are, how you teach and who you help. At least 40 characters.'**
+  String get applyBioHint;
+
+  /// No description provided for @applyCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories (1 to 5)'**
+  String get applyCategories;
+
+  /// No description provided for @applyLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching languages'**
+  String get applyLanguages;
+
+  /// No description provided for @applyExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching experience'**
+  String get applyExperience;
+
+  /// No description provided for @applyExperienceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'3 years running weekend workshops for groups of 20 adults'**
+  String get applyExperienceHint;
+
+  /// No description provided for @applySample.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample or portfolio link (optional)'**
+  String get applySample;
+
+  /// No description provided for @applySampleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://example.com/portfolio'**
+  String get applySampleHint;
+
+  /// No description provided for @applyPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone (optional)'**
+  String get applyPhone;
+
+  /// No description provided for @applyPhoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'+971 50 123 4567'**
+  String get applyPhoneHint;
+
+  /// No description provided for @applySubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send application'**
+  String get applySubmit;
+
+  /// No description provided for @applySent.
+  ///
+  /// In en, this message translates to:
+  /// **'Application sent. We\'ll let you know.'**
+  String get applySent;
+
+  /// No description provided for @applyHeadlineInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Write 4 to 120 characters.'**
+  String get applyHeadlineInvalid;
+
+  /// No description provided for @applyBioInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Write 40 to 2000 characters.'**
+  String get applyBioInvalid;
+
+  /// No description provided for @applyExperienceInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Write 20 to 1500 characters.'**
+  String get applyExperienceInvalid;
+
+  /// No description provided for @applyCategoriesInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick 1 to 5 categories.'**
+  String get applyCategoriesInvalid;
+
+  /// No description provided for @applyLanguagesInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one language.'**
+  String get applyLanguagesInvalid;
+
+  /// No description provided for @applyUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a full https:// link.'**
+  String get applyUrlInvalid;
+
+  /// No description provided for @applyPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your application is being reviewed'**
+  String get applyPendingTitle;
+
+  /// No description provided for @applyPendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll notify you as soon as there\'s a decision. Meanwhile, you can keep learning as usual.'**
+  String get applyPendingBody;
+
+  /// No description provided for @applyRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last application wasn\'t approved'**
+  String get applyRejectedTitle;
+
+  /// No description provided for @applyRejectedLead.
+  ///
+  /// In en, this message translates to:
+  /// **'The reviewer\'s note is below. You\'re welcome to apply again.'**
+  String get applyRejectedLead;
+
+  /// No description provided for @applyApprovedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You can teach now'**
+  String get applyApprovedTitle;
+
+  /// No description provided for @applyApprovedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your instructor account is ready. Refresh to open the teacher studio and propose your first course.'**
+  String get applyApprovedBody;
+
+  /// No description provided for @applyRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh my account'**
+  String get applyRefresh;
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @errAlreadyInstructor.
+  ///
+  /// In en, this message translates to:
+  /// **'You already teach on Azza.'**
+  String get errAlreadyInstructor;
+
+  /// No description provided for @errApplicationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Your application is already being reviewed.'**
+  String get errApplicationPending;
+
+  /// No description provided for @errApplicationDecided.
+  ///
+  /// In en, this message translates to:
+  /// **'This application was already decided.'**
+  String get errApplicationDecided;
+
+  /// No description provided for @instructorApplicationsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor applications'**
+  String get instructorApplicationsSection;
+
+  /// No description provided for @applicantExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get applicantExperience;
+
+  /// No description provided for @openSample.
+  ///
+  /// In en, this message translates to:
+  /// **'Open sample'**
+  String get openSample;
+
+  /// No description provided for @declineApplicationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you declining?'**
+  String get declineApplicationTitle;
+
+  /// No description provided for @declineNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note to the applicant'**
+  String get declineNoteLabel;
+
+  /// No description provided for @declineNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please add a short teaching sample.'**
+  String get declineNoteHint;
+
+  /// No description provided for @sendBackNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a module on brushes and paper.'**
+  String get sendBackNoteHint;
+
+  /// No description provided for @nameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sara Kamal'**
+  String get nameHint;
+
+  /// No description provided for @emailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'name@example.com'**
+  String get emailHint;
+
+  /// No description provided for @passwordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password'**
+  String get passwordHint;
+
+  /// No description provided for @newPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get newPasswordHint;
+
+  /// No description provided for @errQuizTimeUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Time ran out on this attempt, so it was recorded as 0.'**
+  String get errQuizTimeUp;
+
+  /// No description provided for @errQuizClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This quiz is closed.'**
+  String get errQuizClosed;
+
+  /// No description provided for @errNoAttemptsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no attempts left on this quiz.'**
+  String get errNoAttemptsLeft;
+
+  /// No description provided for @errAttemptNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the quiz before submitting.'**
+  String get errAttemptNotStarted;
+
+  /// No description provided for @lessonsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons'**
+  String get lessonsTitle;
+
+  /// No description provided for @lessonsCountN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} lessons'**
+  String lessonsCountN(String n);
+
+  /// No description provided for @lessonNofM.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson {n} of {m}'**
+  String lessonNofM(String n, String m);
+
+  /// No description provided for @lessonHasVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get lessonHasVideo;
+
+  /// No description provided for @lessonAttachmentsN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} attachments'**
+  String lessonAttachmentsN(String n);
+
+  /// No description provided for @lessonAttachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get lessonAttachments;
+
+  /// No description provided for @noLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons yet'**
+  String get noLessons;
+
+  /// No description provided for @noLessonsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher hasn\'t added lessons to this course yet.'**
+  String get noLessonsBody;
+
+  /// No description provided for @previousLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get previousLesson;
+
+  /// No description provided for @nextLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Next lesson'**
+  String get nextLesson;
+
+  /// No description provided for @watchLessonVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch the lesson video'**
+  String get watchLessonVideo;
+
+  /// No description provided for @watchLessonVideoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens in your video player'**
+  String get watchLessonVideoHint;
+
+  /// No description provided for @videoOnYoutube.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens on YouTube'**
+  String get videoOnYoutube;
+
+  /// No description provided for @videoOnVimeo.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens on Vimeo'**
+  String get videoOnVimeo;
+
+  /// No description provided for @myQuizzesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My quizzes'**
+  String get myQuizzesTitle;
+
+  /// No description provided for @quizzesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes'**
+  String get quizzesTitle;
+
+  /// No description provided for @noQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'No quizzes yet'**
+  String get noQuizzes;
+
+  /// No description provided for @noQuizzesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes from your teachers will show up here.'**
+  String get noQuizzesBody;
+
+  /// No description provided for @noQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'This quiz has no questions.'**
+  String get noQuestions;
+
+  /// No description provided for @quizzesToDo.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get quizzesToDo;
+
+  /// No description provided for @quizzesDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get quizzesDone;
+
+  /// No description provided for @quizzesWebOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes are created and edited on the web. Here you can follow your students\' results.'**
+  String get quizzesWebOnly;
+
+  /// No description provided for @quizLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get quizLabel;
+
+  /// No description provided for @quizOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get quizOpen;
+
+  /// No description provided for @quizInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get quizInProgress;
+
+  /// No description provided for @quizSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get quizSubmitted;
+
+  /// No description provided for @quizMissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get quizMissed;
+
+  /// No description provided for @quizQuestionsN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} questions'**
+  String quizQuestionsN(String n);
+
+  /// No description provided for @quizMinutesN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min'**
+  String quizMinutesN(String n);
+
+  /// No description provided for @quizPointsN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} pts'**
+  String quizPointsN(String n);
+
+  /// No description provided for @quizBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best {score}'**
+  String quizBest(String score);
+
+  /// No description provided for @quizAttemptsUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempts {used}/{max}'**
+  String quizAttemptsUsed(String used, String max);
+
+  /// No description provided for @quizQuestionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get quizQuestionsLabel;
+
+  /// No description provided for @quizPointsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get quizPointsLabel;
+
+  /// No description provided for @quizTimeLimitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time limit'**
+  String get quizTimeLimitLabel;
+
+  /// No description provided for @quizNoTimeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'No time limit'**
+  String get quizNoTimeLimit;
+
+  /// No description provided for @quizAttemptsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempts'**
+  String get quizAttemptsLabel;
+
+  /// No description provided for @quizDueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Due'**
+  String get quizDueLabel;
+
+  /// No description provided for @quizBestScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Your best score'**
+  String get quizBestScore;
+
+  /// No description provided for @quizYourAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Your attempts'**
+  String get quizYourAttempts;
+
+  /// No description provided for @quizTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Time ran out'**
+  String get quizTimedOut;
+
+  /// No description provided for @quizStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start quiz'**
+  String get quizStart;
+
+  /// No description provided for @quizTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get quizTryAgain;
+
+  /// No description provided for @quizResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume attempt'**
+  String get quizResume;
+
+  /// No description provided for @quizClosedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This quiz is closed.'**
+  String get quizClosedNote;
+
+  /// No description provided for @quizNoAttemptsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used all your attempts.'**
+  String get quizNoAttemptsNote;
+
+  /// No description provided for @quizUnavailableNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This quiz can\'t be started right now.'**
+  String get quizUnavailableNote;
+
+  /// No description provided for @quizStartTimedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the timer?'**
+  String get quizStartTimedTitle;
+
+  /// No description provided for @quizStartTimedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll have {minutes} minutes once you start. When time runs out, your answers are submitted automatically.'**
+  String quizStartTimedBody(String minutes);
+
+  /// No description provided for @quizQuestionNofM.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n} of {m}'**
+  String quizQuestionNofM(String n, String m);
+
+  /// No description provided for @quizQuestionN.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n}'**
+  String quizQuestionN(String n);
+
+  /// No description provided for @quizAnsweredN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} answered'**
+  String quizAnsweredN(String n);
+
+  /// No description provided for @quizChooseOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one'**
+  String get quizChooseOne;
+
+  /// No description provided for @quizChooseAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose all that apply'**
+  String get quizChooseAll;
+
+  /// No description provided for @quizPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get quizPrevious;
+
+  /// No description provided for @quizNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get quizNext;
+
+  /// No description provided for @quizSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get quizSubmit;
+
+  /// No description provided for @quizSubmitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit your answers?'**
+  String get quizSubmitTitle;
+
+  /// No description provided for @quizAnsweredOf.
+  ///
+  /// In en, this message translates to:
+  /// **'You answered {answered} of {total} questions.'**
+  String quizAnsweredOf(String answered, String total);
+
+  /// No description provided for @quizUnansweredWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Unanswered questions score 0.'**
+  String get quizUnansweredWarning;
+
+  /// No description provided for @quizAutoSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Time\'s up. Your answers were submitted.'**
+  String get quizAutoSubmitted;
+
+  /// No description provided for @quizLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the quiz?'**
+  String get quizLeaveTitle;
+
+  /// No description provided for @quizLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers on this screen won\'t be saved.'**
+  String get quizLeaveBody;
+
+  /// No description provided for @quizLeaveTimedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers on this screen won\'t be saved, and the timer keeps running.'**
+  String get quizLeaveTimedBody;
+
+  /// No description provided for @quizKeepGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going'**
+  String get quizKeepGoing;
+
+  /// No description provided for @quizLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get quizLeave;
+
+  /// No description provided for @quizTimeLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Time left {time}'**
+  String quizTimeLeft(String time);
+
+  /// No description provided for @quizResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get quizResultTitle;
+
+  /// No description provided for @quizAttemptN.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt {n}'**
+  String quizAttemptN(String n);
+
+  /// No description provided for @quizYourScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Your score'**
+  String get quizYourScore;
+
+  /// No description provided for @quizPointsOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} of {max} points'**
+  String quizPointsOf(String score, String max);
+
+  /// No description provided for @quizAnswersHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answers appear after the due date, or once you\'ve used all your attempts.'**
+  String get quizAnswersHidden;
+
+  /// No description provided for @quizReviewAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your answers'**
+  String get quizReviewAnswers;
+
+  /// No description provided for @quizCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get quizCorrect;
+
+  /// No description provided for @quizIncorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect'**
+  String get quizIncorrect;
+
+  /// No description provided for @quizPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Partly correct'**
+  String get quizPartial;
+
+  /// No description provided for @quizNotAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'Not answered'**
+  String get quizNotAnswered;
+
+  /// No description provided for @quizBackToQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the quiz'**
+  String get quizBackToQuiz;
+
+  /// No description provided for @quizResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz results'**
+  String get quizResultsTitle;
+
+  /// No description provided for @quizStudentsAttempted.
+  ///
+  /// In en, this message translates to:
+  /// **'{students} students tried · {attempts} attempts'**
+  String quizStudentsAttempted(String students, String attempts);
+
+  /// No description provided for @studentsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get studentsLabel;
+
+  /// No description provided for @quizAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get quizAverage;
+
+  /// No description provided for @quizNoAttemptsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No attempts yet'**
+  String get quizNoAttemptsYet;
+
+  /// No description provided for @quizAttemptsN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} attempts'**
+  String quizAttemptsN(String n);
+
+  /// No description provided for @quizPerQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'By question'**
+  String get quizPerQuestion;
+
+  /// No description provided for @quizCorrectOfAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'{correct} of {answered} correct'**
+  String quizCorrectOfAnswered(String correct, String answered);
 }
 
 class _AppLocalizationsDelegate

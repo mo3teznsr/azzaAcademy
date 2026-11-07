@@ -7,16 +7,15 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/share.dart';
 import '../../../core/utils/links.dart';
 import '../../../core/providers.dart';
-import '../../../core/money/money.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/cover_scroll_view.dart';
+import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
-import '../../checkout/data/checkout_repository.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
 import 'catalog_widgets.dart';
@@ -34,8 +33,6 @@ class CourseDetailScreen extends ConsumerWidget {
     final course = ref.watch(courseProvider(courseId));
     final locale = ref.watch(localeProvider);
     final f = ref.watch(fmtProvider);
-    final currency = ref.watch(displayCurrencyProvider);
-    final fx = ref.watch(fxRatesProvider).value ?? FxRates.fallback;
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
@@ -140,6 +137,15 @@ class CourseDetailScreen extends ConsumerWidget {
                             ),
                         ],
                       ),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: TextButton(
+                          key: const Key('all-instructors'),
+                          style: TextButton.styleFrom(minimumSize: const Size(48, 44)),
+                          onPressed: () => context.push(Routes.instructors),
+                          child: Text(l.allInstructors),
+                        ),
+                      ),
                     ],
                     const SizedBox(height: 12),
                     for (final (key, title, items) in [
@@ -240,9 +246,11 @@ class CourseDetailScreen extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        l.fromPrice(f.money(course.requireValue.priceFils, currency, fx.rateFor(currency))),
+                      child: Price.from(
+                        course.requireValue.priceFils,
+                        key: const Key('course-from-price'),
                         style: Theme.of(context).textTheme.titleMedium,
+                        showCharged: true,
                       ),
                     ),
                     FilledButton(

@@ -9,11 +9,10 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/utils/digits.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../core/money/money.dart';
 import '../../../core/prefs/app_prefs.dart';
+import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
-import '../../checkout/data/checkout_repository.dart';
 import '../domain/catalog_models.dart';
 
 Color coverColor(String style) => switch (style) {
@@ -186,8 +185,6 @@ class CourseCard extends ConsumerWidget {
     final l = context.l10n;
     final f = ref.watch(fmtProvider);
     final locale = ref.watch(localeProvider);
-    final currency = ref.watch(displayCurrencyProvider);
-    final fx = ref.watch(fxRatesProvider).value ?? FxRates.fallback;
     final c = course;
     final t = Theme.of(context).textTheme;
     return InkWell(
@@ -206,7 +203,7 @@ class CourseCard extends ConsumerWidget {
             children: [
               Expanded(child: Text(c.title(locale), style: t.titleMedium)),
               const SizedBox(width: 8),
-              Text(f.money(c.priceFils, currency, fx.rateFor(currency)), style: t.titleSmall),
+              Price.from(c.priceFils, style: t.titleSmall, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end),
             ],
           ),
           if (c.ratingCount > 0) ...[const SizedBox(height: 4), RatingLine(avg: c.ratingAvg, count: c.ratingCount)],

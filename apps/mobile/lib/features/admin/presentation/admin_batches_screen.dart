@@ -12,6 +12,7 @@ import '../../../router/routes.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
+import '../../teacher/presentation/batch_sessions_editor.dart';
 
 final adminBatchesProvider = FutureProvider.autoDispose.family<List<Batch>, BatchStatus?>(
   (ref, status) => ref.watch(catalogRepositoryProvider).batches(status: status?.wire),
@@ -129,7 +130,11 @@ class BatchQuickViewScreen extends ConsumerWidget {
                   DisplayText('${f.n(b.seatsTaken)} / ${f.n(b.capacity)}', size: 34),
                   MonoLabel([l.seatsLabel, if (b.waitlistCount != null) '${f.n(b.waitlistCount!)} ${l.waitlist}'].join(' · ')),
                   const SizedBox(height: 8),
-                  LinearProgressIndicator(value: b.capacity == 0 ? 0 : b.seatsTaken / b.capacity, minHeight: 6, borderRadius: BorderRadius.circular(3)),
+                  LinearProgressIndicator(
+                    value: b.capacity == 0 ? 0 : (b.seatsTaken / b.capacity).clamp(0, 1).toDouble(),
+                    minHeight: 6,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     [
@@ -138,8 +143,25 @@ class BatchQuickViewScreen extends ConsumerWidget {
                     ].join(' · '),
                     style: t.bodySmall,
                   ),
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton.icon(
+                      key: const Key('edit-seats'),
+                      style: TextButton.styleFrom(minimumSize: const Size(44, 44), padding: const EdgeInsets.symmetric(horizontal: 8)),
+                      onPressed: () async {
+                        final updated = await showEditSeatsSheet(context, b);
+                        if (updated == null || !context.mounted) return;
+                        ref.invalidate(batchProvider(batchId));
+                        showToast(context, l.seatsSaved);
+                      },
+                      icon: const Icon(Icons.event_seat_outlined, size: 18),
+                      label: Text(l.editSeats),
+                    ),
+                  ),
                 ]),
               ),
+              if (!b.status.isProposal) BatchSessionsPanel(batch: b, isAdmin: true),
               if (next != null) ...[
                 SectionHeader(l.nextSession),
                 RaisedCard(

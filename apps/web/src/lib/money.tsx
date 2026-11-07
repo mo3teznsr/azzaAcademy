@@ -14,7 +14,12 @@ import { useI18n } from '@/lib/i18n/provider';
 const CURRENCY_KEY = 'azza_currency';
 
 interface MoneyValue {
+  /** Currency actually used for display (falls back to AED when its rate is missing). */
   currency: DisplayCurrency;
+  /** Currency the person picked in the switcher, even when it can't be shown. */
+  chosen: DisplayCurrency;
+  /** The pick isn't AED but its rate failed to load, so amounts show in AED. */
+  rateMissing: boolean;
   setCurrency: (c: DisplayCurrency) => void;
   rates: Partial<Record<DisplayCurrency, number>>;
   ratesAvailable: boolean;
@@ -71,6 +76,8 @@ export function MoneyProvider({ children }: { children: ReactNode }) {
     const effective: DisplayCurrency = rates[currency] === undefined ? 'AED' : currency;
     return {
       currency: effective,
+      chosen: currency,
+      rateMissing: effective !== currency,
       setCurrency,
       rates,
       ratesAvailable: !!fx.data,

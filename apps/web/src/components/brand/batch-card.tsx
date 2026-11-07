@@ -2,12 +2,12 @@
 
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n/provider';
-import { useMoney } from '@/lib/money';
 import { batchPriceFils, describeRule } from '@/lib/schedule';
 import { gmtOffset } from '@/lib/i18n/format';
 import type { BatchSummary } from '@/lib/api/types';
 import { BatchStatusChip } from './status-chip';
 import { InitialsAvatar } from './initials-avatar';
+import { Price } from './price';
 
 /** The core choice: one batch = one schedule, one teacher (Components.dc.html · Batch card). */
 export function BatchCard({
@@ -24,7 +24,6 @@ export function BatchCard({
   className?: string;
 }) {
   const { t, f, fill } = useI18n();
-  const money = useMoney();
   const taken = seatsTaken ?? batch._count?.enrollments ?? 0;
   const pct = batch.capacity ? Math.min(100, Math.round((taken / batch.capacity) * 100)) : 0;
   const sessionsTotal = batch.schedule?.sessionCount ?? batch._count?.sessions ?? 0;
@@ -66,7 +65,7 @@ export function BatchCard({
           <InitialsAvatar name={batch.teacher.name} size={32} />
           <bdi>{batch.teacher.name}</bdi>
         </span>
-        <b className="text-lg">{money.display(batchPriceFils(batch))}</b>
+        <Price fils={batchPriceFils(batch)} align="end" className="text-lg font-bold" />
       </div>
     </Comp>
   );

@@ -86,7 +86,7 @@ class Course {
     this.coverStyle = 'sun',
     this.coverImageUrl,
     this.introVideoUrl,
-    this.priceFils = 0,
+    this.priceFils,
     this.status = CourseStatus.published,
     this.modules = const [],
     this.batchCount,
@@ -118,7 +118,7 @@ class Course {
         coverStyle: str(j, 'coverStyle', 'sun'),
         coverImageUrl: strOrNull(j, 'coverImageUrl'),
         introVideoUrl: strOrNull(j, 'introVideoUrl'),
-        priceFils: integer(j, 'priceFils'),
+        priceFils: intOrNull(j, 'priceFils'),
         status: CourseStatus.parse(j['status']),
         modules: list(j, 'modules').map(CourseModule.fromJson).toList()..sort((a, b) => a.order.compareTo(b.order)),
         batchCount: intOrNull(obj(j, '_count'), 'batches') ?? intOrNull(j, 'openBatches'),
@@ -153,7 +153,10 @@ class Course {
 
   /// Short intro video (uploaded file or an https link such as YouTube).
   final String? introVideoUrl;
-  final int priceFils;
+
+  /// The "from" price: the lowest seat price among the course's open batches (ENROLLING/FULL/RUNNING).
+  /// Null when no batch is open. Seats are priced per batch (`Batch.priceFils`).
+  final int? priceFils;
   final CourseStatus status;
   final List<CourseModule> modules;
   final int? batchCount;

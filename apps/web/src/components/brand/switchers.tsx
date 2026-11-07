@@ -32,13 +32,13 @@ export function CurrencySwitcher({ className }: { className?: string }) {
   const { t } = useI18n();
   const money = useMoney();
   return (
-    <Select value={money.currency} onValueChange={(v) => money.setCurrency(v as DisplayCurrency)}>
+    <Select value={money.chosen} onValueChange={(v) => money.setCurrency(v as DisplayCurrency)}>
       <SelectTrigger size="sm" aria-label={t.common.currency} className={cn('rounded-full font-mono text-xs', className)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {DISPLAY_CURRENCIES.map((c) => (
-          <SelectItem key={c} value={c} disabled={c !== 'AED' && !money.rateOf(c)}>
+          <SelectItem key={c} value={c}>
             {c}
             {c !== 'AED' && !money.rateOf(c) ? ` · ${t.money.ratesUnavailable}` : ''}
           </SelectItem>

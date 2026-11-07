@@ -5,29 +5,28 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { rescheduleSessionInput, shiftScheduleInput, type BatchStatus } from '@azza/shared';
+import { shiftScheduleInput, type BatchStatus } from '@azza/shared';
 import type { z } from 'zod';
-import { MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BatchStatusChip, EnrollmentStatusChip, SessionStatusChip } from '@/components/brand/status-chip';
 import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { PageTitle, Panel, StatTile } from '@/components/brand/section';
 import { EmptyState, ErrorState, LoadingBlock, QueryView } from '@/components/brand/states';
-import { batchesApi, sessionsApi, type BatchDetail, type LiveSession } from '@/lib/api';
+import { batchesApi, type BatchDetail, type LiveSession } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { gmtOffset, sessionCode } from '@/lib/i18n/format';
 import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
 import { ProposalNotice, ReviewActions, ReviewNoteQuote, useProposalError } from './proposal-review';
+import { AddSessionButton, CancelSessionDialog, MoveSessionDialog, SeatsEditor, SessionRowActions } from './batch-sessions';
+import { useMoney } from '@/lib/money';
+import { BatchQuizzes } from '../quizzes/batch-quizzes';
 
 export function AdminBatchDetail({ batchId }: { batchId: string }) {
   const q = useQuery({ queryKey: qk.batch(batchId), queryFn: () => batchesApi.get(batchId) });
@@ -45,9 +44,11 @@ const NEXT_STATUS: Partial<Record<BatchStatus, BatchStatus[]>> = {
 
 function Detail({ b }: { b: BatchDetail }) {
   const { t, f, fill } = useI18n();
+  const money = useMoney();
   const qc = useQueryClient();
   const [shiftOpen, setShiftOpen] = useState(false);
   const [moving, setMoving] = useState<LiveSession | null>(null);
+  const [cancelling, setCancelling] = useState<LiveSession | null>(null);
   const enr = useQuery({ queryKey: qk.batchEnrollments(b.id), queryFn: () => batchesApi.enrollments(b.id), retry: false });
   const invalidate = () => void qc.invalidateQueries({ queryKey: qk.batch(b.id) });
   const errorMessage = useProposalError();
@@ -66,11 +67,6 @@ function Detail({ b }: { b: BatchDetail }) {
     onError: (e) => toast.error(errorMessage(e)),
   });
   const pendingReview = b.status === 'PENDING_REVIEW';
-  const cancelSession = useMutation({
-    mutationFn: (id: string) => sessionsApi.cancel(id),
-    onSuccess: () => (toast.success(t.common.saved), invalidate()),
-    onError: (e: Error) => toast.error(e.message),
-  });
   const live = b.sessions.find((s) => s.status === 'LIVE');
   const delivered = b.sessions.filter((s) => s.status === 'ENDED').length;
   const label: Partial<Record<BatchStatus, string>> = {
@@ -120,7 +116,7 @@ function Detail({ b }: { b: BatchDetail }) {
         }
       />
       <p className="text-muted-foreground">
-        {t.admin.batchDetail.teacher}: <bdi className="font-semibold text-foreground">{b.teacher.name}</bdi> · {describeRule(b, f)} {gmtOffset(b.timezone)} · {f.dayMonth(b.startsOn)} → {f.dayMonth(b.endsOn)} · {t.status.sessionLanguage[b.language]}
+        {t.admin.batchDetail.teacher}: <bdi className="font-semibold text-foreground">{b.teacher.name}</bdi> · {money.aed(b.priceFils)} · {describeRule(b, f)} {gmtOffset(b.timezone)} · {f.dayMonth(b.startsOn)} → {f.dayMonth(b.endsOn)} · {t.status.sessionLanguage[b.language]}
       </p>
       {pendingReview && (
         <ProposalNotice tone="pending" title={t.proposals.reviewBanner}>
@@ -140,12 +136,17 @@ function Detail({ b }: { b: BatchDetail }) {
         <StatTile label={t.studio.batch.progress} value={`${f.number(delivered)}/${f.number(b.sessions.length)}`} />
         <StatTile label={t.common.seatsLeft.replace('{n}', '').trim()} value={f.number(b.seatsLeft)} />
       </section>
+      <SeatsEditor b={b} canEdit={b.status !== 'COMPLETED' && b.status !== 'CANCELLED'} />
       <Tabs defaultValue="sessions">
         <TabsList>
           <TabsTrigger value="sessions">{t.admin.batchDetail.sessions}</TabsTrigger>
           <TabsTrigger value="enrollments">{t.admin.batchDetail.enrollments}</TabsTrigger>
+          <TabsTrigger value="quizzes">{t.learning.studio.tab}</TabsTrigger>
         </TabsList>
-        <TabsContent value="sessions" className="mt-4">
+        <TabsContent value="sessions" className="mt-4 flex flex-col gap-3">
+          <div className="flex justify-end">
+            <AddSessionButton b={b} />
+          </div>
           <Panel className="p-2">
             <Table>
               <TableHeader>
@@ -183,26 +184,9 @@ function Detail({ b }: { b: BatchDetail }) {
                         )}
                       </TableCell>
                       <TableCell className="text-end">
-                        {(st === 'SCHEDULED' || st === 'MOVED' || st === 'SOON') && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon-sm" aria-label={t.common.actions}>
-                                <MoreHorizontal />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onSelect={() => setMoving(s)}>{t.admin.batchDetail.reschedule}</DropdownMenuItem>
-                              <DropdownMenuItem
-                                variant="destructive"
-                                onSelect={() => {
-                                  if (window.confirm(t.admin.batchDetail.cancelConfirm)) cancelSession.mutate(s.id);
-                                }}
-                              >
-                                {t.admin.batchDetail.cancelSession}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
+                        <span className="inline-flex justify-end">
+                          <SessionRowActions session={s} admin onMove={setMoving} onCancel={setCancelling} />
+                        </span>
                         {st === 'LIVE' && (
                           <Button asChild size="xs" variant="onair">
                             <Link href={`/studio/live/${s.id}`}>{t.admin.live.joinSilently}</Link>
@@ -254,9 +238,15 @@ function Detail({ b }: { b: BatchDetail }) {
             </QueryView>
           </Panel>
         </TabsContent>
+        <TabsContent value="quizzes" className="mt-4">
+          <Panel>
+            <BatchQuizzes batchId={b.id} courseId={b.courseId} />
+          </Panel>
+        </TabsContent>
       </Tabs>
       <ShiftDialog b={b} open={shiftOpen} onOpenChange={setShiftOpen} onDone={invalidate} />
-      <RescheduleDialog session={moving} timezone={b.timezone} onClose={() => setMoving(null)} onDone={invalidate} />
+      <MoveSessionDialog b={b} session={moving} onClose={() => setMoving(null)} />
+      <CancelSessionDialog b={b} session={cancelling} onClose={() => setCancelling(null)} />
     </>
   );
 }
@@ -293,59 +283,6 @@ function ShiftDialog({ b, open, onOpenChange, onDone }: { b: BatchDetail; open: 
         <DialogFooter>
           <Button type="submit" form="shift-form" variant="ink" disabled={m.isPending}>
             {t.admin.batchDetail.applyShift}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function RescheduleDialog({ session, timezone, onClose, onDone }: { session: LiveSession | null; timezone: string; onClose: () => void; onDone: () => void }) {
-  const { t, f } = useI18n();
-  const form = useForm<z.input<typeof rescheduleSessionInput>, unknown, z.output<typeof rescheduleSessionInput>>({
-    resolver: zodResolver(rescheduleSessionInput),
-    defaultValues: { startsAt: '', reason: '', notifyStudents: true },
-  });
-  const m = useMutation({
-    mutationFn: (v: z.output<typeof rescheduleSessionInput>) => sessionsApi.reschedule(session!.id, v),
-    onSuccess: () => {
-      toast.success(t.common.saved);
-      onDone();
-      onClose();
-      form.reset();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  return (
-    <Dialog open={!!session} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {t.admin.batchDetail.reschedule} · {session ? sessionCode(session.number) : ''}
-          </DialogTitle>
-        </DialogHeader>
-        {session && (
-          <p className="text-sm text-muted-foreground">
-            {f.dateTime(session.startsAt, timezone)} · {timezone}
-          </p>
-        )}
-        <form id="move-form" className="flex flex-col gap-4" onSubmit={form.handleSubmit((v) => m.mutate(v))} noValidate>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="startsAt">{t.admin.batchDetail.newStart}</Label>
-            <Input id="startsAt" type="datetime-local" {...form.register('startsAt', { setValueAs: (v: string) => (v ? new Date(v).toISOString() : '') })} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="reason">{t.admin.batchDetail.reason}</Label>
-            <Textarea id="reason" rows={2} {...form.register('reason')} />
-          </div>
-          <label className="flex items-center justify-between gap-3 text-sm">
-            {t.admin.batchDetail.notify}
-            <Switch checked={form.watch('notifyStudents')} onCheckedChange={(v) => form.setValue('notifyStudents', v)} />
-          </label>
-        </form>
-        <DialogFooter>
-          <Button type="submit" form="move-form" variant="ink" disabled={m.isPending}>
-            {t.common.apply}
           </Button>
         </DialogFooter>
       </DialogContent>

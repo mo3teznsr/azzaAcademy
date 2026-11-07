@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { batchListQuery, createBatchInput, previewScheduleInput, reviewDecisionInput, shiftScheduleInput, updateBatchInput } from '@azza/shared';
+import { addSessionInput, batchListQuery, createBatchInput, previewScheduleInput, reviewDecisionInput, shiftScheduleInput, updateBatchInput } from '@azza/shared';
 import { currentUser, requireRole } from '../../http/middleware';
 import { paged } from '../../http/pagination';
 import type { AppEnv } from '../../http/types';
@@ -19,6 +19,9 @@ export function batchRoutes(service: BatchService) {
     )
     .post('/', requireRole('TEACHER', 'ADMIN'), validate('json', createBatchInput), async (c) =>
       c.json(await service.create(c.req.valid('json'), currentUser(c)), 201),
+    )
+    .post('/:id/sessions', requireRole('TEACHER', 'ADMIN'), validate('json', addSessionInput), async (c) =>
+      c.json(await service.addSession(c.req.param('id'), c.req.valid('json'), currentUser(c)), 201),
     )
     .post('/:id/submit', requireRole('TEACHER'), async (c) => c.json(await service.submit(c.req.param('id'), currentUser(c))))
     .post('/:id/review', requireRole('ADMIN'), validate('json', reviewDecisionInput), async (c) =>

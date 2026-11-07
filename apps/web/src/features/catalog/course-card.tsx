@@ -5,7 +5,7 @@ import { CourseCover } from '@/components/brand/course-cover';
 import { useCategoryLabel } from '@/components/brand/category';
 import { RatingInline } from '@/components/brand/rating';
 import { useI18n } from '@/lib/i18n/provider';
-import { useMoney } from '@/lib/money';
+import { Price } from '@/components/brand/price';
 import { batchPriceFils } from '@/lib/schedule';
 import type { BatchSummary, Course } from '@/lib/api/types';
 import { SaveToggle } from '../saved/use-saved';
@@ -13,10 +13,10 @@ import { SaveToggle } from '../saved/use-saved';
 /** Catalog card: cover, category, rating, next batch and the lowest price. The heart sits outside the link. */
 export function CourseCard({ course, batches }: { course: Course; batches: BatchSummary[] }) {
   const { t, f, pick } = useI18n();
-  const money = useMoney();
   const categoryLabel = useCategoryLabel();
   const title = pick(course.titleEn, course.titleAr);
   const next = batches.find((b) => b.status === 'ENROLLING') ?? batches[0];
+  // "From" = the lowest listed batch price; the course's own derived price when no batches came with it.
   const minPrice = batches.length ? Math.min(...batches.map(batchPriceFils)) : course.priceFils;
   return (
     <article className="group relative h-full">
@@ -38,9 +38,14 @@ export function CourseCard({ course, batches }: { course: Course; batches: Batch
               <span className="label-mono block">{t.catalog.nextBatch}</span>
               <span className="text-foreground">{next ? `${next.code} · ${f.dayMonth(next.startsOn, next.timezone)}` : t.catalog.noUpcoming}</span>
             </span>
-            <span className="text-end text-muted-foreground">
-              {t.catalog.from} <b className="block text-base text-foreground">{money.display(minPrice)}</b>
-            </span>
+            {minPrice === null ? (
+              <span className="text-end text-muted-foreground">{t.money.noOpenBatches}</span>
+            ) : (
+              <span className="text-end text-muted-foreground">
+                {t.catalog.from}
+                <Price fils={minPrice} compact align="end" className="flex text-base font-bold text-foreground" />
+              </span>
+            )}
           </div>
         </div>
       </Link>

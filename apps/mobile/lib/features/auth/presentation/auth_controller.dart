@@ -79,6 +79,14 @@ class AuthController extends AsyncNotifier<AppUser?> {
 
   void updateUser(AppUser user) => state = AsyncData(user);
 
+  /// Re-fetches the session without passing through splash (e.g. after an admin made the user a teacher).
+  /// The router follows the new role on the state change.
+  Future<AppUser?> refreshSession() async {
+    final user = await ref.read(authRepositoryProvider).restore();
+    state = AsyncData(user);
+    return user;
+  }
+
   Future<void> retry() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => ref.read(authRepositoryProvider).restore());

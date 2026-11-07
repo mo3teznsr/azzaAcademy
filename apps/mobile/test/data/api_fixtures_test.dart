@@ -84,7 +84,7 @@ void main() {
       }));
       final courses = await repo.courses();
       expect(courses, hasLength(4));
-      expect(courses.every((c) => c.priceFils > 0), isTrue);
+      expect(courses.every((c) => (c.priceFils ?? 0) > 0), isTrue);
       final c = await repo.course('product-design-foundations');
       expect(c.modules, hasLength(12));
       expect(c.level, CourseLevel.beginner);

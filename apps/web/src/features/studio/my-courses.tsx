@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { CourseCover } from '@/components/brand/course-cover';
+import { Price } from '@/components/brand/price';
 import { CourseStatusChip } from '@/components/brand/status-chip';
 import { PageTitle } from '@/components/brand/section';
 import { EmptyState, LoadingBlock, QueryView } from '@/components/brand/states';
@@ -63,7 +64,10 @@ function CourseRow({ c }: { c: Course }) {
             {categoryLabel(c)} · {t.status.level[c.level]} · {fill(t.studio.courses.updated, { d: f.dayMonth(c.updatedAt) })}
           </span>
         </span>
-        <CourseStatusChip status={c.status} />
+        <span className="flex shrink-0 flex-col items-end gap-1.5">
+          <CourseStatusChip status={c.status} />
+          <Price fils={c.priceFils} from compact align="end" className="text-sm" />
+        </span>
       </Link>
       {sentBack && (
         <div role="note" className="flex flex-col gap-1.5 rounded-[14px] bg-peach p-3.5 text-ink">

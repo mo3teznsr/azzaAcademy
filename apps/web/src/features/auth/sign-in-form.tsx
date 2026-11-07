@@ -3,16 +3,16 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { authClient } from '@/lib/auth/client';
 import { homeFor, safeNext, rolesForPath } from '@/lib/auth/roles';
 import { useI18n } from '@/lib/i18n/provider';
-import { AuthShell, FieldError, FormBanner } from './auth-shell';
+import { AuthShell, FormBanner } from './auth-shell';
+import { Field, IconInput, PasswordInput } from './fields';
 import { signInSchema, type SignInValues } from './schemas';
 
 export function SignInForm() {
@@ -22,6 +22,10 @@ export function SignInForm() {
   const [error, setError] = useState<string | null>(null);
   const form = useForm<SignInValues>({ resolver: zodResolver(signInSchema), defaultValues: { email: '', password: '', remember: true } });
   const { errors, isSubmitting } = form.formState;
+  const emailValue = useWatch({ control: form.control, name: 'email' });
+  const remember = useWatch({ control: form.control, name: 'remember' });
+  const nextParam = safeNext(params.get('next'));
+  const signUpHref = nextParam ? `/sign-up?next=${encodeURIComponent(nextParam)}` : '/sign-up';
 
   const onSubmit = form.handleSubmit(async (values) => {
     setError(null);
@@ -46,26 +50,34 @@ export function SignInForm() {
     <AuthShell kicker={t.auth.signIn.kicker} title={t.auth.signIn.title} sub={t.auth.signIn.sub}>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         {error && <FormBanner tone="error">{error}</FormBanner>}
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email" className="text-[13px] text-muted-foreground">
-            {t.auth.signIn.email}
-          </Label>
-          <Input id="email" type="email" autoComplete="email" dir="ltr" aria-invalid={!!errors.email} {...form.register('email')} />
-          <FieldError message={errors.email && t.auth.errors.email} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-[13px] text-muted-foreground">
-              {t.auth.signIn.password}
-            </Label>
+        <Field id="email" label={t.auth.signIn.email} error={errors.email && t.auth.errors.email}>
+          <IconInput
+            id="email"
+            icon={Mail}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            dir="ltr"
+            placeholder={t.auth.placeholders.email}
+            invalid={!!errors.email}
+            hasValue={!!emailValue}
+            onClear={() => form.setValue('email', '', { shouldValidate: form.formState.isSubmitted })}
+            {...form.register('email')}
+          />
+        </Field>
+        <Field
+          id="password"
+          label={t.auth.signIn.password}
+          aside={
             <Link href="/forgot-password" className="link-sun text-[13px]">
               {t.auth.signIn.forgot}
             </Link>
-          </div>
-          <Input id="password" type="password" autoComplete="current-password" aria-invalid={!!errors.password} {...form.register('password')} />
-        </div>
+          }
+        >
+          <PasswordInput id="password" autoComplete="current-password" placeholder={t.auth.placeholders.password} invalid={!!errors.password} {...form.register('password')} />
+        </Field>
         <label className="flex items-center gap-2.5 text-sm">
-          <Checkbox checked={form.watch('remember')} onCheckedChange={(v) => form.setValue('remember', v === true)} />
+          <Checkbox checked={remember} onCheckedChange={(v) => form.setValue('remember', v === true)} />
           {t.auth.signIn.keep}
         </label>
         <Button type="submit" size="lg" disabled={isSubmitting}>
@@ -73,7 +85,7 @@ export function SignInForm() {
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           {t.auth.signIn.newHere}{' '}
-          <Link href="/sign-up" className="link-sun">
+          <Link href={signUpHref} className="link-sun">
             {t.auth.signIn.create}
           </Link>
         </p>

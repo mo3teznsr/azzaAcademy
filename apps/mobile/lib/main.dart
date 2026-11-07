@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,18 +17,7 @@ Future<void> main() async {
   await initializeDateFormatting();
   final prefs = await SharedPreferences.getInstance();
 
-  // Stripe is optional: without a publishable key the card option is disabled.
-  if (config.stripeEnabled) {
-    Stripe.publishableKey = config.stripePublishableKey;
-    if (config.stripeMerchantId.isNotEmpty) {
-      Stripe.merchantIdentifier = config.stripeMerchantId;
-    }
-    try {
-      await Stripe.instance.applySettings();
-    } catch (e) {
-      debugPrint('[stripe] init failed: $e');
-    }
-  }
+  // Card payments use Stripe Checkout's hosted page (opened in an in-app browser), so no Stripe SDK setup here.
 
   // Firebase is optional: without google-services files push stays disabled.
   final push = await FirebasePushService.init();

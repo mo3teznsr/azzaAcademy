@@ -8,6 +8,8 @@ export interface CourseModuleRecord {
   titleAr: string | null;
   descriptionEn: string | null;
   descriptionAr: string | null;
+  /** Syllabus preview: lesson titles only (bodies are gated, see `GET /courses/:id/lessons`). */
+  lessons?: Array<{ id: string; order: number; titleEn: string; titleAr: string | null }>;
 }
 
 export interface CategoryRef {
@@ -29,7 +31,8 @@ export interface CourseRecord {
   coverStyle: string;
   coverImageUrl: string | null;
   introVideoUrl: string | null;
-  priceFils: number;
+  /** Lowest public batch price ("from"); null while no batch is public. */
+  priceFils: number | null;
   outcomesEn: string[];
   outcomesAr: string[];
   requirementsEn: string[];
@@ -73,7 +76,8 @@ export interface CourseWriteData {
   createdById?: string | null;
   reviewNote?: string | null;
   submittedAt?: Date | null;
-  modules?: Array<{ order: number; titleEn: string; titleAr?: string | null; descriptionEn?: string | null; descriptionAr?: string | null }>;
+  /** Modules with an `id` of this course are kept (with their lessons) and updated; the rest are created; missing ones are deleted. */
+  modules?: Array<{ id?: string; order: number; titleEn: string; titleAr?: string | null; descriptionEn?: string | null; descriptionAr?: string | null }>;
 }
 
 export interface CourseFilter {
@@ -97,7 +101,9 @@ export interface CourseRepository {
   list(filter: CourseFilter): Promise<{ items: CourseRecord[]; total: number }>;
   findById(id: string): Promise<CourseRecord | null>;
   findBySlug(slug: string): Promise<CourseRecord | null>;
-  create(data: CourseWriteData & Required<Pick<CourseWriteData, 'slug' | 'titleEn' | 'category' | 'level' | 'priceFils'>>): Promise<CourseRecord>;
+  create(data: CourseWriteData & Required<Pick<CourseWriteData, 'slug' | 'titleEn' | 'category' | 'level'>>): Promise<CourseRecord>;
+  /** Recomputes the course's "from" price from its public batches. */
+  refreshFromPrice(courseId: string): Promise<void>;
   update(id: string, data: CourseWriteData): Promise<CourseRecord>;
   countActiveBatches(id: string): Promise<number>;
   /** Same category first, then same level; published only. */
@@ -105,15 +111,18 @@ export interface CourseRepository {
 }
 
 const include = {
-  modules: { orderBy: { order: 'asc' as const } },
+  modules: {
+    orderBy: { order: 'asc' as const },
+    include: { lessons: { orderBy: { order: 'asc' as const }, select: { id: true, order: true, titleEn: true, titleAr: true } } },
+  },
   categoryRef: { select: { slug: true, nameEn: true, nameAr: true, icon: true } },
 };
 
 const ORDER: Record<CourseSort, object[]> = {
   newest: [{ createdAt: 'desc' }],
   rating: [{ ratingAvg: 'desc' }, { ratingCount: 'desc' }],
-  price_asc: [{ priceFils: 'asc' }],
-  price_desc: [{ priceFils: 'desc' }],
+  price_asc: [{ priceFils: { sort: 'asc', nulls: 'last' } }],
+  price_desc: [{ priceFils: { sort: 'desc', nulls: 'last' } }],
   popular: [{ ratingCount: 'desc' }, { ratingAvg: 'desc' }],
 };
 
@@ -162,7 +171,15 @@ export class PrismaCourseRepository implements CourseRepository {
   }
 
   create({ modules = [], faq, ...data }: Parameters<CourseRepository['create']>[0]) {
-    return this.db.course.create({ data: { ...data, ...(faq && { faq }), modules: { create: modules } }, include });
+    return this.db.course.create({ data: { ...data, ...(faq && { faq }), modules: { create: modules.map(({ id: _id, ...m }) => m) } }, include });
+  }
+
+  async refreshFromPrice(courseId: string) {
+    const agg = await this.db.batch.aggregate({
+      where: { courseId, status: { in: ['ENROLLING', 'FULL', 'RUNNING'] } },
+      _min: { priceFils: true },
+    });
+    await this.db.course.update({ where: { id: courseId }, data: { priceFils: agg._min.priceFils ?? null } });
   }
 
   async related(course: CourseRecord, take: number) {
@@ -181,8 +198,24 @@ export class PrismaCourseRepository implements CourseRepository {
   async update(id: string, { modules, faq, ...data }: CourseWriteData) {
     return this.db.$transaction(async (tx) => {
       if (modules) {
-        await tx.courseModule.deleteMany({ where: { courseId: id } });
-        await tx.courseModule.createMany({ data: modules.map((m) => ({ ...m, courseId: id })) });
+        // Update in place so lessons and quiz links survive a curriculum save.
+        const existing = await tx.courseModule.findMany({ where: { courseId: id }, orderBy: { order: 'asc' }, select: { id: true } });
+        const known = new Set(existing.map((m) => m.id));
+        // Clients that never send ids (older apps) keep the existing modules by position.
+        const byPosition = modules.every((m) => !m.id);
+        const plan = modules.map((m, i) => {
+          const { id: moduleId, ...data } = m;
+          const keep = byPosition ? existing[i]?.id : moduleId && known.has(moduleId) ? moduleId : undefined;
+          return { keep, data };
+        });
+        const kept = new Set(plan.flatMap((p) => (p.keep ? [p.keep] : [])));
+        await tx.courseModule.deleteMany({ where: { courseId: id, id: { notIn: [...kept] } } });
+        // Park kept rows on negative orders first: (courseId, order) is unique.
+        for (const [i, p] of plan.entries()) if (p.keep) await tx.courseModule.update({ where: { id: p.keep }, data: { order: -1 - i } });
+        for (const p of plan) {
+          if (p.keep) await tx.courseModule.update({ where: { id: p.keep }, data: p.data });
+          else await tx.courseModule.create({ data: { ...p.data, courseId: id } });
+        }
       }
       return tx.course.update({ where: { id }, data: { ...data, ...(faq && { faq }) }, include });
     });

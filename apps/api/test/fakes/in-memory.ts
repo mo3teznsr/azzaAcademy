@@ -101,6 +101,9 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   async findOrder(id: string) {
     return this.orders.find((o) => o.id === id) ?? null;
   }
+  async findOrderByCheckoutSession(sessionId: string) {
+    return this.orders.find((o) => o.stripeCheckoutSessionId === sessionId) ?? null;
+  }
   async findOrderByPaymentIntent(pi: string) {
     return this.orders.find((o) => o.stripePaymentIntentId === pi) ?? null;
   }

@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BadgeCheck } from 'lucide-react';
+import { BadgeCheck, Hash, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import { SignalMark } from '@/components/brand/signal-mark';
 import { ErrorState, LoadingBlock } from '@/components/brand/states';
@@ -115,9 +115,21 @@ function CodeForm({ initial = '' }: { initial?: string }) {
     <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
       <div className="flex min-w-60 flex-1 flex-col gap-1.5">
         <Label htmlFor="cert-code">{t.verify.inputLabel}</Label>
-        <Input id="cert-code" value={value} onChange={(e) => setValue(e.target.value)} placeholder="AZ-CERT-7Q4K" dir="ltr" autoComplete="off" spellCheck={false} className="h-11 font-mono uppercase" />
+        <InputGroup>
+          <InputGroupAddon>
+            <Hash aria-hidden />
+          </InputGroupAddon>
+          <InputGroupInput id="cert-code" value={value} onChange={(e) => setValue(e.target.value)} placeholder="AZ-CERT-7Q4K" dir="ltr" autoComplete="off" spellCheck={false} className="font-mono uppercase" />
+          {value && (
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton size="icon-xs" aria-label={t.auth.clear} onClick={() => setValue('')}>
+                <X />
+              </InputGroupButton>
+            </InputGroupAddon>
+          )}
+        </InputGroup>
       </div>
-      <Button type="submit">{t.verify.check}</Button>
+      <Button type="submit" size="lg">{t.verify.check}</Button>
     </form>
   );
 }

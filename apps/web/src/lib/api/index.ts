@@ -7,5 +7,7 @@ export { sessionsApi } from './sessions';
 export { meApi, itemsOf } from './me';
 export { checkoutApi, isStripeResult, isWaitlisted } from './checkout';
 export { contentApi } from './content';
+export * from './learning';
 export { teacherApi } from './teacher';
 export { adminApi } from './admin';
+export { instructorsApi, type InstructorApplication, type InstructorApplicationStatus, type DirectoryTeacher } from './instructors';

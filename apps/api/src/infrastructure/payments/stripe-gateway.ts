@@ -1,6 +1,8 @@
 import Stripe from 'stripe';
 import { BASE_CURRENCY } from '@azza/shared';
 import type {
+  CheckoutSessionResult,
+  CreateCheckoutSessionArgs,
   CreatePaymentIntentArgs,
   PaymentGateway,
   PaymentIntentResult,
@@ -33,6 +35,32 @@ export class StripePaymentGateway implements PaymentGateway {
     return { id: intent.id, clientSecret: intent.client_secret };
   }
 
+  async createCheckoutSession(args: CreateCheckoutSessionArgs): Promise<CheckoutSessionResult> {
+    const metadata = { reference: args.reference, ...args.metadata };
+    const session = await this.stripe.checkout.sessions.create(
+      {
+        mode: 'payment',
+        client_reference_id: args.reference,
+        customer_email: args.customerEmail,
+        line_items: [
+          {
+            quantity: 1,
+            price_data: { currency: BASE_CURRENCY.toLowerCase(), unit_amount: args.amountFils, product_data: { name: args.productName } },
+          },
+        ],
+        metadata,
+        payment_intent_data: { metadata },
+        success_url: args.successUrl,
+        cancel_url: args.cancelUrl,
+        // Stripe needs at least 30 minutes; the seat hold covers the rest.
+        expires_at: Math.max(Math.floor(args.expiresAt.getTime() / 1000), Math.floor(Date.now() / 1000) + 31 * 60),
+      },
+      { idempotencyKey: `checkout-${args.reference}` },
+    );
+    if (!session.url) throw new AppError('Stripe did not return a checkout URL', 500, 'STRIPE');
+    return { id: session.id, url: session.url };
+  }
+
   async refund(paymentIntentId: string, amountFils: number) {
     await this.stripe.refunds.create({ payment_intent: paymentIntentId, amount: amountFils });
   }
@@ -46,6 +74,18 @@ export class StripePaymentGateway implements PaymentGateway {
         const intent = event.data.object;
         return { type: 'payment.succeeded', paymentIntentId: intent.id, feeFils: await this.feeFor(intent) };
       }
+      // Hosted Checkout: paid immediately (cards) or later (async methods).
+      case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded': {
+        const session = event.data.object;
+        if (session.payment_status !== 'paid') return { type: 'ignored' };
+        const piId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
+        const intent = piId ? await this.stripe.paymentIntents.retrieve(piId) : null;
+        return { type: 'payment.succeeded', checkoutSessionId: session.id, paymentIntentId: piId, feeFils: intent ? await this.feeFor(intent) : 0 };
+      }
+      case 'checkout.session.async_payment_failed':
+      case 'checkout.session.expired':
+        return { type: 'payment.failed', checkoutSessionId: event.data.object.id };
       case 'payment_intent.payment_failed':
         return { type: 'payment.failed', paymentIntentId: event.data.object.id };
       case 'charge.refunded': {
@@ -71,6 +111,10 @@ export class FakePaymentGateway implements PaymentGateway {
   readonly refunds: Array<{ paymentIntentId: string; amountFils: number }> = [];
   async createPaymentIntent(args: CreatePaymentIntentArgs) {
     return { id: `pi_dev_${args.reference}`, clientSecret: `pi_dev_${args.reference}_secret` };
+  }
+  async createCheckoutSession(args: CreateCheckoutSessionArgs) {
+    // Dev: no hosted page — go straight to the success URL; confirm with a fake webhook POST.
+    return { id: `cs_dev_${args.reference}`, url: args.successUrl };
   }
   async refund(paymentIntentId: string, amountFils: number) {
     this.refunds.push({ paymentIntentId, amountFils });

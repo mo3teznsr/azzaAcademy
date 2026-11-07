@@ -11,6 +11,8 @@ export const qk = {
   waitlist: ['me', 'waitlist'] as const,
   certificate: (code: string) => ['certificate', code.toUpperCase()] as const,
   teacher: (id: string) => ['teacher-profile', id] as const,
+  teachersDirectory: ['teachers-directory'] as const,
+  myInstructorApplication: ['me', 'instructor-application'] as const,
   submissions: (assignmentId: string) => ['assignment', assignmentId, 'submissions'] as const,
   myOrders: ['me', 'orders'] as const,
   myAssignments: ['me', 'assignments'] as const,
@@ -29,6 +31,12 @@ export const qk = {
   batchEnrollments: (id: string) => ['batch', id, 'enrollments'] as const,
   materials: (batchId: string) => ['batch', batchId, 'materials'] as const,
   assignments: (batchId: string) => ['batch', batchId, 'assignments'] as const,
+  /** Lessons of a course (gated); invalidate after editing lessons. */
+  lessons: (courseId: string) => ['course', courseId, 'lessons'] as const,
+  quizzes: (batchId: string) => ['batch', batchId, 'quizzes'] as const,
+  quiz: (id: string) => ['quiz', id] as const,
+  quizResults: (id: string) => ['quiz', id, 'results'] as const,
+  myQuizzes: ['me', 'quizzes'] as const,
   session: (id: string) => ['session', id] as const,
   messages: (id: string) => ['session', id, 'messages'] as const,
   attendance: (id: string) => ['session', id, 'attendance'] as const,
@@ -49,5 +57,7 @@ export const qk = {
     couponUsage: (id: string) => ['admin', 'coupons', id, 'usage'] as const,
     payoutRuns: ['admin', 'payout-runs'] as const,
     payoutRun: (id: string) => ['admin', 'payout-runs', id] as const,
+    /** Prefix `['admin', 'instructor-applications']` invalidates every tab. */
+    instructorApplications: (status?: string) => ['admin', 'instructor-applications', status ?? 'all'] as const,
   },
 };

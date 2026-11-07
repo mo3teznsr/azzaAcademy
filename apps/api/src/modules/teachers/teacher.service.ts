@@ -5,6 +5,20 @@ import type { TeacherRepository } from './teacher.repository';
 export class TeacherService {
   constructor(private readonly repo: TeacherRepository) {}
 
+  /** `GET /teachers` — the public instructors directory; teachers with open batches first. */
+  async list() {
+    const rows = await this.repo.listTeachers();
+    const items = rows.map(({ teaching, ...t }) => ({
+      ...t,
+      languages: [...new Set(teaching.map((b) => b.language))].sort(),
+      categories: [...new Set(teaching.map((b) => b.course.category))].sort(),
+      courses: [...new Map(teaching.map((b) => [b.course.id, { id: b.course.id, slug: b.course.slug, titleEn: b.course.titleEn, titleAr: b.course.titleAr }])).values()],
+      openBatches: teaching.filter((b) => b.status === 'ENROLLING' || b.status === 'FULL').length,
+    }));
+    items.sort((a, b) => b.openBatches - a.openBatches || b.courses.length - a.courses.length);
+    return { items };
+  }
+
   /** `GET /teachers/:id` — public profile. 404 unless the user is a (non-banned) teacher. */
   async profile(id: string) {
     const teacher = await this.repo.findTeacher(id);
@@ -33,7 +47,7 @@ export class TeacherService {
         scheduleSummary: scheduleSummary(b.schedule),
         seatsLeft: Math.max(0, b.capacity - (held.get(b.id) ?? 0)),
         status: b.status,
-        priceFils: b.priceFils ?? b.course.priceFils,
+        priceFils: b.priceFils,
       })),
     };
   }

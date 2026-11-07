@@ -13,19 +13,18 @@ import { Kicker } from './seat';
 import { Wrap } from './wrap';
 
 const PROPOSE = '/studio/courses/new';
+const APPLY = '/teach';
 
-/** 11 · Teach on Azza: a split band. Teachers go straight to the proposal form; signed out → sign in first. */
+/** 11 · Teach on Azza: a split band. Teachers and admins go straight to the proposal form; everyone else applies to teach first. */
 export function Teach() {
   const { t, dir } = useI18n();
   const c = t.landing.teach;
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   const calm = useCalm();
   const canPropose = role === 'TEACHER' || role === 'ADMIN';
-  const cta = !user
-    ? { href: `/sign-in?next=${encodeURIComponent(PROPOSE)}`, label: c.ctaSignedOut }
-    : canPropose
-      ? { href: PROPOSE, label: c.cta }
-      : { href: 'mailto:teach@azza.live', label: c.ctaLearner };
+  const cta = canPropose ? { href: PROPOSE, label: c.cta } : { href: APPLY, label: c.ctaApply };
+  const body = canPropose ? c.body : c.bodyApply;
+  const steps = canPropose ? c.steps : c.stepsApply;
   const from = dir === 'rtl' ? 'inset(0 0 0 100%)' : 'inset(0 100% 0 0)';
 
   return (
@@ -39,10 +38,10 @@ export function Teach() {
                 {c.titleA}
                 <span className="block font-light text-mint">{c.titleB}</span>
               </h2>
-              <p className="max-w-md text-lg text-soft-foreground">{c.body}</p>
+              <p className="max-w-md text-lg text-soft-foreground">{body}</p>
             </div>
             <ol className="grid gap-4 sm:grid-cols-3">
-              {c.steps.map((s, i) => (
+              {steps.map((s, i) => (
                 <li key={s} className="flex flex-col gap-1 border-t border-border pt-3 text-sm">
                   <span className="timecode text-mint">{`0${i + 1}`}</span>
                   <span className="text-soft-foreground">{s}</span>

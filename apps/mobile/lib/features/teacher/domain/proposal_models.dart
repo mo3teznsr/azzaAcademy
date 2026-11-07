@@ -19,6 +19,7 @@ class ModuleDraft {
 }
 
 /// Body of `POST /courses` and `PATCH /courses/:id` (a teacher never sends `status`; the server makes the slug).
+/// No price: seats are priced per batch, and the course's "from" price is derived from its open batches.
 @immutable
 class CourseDraft {
   const CourseDraft({
@@ -31,7 +32,6 @@ class CourseDraft {
     this.coverStyle = 'sun',
     this.coverImageUrl,
     this.introVideoUrl,
-    this.priceAed = 0,
     this.modules = const [],
     this.outcomesEn = const [],
     this.outcomesAr = const [],
@@ -51,7 +51,6 @@ class CourseDraft {
   final String coverStyle;
   final String? coverImageUrl;
   final String? introVideoUrl;
-  final num priceAed;
   final List<ModuleDraft> modules;
   final List<String> outcomesEn;
   final List<String> outcomesAr;
@@ -75,7 +74,6 @@ class CourseDraft {
         'coverStyle': coverStyle,
         'coverImageUrl': ?_opt(coverImageUrl),
         'introVideoUrl': ?_opt(introVideoUrl),
-        'priceAed': priceAed,
         'modules': [
           for (final (i, m) in modules.indexed)
             {
@@ -137,7 +135,7 @@ class BatchDraft {
     required this.language,
     required this.timezone,
     required this.schedule,
-    this.priceAed,
+    required this.priceAed,
     this.waitlistEnabled = true,
     this.minStudents = 0,
   });
@@ -148,7 +146,9 @@ class BatchDraft {
   final SessionLanguage language;
   final String timezone;
   final ScheduleDraft schedule;
-  final num? priceAed;
+
+  /// Seat price in AED (required: pricing lives on the batch).
+  final num priceAed;
   final bool waitlistEnabled;
   final int minStudents;
 
@@ -160,7 +160,7 @@ class BatchDraft {
         'capacity': capacity,
         'language': language.wire,
         'timezone': timezone,
-        'priceAed': ?priceAed,
+        'priceAed': priceAed,
         'waitlistEnabled': waitlistEnabled,
         'minStudents': minStudents,
         'schedule': schedule.toJson(),

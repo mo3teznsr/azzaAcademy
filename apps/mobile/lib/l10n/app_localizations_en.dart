@@ -30,6 +30,197 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get noOpenBatchesShort => 'No open batches';
+
+  @override
+  String chargedAsAed(String amount) {
+    return 'Charged as $amount';
+  }
+
+  @override
+  String get ratesUnavailableHint =>
+      'Shown in AED: exchange rates are unavailable right now.';
+
+  @override
+  String get decrease => 'Decrease';
+
+  @override
+  String get increase => 'Increase';
+
+  @override
+  String get paymentPageNotOpened =>
+      'Couldn\'t open the payment page. Tap “Open payment page” to try again.';
+
+  @override
+  String get payCardCheckoutSub =>
+      'Card, Apple Pay or Google Pay on Stripe\'s secure page · charged in AED';
+
+  @override
+  String get confirmingPayment => 'Confirming your payment…';
+
+  @override
+  String confirmingPaymentBody(String code, String amount) {
+    return 'Finish paying $amount on Stripe\'s secure page. Your seat in $code is held, and this screen updates as soon as the payment is confirmed.';
+  }
+
+  @override
+  String get checkingPayment => 'Checking every few seconds…';
+
+  @override
+  String get openPaymentPage => 'Open payment page';
+
+  @override
+  String get coursePricedPerBatch =>
+      'No price here: you set the seat price on each batch. Students see the lowest open batch as the course\'s “from” price.';
+
+  @override
+  String get seatPriceRequired => 'Enter a seat price in AED (more than 0).';
+
+  @override
+  String get seatPriceAed => 'Seat price (AED)';
+
+  @override
+  String get seatPriceHint => '450';
+
+  @override
+  String get seatPriceHelper =>
+      'What one student pays for this batch. Charged in AED.';
+
+  @override
+  String get seatsHelper => 'How many students can enrol (1–500).';
+
+  @override
+  String get sessionAdded => 'Session added.';
+
+  @override
+  String cancelSessionTitle(String slate) {
+    return 'Cancel $slate?';
+  }
+
+  @override
+  String get cancelSessionBody =>
+      'Students are notified and the session leaves their schedule. This can\'t be undone.';
+
+  @override
+  String get keepSession => 'Keep session';
+
+  @override
+  String get cancelSession => 'Cancel session';
+
+  @override
+  String get sessionCancelled => 'Session cancelled.';
+
+  @override
+  String get upcomingSessions => 'Upcoming sessions';
+
+  @override
+  String get addSession => 'Add session';
+
+  @override
+  String get noUpcomingSessions => 'No upcoming sessions.';
+
+  @override
+  String get moveSessionAction => 'Move session';
+
+  @override
+  String get requestMove => 'Request a move';
+
+  @override
+  String showAllN(String count) {
+    return 'Show all $count';
+  }
+
+  @override
+  String get sessionTitleRequired =>
+      'Give the session a title (at least 2 characters).';
+
+  @override
+  String get errStartInPast => 'Pick a time in the future.';
+
+  @override
+  String addSessionTitle(String code) {
+    return 'Add a session to $code';
+  }
+
+  @override
+  String get addSessionLead =>
+      'An extra live session outside the weekly schedule: a catch-up, a bonus or an exam.';
+
+  @override
+  String get sessionTitleLabel => 'Session title';
+
+  @override
+  String get sessionTitleHint => 'Catch-up: review and Q&A';
+
+  @override
+  String get sessionDate => 'Date';
+
+  @override
+  String sessionTimeOtherZone(String device, String batchZone) {
+    return 'Times are in your phone\'s timezone ($device). This batch runs in $batchZone.';
+  }
+
+  @override
+  String sessionTimeZone(String zone) {
+    return 'Times are in the batch timezone, $zone.';
+  }
+
+  @override
+  String get sessionLengthHelper => '15 to 480 minutes, in steps of 15.';
+
+  @override
+  String get notifyStudentsNow => 'Notify students';
+
+  @override
+  String get notifyStudentsNowSub =>
+      'Send them a notification and an email now.';
+
+  @override
+  String get couldNotAddSession => 'Couldn\'t add the session';
+
+  @override
+  String editSeatsTitle(String code) {
+    return 'Seats in $code';
+  }
+
+  @override
+  String editSeatsLead(String count) {
+    return '$count students are enrolled. Seats can\'t go below that.';
+  }
+
+  @override
+  String get couldNotSaveSeats => 'Couldn\'t change the seats';
+
+  @override
+  String get saveSeats => 'Save seats';
+
+  @override
+  String get seatsSaved => 'Seats updated.';
+
+  @override
+  String get editSeats => 'Edit seats';
+
+  @override
+  String get sessionMoved => 'Session moved.';
+
+  @override
+  String get moveReasonHint => 'Public holiday';
+
+  @override
+  String get moveSessionNow => 'Move session';
+
+  @override
+  String get errConflict => 'That clashes with something already scheduled.';
+
+  @override
+  String get errBatchClosed =>
+      'This batch has ended or was cancelled, so it can\'t take new sessions.';
+
+  @override
+  String get errCapacityTooLow =>
+      'Seats can\'t go below the number of enrolled students.';
+
+  @override
   String get save => 'Save';
 
   @override
@@ -2572,4 +2763,510 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playRecording => 'Play recording';
+
+  @override
+  String get instructorsTitle => 'Instructors';
+
+  @override
+  String get instructorsLede =>
+      'The people who teach live on Azza. Open a profile to see their courses and open batches.';
+
+  @override
+  String get instructorsEmpty => 'No instructors yet';
+
+  @override
+  String get meetInstructors => 'Meet the instructors';
+
+  @override
+  String get meetInstructorsHint => 'Who teaches on Azza, and what';
+
+  @override
+  String get allInstructors => 'All instructors';
+
+  @override
+  String instructorCoursesN(String count) {
+    return '$count courses';
+  }
+
+  @override
+  String instructorOpenBatchesN(String count) {
+    return '$count open batches';
+  }
+
+  @override
+  String get teachOnAzza => 'Teach on Azza';
+
+  @override
+  String get teachRowHint => 'Apply';
+
+  @override
+  String get teachSignUpLink => 'Want to teach on Azza?';
+
+  @override
+  String get teachSignUpHint =>
+      'Create your account first, then open Me → Teach on Azza to apply.';
+
+  @override
+  String get teachPitchTitle => 'Share what you know, live.';
+
+  @override
+  String get teachPitchBody =>
+      'Teach small live batches to learners across the region, in Arabic or English. Tell us who you are and what you\'d teach; our team reviews every application, usually within a few days.';
+
+  @override
+  String get applySectionAbout => 'About you';
+
+  @override
+  String get applySectionTeach => 'What you\'d teach';
+
+  @override
+  String get applySectionExperience => 'Your experience';
+
+  @override
+  String get applySectionContact => 'Links and contact';
+
+  @override
+  String get applyHeadline => 'Headline';
+
+  @override
+  String get applyHeadlineHint => 'Product designer · 8 years at agencies';
+
+  @override
+  String get applyBio => 'Short bio';
+
+  @override
+  String get applyBioHint =>
+      'Who you are, how you teach and who you help. At least 40 characters.';
+
+  @override
+  String get applyCategories => 'Categories (1 to 5)';
+
+  @override
+  String get applyLanguages => 'Teaching languages';
+
+  @override
+  String get applyExperience => 'Teaching experience';
+
+  @override
+  String get applyExperienceHint =>
+      '3 years running weekend workshops for groups of 20 adults';
+
+  @override
+  String get applySample => 'Sample or portfolio link (optional)';
+
+  @override
+  String get applySampleHint => 'https://example.com/portfolio';
+
+  @override
+  String get applyPhone => 'Phone (optional)';
+
+  @override
+  String get applyPhoneHint => '+971 50 123 4567';
+
+  @override
+  String get applySubmit => 'Send application';
+
+  @override
+  String get applySent => 'Application sent. We\'ll let you know.';
+
+  @override
+  String get applyHeadlineInvalid => 'Write 4 to 120 characters.';
+
+  @override
+  String get applyBioInvalid => 'Write 40 to 2000 characters.';
+
+  @override
+  String get applyExperienceInvalid => 'Write 20 to 1500 characters.';
+
+  @override
+  String get applyCategoriesInvalid => 'Pick 1 to 5 categories.';
+
+  @override
+  String get applyLanguagesInvalid => 'Pick at least one language.';
+
+  @override
+  String get applyUrlInvalid => 'Use a full https:// link.';
+
+  @override
+  String get applyPendingTitle => 'Your application is being reviewed';
+
+  @override
+  String get applyPendingBody =>
+      'We\'ll notify you as soon as there\'s a decision. Meanwhile, you can keep learning as usual.';
+
+  @override
+  String get applyRejectedTitle => 'Your last application wasn\'t approved';
+
+  @override
+  String get applyRejectedLead =>
+      'The reviewer\'s note is below. You\'re welcome to apply again.';
+
+  @override
+  String get applyApprovedTitle => 'You can teach now';
+
+  @override
+  String get applyApprovedBody =>
+      'Your instructor account is ready. Refresh to open the teacher studio and propose your first course.';
+
+  @override
+  String get applyRefresh => 'Refresh my account';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get errAlreadyInstructor => 'You already teach on Azza.';
+
+  @override
+  String get errApplicationPending =>
+      'Your application is already being reviewed.';
+
+  @override
+  String get errApplicationDecided => 'This application was already decided.';
+
+  @override
+  String get instructorApplicationsSection => 'Instructor applications';
+
+  @override
+  String get applicantExperience => 'Experience';
+
+  @override
+  String get openSample => 'Open sample';
+
+  @override
+  String get declineApplicationTitle => 'Why are you declining?';
+
+  @override
+  String get declineNoteLabel => 'Note to the applicant';
+
+  @override
+  String get declineNoteHint => 'Please add a short teaching sample.';
+
+  @override
+  String get sendBackNoteHint => 'Add a module on brushes and paper.';
+
+  @override
+  String get nameHint => 'Sara Kamal';
+
+  @override
+  String get emailHint => 'name@example.com';
+
+  @override
+  String get passwordHint => 'Your password';
+
+  @override
+  String get newPasswordHint => 'At least 8 characters';
+
+  @override
+  String get errQuizTimeUp =>
+      'Time ran out on this attempt, so it was recorded as 0.';
+
+  @override
+  String get errQuizClosed => 'This quiz is closed.';
+
+  @override
+  String get errNoAttemptsLeft => 'You have no attempts left on this quiz.';
+
+  @override
+  String get errAttemptNotStarted => 'Start the quiz before submitting.';
+
+  @override
+  String get lessonsTitle => 'Lessons';
+
+  @override
+  String lessonsCountN(String n) {
+    return '$n lessons';
+  }
+
+  @override
+  String lessonNofM(String n, String m) {
+    return 'Lesson $n of $m';
+  }
+
+  @override
+  String get lessonHasVideo => 'Video';
+
+  @override
+  String lessonAttachmentsN(String n) {
+    return '$n attachments';
+  }
+
+  @override
+  String get lessonAttachments => 'Attachments';
+
+  @override
+  String get noLessons => 'No lessons yet';
+
+  @override
+  String get noLessonsBody =>
+      'Your teacher hasn\'t added lessons to this course yet.';
+
+  @override
+  String get previousLesson => 'Previous';
+
+  @override
+  String get nextLesson => 'Next lesson';
+
+  @override
+  String get watchLessonVideo => 'Watch the lesson video';
+
+  @override
+  String get watchLessonVideoHint => 'Opens in your video player';
+
+  @override
+  String get videoOnYoutube => 'Opens on YouTube';
+
+  @override
+  String get videoOnVimeo => 'Opens on Vimeo';
+
+  @override
+  String get myQuizzesTitle => 'My quizzes';
+
+  @override
+  String get quizzesTitle => 'Quizzes';
+
+  @override
+  String get noQuizzes => 'No quizzes yet';
+
+  @override
+  String get noQuizzesBody => 'Quizzes from your teachers will show up here.';
+
+  @override
+  String get noQuestions => 'This quiz has no questions.';
+
+  @override
+  String get quizzesToDo => 'To do';
+
+  @override
+  String get quizzesDone => 'Done';
+
+  @override
+  String get quizzesWebOnly =>
+      'Quizzes are created and edited on the web. Here you can follow your students\' results.';
+
+  @override
+  String get quizLabel => 'Quiz';
+
+  @override
+  String get quizOpen => 'Open';
+
+  @override
+  String get quizInProgress => 'In progress';
+
+  @override
+  String get quizSubmitted => 'Submitted';
+
+  @override
+  String get quizMissed => 'Missed';
+
+  @override
+  String quizQuestionsN(String n) {
+    return '$n questions';
+  }
+
+  @override
+  String quizMinutesN(String n) {
+    return '$n min';
+  }
+
+  @override
+  String quizPointsN(String n) {
+    return '$n pts';
+  }
+
+  @override
+  String quizBest(String score) {
+    return 'Best $score';
+  }
+
+  @override
+  String quizAttemptsUsed(String used, String max) {
+    return 'Attempts $used/$max';
+  }
+
+  @override
+  String get quizQuestionsLabel => 'Questions';
+
+  @override
+  String get quizPointsLabel => 'Points';
+
+  @override
+  String get quizTimeLimitLabel => 'Time limit';
+
+  @override
+  String get quizNoTimeLimit => 'No time limit';
+
+  @override
+  String get quizAttemptsLabel => 'Attempts';
+
+  @override
+  String get quizDueLabel => 'Due';
+
+  @override
+  String get quizBestScore => 'Your best score';
+
+  @override
+  String get quizYourAttempts => 'Your attempts';
+
+  @override
+  String get quizTimedOut => 'Time ran out';
+
+  @override
+  String get quizStart => 'Start quiz';
+
+  @override
+  String get quizTryAgain => 'Try again';
+
+  @override
+  String get quizResume => 'Resume attempt';
+
+  @override
+  String get quizClosedNote => 'This quiz is closed.';
+
+  @override
+  String get quizNoAttemptsNote => 'You\'ve used all your attempts.';
+
+  @override
+  String get quizUnavailableNote => 'This quiz can\'t be started right now.';
+
+  @override
+  String get quizStartTimedTitle => 'Start the timer?';
+
+  @override
+  String quizStartTimedBody(String minutes) {
+    return 'You\'ll have $minutes minutes once you start. When time runs out, your answers are submitted automatically.';
+  }
+
+  @override
+  String quizQuestionNofM(String n, String m) {
+    return 'Question $n of $m';
+  }
+
+  @override
+  String quizQuestionN(String n) {
+    return 'Question $n';
+  }
+
+  @override
+  String quizAnsweredN(String n) {
+    return '$n answered';
+  }
+
+  @override
+  String get quizChooseOne => 'Choose one';
+
+  @override
+  String get quizChooseAll => 'Choose all that apply';
+
+  @override
+  String get quizPrevious => 'Back';
+
+  @override
+  String get quizNext => 'Next';
+
+  @override
+  String get quizSubmit => 'Submit';
+
+  @override
+  String get quizSubmitTitle => 'Submit your answers?';
+
+  @override
+  String quizAnsweredOf(String answered, String total) {
+    return 'You answered $answered of $total questions.';
+  }
+
+  @override
+  String get quizUnansweredWarning => 'Unanswered questions score 0.';
+
+  @override
+  String get quizAutoSubmitted => 'Time\'s up. Your answers were submitted.';
+
+  @override
+  String get quizLeaveTitle => 'Leave the quiz?';
+
+  @override
+  String get quizLeaveBody => 'Your answers on this screen won\'t be saved.';
+
+  @override
+  String get quizLeaveTimedBody =>
+      'Your answers on this screen won\'t be saved, and the timer keeps running.';
+
+  @override
+  String get quizKeepGoing => 'Keep going';
+
+  @override
+  String get quizLeave => 'Leave';
+
+  @override
+  String quizTimeLeft(String time) {
+    return 'Time left $time';
+  }
+
+  @override
+  String get quizResultTitle => 'Result';
+
+  @override
+  String quizAttemptN(String n) {
+    return 'Attempt $n';
+  }
+
+  @override
+  String get quizYourScore => 'Your score';
+
+  @override
+  String quizPointsOf(String score, String max) {
+    return '$score of $max points';
+  }
+
+  @override
+  String get quizAnswersHidden =>
+      'Correct answers appear after the due date, or once you\'ve used all your attempts.';
+
+  @override
+  String get quizReviewAnswers => 'Review your answers';
+
+  @override
+  String get quizCorrect => 'Correct';
+
+  @override
+  String get quizIncorrect => 'Incorrect';
+
+  @override
+  String get quizPartial => 'Partly correct';
+
+  @override
+  String get quizNotAnswered => 'Not answered';
+
+  @override
+  String get quizBackToQuiz => 'Back to the quiz';
+
+  @override
+  String get quizResultsTitle => 'Quiz results';
+
+  @override
+  String quizStudentsAttempted(String students, String attempts) {
+    return '$students students tried · $attempts attempts';
+  }
+
+  @override
+  String get studentsLabel => 'Students';
+
+  @override
+  String get quizAverage => 'Average';
+
+  @override
+  String get quizNoAttemptsYet => 'No attempts yet';
+
+  @override
+  String quizAttemptsN(String n) {
+    return '$n attempts';
+  }
+
+  @override
+  String get quizPerQuestion => 'By question';
+
+  @override
+  String quizCorrectOfAnswered(String correct, String answered) {
+    return '$correct of $answered correct';
+  }
 }

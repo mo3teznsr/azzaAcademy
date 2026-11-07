@@ -8,6 +8,7 @@ import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/cover_scroll_view.dart';
+import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
@@ -165,7 +166,7 @@ class _UpcomingBatchCard extends ConsumerWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: Text(f.aed(b.priceFils), style: t.titleMedium)),
+              Expanded(child: Price(b.priceFils, style: t.titleMedium)),
               FilledButton(
                 onPressed: () => context.push(Routes.checkout(b.id)),
                 child: Text(b.isFull ? l.joinWaitlist : l.enrollIn(b.code), maxLines: 1, overflow: TextOverflow.ellipsis),

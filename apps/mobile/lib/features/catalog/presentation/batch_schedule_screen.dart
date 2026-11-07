@@ -5,13 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/money/money.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
-import '../../checkout/data/checkout_repository.dart';
 import '../../me/data/me_repository.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
@@ -40,8 +39,7 @@ class BatchScheduleScreen extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
     final batch = ref.watch(batchProvider(batchId));
     final enrolled = ref.watch(enrollmentsProvider).value?.any((e) => e.batch.id == batchId && e.isActive) ?? false;
-    final currency = ref.watch(displayCurrencyProvider);
-    final fx = ref.watch(fxRatesProvider).value ?? FxRates.fallback;
+    final price = ref.watch(priceFormatProvider);
     final now = DateTime.now();
 
     return Scaffold(
@@ -107,7 +105,7 @@ class BatchScheduleScreen extends ConsumerWidget {
                   Expanded(
                     child: FilledButton(
                       onPressed: () => context.push(Routes.checkout(batchId)),
-                      child: Text(l.continueWithPrice(f.money(batch.requireValue.effectivePriceFils, currency, fx.rateFor(currency)))),
+                      child: Text(l.continueWithPrice(price.display(batch.requireValue.effectivePriceFils))),
                     ),
                   ),
                 ],

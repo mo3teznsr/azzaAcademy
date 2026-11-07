@@ -16,13 +16,13 @@ repo.bankAccounts.push(
   { id: 'off', bankName: 'Old', accountName: 'Co', iban: 'AE000000000000000000003', swift: 'OLDXAEAA', branch: null, instructions: null, currency: 'AED', active: false, sortOrder: 0 },
 );
 const notifier = new RecordingNotifier();
-const stripe = new StripeCheckout(new FakePaymentGateway());
+const stripe = new StripeCheckout(new FakePaymentGateway(), 'https://azza.test');
 const bank = new BankTransferCheckout(repo, notifier, 48);
 const registry = new CheckoutStrategyRegistry([stripe, bank]);
 
 const ctx = (bankAccountId?: string): CheckoutContext => ({
   user: { id: 'sara', name: 'Sara', email: 'sara@azza.test', locale: 'en', timezone: 'Asia/Dubai' },
-  batch: { id: 'b08', code: 'B08', status: 'ENROLLING', capacity: 24, waitlistEnabled: true, priceFils: null, timezone: 'Asia/Dubai', teacherId: 'lina', courseId: 'pdf', courseTitle: 'Product Design Foundations', coursePriceFils: 88_000, firstSessionAt: null },
+  batch: { id: 'b08', code: 'B08', status: 'ENROLLING', capacity: 24, waitlistEnabled: true, priceFils: 88_000, timezone: 'Asia/Dubai', teacherId: 'lina', courseId: 'pdf', courseTitle: 'Product Design Foundations', firstSessionAt: null },
   quote: new PriceCalculator(5).quote({ priceFils: 88_000 }),
   reference: 'AZ-B08-12345',
   input: { batchId: 'b08', method: bankAccountId ? 'BANK_TRANSFER' : 'STRIPE', displayCurrency: 'AED', bankAccountId },
@@ -54,8 +54,10 @@ describe('checkout strategy selection', () => {
   test('Stripe creates an AED payment intent for the total and returns a client secret', async () => {
     const start = await stripe.start(ctx());
     expect(start.orderStatus).toBe('AWAITING_PAYMENT');
-    expect(start.stripePaymentIntentId).toBe('pi_dev_AZ-B08-12345');
-    expect(start.response).toEqual({ clientSecret: 'pi_dev_AZ-B08-12345_secret' });
+    // Hosted Stripe Checkout: the client only redirects; the webhook confirms against the session id.
+    expect(start.stripeCheckoutSessionId).toBe('cs_dev_AZ-B08-12345');
+    expect(start.stripePaymentIntentId).toBeUndefined();
+    expect(start.response).toEqual({ checkoutUrl: 'https://azza.test/checkout/return?ref=AZ-B08-12345' });
   });
 
   test('bank transfer holds the seat 48h on the first active account by sort order', async () => {

@@ -80,6 +80,7 @@ class PasswordField extends StatefulWidget {
     this.onSubmitted,
     this.textInputAction,
     this.helper,
+    this.hint,
   });
   final TextEditingController controller;
   final String label;
@@ -88,6 +89,7 @@ class PasswordField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final TextInputAction? textInputAction;
   final String? helper;
+  final String? hint;
 
   @override
   State<PasswordField> createState() => _PasswordFieldState();
@@ -112,6 +114,7 @@ class _PasswordFieldState extends State<PasswordField> {
         label: widget.label,
         icon: Icons.lock_outline_rounded,
         helper: widget.helper,
+        hint: widget.hint,
         action: IconButton(
           tooltip: _obscure ? l.showPassword : l.hidePassword,
           icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 20),

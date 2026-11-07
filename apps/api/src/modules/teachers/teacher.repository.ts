@@ -11,6 +11,24 @@ export class PrismaTeacherRepository {
     });
   }
 
+  /** Public directory: every non-banned teacher, with their public batches' courses, languages and categories. */
+  listTeachers() {
+    return this.db.user.findMany({
+      where: { role: 'TEACHER', banned: false },
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        headline: true,
+        teaching: {
+          where: { status: { notIn: ['DRAFT', 'PENDING_REVIEW', 'CANCELLED'] }, course: { status: 'PUBLISHED' } },
+          select: { language: true, status: true, course: { select: { id: true, slug: true, titleEn: true, titleAr: true, category: true } } },
+        },
+      },
+    });
+  }
+
   /** Every non-draft, non-cancelled batch of the teacher on a PUBLISHED course (courses + languages come from these). */
   publicBatches(teacherId: string) {
     return this.db.batch.findMany({

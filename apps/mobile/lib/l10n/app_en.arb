@@ -7,6 +7,69 @@
   "seeAll": "See all",
   "continueLabel": "Continue",
   "cancel": "Cancel",
+  "noOpenBatchesShort": "No open batches",
+  "chargedAsAed": "Charged as {amount}",
+  "@chargedAsAed": {"placeholders": {"amount": {"type": "String"}}},
+  "ratesUnavailableHint": "Shown in AED: exchange rates are unavailable right now.",
+  "decrease": "Decrease",
+  "increase": "Increase",
+  "paymentPageNotOpened": "Couldn't open the payment page. Tap “Open payment page” to try again.",
+  "payCardCheckoutSub": "Card, Apple Pay or Google Pay on Stripe's secure page · charged in AED",
+  "confirmingPayment": "Confirming your payment…",
+  "confirmingPaymentBody": "Finish paying {amount} on Stripe's secure page. Your seat in {code} is held, and this screen updates as soon as the payment is confirmed.",
+  "@confirmingPaymentBody": {"placeholders": {"code": {"type": "String"}, "amount": {"type": "String"}}},
+  "checkingPayment": "Checking every few seconds…",
+  "openPaymentPage": "Open payment page",
+  "coursePricedPerBatch": "No price here: you set the seat price on each batch. Students see the lowest open batch as the course's “from” price.",
+  "seatPriceRequired": "Enter a seat price in AED (more than 0).",
+  "seatPriceAed": "Seat price (AED)",
+  "seatPriceHint": "450",
+  "seatPriceHelper": "What one student pays for this batch. Charged in AED.",
+  "seatsHelper": "How many students can enrol (1–500).",
+  "sessionAdded": "Session added.",
+  "cancelSessionTitle": "Cancel {slate}?",
+  "@cancelSessionTitle": {"placeholders": {"slate": {"type": "String"}}},
+  "cancelSessionBody": "Students are notified and the session leaves their schedule. This can't be undone.",
+  "keepSession": "Keep session",
+  "cancelSession": "Cancel session",
+  "sessionCancelled": "Session cancelled.",
+  "upcomingSessions": "Upcoming sessions",
+  "addSession": "Add session",
+  "noUpcomingSessions": "No upcoming sessions.",
+  "moveSessionAction": "Move session",
+  "requestMove": "Request a move",
+  "showAllN": "Show all {count}",
+  "@showAllN": {"placeholders": {"count": {"type": "String"}}},
+  "sessionTitleRequired": "Give the session a title (at least 2 characters).",
+  "errStartInPast": "Pick a time in the future.",
+  "addSessionTitle": "Add a session to {code}",
+  "@addSessionTitle": {"placeholders": {"code": {"type": "String"}}},
+  "addSessionLead": "An extra live session outside the weekly schedule: a catch-up, a bonus or an exam.",
+  "sessionTitleLabel": "Session title",
+  "sessionTitleHint": "Catch-up: review and Q&A",
+  "sessionDate": "Date",
+  "sessionTimeOtherZone": "Times are in your phone's timezone ({device}). This batch runs in {batchZone}.",
+  "@sessionTimeOtherZone": {"placeholders": {"device": {"type": "String"}, "batchZone": {"type": "String"}}},
+  "sessionTimeZone": "Times are in the batch timezone, {zone}.",
+  "@sessionTimeZone": {"placeholders": {"zone": {"type": "String"}}},
+  "sessionLengthHelper": "15 to 480 minutes, in steps of 15.",
+  "notifyStudentsNow": "Notify students",
+  "notifyStudentsNowSub": "Send them a notification and an email now.",
+  "couldNotAddSession": "Couldn't add the session",
+  "editSeatsTitle": "Seats in {code}",
+  "@editSeatsTitle": {"placeholders": {"code": {"type": "String"}}},
+  "editSeatsLead": "{count} students are enrolled. Seats can't go below that.",
+  "@editSeatsLead": {"placeholders": {"count": {"type": "String"}}},
+  "couldNotSaveSeats": "Couldn't change the seats",
+  "saveSeats": "Save seats",
+  "seatsSaved": "Seats updated.",
+  "editSeats": "Edit seats",
+  "sessionMoved": "Session moved.",
+  "moveReasonHint": "Public holiday",
+  "moveSessionNow": "Move session",
+  "errConflict": "That clashes with something already scheduled.",
+  "errBatchClosed": "This batch has ended or was cancelled, so it can't take new sessions.",
+  "errCapacityTooLow": "Seats can't go below the number of enrolled students.",
   "save": "Save",
   "saved": "Saved",
   "skip": "Skip",
@@ -1622,5 +1685,323 @@
   "teacherRecordingsLede": "Every session you teach is recorded automatically when you press Start. Recordings show here once processed, usually within the hour.",
   "teacherRecordingsEmpty": "No recordings yet",
   "shareRecording": "Share or save the recording",
-  "playRecording": "Play recording"
+  "playRecording": "Play recording",
+  "instructorsTitle": "Instructors",
+  "instructorsLede": "The people who teach live on Azza. Open a profile to see their courses and open batches.",
+  "instructorsEmpty": "No instructors yet",
+  "meetInstructors": "Meet the instructors",
+  "meetInstructorsHint": "Who teaches on Azza, and what",
+  "allInstructors": "All instructors",
+  "instructorCoursesN": "{count} courses",
+  "@instructorCoursesN": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "instructorOpenBatchesN": "{count} open batches",
+  "@instructorOpenBatchesN": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "teachOnAzza": "Teach on Azza",
+  "teachRowHint": "Apply",
+  "teachSignUpLink": "Want to teach on Azza?",
+  "teachSignUpHint": "Create your account first, then open Me → Teach on Azza to apply.",
+  "teachPitchTitle": "Share what you know, live.",
+  "teachPitchBody": "Teach small live batches to learners across the region, in Arabic or English. Tell us who you are and what you'd teach; our team reviews every application, usually within a few days.",
+  "applySectionAbout": "About you",
+  "applySectionTeach": "What you'd teach",
+  "applySectionExperience": "Your experience",
+  "applySectionContact": "Links and contact",
+  "applyHeadline": "Headline",
+  "applyHeadlineHint": "Product designer · 8 years at agencies",
+  "applyBio": "Short bio",
+  "applyBioHint": "Who you are, how you teach and who you help. At least 40 characters.",
+  "applyCategories": "Categories (1 to 5)",
+  "applyLanguages": "Teaching languages",
+  "applyExperience": "Teaching experience",
+  "applyExperienceHint": "3 years running weekend workshops for groups of 20 adults",
+  "applySample": "Sample or portfolio link (optional)",
+  "applySampleHint": "https://example.com/portfolio",
+  "applyPhone": "Phone (optional)",
+  "applyPhoneHint": "+971 50 123 4567",
+  "applySubmit": "Send application",
+  "applySent": "Application sent. We'll let you know.",
+  "applyHeadlineInvalid": "Write 4 to 120 characters.",
+  "applyBioInvalid": "Write 40 to 2000 characters.",
+  "applyExperienceInvalid": "Write 20 to 1500 characters.",
+  "applyCategoriesInvalid": "Pick 1 to 5 categories.",
+  "applyLanguagesInvalid": "Pick at least one language.",
+  "applyUrlInvalid": "Use a full https:// link.",
+  "applyPendingTitle": "Your application is being reviewed",
+  "applyPendingBody": "We'll notify you as soon as there's a decision. Meanwhile, you can keep learning as usual.",
+  "applyRejectedTitle": "Your last application wasn't approved",
+  "applyRejectedLead": "The reviewer's note is below. You're welcome to apply again.",
+  "applyApprovedTitle": "You can teach now",
+  "applyApprovedBody": "Your instructor account is ready. Refresh to open the teacher studio and propose your first course.",
+  "applyRefresh": "Refresh my account",
+  "refresh": "Refresh",
+  "errAlreadyInstructor": "You already teach on Azza.",
+  "errApplicationPending": "Your application is already being reviewed.",
+  "errApplicationDecided": "This application was already decided.",
+  "instructorApplicationsSection": "Instructor applications",
+  "applicantExperience": "Experience",
+  "openSample": "Open sample",
+  "declineApplicationTitle": "Why are you declining?",
+  "declineNoteLabel": "Note to the applicant",
+  "declineNoteHint": "Please add a short teaching sample.",
+  "sendBackNoteHint": "Add a module on brushes and paper.",
+  "nameHint": "Sara Kamal",
+  "emailHint": "name@example.com",
+  "passwordHint": "Your password",
+  "newPasswordHint": "At least 8 characters",
+  "errQuizTimeUp": "Time ran out on this attempt, so it was recorded as 0.",
+  "errQuizClosed": "This quiz is closed.",
+  "errNoAttemptsLeft": "You have no attempts left on this quiz.",
+  "errAttemptNotStarted": "Start the quiz before submitting.",
+  "lessonsTitle": "Lessons",
+  "lessonsCountN": "{n} lessons",
+  "@lessonsCountN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonNofM": "Lesson {n} of {m}",
+  "@lessonNofM": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonHasVideo": "Video",
+  "lessonAttachmentsN": "{n} attachments",
+  "@lessonAttachmentsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "lessonAttachments": "Attachments",
+  "noLessons": "No lessons yet",
+  "noLessonsBody": "Your teacher hasn't added lessons to this course yet.",
+  "previousLesson": "Previous",
+  "nextLesson": "Next lesson",
+  "watchLessonVideo": "Watch the lesson video",
+  "watchLessonVideoHint": "Opens in your video player",
+  "videoOnYoutube": "Opens on YouTube",
+  "videoOnVimeo": "Opens on Vimeo",
+  "myQuizzesTitle": "My quizzes",
+  "quizzesTitle": "Quizzes",
+  "noQuizzes": "No quizzes yet",
+  "noQuizzesBody": "Quizzes from your teachers will show up here.",
+  "noQuestions": "This quiz has no questions.",
+  "quizzesToDo": "To do",
+  "quizzesDone": "Done",
+  "quizzesWebOnly": "Quizzes are created and edited on the web. Here you can follow your students' results.",
+  "quizLabel": "Quiz",
+  "quizOpen": "Open",
+  "quizInProgress": "In progress",
+  "quizSubmitted": "Submitted",
+  "quizMissed": "Missed",
+  "quizQuestionsN": "{n} questions",
+  "@quizQuestionsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "quizMinutesN": "{n} min",
+  "@quizMinutesN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "quizPointsN": "{n} pts",
+  "@quizPointsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "quizBest": "Best {score}",
+  "@quizBest": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "quizAttemptsUsed": "Attempts {used}/{max}",
+  "@quizAttemptsUsed": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "quizQuestionsLabel": "Questions",
+  "quizPointsLabel": "Points",
+  "quizTimeLimitLabel": "Time limit",
+  "quizNoTimeLimit": "No time limit",
+  "quizAttemptsLabel": "Attempts",
+  "quizDueLabel": "Due",
+  "quizBestScore": "Your best score",
+  "quizYourAttempts": "Your attempts",
+  "quizTimedOut": "Time ran out",
+  "quizStart": "Start quiz",
+  "quizTryAgain": "Try again",
+  "quizResume": "Resume attempt",
+  "quizClosedNote": "This quiz is closed.",
+  "quizNoAttemptsNote": "You've used all your attempts.",
+  "quizUnavailableNote": "This quiz can't be started right now.",
+  "quizStartTimedTitle": "Start the timer?",
+  "quizStartTimedBody": "You'll have {minutes} minutes once you start. When time runs out, your answers are submitted automatically.",
+  "@quizStartTimedBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "quizQuestionNofM": "Question {n} of {m}",
+  "@quizQuestionNofM": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "quizQuestionN": "Question {n}",
+  "@quizQuestionN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "quizAnsweredN": "{n} answered",
+  "@quizAnsweredN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "quizChooseOne": "Choose one",
+  "quizChooseAll": "Choose all that apply",
+  "quizPrevious": "Back",
+  "quizNext": "Next",
+  "quizSubmit": "Submit",
+  "quizSubmitTitle": "Submit your answers?",
+  "quizAnsweredOf": "You answered {answered} of {total} questions.",
+  "@quizAnsweredOf": {
+    "placeholders": {
+      "answered": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "quizUnansweredWarning": "Unanswered questions score 0.",
+  "quizAutoSubmitted": "Time's up. Your answers were submitted.",
+  "quizLeaveTitle": "Leave the quiz?",
+  "quizLeaveBody": "Your answers on this screen won't be saved.",
+  "quizLeaveTimedBody": "Your answers on this screen won't be saved, and the timer keeps running.",
+  "quizKeepGoing": "Keep going",
+  "quizLeave": "Leave",
+  "quizTimeLeft": "Time left {time}",
+  "@quizTimeLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "quizResultTitle": "Result",
+  "quizAttemptN": "Attempt {n}",
+  "@quizAttemptN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "quizYourScore": "Your score",
+  "quizPointsOf": "{score} of {max} points",
+  "@quizPointsOf": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "quizAnswersHidden": "Correct answers appear after the due date, or once you've used all your attempts.",
+  "quizReviewAnswers": "Review your answers",
+  "quizCorrect": "Correct",
+  "quizIncorrect": "Incorrect",
+  "quizPartial": "Partly correct",
+  "quizNotAnswered": "Not answered",
+  "quizBackToQuiz": "Back to the quiz",
+  "quizResultsTitle": "Quiz results",
+  "quizStudentsAttempted": "{students} students tried · {attempts} attempts",
+  "@quizStudentsAttempted": {
+    "placeholders": {
+      "students": {
+        "type": "String"
+      },
+      "attempts": {
+        "type": "String"
+      }
+    }
+  },
+  "studentsLabel": "Students",
+  "quizAverage": "Average",
+  "quizNoAttemptsYet": "No attempts yet",
+  "quizAttemptsN": "{n} attempts",
+  "@quizAttemptsN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "quizPerQuestion": "By question",
+  "quizCorrectOfAnswered": "{correct} of {answered} correct",
+  "@quizCorrectOfAnswered": {
+    "placeholders": {
+      "correct": {
+        "type": "String"
+      },
+      "answered": {
+        "type": "String"
+      }
+    }
+  }
 }

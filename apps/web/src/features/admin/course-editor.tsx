@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { COURSE_LEVELS, createCourseInput, filsToAed, type CourseStatus } from '@azza/shared';
+import { COURSE_LEVELS, createCourseInput, type CourseStatus } from '@azza/shared';
 import type { z } from 'zod';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CourseCover } from '@/components/brand/course-cover';
+import { Price } from '@/components/brand/price';
 import { BatchStatusChip, CourseStatusChip } from '@/components/brand/status-chip';
 import { PageTitle, Panel } from '@/components/brand/section';
 import { ErrorState, LoadingBlock, QueryView } from '@/components/brand/states';
@@ -29,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { CoverPhotoField, IntroVideoField } from './course-media-fields';
 import { ProposalNotice, ReviewActions, ReviewNoteQuote, useProposalError } from './proposal-review';
 import { ReviewModeration } from '../course/reviews';
+import { ModuleLessons } from '../lessons/module-lessons';
 
 type In = z.input<typeof createCourseInput>;
 type Out = z.output<typeof createCourseInput>;
@@ -69,8 +71,7 @@ function toForm(c?: Course): In {
     coverStyle: (COVERS as readonly string[]).includes(c?.coverStyle ?? '') ? (c!.coverStyle as In['coverStyle']) : 'sun',
     coverImageUrl: c?.coverImageUrl ?? null,
     introVideoUrl: c?.introVideoUrl ?? null,
-    priceAed: c ? filsToAed(c.priceFils) : 0,
-    modules: c?.modules.map((m) => ({ titleEn: m.titleEn, titleAr: m.titleAr ?? '', descriptionEn: m.descriptionEn ?? '', descriptionAr: m.descriptionAr ?? '', order: m.order })) ?? [],
+    modules: c?.modules.map((m) => ({ id: m.id, titleEn: m.titleEn, titleAr: m.titleAr ?? '', descriptionEn: m.descriptionEn ?? '', descriptionAr: m.descriptionAr ?? '', order: m.order })) ?? [],
     outcomesEn: c?.outcomesEn ?? [],
     outcomesAr: c?.outcomesAr ?? [],
     requirementsEn: c?.requirementsEn ?? [],
@@ -238,7 +239,6 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
             <TabsTrigger value="curriculum">
               {t.admin.editor.tabCurriculum} · {f.number(modules.fields.length)}
             </TabsTrigger>
-            <TabsTrigger value="pricing">{t.admin.editor.tabPricing}</TabsTrigger>
             <TabsTrigger value="content">{t.admin.editor.tabContent}</TabsTrigger>
             {course && <TabsTrigger value="batches">{t.admin.editor.tabBatches}</TabsTrigger>}
             {course && !teacher && <TabsTrigger value="reviews">{t.admin.editor.tabReviews}</TabsTrigger>}
@@ -305,6 +305,19 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
                       )}
                     />
                   </Field>
+                  {!teacher && (
+                    <Field label={t.admin.editor.featuredRank} hint={t.admin.editor.featuredHint} error={err.featuredRank?.message}>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={999}
+                        step={1}
+                        dir="ltr"
+                        {...form.register('featuredRank', { setValueAs: (v: unknown) => (v === '' || v === null || v === undefined ? null : Number(v)) })}
+                        aria-invalid={!!err.featuredRank}
+                      />
+                    </Field>
+                  )}
                   <Field label={t.admin.editor.fallbackColour} hint={t.admin.editor.fallbackColourHint}>
                     <Controller
                       control={form.control}
@@ -385,6 +398,11 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
                       <span aria-hidden />
                       <Textarea rows={2} aria-label={t.admin.editor.moduleDescEn} placeholder={t.admin.editor.moduleDescEn} {...form.register(`modules.${i}.descriptionEn`)} />
                       <Textarea rows={2} aria-label={t.admin.editor.moduleDescAr} placeholder={t.admin.editor.moduleDescAr} dir="rtl" lang="ar" {...form.register(`modules.${i}.descriptionAr`)} />
+                      <span aria-hidden />
+                      <div className="col-span-3">
+                        {/* Lessons save on their own; a module needs to be saved (have an id) first. */}
+                        <ModuleLessons courseId={course?.id} moduleId={preview.modules?.[i]?.id} editable={!locked} uploader={uploader} />
+                      </div>
                     </li>
                   ))}
                 </ol>
@@ -433,29 +451,6 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
                   </Button>
                 </Panel>
               </div>
-            </fieldset>
-          </TabsContent>
-          <TabsContent value="pricing" className="mt-4">
-            <fieldset disabled={locked} className="contents">
-              <Panel className="max-w-md">
-                <Field label={t.admin.editor.price} error={err.priceAed?.message}>
-                  <Input type="number" step="0.01" min={0} dir="ltr" {...form.register('priceAed', { valueAsNumber: true })} aria-invalid={!!err.priceAed} />
-                </Field>
-                <p className="text-sm text-muted-foreground">{t.admin.editor.priceNote}</p>
-                {!teacher && (
-                  <Field label={t.admin.editor.featuredRank} hint={t.admin.editor.featuredHint} error={err.featuredRank?.message}>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={999}
-                      step={1}
-                      dir="ltr"
-                      {...form.register('featuredRank', { setValueAs: (v: unknown) => (v === '' || v === null || v === undefined ? null : Number(v)) })}
-                      aria-invalid={!!err.featuredRank}
-                    />
-                  </Field>
-                )}
-              </Panel>
             </fieldset>
           </TabsContent>
           {course && (
@@ -550,7 +545,8 @@ function CourseBatches({ courseId, mode, canAdd }: { courseId: string; mode: Edi
   return (
     <Panel>
       {canAdd && (
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="max-w-xl text-sm text-muted-foreground">{t.batchOps.pricePerBatch}</p>
           <Button asChild variant="ink">
             <Link href={`${base}/new?courseId=${courseId}`}>{mode === 'teacher' ? t.studio.courses.newBatch : t.admin.editor.newBatch}</Link>
           </Button>
@@ -568,7 +564,10 @@ function CourseBatches({ courseId, mode, canAdd }: { courseId: string; mode: Edi
                       {f.dayMonth(b.startsOn)} → {f.dayMonth(b.endsOn)} · <bdi>{b.teacher.name}</bdi> · {f.number(b._count?.enrollments ?? 0)}/{f.number(b.capacity)}
                     </span>
                   </span>
-                  <BatchStatusChip status={b.status} />
+                  <span className="flex shrink-0 items-center gap-3">
+                    <Price fils={b.priceFils} compact align="end" className="font-semibold" />
+                    <BatchStatusChip status={b.status} />
+                  </span>
                 </Link>
               </li>
             ))}

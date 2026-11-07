@@ -84,10 +84,28 @@ export interface PaymentIntentResult {
 export interface PaymentWebhookEvent {
   type: 'payment.succeeded' | 'payment.failed' | 'refund.succeeded' | 'ignored';
   paymentIntentId?: string;
+  /** Set for Stripe Checkout events; the order is found by it. */
+  checkoutSessionId?: string;
   feeFils?: number;
+}
+export interface CreateCheckoutSessionArgs {
+  amountFils: number; // AED minor units — always AED
+  reference: string;
+  customerEmail: string;
+  productName: string;
+  metadata: Record<string, string>;
+  successUrl: string;
+  cancelUrl: string;
+  expiresAt: Date;
+}
+export interface CheckoutSessionResult {
+  id: string;
+  url: string;
 }
 export interface PaymentGateway {
   createPaymentIntent(args: CreatePaymentIntentArgs): Promise<PaymentIntentResult>;
+  /** Hosted Stripe Checkout page; payment is confirmed only by the `checkout.session.*` webhook. */
+  createCheckoutSession(args: CreateCheckoutSessionArgs): Promise<CheckoutSessionResult>;
   refund(paymentIntentId: string, amountFils: number): Promise<void>;
   parseWebhook(rawBody: string, signature: string | undefined): Promise<PaymentWebhookEvent>;
 }

@@ -75,7 +75,6 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
   final _titleEn = TextEditingController();
   final _titleAr = TextEditingController();
   final _category = TextEditingController();
-  final _price = TextEditingController();
   final _descEn = TextEditingController();
   final _descAr = TextEditingController();
   final List<_ModuleRow> _modules = [];
@@ -107,7 +106,7 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
 
   @override
   void dispose() {
-    for (final c in [_titleEn, _titleAr, _category, _price, _descEn, _descAr]) {
+    for (final c in [_titleEn, _titleAr, _category, _descEn, _descAr]) {
       c.dispose();
     }
     for (final m in _modules) {
@@ -130,7 +129,6 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
     _titleEn.text = c.titleEn;
     _titleAr.text = c.titleAr ?? '';
     _category.text = c.category;
-    _price.text = _aed(c.priceFils);
     _descEn.text = c.descriptionEn;
     _descAr.text = c.descriptionAr ?? '';
     _level = c.level;
@@ -154,17 +152,11 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
     _loaded = true;
   }
 
-  static String _aed(int fils) => fils % 100 == 0 ? '${fils ~/ 100}' : (fils / 100).toStringAsFixed(2);
-
-  num? get _priceAed => num.tryParse(_price.text.trim().replaceAll(',', '.'));
-
   /// First problem that blocks saving ([forSubmit] adds the review requirements), or null.
   String? _problem({required bool forSubmit}) {
     final l = context.l10n;
     if (_titleEn.text.trim().length < 2) return l.titleRequired;
     if (_category.text.trim().length < 2) return l.categoryRequired;
-    final price = _priceAed;
-    if (price == null || price < 0) return l.priceInvalid;
     if (_modules.any((m) => m.en.text.trim().length < 2)) return l.moduleTitleRequired;
     if (_faq.any((r) => !r.isBlank && (r.c[0].text.trim().length < 2 || r.c[1].text.trim().isEmpty))) return l.faqIncomplete;
     if (forSubmit) {
@@ -184,7 +176,6 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
         coverStyle: _coverStyle,
         coverImageUrl: _coverUrl,
         introVideoUrl: _introVideoUrl,
-        priceAed: _priceAed ?? 0,
         modules: [
           for (final m in _modules)
             ModuleDraft(titleEn: m.en.text, titleAr: m.ar.text, descriptionEn: m.descEn.text, descriptionAr: m.descAr.text),
@@ -460,15 +451,11 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
           onChanged: ro ? null : (v) => setState(() => _level = v ?? _level),
         ),
         const SizedBox(height: 12),
-        field(
-          _price,
-          l.coursePriceAed,
-          Icons.payments_outlined,
-          key: const Key('course-price'),
-          keyboard: const TextInputType.numberWithOptions(decimal: true),
-          formatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-          direction: TextDirection.ltr,
-        ),
+        Row(key: const Key('course-price-note'), crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.sell_outlined, size: 18, color: p.muted),
+          const SizedBox(width: 8),
+          Expanded(child: Text(l.coursePricedPerBatch, style: t.bodySmall)),
+        ]),
       ]),
 
       section(l.courseDescription, [

@@ -57,6 +57,7 @@ export function paymentRoutes(s: PaymentServices) {
     )
     .post('/batches/:id/waitlist', requireAuth, async (c) => c.json(await s.checkout.joinWaitlist(currentUser(c).id, c.req.param('id')), 201))
     .delete('/batches/:id/waitlist', requireAuth, async (c) => c.json(await s.checkout.leaveWaitlist(currentUser(c).id, c.req.param('id'))))
+    .get('/orders/by-reference/:ref', requireAuth, async (c) => c.json(await s.orders.byReference(c.req.param('ref'), currentUser(c))))
     .get('/orders/:id', requireAuth, async (c) => c.json(await s.orders.get(c.req.param('id'), currentUser(c))))
     .post('/orders/:id/receipt', requireAuth, validate('json', uploadReceiptInput), async (c) =>
       c.json(await s.checkout.uploadReceipt(c.req.param('id'), currentUser(c).id, c.req.valid('json').receiptUrl)),

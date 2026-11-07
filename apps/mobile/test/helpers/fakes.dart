@@ -18,6 +18,8 @@ import 'package:azza/features/checkout/data/apple_iap_repository.dart';
 import 'package:azza/features/checkout/data/checkout_repository.dart';
 import 'package:azza/features/checkout/domain/apple_iap.dart';
 import 'package:azza/features/checkout/domain/checkout_models.dart';
+import 'package:azza/features/instructors/data/instructors_repository.dart';
+import 'package:azza/features/instructors/domain/instructor_models.dart';
 import 'package:azza/features/learn/data/learn_repository.dart';
 import 'package:azza/features/me/data/me_repository.dart';
 import 'package:azza/features/me/domain/me_models.dart';
@@ -415,7 +417,6 @@ class FakeProposalsRepository implements ProposalsRepository {
         level: d.level,
         coverStyle: d.coverStyle,
         coverImageUrl: d.coverImageUrl,
-        priceFils: (d.priceAed * 100).round(),
         status: status,
         createdById: teacher.id,
         modules: [for (final (i, m) in d.modules.indexed) CourseModule(order: i + 1, titleEn: m.titleEn, titleAr: m.titleAr)],
@@ -486,5 +487,57 @@ class FakeProposalsRepository implements ProposalsRepository {
     if (reviewError != null) throw reviewError!;
     batchReviews.add((id: id, approve: approve, note: note));
     pendingBatchList = pendingBatchList.where((b) => b.id != id).toList();
+  }
+}
+
+/// Instructors directory and applications: records applications and reviews; [applyError] / [reviewError] steer failures.
+class FakeInstructorsRepository implements InstructorsRepository {
+  FakeInstructorsRepository({this.cards = const [], this.application, this.pending = const [], this.applyError, this.reviewError});
+  List<InstructorCard> cards;
+  InstructorApplication? application;
+  List<InstructorApplication> pending;
+  Object? applyError;
+  Object? reviewError;
+
+  final List<InstructorApplicationDraft> applied = [];
+  final List<({String id, bool approve, String? note})> reviews = [];
+  int mineCalls = 0;
+
+  @override
+  Future<List<InstructorCard>> directory() async => cards;
+
+  @override
+  Future<InstructorApplication?> mine() async {
+    mineCalls++;
+    return application;
+  }
+
+  @override
+  Future<InstructorApplication> apply(InstructorApplicationDraft draft) async {
+    applied.add(draft);
+    if (applyError != null) throw applyError!;
+    return application = InstructorApplication(
+      id: 'app-new',
+      status: ApplicationStatus.pending,
+      headline: draft.headline,
+      bio: draft.bio,
+      categories: draft.categories,
+      languages: draft.languages,
+      experience: draft.experience,
+      sampleUrl: draft.sampleUrl,
+      phone: draft.phone,
+      createdAt: DateTime(2026, 11, 6),
+    );
+  }
+
+  @override
+  Future<List<InstructorApplication>> applications({ApplicationStatus? status}) async =>
+      pending.where((a) => status == null || a.status == status).toList();
+
+  @override
+  Future<void> review(String id, {required bool approve, String? note}) async {
+    reviews.add((id: id, approve: approve, note: note));
+    if (reviewError != null) throw reviewError!;
+    pending = pending.where((a) => a.id != id).toList();
   }
 }

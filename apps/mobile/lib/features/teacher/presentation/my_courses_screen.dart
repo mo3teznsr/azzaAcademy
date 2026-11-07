@@ -96,7 +96,7 @@ class ProposedCourseCard extends ConsumerWidget {
               MonoLabel([
                 if (c.categoryName(locale).isNotEmpty) c.categoryName(locale),
                 levelLabel(l, c.level),
-                f.aed(c.priceFils),
+                if (c.priceFils != null) l.fromPrice(f.aed(c.priceFils!)),
               ].join(' · ')),
             ]),
           ),

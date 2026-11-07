@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/use-auth';
 import { useI18n } from '@/lib/i18n/provider';
-import { useMoney } from '@/lib/money';
+import { Price } from '@/components/brand/price';
 import { batchPriceFils } from '@/lib/schedule';
 import { Accordion } from '../catalog/faq';
 import { MagneticLink } from './magnetic-button';
@@ -13,9 +13,8 @@ import { Wrap } from './wrap';
 
 /** 12 · FAQ, the ticket line (`#pricing`, real lowest open price), then the magnetic "Find your batch" pill. */
 export function Finale() {
-  const { t, fill } = useI18n();
+  const { t } = useI18n();
   const l = t.landing;
-  const money = useMoney();
   const { user } = useAuth();
   const { open } = useOpenBatches();
   const min = open.length ? Math.min(...open.map(batchPriceFils)) : null;
@@ -53,7 +52,7 @@ export function Finale() {
               {plans.map((plan) => (
                 <li key={plan.name} className="flex flex-col gap-3 rounded-[18px] border border-dashed border-line-strong p-5">
                   <span className="label-mono text-muted-foreground">{plan.name}</span>
-                  {min !== null && <b className="font-display text-3xl font-extrabold leading-none">{fill(plan.price, { p: money.aed(min) })}</b>}
+                  {min !== null && <Price fils={min} template={plan.price.replace('{p}', '{amount}')} amountClassName="font-display text-3xl font-extrabold leading-none" />}
                   <p className="text-sm text-muted-foreground">{plan.note}</p>
                 </li>
               ))}
@@ -82,3 +81,4 @@ export function Finale() {
     </>
   );
 }
+
