@@ -8,7 +8,7 @@ import { EASE, useSequence } from './hooks';
 import { Seat } from './seat';
 import { Wrap } from './wrap';
 
-/** 4 · Course · Batch · Session: the page's one lime band. A sticky word sequence; stacked cards on mobile. */
+/** 4 · Learn · Practise · Master: the page's one lime band. A sticky word sequence; stacked cards on mobile. */
 export function Words() {
   const { t, f } = useI18n();
   const w = t.landing.words;

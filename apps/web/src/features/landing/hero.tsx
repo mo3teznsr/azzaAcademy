@@ -13,7 +13,7 @@ import { Wrap } from './wrap';
 
 const FROM = ['below', 'start', 'above'] as const;
 
-/** 1 · "A class that waits for you." Mask lines from three sides, the live-room window, the ON AIR seat. */
+/** 1 · "Learn it. Practise it. Make it yours." Mask lines from three sides, the photo window, the live-now seat. */
 export function Hero() {
   const { t, f, fill } = useI18n();
   const live = useLiveNow();
@@ -49,7 +49,7 @@ export function Hero() {
                 </a>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <a href="#starting">{h.secondary}</a>
+                <a href="#how">{h.secondary}</a>
               </Button>
             </div>
           </div>
@@ -72,7 +72,7 @@ export function Hero() {
   );
 }
 
-/** Public "on air now" strip — only while something is live. */
+/** Public "live now" strip — only while a session is live. */
 function OnAirStrip() {
   const { t, f, fill } = useI18n();
   const live = useLiveNow();

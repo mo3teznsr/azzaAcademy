@@ -108,10 +108,10 @@ void main() {
       expect(find.byKey(const Key('price-rates-missing')), findsOneWidget);
     });
 
-    testWidgets('"from" price, and "No open batches" without one', (tester) async {
+    testWidgets('"from" price, and "No open classes" without one', (tester) async {
       await pumpPrice(tester, const Column(children: [Price.from(54000), Price.from(null)]));
       expect(find.text('From AED 540.00'), findsOneWidget);
-      expect(find.text('No open batches'), findsOneWidget);
+      expect(find.text('No open classes'), findsOneWidget);
     });
   });
 

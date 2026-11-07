@@ -90,7 +90,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               const SizedBox(height: 24),
               DisplayText(up ? l.signUpTitle : l.signInTitle, size: 44),
               const SizedBox(height: 10),
-              Text(l.signInSubtitle, style: t.bodyMedium?.copyWith(color: p.muted)),
+              Text(up ? l.signUpSubtitle : l.signInSubtitle, style: t.bodyMedium?.copyWith(color: p.muted)),
               const SizedBox(height: 28),
               if (up) ...[
                 TextFormField(

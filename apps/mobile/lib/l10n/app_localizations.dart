@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorTitle.
   ///
   /// In en, this message translates to:
-  /// **'Something went off-air.'**
+  /// **'That didn\'t load.'**
   String get errorTitle;
 
   /// No description provided for @emptyGeneric.
@@ -143,7 +143,7 @@ abstract class AppLocalizations {
   /// No description provided for @noOpenBatchesShort.
   ///
   /// In en, this message translates to:
-  /// **'No open batches'**
+  /// **'No open classes'**
   String get noOpenBatchesShort;
 
   /// No description provided for @chargedAsAed.
@@ -191,7 +191,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmingPaymentBody.
   ///
   /// In en, this message translates to:
-  /// **'Finish paying {amount} on Stripe\'s secure page. Your seat in {code} is held, and this screen updates as soon as the payment is confirmed.'**
+  /// **'Finish paying {amount} on Stripe\'s secure page. Your place in {code} is held, and this screen updates as soon as the payment is confirmed.'**
   String confirmingPaymentBody(String code, String amount);
 
   /// No description provided for @checkingPayment.
@@ -725,13 +725,13 @@ abstract class AppLocalizations {
   /// No description provided for @splashTagline.
   ///
   /// In en, this message translates to:
-  /// **'Live online courses · Arabic & English'**
+  /// **'Courses in Arabic & English'**
   String get splashTagline;
 
   /// No description provided for @splashLine.
   ///
   /// In en, this message translates to:
-  /// **'Learn live, with a real teacher.'**
+  /// **'Learn it. Practise it. Make it yours.'**
   String get splashLine;
 
   /// No description provided for @chooseLanguage.
@@ -755,19 +755,25 @@ abstract class AppLocalizations {
   /// No description provided for @languageHint.
   ///
   /// In en, this message translates to:
-  /// **'You can change the language any time from Me → Language & region. Each batch sets its own session language.'**
+  /// **'You can change the language any time from Me → Language & region. Each class is taught in its own language.'**
   String get languageHint;
 
   /// No description provided for @onboardingTitle.
   ///
   /// In en, this message translates to:
-  /// **'What do you want to learn live?'**
+  /// **'What do you want to learn?'**
   String get onboardingTitle;
+
+  /// No description provided for @onboardingLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn step by step, practise with feedback, get help from your teacher, and prove it with a certificate.'**
+  String get onboardingLine;
 
   /// No description provided for @onboardingTimezone.
   ///
   /// In en, this message translates to:
-  /// **'Your timezone — batch times convert to it'**
+  /// **'Your timezone — live session times convert to it'**
   String get onboardingTimezone;
 
   /// No description provided for @detected.
@@ -779,7 +785,7 @@ abstract class AppLocalizations {
   /// No description provided for @bestTime.
   ///
   /// In en, this message translates to:
-  /// **'Best time for you'**
+  /// **'Best time for live sessions'**
   String get bestTime;
 
   /// No description provided for @mornings.
@@ -839,20 +845,26 @@ abstract class AppLocalizations {
   /// No description provided for @signInTitle.
   ///
   /// In en, this message translates to:
-  /// **'Take your seat.'**
+  /// **'Welcome back.'**
   String get signInTitle;
 
   /// No description provided for @signInSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'One account for every batch you join — on your phone or the web.'**
+  /// **'Pick up where you left off.'**
   String get signInSubtitle;
 
   /// No description provided for @signUpTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create your account.'**
+  /// **'Start learning today.'**
   String get signUpTitle;
+
+  /// No description provided for @signUpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A clear path, practice with feedback, and a certificate that proves it.'**
+  String get signUpSubtitle;
 
   /// No description provided for @email.
   ///
@@ -971,7 +983,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyPermissions.
   ///
   /// In en, this message translates to:
-  /// **'After this we\'ll ask for camera and mic once, so you can join sessions in one tap.'**
+  /// **'After this we\'ll ask for camera and mic once, so you can join live sessions in one tap.'**
   String get verifyPermissions;
 
   /// No description provided for @verifyContinue.
@@ -1007,61 +1019,67 @@ abstract class AppLocalizations {
   /// No description provided for @joinLiveRoom.
   ///
   /// In en, this message translates to:
-  /// **'Join live room'**
+  /// **'Join session'**
   String get joinLiveRoom;
 
   /// No description provided for @inRoom.
   ///
   /// In en, this message translates to:
-  /// **'{count} in room'**
+  /// **'{count} joined'**
   String inRoom(String count);
 
   /// No description provided for @myBatches.
   ///
   /// In en, this message translates to:
-  /// **'My batches'**
+  /// **'Your courses'**
   String get myBatches;
 
   /// No description provided for @nextAt.
   ///
   /// In en, this message translates to:
-  /// **'Next · {when}'**
+  /// **'Next session · {when}'**
   String nextAt(String when);
 
   /// No description provided for @continueWatching.
   ///
   /// In en, this message translates to:
-  /// **'Continue watching'**
+  /// **'Catch up'**
   String get continueWatching;
 
   /// No description provided for @noBatchesTitle.
   ///
   /// In en, this message translates to:
-  /// **'No batches yet'**
+  /// **'No courses yet'**
   String get noBatchesTitle;
 
   /// No description provided for @noBatchesBody.
   ///
   /// In en, this message translates to:
-  /// **'Pick a course and a batch whose schedule fits your week.'**
+  /// **'Find a course, then choose a class whose live sessions fit your week.'**
   String get noBatchesBody;
 
   /// No description provided for @exploreCta.
   ///
   /// In en, this message translates to:
-  /// **'Explore courses'**
+  /// **'Find your course'**
   String get exploreCta;
 
   /// No description provided for @upNext.
   ///
   /// In en, this message translates to:
-  /// **'Up next'**
+  /// **'Next live session'**
   String get upNext;
+
+  /// No description provided for @practiceDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice due'**
+  String get practiceDue;
 
   /// No description provided for @exploreTitle.
   ///
   /// In en, this message translates to:
-  /// **'Find a batch that fits your week.'**
+  /// **'Find what you want to learn.'**
   String get exploreTitle;
 
   /// No description provided for @searchCourses.
@@ -1139,13 +1157,13 @@ abstract class AppLocalizations {
   /// No description provided for @chooseBatchN.
   ///
   /// In en, this message translates to:
-  /// **'Choose a batch · {n}'**
+  /// **'Choose your class · {n}'**
   String chooseBatchN(String n);
 
   /// No description provided for @pickBatch.
   ///
   /// In en, this message translates to:
-  /// **'Pick your batch.'**
+  /// **'Choose your class.'**
   String get pickBatch;
 
   /// No description provided for @timesShownIn.
@@ -1163,13 +1181,13 @@ abstract class AppLocalizations {
   /// No description provided for @enrollIn.
   ///
   /// In en, this message translates to:
-  /// **'Enroll in {code}'**
+  /// **'Join class {code}'**
   String enrollIn(String code);
 
   /// No description provided for @seatsLeft.
   ///
   /// In en, this message translates to:
-  /// **'{n} seats left'**
+  /// **'{n} places left'**
   String seatsLeft(String n);
 
   /// No description provided for @seatsOf.
@@ -1181,13 +1199,13 @@ abstract class AppLocalizations {
   /// No description provided for @noOpenBatches.
   ///
   /// In en, this message translates to:
-  /// **'No open batches right now. Check back soon.'**
+  /// **'No classes are open right now. Check back soon.'**
   String get noOpenBatches;
 
   /// No description provided for @joiningLate.
   ///
   /// In en, this message translates to:
-  /// **'Joining late? {ran} sessions already ran — they\'re in the library as recordings. {left} live sessions left.'**
+  /// **'Joining late? {ran} sessions already ran — catch up on their recordings in your library. {left} live sessions left.'**
   String joiningLate(String ran, String left);
 
   /// No description provided for @addToCalendar.
@@ -1235,7 +1253,7 @@ abstract class AppLocalizations {
   /// No description provided for @batchPrice.
   ///
   /// In en, this message translates to:
-  /// **'Batch price'**
+  /// **'Class price'**
   String get batchPrice;
 
   /// No description provided for @coupon.
@@ -1295,7 +1313,7 @@ abstract class AppLocalizations {
   /// No description provided for @payCardSub.
   ///
   /// In en, this message translates to:
-  /// **'Instant seat · 3-D Secure'**
+  /// **'Confirmed instantly · 3-D Secure'**
   String get payCardSub;
 
   /// No description provided for @payBank.
@@ -1307,7 +1325,7 @@ abstract class AppLocalizations {
   /// No description provided for @payBankSub.
   ///
   /// In en, this message translates to:
-  /// **'Seat held 48 h while you transfer'**
+  /// **'Your place is held for 48 h while you transfer'**
   String get payBankSub;
 
   /// No description provided for @continueAmount.
@@ -1367,7 +1385,7 @@ abstract class AppLocalizations {
   /// No description provided for @seatHeld.
   ///
   /// In en, this message translates to:
-  /// **'Seat held {time}'**
+  /// **'Place held {time}'**
   String seatHeld(String time);
 
   /// No description provided for @transferExactly.
@@ -1427,7 +1445,7 @@ abstract class AppLocalizations {
   /// No description provided for @holdExpired.
   ///
   /// In en, this message translates to:
-  /// **'The 48 h hold expired and the seat was released.'**
+  /// **'The 48 h hold expired and your place was released.'**
   String get holdExpired;
 
   /// No description provided for @noBanks.
@@ -1445,19 +1463,19 @@ abstract class AppLocalizations {
   /// No description provided for @almostOnAir.
   ///
   /// In en, this message translates to:
-  /// **'Almost on air.'**
+  /// **'Nearly done.'**
   String get almostOnAir;
 
   /// No description provided for @verifyingBody.
   ///
   /// In en, this message translates to:
-  /// **'We hold your seat in {code} while finance checks the transfer of {amount}.'**
+  /// **'We\'re holding your place in {code} while finance checks the transfer of {amount}.'**
   String verifyingBody(String code, String amount);
 
   /// No description provided for @tlOrderCreated.
   ///
   /// In en, this message translates to:
-  /// **'Seat held'**
+  /// **'Place held'**
   String get tlOrderCreated;
 
   /// No description provided for @tlReceiptUploaded.
@@ -1475,7 +1493,7 @@ abstract class AppLocalizations {
   /// No description provided for @tlSeatConfirmed.
   ///
   /// In en, this message translates to:
-  /// **'Seat confirmed'**
+  /// **'Place confirmed'**
   String get tlSeatConfirmed;
 
   /// No description provided for @rejectedTitle.
@@ -1505,7 +1523,7 @@ abstract class AppLocalizations {
   /// No description provided for @orderExpiredBody.
   ///
   /// In en, this message translates to:
-  /// **'This order expired and the seat was released.'**
+  /// **'This order expired and your place was released.'**
   String get orderExpiredBody;
 
   /// No description provided for @goToSchedule.
@@ -1523,13 +1541,13 @@ abstract class AppLocalizations {
   /// No description provided for @enrolledBody.
   ///
   /// In en, this message translates to:
-  /// **'Your seat in {course} · {code} is yours. {n} live sessions are now in your schedule.'**
+  /// **'Your place in {course} · {code} is confirmed. Start with the lessons; your {n} live sessions are in your schedule.'**
   String enrolledBody(String course, String code, String n);
 
   /// No description provided for @nextTake.
   ///
   /// In en, this message translates to:
-  /// **'Next take'**
+  /// **'Next live session'**
   String get nextTake;
 
   /// No description provided for @days.
@@ -1553,7 +1571,7 @@ abstract class AppLocalizations {
   /// No description provided for @lobbyOpensAt.
   ///
   /// In en, this message translates to:
-  /// **'lobby opens {time}'**
+  /// **'you can join from {time}'**
   String lobbyOpensAt(String time);
 
   /// No description provided for @syncCalendar.
@@ -1589,7 +1607,7 @@ abstract class AppLocalizations {
   /// No description provided for @noSessionsWeek.
   ///
   /// In en, this message translates to:
-  /// **'No sessions this week.'**
+  /// **'No live sessions this week.'**
   String get noSessionsWeek;
 
   /// No description provided for @prevWeek.
@@ -1643,7 +1661,7 @@ abstract class AppLocalizations {
   /// No description provided for @lobbyClosed.
   ///
   /// In en, this message translates to:
-  /// **'The lobby opens 15 min before the session starts.'**
+  /// **'You can join 15 min before the session starts.'**
   String get lobbyClosed;
 
   /// No description provided for @goLive.
@@ -1907,7 +1925,7 @@ abstract class AppLocalizations {
   /// No description provided for @edgeLostBody.
   ///
   /// In en, this message translates to:
-  /// **'We couldn\'t get you back in automatically. Your seat is still yours.'**
+  /// **'We couldn\'t get you back in automatically. Your place in the class is safe.'**
   String get edgeLostBody;
 
   /// No description provided for @edgeRejoin.
@@ -1931,7 +1949,7 @@ abstract class AppLocalizations {
   /// No description provided for @edgeRoomFullBody.
   ///
   /// In en, this message translates to:
-  /// **'A seat frees up as soon as someone leaves. Try again in a minute, or catch the recording after class.'**
+  /// **'A place frees up as soon as someone leaves. Try again in a minute, or watch the recording after the session.'**
   String get edgeRoomFullBody;
 
   /// No description provided for @edgeCancelledTitle.
@@ -1967,19 +1985,19 @@ abstract class AppLocalizations {
   /// No description provided for @edgeEndedBody.
   ///
   /// In en, this message translates to:
-  /// **'The recording appears in your learning once it\'s ready.'**
+  /// **'The recording appears in your library once it\'s ready.'**
   String get edgeEndedBody;
 
   /// No description provided for @edgeNotEnrolledTitle.
   ///
   /// In en, this message translates to:
-  /// **'You\'re not in this batch'**
+  /// **'You\'re not in this class'**
   String get edgeNotEnrolledTitle;
 
   /// No description provided for @edgeNotEnrolledBody.
   ///
   /// In en, this message translates to:
-  /// **'You need an active enrollment in this batch to join.'**
+  /// **'You need an active enrolment in this class to join.'**
   String get edgeNotEnrolledBody;
 
   /// No description provided for @edgeBackToSchedule.
@@ -1997,7 +2015,7 @@ abstract class AppLocalizations {
   /// No description provided for @wrapTitle.
   ///
   /// In en, this message translates to:
-  /// **'That\'s a wrap.'**
+  /// **'Session complete.'**
   String get wrapTitle;
 
   /// No description provided for @endedStayed.
@@ -2078,6 +2096,12 @@ abstract class AppLocalizations {
   /// **'Library'**
   String get libraryTitle;
 
+  /// No description provided for @libraryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn at your pace'**
+  String get libraryEmptyTitle;
+
   /// No description provided for @continueAt.
   ///
   /// In en, this message translates to:
@@ -2099,7 +2123,7 @@ abstract class AppLocalizations {
   /// No description provided for @noRecordings.
   ///
   /// In en, this message translates to:
-  /// **'Recordings land here after each session.'**
+  /// **'Recordings appear here after each session, so you can rewatch or catch up.'**
   String get noRecordings;
 
   /// No description provided for @noMaterials.
@@ -2177,7 +2201,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollFirst.
   ///
   /// In en, this message translates to:
-  /// **'Enroll in a batch to unlock recordings and materials.'**
+  /// **'Join a class to unlock its lessons, recordings and materials.'**
   String get enrollFirst;
 
   /// No description provided for @inbox.
@@ -2237,7 +2261,7 @@ abstract class AppLocalizations {
   /// No description provided for @batchesN.
   ///
   /// In en, this message translates to:
-  /// **'{n} batches'**
+  /// **'{n} classes'**
   String batchesN(String n);
 
   /// No description provided for @languageRegion.
@@ -2291,13 +2315,13 @@ abstract class AppLocalizations {
   /// No description provided for @nextTakeLobbyOpen.
   ///
   /// In en, this message translates to:
-  /// **'Next take · lobby open'**
+  /// **'Next session · lobby open'**
   String get nextTakeLobbyOpen;
 
   /// No description provided for @nextTakeIn.
   ///
   /// In en, this message translates to:
-  /// **'Next take · starts in {time}'**
+  /// **'Next session · starts in {time}'**
   String nextTakeIn(String time);
 
   /// No description provided for @enterLobby.
@@ -2729,7 +2753,7 @@ abstract class AppLocalizations {
   /// No description provided for @onAirLabel.
   ///
   /// In en, this message translates to:
-  /// **'On air'**
+  /// **'Live now'**
   String get onAirLabel;
 
   /// No description provided for @roomsPeople.
@@ -2777,7 +2801,7 @@ abstract class AppLocalizations {
   /// No description provided for @liveMonitorTitle.
   ///
   /// In en, this message translates to:
-  /// **'On air now'**
+  /// **'Live now'**
   String get liveMonitorTitle;
 
   /// No description provided for @autoRefresh.
@@ -2801,7 +2825,7 @@ abstract class AppLocalizations {
   /// No description provided for @noLiveRooms.
   ///
   /// In en, this message translates to:
-  /// **'No rooms are on air.'**
+  /// **'No sessions are live right now.'**
   String get noLiveRooms;
 
   /// No description provided for @participantsN.
@@ -3125,13 +3149,13 @@ abstract class AppLocalizations {
   /// No description provided for @certificatesEmptyTitle.
   ///
   /// In en, this message translates to:
-  /// **'No certificates yet'**
+  /// **'Proof you learned it'**
   String get certificatesEmptyTitle;
 
   /// No description provided for @certificatesEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'Attend at least 80% of a batch\'s sessions and your certificate appears here when the batch ends.'**
+  /// **'Attend at least 80% of your class\'s live sessions and your certificate appears here when the class ends. Anyone can verify it.'**
   String get certificatesEmptyBody;
 
   /// No description provided for @certificatesEarned.
@@ -3173,13 +3197,13 @@ abstract class AppLocalizations {
   /// No description provided for @certificateRequirementMet.
   ///
   /// In en, this message translates to:
-  /// **'Attendance met — your certificate is issued when the batch ends.'**
+  /// **'Attendance met — your certificate is issued when the class ends.'**
   String get certificateRequirementMet;
 
   /// No description provided for @certificateUnreachable.
   ///
   /// In en, this message translates to:
-  /// **'Not enough sessions left to reach 80% in this batch.'**
+  /// **'Not enough sessions left to reach 80% in this class.'**
   String get certificateUnreachable;
 
   /// No description provided for @certificateAttendedOfRequired.
@@ -3215,7 +3239,7 @@ abstract class AppLocalizations {
   /// No description provided for @certificateBatch.
   ///
   /// In en, this message translates to:
-  /// **'Batch'**
+  /// **'Class'**
   String get certificateBatch;
 
   /// No description provided for @certificateTeacher.
@@ -3269,7 +3293,7 @@ abstract class AppLocalizations {
   /// No description provided for @certificateVerifyHint.
   ///
   /// In en, this message translates to:
-  /// **'Anyone can check it at {url}'**
+  /// **'Proof of the skill. Anyone can check it at {url}'**
   String certificateVerifyHint(String url);
 
   /// No description provided for @waitlistPosition.
@@ -3305,7 +3329,7 @@ abstract class AppLocalizations {
   /// No description provided for @waitlistStepSeat.
   ///
   /// In en, this message translates to:
-  /// **'When a seat frees up, it goes to the first person in line.'**
+  /// **'When a place frees up, it goes to the first person in line.'**
   String get waitlistStepSeat;
 
   /// No description provided for @waitlistStepNotify.
@@ -3317,7 +3341,7 @@ abstract class AppLocalizations {
   /// No description provided for @waitlistStepHold.
   ///
   /// In en, this message translates to:
-  /// **'You then have 24 hours to check out before the seat moves on.'**
+  /// **'You then have 24 hours to check out before the place moves on.'**
   String get waitlistStepHold;
 
   /// No description provided for @waitlistNoCharge.
@@ -3359,7 +3383,7 @@ abstract class AppLocalizations {
   /// No description provided for @waitlistSeatOpen.
   ///
   /// In en, this message translates to:
-  /// **'A seat opened for you'**
+  /// **'A place opened for you'**
   String get waitlistSeatOpen;
 
   /// No description provided for @waitlistHeldFor.
@@ -3377,7 +3401,7 @@ abstract class AppLocalizations {
   /// No description provided for @waitlistClaimSeat.
   ///
   /// In en, this message translates to:
-  /// **'Claim seat'**
+  /// **'Claim your place'**
   String get waitlistClaimSeat;
 
   /// No description provided for @teacherAbout.
@@ -3401,7 +3425,7 @@ abstract class AppLocalizations {
   /// No description provided for @teacherUpcomingBatches.
   ///
   /// In en, this message translates to:
-  /// **'Upcoming batches'**
+  /// **'Upcoming classes'**
   String get teacherUpcomingBatches;
 
   /// No description provided for @teacherViewProfile.
@@ -3671,7 +3695,7 @@ abstract class AppLocalizations {
   /// No description provided for @timezoneHint.
   ///
   /// In en, this message translates to:
-  /// **'Session times are shown in this timezone.'**
+  /// **'Live session times are shown in this timezone.'**
   String get timezoneHint;
 
   /// No description provided for @useDeviceTimezone.
@@ -3731,7 +3755,7 @@ abstract class AppLocalizations {
   /// No description provided for @appStoreNote.
   ///
   /// In en, this message translates to:
-  /// **'Payment is handled by Apple. Your seat is confirmed as soon as the purchase completes.'**
+  /// **'Payment is handled by Apple. Your place is confirmed as soon as the purchase completes.'**
   String get appStoreNote;
 
   /// No description provided for @appStoreBuy.
@@ -3785,7 +3809,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrolOnWebsiteBody.
   ///
   /// In en, this message translates to:
-  /// **'This seat isn\'t available as an in-app purchase.'**
+  /// **'This class isn\'t available as an in-app purchase.'**
   String get enrolOnWebsiteBody;
 
   /// No description provided for @clear.
@@ -3881,7 +3905,7 @@ abstract class AppLocalizations {
   /// No description provided for @addPhotoBody.
   ///
   /// In en, this message translates to:
-  /// **'Your teacher sees your photo on the class list and in live sessions, so they know who\'s in the room.'**
+  /// **'Your teacher sees your photo on the class list and in live sessions, so they know who\'s in the class.'**
   String get addPhotoBody;
 
   /// No description provided for @addPhotoTips.
@@ -4925,7 +4949,7 @@ abstract class AppLocalizations {
   /// No description provided for @errReviewNotEligible.
   ///
   /// In en, this message translates to:
-  /// **'You can review this course after attending one of its sessions.'**
+  /// **'You can review this course after attending one of its live sessions.'**
   String get errReviewNotEligible;
 
   /// No description provided for @teacherRecordingsTitle.
@@ -4967,7 +4991,7 @@ abstract class AppLocalizations {
   /// No description provided for @instructorsLede.
   ///
   /// In en, this message translates to:
-  /// **'The people who teach live on Azza. Open a profile to see their courses and open batches.'**
+  /// **'The people who teach on Azza. Open a profile to see their courses and open classes.'**
   String get instructorsLede;
 
   /// No description provided for @instructorsEmpty.
@@ -5003,7 +5027,7 @@ abstract class AppLocalizations {
   /// No description provided for @instructorOpenBatchesN.
   ///
   /// In en, this message translates to:
-  /// **'{count} open batches'**
+  /// **'{count} open classes'**
   String instructorOpenBatchesN(String count);
 
   /// No description provided for @teachOnAzza.
@@ -5033,13 +5057,13 @@ abstract class AppLocalizations {
   /// No description provided for @teachPitchTitle.
   ///
   /// In en, this message translates to:
-  /// **'Share what you know, live.'**
+  /// **'Teach what you know.'**
   String get teachPitchTitle;
 
   /// No description provided for @teachPitchBody.
   ///
   /// In en, this message translates to:
-  /// **'Teach small live batches to learners across the region, in Arabic or English. Tell us who you are and what you\'d teach; our team reviews every application, usually within a few days.'**
+  /// **'Guide small classes of learners across the region, in Arabic or English, with lessons, practice and live sessions. Tell us who you are and what you\'d teach; our team reviews every application, usually within a few days.'**
   String get teachPitchBody;
 
   /// No description provided for @applySectionAbout.

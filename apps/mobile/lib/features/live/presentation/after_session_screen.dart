@@ -126,7 +126,7 @@ class _AfterSessionScreenState extends ConsumerState<AfterSessionScreen> {
                     MonoLabel('${l.nextLabel} · S${next.number.toString().padLeft(2, '0')} · ${f.weekday(next.startsAt)}'),
                     const SizedBox(height: 6),
                     Text(next.title, style: t.titleMedium),
-                    Text('${f.dayTime(next.startsAt)} · ${f.n(next.duration.inMinutes)} min', style: t.bodySmall),
+                    Text('${f.dayTime(next.startsAt)} · ${l.quizMinutesN(f.n(next.duration.inMinutes))}', style: t.bodySmall),
                   ]),
                 ),
               ],

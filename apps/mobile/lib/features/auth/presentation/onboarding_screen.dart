@@ -80,6 +80,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SceneImage('onboarding', height: 220),
           const SizedBox(height: 24),
           DisplayText(l.onboardingTitle, size: 36),
+          const SizedBox(height: 10),
+          Text(l.onboardingLine, style: t.bodyMedium?.copyWith(color: p.muted)),
           const SizedBox(height: 24),
           chips(interests, _interests),
           const SizedBox(height: 32),

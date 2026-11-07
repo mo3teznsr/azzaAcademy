@@ -11,7 +11,7 @@ import { useCalm } from './hooks';
 import { Kicker, Seat } from './seat';
 import { Wrap } from './wrap';
 
-/** 10 · Finish line: a sample certificate; its seal draws in and the verify link types itself out. */
+/** 10 · Proof you learned it: a sample certificate; its seal draws in and the verify link types itself out. */
 export function Certificate() {
   const { t, f, fill } = useI18n();
   const c = t.landing.certificate;

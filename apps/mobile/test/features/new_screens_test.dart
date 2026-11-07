@@ -67,7 +67,7 @@ void main() {
       await tester.scrollUntilVisible(find.text('6 more sessions needed'), 200);
       expect(find.text('In progress'), findsOneWidget);
       expect(find.byType(LinearProgressIndicator), findsWidgets);
-      await tester.scrollUntilVisible(find.text('Not enough sessions left to reach 80% in this batch.'), 200);
+      await tester.scrollUntilVisible(find.text('Not enough sessions left to reach 80% in this class.'), 200);
     });
 
     testWidgets('empty state', (tester) async {
@@ -75,7 +75,7 @@ void main() {
         certificatesRepositoryProvider.overrideWithValue(FakeCertificatesRepository()),
       ]);
       await settle(tester);
-      expect(find.text('No certificates yet'), findsOneWidget);
+      expect(find.text('Proof you learned it'), findsOneWidget);
     });
 
     testWidgets('detail renders the certificate and shares the verify link', (tester) async {
@@ -151,7 +151,7 @@ void main() {
       expect(find.byKey(const Key('waitlist-section')), findsOneWidget);
       expect(find.text('3rd in line · of 7'), findsOneWidget);
       expect(find.text("You're next in line · of 2"), findsOneWidget);
-      expect(find.text('A SEAT OPENED FOR YOU'), findsOneWidget);
+      expect(find.text('A PLACE OPENED FOR YOU'), findsOneWidget);
       expect(find.byKey(const Key('claim-b_c02')), findsOneWidget);
     });
 
@@ -200,9 +200,9 @@ void main() {
     expect(find.text('ENGLISH'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.byKey(const Key('teacher-batch-b_b09')), 200, scrollable: find.byType(Scrollable).first);
-    expect(find.text('9 SEATS LEFT'), findsOneWidget);
+    expect(find.text('9 PLACES LEFT'), findsOneWidget);
     expect(find.text('AED 880.00'), findsOneWidget);
-    expect(find.text('Enroll in B09'), findsOneWidget);
+    expect(find.text('Join class B09'), findsOneWidget);
     expect(find.text('FULL'), findsOneWidget);
     expect(find.text('Join waitlist'), findsOneWidget);
   });

@@ -178,7 +178,7 @@ class _RoomBody extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Row(children: [
-          const StatusChip(label: 'Live', color: AzzaColors.onAirDark, textColor: AzzaColors.inkDeep, live: true),
+          StatusChip(label: l.statusLive, color: AzzaColors.onAirDark, textColor: AzzaColors.inkDeep, live: true),
           const SizedBox(width: 8),
           const PulsingDot(size: 7),
           const SizedBox(width: 2),

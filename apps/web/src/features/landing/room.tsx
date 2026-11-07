@@ -9,7 +9,7 @@ import { useSequence } from './hooks';
 import { Kicker, Seat } from './seat';
 import { Wrap } from './wrap';
 
-/** 5 · In the room: a small window grows full-bleed into the live room; captions arrive once it's open. */
+/** 5 · Stuck? Ask.: a small window grows full-bleed into a live session; captions arrive once it's open. */
 export function Room() {
   const { t, dir } = useI18n();
   const r = t.landing.room;

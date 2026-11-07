@@ -14,7 +14,7 @@ import { Wrap } from './wrap';
 /** Mon → Sun columns (0 = Sunday, as in ScheduleRule.weekdays). */
 const DAYS = [1, 2, 3, 4, 5, 6, 0];
 
-/** 3 · Your week: a sticky weekly calendar; the batch's sessions slot in, then the time-zone line turns to yours. */
+/** 3 · Learning that fits your week: a sticky weekly calendar; the class's live sessions slot in, then the time-zone line turns to yours. */
 export function Week() {
   const { t, f, fill } = useI18n();
   const w = t.landing.week;

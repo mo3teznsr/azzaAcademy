@@ -12,6 +12,9 @@ import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../learn/data/learn_repository.dart';
+import '../../learn/data/quizzes_repository.dart';
+import '../../learn/domain/quiz_models.dart';
+import '../../learn/presentation/my_quizzes_screen.dart';
 import '../../me/data/me_repository.dart';
 import '../../me/domain/me_models.dart';
 import '../../waitlist/data/waitlist_repository.dart';
@@ -23,7 +26,8 @@ String greeting(AppLocalizations l, String name, DateTime now) {
   return l.greetingEvening(name);
 }
 
-/// Student Home: what's on air now, my batches, pick up a recording.
+/// Student Home, learning first: your courses and progress, practice due, then the next live session
+/// and recordings to catch up on. A session you can join right now still leads, because it's time-bound.
 class StudentHomeScreen extends ConsumerWidget {
   const StudentHomeScreen({super.key});
 
@@ -40,6 +44,7 @@ class StudentHomeScreen extends ConsumerWidget {
       ref.invalidate(enrollmentsProvider);
       ref.invalidate(upcomingScheduleProvider);
       ref.invalidate(recordingsProvider);
+      ref.invalidate(myQuizzesProvider);
       ref.invalidate(waitlistProvider);
       await ref.read(enrollmentsProvider.future);
     }
@@ -54,6 +59,8 @@ class StudentHomeScreen extends ConsumerWidget {
             final pending = list.where((e) => e.status == EnrollmentStatus.awaitingTransfer || e.status == EnrollmentStatus.verifying).toList();
             final sessions = upcoming.value ?? const <SessionSummary>[];
             final hero = sessions.where((s) => s.lobbyOpen(now)).firstOrNull ?? sessions.where((s) => s.status == SessionStatus.scheduled).firstOrNull;
+            final joinable = hero != null && hero.lobbyOpen(now);
+            final locale = ref.watch(localeProvider);
             return RefreshList(
               onRefresh: refresh,
               children: [
@@ -73,8 +80,9 @@ class StudentHomeScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                if (hero != null) _HeroSession(session: hero, fmt: f, locale: ref.watch(localeProvider)),
+                if (joinable) ...[_HeroSession(session: hero, fmt: f, locale: locale, labelled: true), const SizedBox(height: 4)],
                 if (active.isEmpty && pending.isEmpty) ...[
+                  if (hero != null && !joinable) _HeroSession(session: hero, fmt: f, locale: locale, labelled: true),
                   const SizedBox(height: 24),
                   EmptyState(
                     title: l.noBatchesTitle,
@@ -89,6 +97,11 @@ class StudentHomeScreen extends ConsumerWidget {
                     FadeSlideIn(index: i, child: _BatchTile(enrollment: e, fmt: f, now: now)),
                     const SizedBox(height: 10),
                   ],
+                  const _PracticeDue(),
+                  if (hero != null && !joinable) ...[
+                    SectionHeader(l.upNext),
+                    _HeroSession(session: hero, fmt: f, locale: locale),
+                  ],
                   const WaitlistSection(),
                   const _ContinueWatching(),
                 ],
@@ -102,10 +115,13 @@ class StudentHomeScreen extends ConsumerWidget {
 }
 
 class _HeroSession extends StatelessWidget {
-  const _HeroSession({required this.session, required this.fmt, required this.locale});
+  const _HeroSession({required this.session, required this.fmt, required this.locale, this.labelled = false});
   final SessionSummary session;
   final Fmt fmt;
   final AppLocale locale;
+
+  /// Prefix the time with "Next live session" when no section header above already says it.
+  final bool labelled;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +148,7 @@ class _HeroSession extends StatelessWidget {
                   child: Ticker(builder: (_, now) => MonoLabel('${l.liveNow} · ${Fmt.timecode(now.difference(session.startsAt))}', color: fg)),
                 ),
               ] else
-                Expanded(child: MonoLabel('${l.upNext} · ${fmt.dayTime(session.startsAt)}', color: fg)),
+                Expanded(child: MonoLabel(labelled ? '${l.upNext} · ${fmt.dayTime(session.startsAt)}' : fmt.dayTime(session.startsAt), color: fg)),
               const SizedBox(width: 8),
               MonoLabel(Fmt.slate(session.batchCode, session.number), color: fg),
             ],
@@ -200,7 +216,15 @@ class _BatchTile extends ConsumerWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded),
+          if (!pendingPayment)
+            TextButton(
+              key: Key('lessons-${b.id}'),
+              style: TextButton.styleFrom(minimumSize: const Size(48, 44)),
+              onPressed: () => context.push(Routes.courseLessons(b.courseId)),
+              child: Text(l.lessonsTitle),
+            )
+          else
+            const Icon(Icons.chevron_right_rounded),
         ],
       ),
     );
@@ -251,6 +275,28 @@ class _ContinueWatching extends ConsumerWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Quizzes still to do across the student's classes, soonest due first. Hidden when there's nothing due.
+class _PracticeDue extends ConsumerWidget {
+  const _PracticeDue();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quizzes = ref.watch(myQuizzesProvider).value ?? const <QuizSummary>[];
+    bool todo(QuizSummary q) => (q.mine?.canStart ?? false) || q.mine?.status == QuizStatus.inProgress;
+    final due = quizzes.where(todo).toList()..sort((a, b) => (a.dueAt ?? DateTime(9999)).compareTo(b.dueAt ?? DateTime(9999)));
+    if (due.isEmpty) return const SizedBox.shrink();
+    final l = context.l10n;
+    return Column(
+      key: const Key('home-practice'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeader(l.practiceDue, action: due.length > 2 ? l.seeAll : null, onAction: () => context.push(Routes.myQuizzes)),
+        for (final q in due.take(2)) ...[QuizSummaryCard(quiz: q), const SizedBox(height: 10)],
       ],
     );
   }

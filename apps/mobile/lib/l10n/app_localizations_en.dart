@@ -15,7 +15,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Try again';
 
   @override
-  String get errorTitle => 'Something went off-air.';
+  String get errorTitle => 'That didn\'t load.';
 
   @override
   String get emptyGeneric => 'Nothing here yet.';
@@ -30,7 +30,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
-  String get noOpenBatchesShort => 'No open batches';
+  String get noOpenBatchesShort => 'No open classes';
 
   @override
   String chargedAsAed(String amount) {
@@ -60,7 +60,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String confirmingPaymentBody(String code, String amount) {
-    return 'Finish paying $amount on Stripe\'s secure page. Your seat in $code is held, and this screen updates as soon as the payment is confirmed.';
+    return 'Finish paying $amount on Stripe\'s secure page. Your place in $code is held, and this screen updates as soon as the payment is confirmed.';
   }
 
   @override
@@ -352,10 +352,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderRefunded => 'Refunded';
 
   @override
-  String get splashTagline => 'Live online courses · Arabic & English';
+  String get splashTagline => 'Courses in Arabic & English';
 
   @override
-  String get splashLine => 'Learn live, with a real teacher.';
+  String get splashLine => 'Learn it. Practise it. Make it yours.';
 
   @override
   String get chooseLanguage => 'Choose your language';
@@ -368,19 +368,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageHint =>
-      'You can change the language any time from Me → Language & region. Each batch sets its own session language.';
+      'You can change the language any time from Me → Language & region. Each class is taught in its own language.';
 
   @override
-  String get onboardingTitle => 'What do you want to learn live?';
+  String get onboardingTitle => 'What do you want to learn?';
 
   @override
-  String get onboardingTimezone => 'Your timezone — batch times convert to it';
+  String get onboardingLine =>
+      'Learn step by step, practise with feedback, get help from your teacher, and prove it with a certificate.';
+
+  @override
+  String get onboardingTimezone =>
+      'Your timezone — live session times convert to it';
 
   @override
   String get detected => 'detected';
 
   @override
-  String get bestTime => 'Best time for you';
+  String get bestTime => 'Best time for live sessions';
 
   @override
   String get mornings => 'Mornings';
@@ -410,14 +415,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get interestMusic => 'Music';
 
   @override
-  String get signInTitle => 'Take your seat.';
+  String get signInTitle => 'Welcome back.';
 
   @override
-  String get signInSubtitle =>
-      'One account for every batch you join — on your phone or the web.';
+  String get signInSubtitle => 'Pick up where you left off.';
 
   @override
-  String get signUpTitle => 'Create your account.';
+  String get signUpTitle => 'Start learning today.';
+
+  @override
+  String get signUpSubtitle =>
+      'A clear path, practice with feedback, and a certificate that proves it.';
 
   @override
   String get email => 'Email';
@@ -483,7 +491,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyPermissions =>
-      'After this we\'ll ask for camera and mic once, so you can join sessions in one tap.';
+      'After this we\'ll ask for camera and mic once, so you can join live sessions in one tap.';
 
   @override
   String get verifyContinue => 'Verify & continue';
@@ -507,39 +515,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveNow => 'Live now';
 
   @override
-  String get joinLiveRoom => 'Join live room';
+  String get joinLiveRoom => 'Join session';
 
   @override
   String inRoom(String count) {
-    return '$count in room';
+    return '$count joined';
   }
 
   @override
-  String get myBatches => 'My batches';
+  String get myBatches => 'Your courses';
 
   @override
   String nextAt(String when) {
-    return 'Next · $when';
+    return 'Next session · $when';
   }
 
   @override
-  String get continueWatching => 'Continue watching';
+  String get continueWatching => 'Catch up';
 
   @override
-  String get noBatchesTitle => 'No batches yet';
+  String get noBatchesTitle => 'No courses yet';
 
   @override
   String get noBatchesBody =>
-      'Pick a course and a batch whose schedule fits your week.';
+      'Find a course, then choose a class whose live sessions fit your week.';
 
   @override
-  String get exploreCta => 'Explore courses';
+  String get exploreCta => 'Find your course';
 
   @override
-  String get upNext => 'Up next';
+  String get upNext => 'Next live session';
 
   @override
-  String get exploreTitle => 'Find a batch that fits your week.';
+  String get practiceDue => 'Practice due';
+
+  @override
+  String get exploreTitle => 'Find what you want to learn.';
 
   @override
   String get searchCourses => 'Search courses';
@@ -591,11 +602,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chooseBatchN(String n) {
-    return 'Choose a batch · $n';
+    return 'Choose your class · $n';
   }
 
   @override
-  String get pickBatch => 'Pick your batch.';
+  String get pickBatch => 'Choose your class.';
 
   @override
   String timesShownIn(String tz) {
@@ -607,12 +618,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String enrollIn(String code) {
-    return 'Enroll in $code';
+    return 'Join class $code';
   }
 
   @override
   String seatsLeft(String n) {
-    return '$n seats left';
+    return '$n places left';
   }
 
   @override
@@ -621,11 +632,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noOpenBatches => 'No open batches right now. Check back soon.';
+  String get noOpenBatches => 'No classes are open right now. Check back soon.';
 
   @override
   String joiningLate(String ran, String left) {
-    return 'Joining late? $ran sessions already ran — they\'re in the library as recordings. $left live sessions left.';
+    return 'Joining late? $ran sessions already ran — catch up on their recordings in your library. $left live sessions left.';
   }
 
   @override
@@ -656,7 +667,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showPricesIn => 'Show prices in';
 
   @override
-  String get batchPrice => 'Batch price';
+  String get batchPrice => 'Class price';
 
   @override
   String get coupon => 'Coupon';
@@ -688,13 +699,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payCard => 'Card · Google Pay';
 
   @override
-  String get payCardSub => 'Instant seat · 3-D Secure';
+  String get payCardSub => 'Confirmed instantly · 3-D Secure';
 
   @override
   String get payBank => 'Bank transfer';
 
   @override
-  String get payBankSub => 'Seat held 48 h while you transfer';
+  String get payBankSub => 'Your place is held for 48 h while you transfer';
 
   @override
   String continueAmount(String amount) {
@@ -733,7 +744,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String seatHeld(String time) {
-    return 'Seat held $time';
+    return 'Place held $time';
   }
 
   @override
@@ -769,7 +780,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get iSentTransfer => 'I\'ve sent the transfer';
 
   @override
-  String get holdExpired => 'The 48 h hold expired and the seat was released.';
+  String get holdExpired =>
+      'The 48 h hold expired and your place was released.';
 
   @override
   String get noBanks => 'No receiving banks are active. Contact support.';
@@ -780,15 +792,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get almostOnAir => 'Almost on air.';
+  String get almostOnAir => 'Nearly done.';
 
   @override
   String verifyingBody(String code, String amount) {
-    return 'We hold your seat in $code while finance checks the transfer of $amount.';
+    return 'We\'re holding your place in $code while finance checks the transfer of $amount.';
   }
 
   @override
-  String get tlOrderCreated => 'Seat held';
+  String get tlOrderCreated => 'Place held';
 
   @override
   String get tlReceiptUploaded => 'Receipt uploaded';
@@ -797,7 +809,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tlFinanceVerifying => 'Finance verifying';
 
   @override
-  String get tlSeatConfirmed => 'Seat confirmed';
+  String get tlSeatConfirmed => 'Place confirmed';
 
   @override
   String get rejectedTitle => 'Receipt needs attention';
@@ -814,7 +826,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderExpiredBody =>
-      'This order expired and the seat was released.';
+      'This order expired and your place was released.';
 
   @override
   String get goToSchedule => 'Go to my schedule';
@@ -824,11 +836,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String enrolledBody(String course, String code, String n) {
-    return 'Your seat in $course · $code is yours. $n live sessions are now in your schedule.';
+    return 'Your place in $course · $code is confirmed. Start with the lessons; your $n live sessions are in your schedule.';
   }
 
   @override
-  String get nextTake => 'Next take';
+  String get nextTake => 'Next live session';
 
   @override
   String get days => 'days';
@@ -841,7 +853,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String lobbyOpensAt(String time) {
-    return 'lobby opens $time';
+    return 'you can join from $time';
   }
 
   @override
@@ -862,7 +874,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get thisWeek => 'This week';
 
   @override
-  String get noSessionsWeek => 'No sessions this week.';
+  String get noSessionsWeek => 'No live sessions this week.';
 
   @override
   String get prevWeek => 'Previous week';
@@ -895,7 +907,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lobbyClosed => 'The lobby opens 15 min before the session starts.';
+  String get lobbyClosed => 'You can join 15 min before the session starts.';
 
   @override
   String get goLive => 'Go live';
@@ -1043,7 +1055,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get edgeLostBody =>
-      'We couldn\'t get you back in automatically. Your seat is still yours.';
+      'We couldn\'t get you back in automatically. Your place in the class is safe.';
 
   @override
   String get edgeRejoin => 'Rejoin';
@@ -1058,7 +1070,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get edgeRoomFullBody =>
-      'A seat frees up as soon as someone leaves. Try again in a minute, or catch the recording after class.';
+      'A place frees up as soon as someone leaves. Try again in a minute, or watch the recording after the session.';
 
   @override
   String edgeCancelledTitle(String s, String teacher) {
@@ -1084,14 +1096,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get edgeEndedBody =>
-      'The recording appears in your learning once it\'s ready.';
+      'The recording appears in your library once it\'s ready.';
 
   @override
-  String get edgeNotEnrolledTitle => 'You\'re not in this batch';
+  String get edgeNotEnrolledTitle => 'You\'re not in this class';
 
   @override
   String get edgeNotEnrolledBody =>
-      'You need an active enrollment in this batch to join.';
+      'You need an active enrolment in this class to join.';
 
   @override
   String get edgeBackToSchedule => 'Back to schedule';
@@ -1100,7 +1112,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get edgeWaitingButton => 'Waiting for the host…';
 
   @override
-  String get wrapTitle => 'That\'s a wrap.';
+  String get wrapTitle => 'Session complete.';
 
   @override
   String endedStayed(String time, String min) {
@@ -1146,6 +1158,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryTitle => 'Library';
 
   @override
+  String get libraryEmptyTitle => 'Learn at your pace';
+
+  @override
   String continueAt(String at) {
     return 'Continue · $at';
   }
@@ -1159,7 +1174,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get materials => 'Materials';
 
   @override
-  String get noRecordings => 'Recordings land here after each session.';
+  String get noRecordings =>
+      'Recordings appear here after each session, so you can rewatch or catch up.';
 
   @override
   String get noMaterials => 'No materials shared yet.';
@@ -1203,7 +1219,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollFirst =>
-      'Enroll in a batch to unlock recordings and materials.';
+      'Join a class to unlock its lessons, recordings and materials.';
 
   @override
   String get inbox => 'Inbox';
@@ -1234,7 +1250,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String batchesN(String n) {
-    return '$n batches';
+    return '$n classes';
   }
 
   @override
@@ -1262,11 +1278,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editProfile => 'Edit profile';
 
   @override
-  String get nextTakeLobbyOpen => 'Next take · lobby open';
+  String get nextTakeLobbyOpen => 'Next session · lobby open';
 
   @override
   String nextTakeIn(String time) {
-    return 'Next take · starts in $time';
+    return 'Next session · starts in $time';
   }
 
   @override
@@ -1504,7 +1520,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get onAirLabel => 'On air';
+  String get onAirLabel => 'Live now';
 
   @override
   String roomsPeople(String rooms, String people) {
@@ -1530,7 +1546,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAlerts => 'Nothing needs a decision right now.';
 
   @override
-  String get liveMonitorTitle => 'On air now';
+  String get liveMonitorTitle => 'Live now';
 
   @override
   String autoRefresh(String s) {
@@ -1546,7 +1562,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinSilently => 'Join silently';
 
   @override
-  String get noLiveRooms => 'No rooms are on air.';
+  String get noLiveRooms => 'No sessions are live right now.';
 
   @override
   String participantsN(String n) {
@@ -1733,11 +1749,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get certificatesTitle => 'Certificates';
 
   @override
-  String get certificatesEmptyTitle => 'No certificates yet';
+  String get certificatesEmptyTitle => 'Proof you learned it';
 
   @override
   String get certificatesEmptyBody =>
-      'Attend at least 80% of a batch\'s sessions and your certificate appears here when the batch ends.';
+      'Attend at least 80% of your class\'s live sessions and your certificate appears here when the class ends. Anyone can verify it.';
 
   @override
   String get certificatesEarned => 'Earned';
@@ -1765,11 +1781,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get certificateRequirementMet =>
-      'Attendance met — your certificate is issued when the batch ends.';
+      'Attendance met — your certificate is issued when the class ends.';
 
   @override
   String get certificateUnreachable =>
-      'Not enough sessions left to reach 80% in this batch.';
+      'Not enough sessions left to reach 80% in this class.';
 
   @override
   String certificateAttendedOfRequired(String attended, String required) {
@@ -1789,7 +1805,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get certificateForCompleting => 'for completing';
 
   @override
-  String get certificateBatch => 'Batch';
+  String get certificateBatch => 'Class';
 
   @override
   String get certificateTeacher => 'Teacher';
@@ -1819,7 +1835,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String certificateVerifyHint(String url) {
-    return 'Anyone can check it at $url';
+    return 'Proof of the skill. Anyone can check it at $url';
   }
 
   @override
@@ -1845,7 +1861,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get waitlistStepSeat =>
-      'When a seat frees up, it goes to the first person in line.';
+      'When a place frees up, it goes to the first person in line.';
 
   @override
   String get waitlistStepNotify =>
@@ -1853,7 +1869,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get waitlistStepHold =>
-      'You then have 24 hours to check out before the seat moves on.';
+      'You then have 24 hours to check out before the place moves on.';
 
   @override
   String get waitlistNoCharge => 'Nothing is charged while you wait.';
@@ -1876,7 +1892,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waitlistLeft => 'You left the waitlist';
 
   @override
-  String get waitlistSeatOpen => 'A seat opened for you';
+  String get waitlistSeatOpen => 'A place opened for you';
 
   @override
   String waitlistHeldFor(String time) {
@@ -1887,7 +1903,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waitlistHoldExpired => 'The hold has expired';
 
   @override
-  String get waitlistClaimSeat => 'Claim seat';
+  String get waitlistClaimSeat => 'Claim your place';
 
   @override
   String get teacherAbout => 'About';
@@ -1899,7 +1915,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get teacherCourses => 'Courses';
 
   @override
-  String get teacherUpcomingBatches => 'Upcoming batches';
+  String get teacherUpcomingBatches => 'Upcoming classes';
 
   @override
   String get teacherViewProfile => 'View profile';
@@ -2046,7 +2062,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSaved => 'Profile saved.';
 
   @override
-  String get timezoneHint => 'Session times are shown in this timezone.';
+  String get timezoneHint => 'Live session times are shown in this timezone.';
 
   @override
   String useDeviceTimezone(String zone) {
@@ -2081,7 +2097,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appStoreNote =>
-      'Payment is handled by Apple. Your seat is confirmed as soon as the purchase completes.';
+      'Payment is handled by Apple. Your place is confirmed as soon as the purchase completes.';
 
   @override
   String appStoreBuy(String price) {
@@ -2115,7 +2131,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrolOnWebsiteBody =>
-      'This seat isn\'t available as an in-app purchase.';
+      'This class isn\'t available as an in-app purchase.';
 
   @override
   String get clear => 'Clear';
@@ -2167,7 +2183,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addPhotoBody =>
-      'Your teacher sees your photo on the class list and in live sessions, so they know who\'s in the room.';
+      'Your teacher sees your photo on the class list and in live sessions, so they know who\'s in the class.';
 
   @override
   String get addPhotoTips =>
@@ -2746,7 +2762,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errReviewNotEligible =>
-      'You can review this course after attending one of its sessions.';
+      'You can review this course after attending one of its live sessions.';
 
   @override
   String get teacherRecordingsTitle => 'Your recordings';
@@ -2769,7 +2785,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get instructorsLede =>
-      'The people who teach live on Azza. Open a profile to see their courses and open batches.';
+      'The people who teach on Azza. Open a profile to see their courses and open classes.';
 
   @override
   String get instructorsEmpty => 'No instructors yet';
@@ -2790,7 +2806,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String instructorOpenBatchesN(String count) {
-    return '$count open batches';
+    return '$count open classes';
   }
 
   @override
@@ -2807,11 +2823,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create your account first, then open Me → Teach on Azza to apply.';
 
   @override
-  String get teachPitchTitle => 'Share what you know, live.';
+  String get teachPitchTitle => 'Teach what you know.';
 
   @override
   String get teachPitchBody =>
-      'Teach small live batches to learners across the region, in Arabic or English. Tell us who you are and what you\'d teach; our team reviews every application, usually within a few days.';
+      'Guide small classes of learners across the region, in Arabic or English, with lessons, practice and live sessions. Tell us who you are and what you\'d teach; our team reviews every application, usually within a few days.';
 
   @override
   String get applySectionAbout => 'About you';
