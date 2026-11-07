@@ -3285,4 +3285,303 @@ class AppLocalizationsEn extends AppLocalizations {
   String quizCorrectOfAnswered(String correct, String answered) {
     return '$correct of $answered correct';
   }
+
+  @override
+  String get messagesTitle => 'Messages';
+
+  @override
+  String get messagesEmptyTitle => 'No messages yet';
+
+  @override
+  String get messagesEmptyBody =>
+      'Your class chats and messages with your teacher show up here.';
+
+  @override
+  String get classChat => 'Class chat';
+
+  @override
+  String get messageYourTeacher => 'Message your teacher';
+
+  @override
+  String get chatPrivateLabel => 'Private chat';
+
+  @override
+  String get chatNoMessagesYet =>
+      'No messages yet. Say hello to get things started.';
+
+  @override
+  String get chatComposerLabel => 'Message';
+
+  @override
+  String get chatComposerHint => 'Write a message';
+
+  @override
+  String get chatClosedNote =>
+      'This class has ended, so its chat is read-only.';
+
+  @override
+  String get chatAdminReadOnly =>
+      'You can read this private chat, but not reply to it.';
+
+  @override
+  String get chatLoadEarlier => 'Load earlier messages';
+
+  @override
+  String get chatMessageDeleted => 'Message deleted';
+
+  @override
+  String get chatDeleteMessage => 'Delete message';
+
+  @override
+  String get chatDeleteConfirmTitle => 'Delete this message?';
+
+  @override
+  String get chatDeleteConfirmBody =>
+      'It will be removed for everyone in this chat.';
+
+  @override
+  String get chatSendFailed => 'Not sent. Tap to try again.';
+
+  @override
+  String get chatSending => 'Sending…';
+
+  @override
+  String chatUnreadN(String n) {
+    return '$n unread';
+  }
+
+  @override
+  String get announcementsTitle => 'Announcements';
+
+  @override
+  String get announcementsEmpty => 'No announcements yet';
+
+  @override
+  String get announcementsEmptyBody =>
+      'News from your teachers and the Azza team will appear here.';
+
+  @override
+  String get latestFromClasses => 'Latest from your classes';
+
+  @override
+  String get pinnedLabel => 'Pinned';
+
+  @override
+  String get fromAzzaTeam => 'Azza team';
+
+  @override
+  String get newAnnouncement => 'New announcement';
+
+  @override
+  String get platformAnnouncement => 'Platform announcement';
+
+  @override
+  String get announcementTitleLabel => 'Title';
+
+  @override
+  String get announcementTitleRequired => 'Give the announcement a title.';
+
+  @override
+  String get announcementBodyLabel => 'Message';
+
+  @override
+  String get announcementBodyHint =>
+      'Markdown works: **bold**, lists and links';
+
+  @override
+  String get announcementBodyRequired => 'Write the announcement.';
+
+  @override
+  String get announcementAudience => 'Who sees it';
+
+  @override
+  String get audienceAll => 'Everyone';
+
+  @override
+  String get audienceStudents => 'Students';
+
+  @override
+  String get audienceTeachers => 'Teachers';
+
+  @override
+  String get announcementPin => 'Pin to the top';
+
+  @override
+  String get announcementNotify => 'Notify people';
+
+  @override
+  String get announcementNotifyClassHint =>
+      'Your students get an in-app and push notification.';
+
+  @override
+  String get announcementNotifyPlatformHint =>
+      'In the app, by push and by email.';
+
+  @override
+  String get announcementPost => 'Post';
+
+  @override
+  String get announcementPosted => 'Announcement posted.';
+
+  @override
+  String get announcementDelete => 'Delete announcement';
+
+  @override
+  String get announcementDeleteConfirm => 'Delete this announcement?';
+
+  @override
+  String get helpSupport => 'Help & support';
+
+  @override
+  String get helpSupportHint => 'Ask the Azza team';
+
+  @override
+  String get supportEmptyTitle => 'No requests yet';
+
+  @override
+  String get supportEmptyBody =>
+      'Stuck with a payment, a class or your account? Tell us and we\'ll help.';
+
+  @override
+  String get newTicket => 'New request';
+
+  @override
+  String get newTicketIntro =>
+      'Tell us what\'s going on. We\'ll reply here and by email.';
+
+  @override
+  String get ticketSubject => 'Subject';
+
+  @override
+  String get ticketSubjectHint => 'In a few words, what\'s wrong?';
+
+  @override
+  String get ticketSubjectRequired => 'Add a short subject.';
+
+  @override
+  String get ticketCategory => 'Topic';
+
+  @override
+  String get supportCatPayment => 'Payment';
+
+  @override
+  String get supportCatClass => 'Class';
+
+  @override
+  String get supportCatAccount => 'Account';
+
+  @override
+  String get supportCatTechnical => 'Technical';
+
+  @override
+  String get supportCatOther => 'Other';
+
+  @override
+  String get ticketOrder => 'Order (optional)';
+
+  @override
+  String get ticketClass => 'Class (optional)';
+
+  @override
+  String get ticketNone => 'None';
+
+  @override
+  String get ticketThisOrder => 'This order';
+
+  @override
+  String get ticketThisClass => 'This class';
+
+  @override
+  String get ticketMessage => 'What happened?';
+
+  @override
+  String get ticketMessageHint => 'What you tried, and what you saw';
+
+  @override
+  String get ticketMessageRequired => 'Tell us what happened.';
+
+  @override
+  String get ticketSubmit => 'Send to support';
+
+  @override
+  String get ticketCreated => 'Sent. We\'ll reply here and by email.';
+
+  @override
+  String get ticketStatusOpen => 'Open';
+
+  @override
+  String get ticketStatusAwaitingYou => 'Waiting for you';
+
+  @override
+  String get ticketStatusAwaitingUser => 'Awaiting user';
+
+  @override
+  String get ticketStatusResolved => 'Resolved';
+
+  @override
+  String get ticketNewReply => 'New reply';
+
+  @override
+  String get ticketReplyLabel => 'Reply';
+
+  @override
+  String get ticketReplyHint => 'Write a reply';
+
+  @override
+  String get ticketMarkResolved => 'Mark resolved';
+
+  @override
+  String get ticketResolvedNote =>
+      'Marked resolved. Thanks for letting us know.';
+
+  @override
+  String get ticketResolvedReopenHint =>
+      'This request is resolved. Reply any time to reopen it.';
+
+  @override
+  String get ticketStaffLabel => 'Azza support';
+
+  @override
+  String get ticketSetStatus => 'Change status';
+
+  @override
+  String get ticketStatusChanged => 'Status updated.';
+
+  @override
+  String get ticketFrom => 'From';
+
+  @override
+  String get ticketLinkedOrder => 'Order';
+
+  @override
+  String get ticketLinkedClass => 'Class';
+
+  @override
+  String get supportInbox => 'Support inbox';
+
+  @override
+  String get supportInboxEmpty => 'Nothing here. All caught up.';
+
+  @override
+  String get supportFilterAll => 'All';
+
+  @override
+  String get ticketAllCategories => 'All topics';
+
+  @override
+  String get needHelp => 'Need help?';
+
+  @override
+  String get errChatTooFast =>
+      'You\'re sending messages too quickly. Wait a moment and try again.';
+
+  @override
+  String get errDmNotAllowed =>
+      'Private messages are only between a student and their teacher.';
+
+  @override
+  String get errNotClassMember => 'Only people in this class can see this.';
+
+  @override
+  String get errInvalidAssignee => 'That person can\'t take this request.';
 }

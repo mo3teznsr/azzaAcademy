@@ -529,3 +529,84 @@ export const quizSubmissionInput = z.object({
   answers: z.record(z.string(), z.array(z.string().max(40)).max(8)),
 });
 export type QuizSubmissionInput = z.infer<typeof quizSubmissionInput>;
+
+// ---------- Communications (docs/COMMUNICATIONS.md) ----------
+
+export const ANNOUNCEMENT_SCOPES = ['BATCH', 'PLATFORM'] as const;
+export type AnnouncementScope = (typeof ANNOUNCEMENT_SCOPES)[number];
+export const ANNOUNCEMENT_AUDIENCES = ['ALL', 'STUDENTS', 'TEACHERS'] as const;
+export type AnnouncementAudience = (typeof ANNOUNCEMENT_AUDIENCES)[number];
+
+const announcementFields = {
+  title: z.string().trim().min(1).max(120),
+  /** Markdown. */
+  body: z.string().trim().min(1).max(4000),
+  pinned: z.boolean().default(false),
+  /** Send ANNOUNCEMENT notifications (default true). */
+  notify: z.boolean().default(true),
+};
+
+/** POST /batches/:id/announcements */
+export const batchAnnouncementInput = z.object(announcementFields);
+export type BatchAnnouncementInput = z.infer<typeof batchAnnouncementInput>;
+
+/** POST /announcements (admin) */
+export const platformAnnouncementInput = z.object({ ...announcementFields, audience: z.enum(ANNOUNCEMENT_AUDIENCES).default('ALL') });
+export type PlatformAnnouncementInput = z.infer<typeof platformAnnouncementInput>;
+
+/** PATCH /announcements/:id — `audience` only applies to PLATFORM announcements. */
+export const updateAnnouncementInput = z.object({
+  title: announcementFields.title.optional(),
+  body: announcementFields.body.optional(),
+  pinned: z.boolean().optional(),
+  audience: z.enum(ANNOUNCEMENT_AUDIENCES).optional(),
+});
+export type UpdateAnnouncementInput = z.infer<typeof updateAnnouncementInput>;
+
+export const CONVERSATION_TYPES = ['CLASS', 'DIRECT'] as const;
+export type ConversationType = (typeof CONVERSATION_TYPES)[number];
+
+/** POST /conversations/:id/messages */
+export const conversationMessageInput = z.object({ body: z.string().trim().min(1).max(2000) });
+export type ConversationMessageInput = z.infer<typeof conversationMessageInput>;
+
+/** GET /conversations/:id/messages */
+export const conversationMessagesQuery = z.object({
+  before: z.iso.datetime({ offset: true }).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type ConversationMessagesQuery = z.infer<typeof conversationMessagesQuery>;
+
+export const SUPPORT_CATEGORIES = ['PAYMENT', 'CLASS', 'ACCOUNT', 'TECHNICAL', 'OTHER'] as const;
+export type SupportCategory = (typeof SUPPORT_CATEGORIES)[number];
+export const SUPPORT_STATUSES = ['OPEN', 'AWAITING_USER', 'RESOLVED'] as const;
+export type SupportStatus = (typeof SUPPORT_STATUSES)[number];
+
+/** POST /support/tickets */
+export const supportTicketInput = z.object({
+  subject: z.string().trim().min(1).max(140),
+  category: z.enum(SUPPORT_CATEGORIES),
+  body: z.string().trim().min(1).max(4000),
+  orderId: id.optional(),
+  batchId: id.optional(),
+});
+export type SupportTicketInput = z.infer<typeof supportTicketInput>;
+
+/** POST /support/tickets/:id/messages */
+export const supportMessageInput = z.object({ body: z.string().trim().min(1).max(4000) });
+export type SupportMessageInput = z.infer<typeof supportMessageInput>;
+
+/** PATCH /support/tickets/:id — admin: any field; the owner: only `{ status: 'RESOLVED' }`. `assigneeId: null` unassigns. */
+export const updateSupportTicketInput = z
+  .object({ status: z.enum(SUPPORT_STATUSES).optional(), assigneeId: id.nullable().optional() })
+  .refine((v) => v.status !== undefined || v.assigneeId !== undefined, { message: 'Nothing to update' });
+export type UpdateSupportTicketInput = z.infer<typeof updateSupportTicketInput>;
+
+/** GET /support/tickets */
+export const supportTicketsQuery = z.object({
+  status: z.enum(SUPPORT_STATUSES).optional(),
+  category: z.enum(SUPPORT_CATEGORIES).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+export type SupportTicketsQuery = z.infer<typeof supportTicketsQuery>;

@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import type { Role } from '@azza/shared';
 import { useState } from 'react';
 import { Bell } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -13,12 +15,16 @@ import { meApi } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useSocketEvent } from '@/lib/realtime/socket';
+import { useAuth } from '@/lib/auth/use-auth';
+import { classHref, messagesHref, ticketHref } from '@/features/comms/links';
 import { cn } from '@/lib/utils';
 
 export function NotificationsBell() {
   const { t, f, fill } = useI18n();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const { role } = useAuth();
+  const pathname = usePathname();
   const q = useQuery({ queryKey: qk.notifications, queryFn: () => meApi.notifications(), retry: false });
   const items = q.data?.items ?? [];
   const unread = q.data?.unread ?? 0;
@@ -28,7 +34,8 @@ export function NotificationsBell() {
   });
 
   useSocketEvent<NotificationEvent>(SOCKET_EVENTS.NOTIFICATION, (n) => {
-    toast(n.title, { description: n.body });
+    // The inbox already shows new chat messages live; don't toast over it.
+    if (!(n.type === 'CHAT_MESSAGE' && pathname === '/messages')) toast(n.title, { description: n.body });
     void qc.invalidateQueries({ queryKey: qk.notifications });
   });
 
@@ -58,7 +65,7 @@ export function NotificationsBell() {
           ) : (
             <ul>
               {items.slice(0, 20).map((n) => {
-                const href = notificationHref(n.type, n.data);
+                const href = notificationHref(n.type, n.data, role);
                 const body = (
                   <>
                     <b className="block">{n.title}</b>
@@ -88,9 +95,22 @@ export function NotificationsBell() {
 }
 
 /** Where a notice takes you. Recording alerts open the recording itself (studio for teachers, library for students). */
-function notificationHref(type: string, data: unknown): string | null {
-  const sessionId = typeof data === 'object' && data && 'sessionId' in data ? String((data as { sessionId: unknown }).sessionId) : null;
+function notificationHref(type: string, data: unknown, role: Role | null): string | null {
+  const field = (k: string) => (typeof data === 'object' && data && k in data && (data as Record<string, unknown>)[k] ? String((data as Record<string, unknown>)[k]) : null);
+  const sessionId = field('sessionId');
   switch (type) {
+    case 'ANNOUNCEMENT': {
+      const batchId = field('batchId');
+      return batchId ? classHref(role, batchId, 'announcements') : '/announcements';
+    }
+    case 'CHAT_MESSAGE':
+      return messagesHref(field('conversationId') ?? undefined);
+    case 'SUPPORT_TICKET':
+    case 'SUPPORT_REPLY': {
+      const ticketId = field('ticketId');
+      if (ticketId) return ticketHref(role, ticketId);
+      return role === 'ADMIN' ? '/admin/support' : '/support';
+    }
     case 'RECORDING_READY_TEACHER':
       return sessionId ? `/studio/recordings/${sessionId}` : '/studio/recordings';
     case 'RECORDING_NOT_STARTED':

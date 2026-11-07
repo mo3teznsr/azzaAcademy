@@ -5,6 +5,13 @@ import 'package:azza/core/money/money.dart';
 import 'package:azza/core/network/app_exception.dart';
 import 'package:azza/core/realtime/realtime_client.dart';
 import 'package:azza/features/admin/data/admin_repository.dart';
+import 'package:azza/features/announcements/data/announcements_repository.dart';
+import 'package:azza/features/announcements/domain/announcement_models.dart';
+import 'package:azza/features/chat/data/chat_repository.dart';
+import 'package:azza/features/chat/domain/chat_models.dart';
+import 'package:azza/features/support/data/support_repository.dart';
+import 'package:azza/features/support/domain/support_models.dart';
+import 'package:azza/core/domain/class_ref.dart';
 import 'package:azza/features/live/domain/live_models.dart';
 import 'package:azza/features/auth/data/auth_repository.dart';
 import 'package:azza/features/auth/domain/app_user.dart';
@@ -327,8 +334,21 @@ class FakeAdminRepository implements AdminRepository {
   Future<void> declineReschedule(String requestId, {String? reason}) async {}
 }
 
+/// Socket stand-in: records emits and lets a test [fire] server events at the subscribed handlers.
 class FakeRealtimeClient implements RealtimeClient {
   final _c = StreamController<bool>.broadcast();
+  final Map<String, List<void Function(Map<String, dynamic>)>> _handlers = {};
+  final List<(String, Object?)> emitted = [];
+
+  /// Delivers a server → client event to every current subscriber.
+  void fire(String event, Map<String, dynamic> payload) {
+    for (final h in [...?_handlers[event]]) {
+      h(payload);
+    }
+  }
+
+  int listeners(String event) => _handlers[event]?.length ?? 0;
+
   @override
   Future<void> connect() async {}
   @override
@@ -336,11 +356,14 @@ class FakeRealtimeClient implements RealtimeClient {
   @override
   void dispose() => _c.close();
   @override
-  void emit(String event, [Object? data]) {}
+  void emit(String event, [Object? data]) => emitted.add((event, data));
   @override
   bool get isConnected => true;
   @override
-  void Function() on(String event, void Function(Map<String, dynamic> payload) handler) => () {};
+  void Function() on(String event, void Function(Map<String, dynamic> payload) handler) {
+    (_handlers[event] ??= []).add(handler);
+    return () => _handlers[event]?.remove(handler);
+  }
 }
 
 class FakeWaitlistRepository implements WaitlistRepository {
@@ -539,5 +562,163 @@ class FakeInstructorsRepository implements InstructorsRepository {
     reviews.add((id: id, approve: approve, note: note));
     if (reviewError != null) throw reviewError!;
     pending = pending.where((a) => a.id != id).toList();
+  }
+}
+
+const classB07 = ClassRef(id: 'b7', code: 'B07', courseTitle: 'Product Design Foundations', courseTitleAr: 'أساسيات تصميم المنتجات');
+
+/// Chat: [overview] answers the inbox, [threads] the messages; sends wait on [sendGate] when set, and are recorded.
+class FakeChatRepository implements ChatRepository {
+  FakeChatRepository({this.overview = const ConversationsOverview(), this.threads = const {}, this.classConv, this.directConv, this.sendError});
+  ConversationsOverview overview;
+  Map<String, MessagesPage> threads;
+  Conversation? classConv;
+  Conversation? directConv;
+  Object? sendError;
+  Completer<void>? sendGate;
+
+  final List<(String, String)> sent = [];
+  final List<String> reads = [];
+  final List<String> deleted = [];
+  final List<String> classOpened = [];
+  final List<String> directOpened = [];
+  final List<DateTime?> pagesBefore = [];
+
+  @override
+  Future<ConversationsOverview> conversations() async => overview;
+  @override
+  Future<Conversation> classConversation(String batchId) async {
+    classOpened.add(batchId);
+    return classConv!;
+  }
+
+  @override
+  Future<Conversation> openDirect(String batchId) async {
+    directOpened.add(batchId);
+    return directConv!;
+  }
+
+  @override
+  Future<MessagesPage> messages(String conversationId, {DateTime? before, int limit = 50}) async {
+    pagesBefore.add(before);
+    return threads[conversationId] ?? const MessagesPage();
+  }
+
+  @override
+  Future<ThreadMessage> send(String conversationId, String body) async {
+    sent.add((conversationId, body));
+    if (sendGate != null) await sendGate!.future;
+    if (sendError != null) throw sendError!;
+    return ThreadMessage(id: 'srv-${sent.length}', sender: Person(id: student.id, name: student.name, role: Role.student), body: body, createdAt: DateTime.now());
+  }
+
+  @override
+  Future<void> markRead(String conversationId) async => reads.add(conversationId);
+  @override
+  Future<void> deleteMessage(String messageId) async => deleted.add(messageId);
+}
+
+class FakeAnnouncementsRepository implements AnnouncementsRepository {
+  FakeAnnouncementsRepository({this.mineList = const [], this.byBatch = const {}});
+  List<Announcement> mineList;
+  Map<String, List<Announcement>> byBatch;
+  final List<(String?, AnnouncementDraft)> posted = [];
+  final List<String> deleted = [];
+
+  Announcement _from(AnnouncementDraft d, String? batchId) => Announcement(
+        id: 'a-${posted.length}',
+        scope: batchId == null ? AnnouncementScope.platform : AnnouncementScope.batch,
+        title: d.title,
+        body: d.body,
+        pinned: d.pinned,
+        audience: d.audience ?? AnnouncementAudience.all,
+        createdAt: DateTime.now(),
+      );
+
+  @override
+  Future<AnnouncementsPage> mine({int page = 1}) async => AnnouncementsPage(items: mineList, total: mineList.length);
+  @override
+  Future<AnnouncementsPage> forBatch(String batchId, {int page = 1}) async {
+    final items = byBatch[batchId] ?? const <Announcement>[];
+    return AnnouncementsPage(items: items, total: items.length);
+  }
+
+  @override
+  Future<Announcement> postToBatch(String batchId, AnnouncementDraft draft) async {
+    posted.add((batchId, draft));
+    return _from(draft, batchId);
+  }
+
+  @override
+  Future<Announcement> postPlatform(AnnouncementDraft draft) async {
+    posted.add((null, draft));
+    return _from(draft, null);
+  }
+
+  @override
+  Future<void> delete(String id) async => deleted.add(id);
+}
+
+/// Support tickets that follow the API's status rules: a staff reply → AWAITING_USER, an owner reply → OPEN.
+class FakeSupportRepository implements SupportRepository {
+  FakeSupportRepository({this.list = const [], Map<String, TicketDetail>? details, this.staff = false}) : details = details ?? {};
+  List<TicketSummary> list;
+  final Map<String, TicketDetail> details;
+
+  /// Whether replies come from an admin.
+  bool staff;
+  final List<TicketDraft> opened = [];
+  final List<(String, String)> replies = [];
+  final List<(String, SupportStatus)> statusChanges = [];
+  final List<({SupportStatus? status, SupportCategory? category})> queries = [];
+
+  TicketDetail _with(TicketDetail d, {SupportStatus? status, SupportMessage? message}) => TicketDetail(
+        summary: TicketSummary(
+          id: d.id,
+          subject: d.summary.subject,
+          category: d.summary.category,
+          status: status ?? d.status,
+          user: d.summary.user,
+          createdAt: d.summary.createdAt,
+          lastMessageAt: message?.createdAt ?? d.summary.lastMessageAt,
+        ),
+        messages: [...d.messages, ?message],
+        order: d.order,
+        batch: d.batch,
+      );
+
+  @override
+  Future<TicketsPage> tickets({SupportStatus? status, SupportCategory? category, int page = 1}) async {
+    queries.add((status: status, category: category));
+    final items = list.where((t) => (status == null || t.status == status) && (category == null || t.category == category)).toList();
+    return TicketsPage(items: items, total: items.length);
+  }
+
+  @override
+  Future<TicketDetail> ticket(String id) async => details[id]!;
+
+  @override
+  Future<TicketDetail> open(TicketDraft draft) async {
+    opened.add(draft);
+    final now = DateTime.now();
+    final d = TicketDetail(
+      summary: TicketSummary(id: 't-new', subject: draft.subject, category: draft.category, status: SupportStatus.open, lastMessageAt: now, createdAt: now),
+      messages: [SupportMessage(id: 'm-1', authorId: student.id, body: draft.body, createdAt: now)],
+    );
+    details[d.id] = d;
+    return d;
+  }
+
+  @override
+  Future<TicketDetail> reply(String id, String body) async {
+    replies.add((id, body));
+    final msg = SupportMessage(id: 'm-${replies.length + 10}', authorId: staff ? admin.id : student.id, body: body, fromStaff: staff, createdAt: DateTime.now());
+    return details[id] = _with(details[id]!, status: staff ? SupportStatus.awaitingUser : SupportStatus.open, message: msg);
+  }
+
+  @override
+  Future<TicketDetail> setStatus(String id, SupportStatus status) async {
+    statusChanges.add((id, status));
+    return details[id] = _with(details[id]!, status: status);
   }
 }

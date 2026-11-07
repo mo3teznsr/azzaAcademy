@@ -113,6 +113,10 @@ class ProfileScreen extends ConsumerWidget {
             CardGroup(
               title: l.account,
               children: [
+                if (user.role == Role.admin)
+                  row(l.supportInbox, '', icon: Icons.support_agent_rounded, onTap: () => context.push(Routes.adminSupport))
+                else
+                  row(l.helpSupport, l.helpSupportHint, icon: Icons.support_agent_rounded, onTap: () => context.push(Routes.support)),
                 row(l.savedCoursesTitle, '', icon: Icons.favorite_border_rounded, onTap: () => context.push(Routes.savedCourses)),
                 if (user.role == Role.student) ...[
                   row(l.myOrders, '', icon: Icons.receipt_long_outlined, onTap: () => context.push(Routes.myOrders)),

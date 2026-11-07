@@ -9,7 +9,11 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
+import '../../announcements/data/announcements_repository.dart';
+import '../../announcements/presentation/announcement_widgets.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../chat/data/chat_repository.dart';
+import '../../chat/presentation/messages_button.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../learn/data/learn_repository.dart';
 import '../../learn/data/quizzes_repository.dart';
@@ -46,6 +50,8 @@ class StudentHomeScreen extends ConsumerWidget {
       ref.invalidate(recordingsProvider);
       ref.invalidate(myQuizzesProvider);
       ref.invalidate(waitlistProvider);
+      ref.invalidate(myAnnouncementsProvider);
+      ref.invalidate(conversationsProvider);
       await ref.read(enrollmentsProvider.future);
     }
 
@@ -69,6 +75,7 @@ class StudentHomeScreen extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(child: DisplayText(greeting(l, user?.firstName ?? '', now), size: 32)),
+                    const MessagesButton(),
                     IconButton(
                       tooltip: l.inbox,
                       onPressed: () => context.push(Routes.notifications),
@@ -97,6 +104,7 @@ class StudentHomeScreen extends ConsumerWidget {
                     FadeSlideIn(index: i, child: _BatchTile(enrollment: e, fmt: f, now: now)),
                     const SizedBox(height: 10),
                   ],
+                  const LatestAnnouncementsStrip(),
                   const _PracticeDue(),
                   if (hero != null && !joinable) ...[
                     SectionHeader(l.upNext),

@@ -120,6 +120,13 @@ export class PrismaMeRepository {
       await tx.sessionFeedback.deleteMany({ where: { userId } });
       await tx.submission.deleteMany({ where: { userId } });
       await tx.quizAttempt.deleteMany({ where: { userId } });
+      // Chat: their messages everywhere, their private chats (with the teacher's replies) and read markers.
+      await tx.message.deleteMany({ where: { senderId: userId } });
+      await tx.conversation.deleteMany({ where: { studentId: userId } });
+      await tx.conversationRead.deleteMany({ where: { userId } });
+      // Support: their tickets (messages cascade) and anything they wrote elsewhere.
+      await tx.supportTicket.deleteMany({ where: { userId } });
+      await tx.supportMessage.deleteMany({ where: { authorId: userId } });
       await tx.certificate.deleteMany({ where: { userId } });
       await tx.rescheduleRequest.deleteMany({ where: { requestedById: userId } });
 

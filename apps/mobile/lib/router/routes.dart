@@ -42,6 +42,8 @@ abstract final class Routes {
   static String adminBatch(String id) => '/admin/batches/$id';
   static String adminTransfer(String orderId) => '/admin/approvals/transfers/$orderId';
   static String adminPayoutRun(String id) => '/admin/approvals/payout-runs/$id';
+  /// Support inbox (reached from the overview's app bar; the tabs are full).
+  static const adminSupport = '/admin/overview/support';
 
   // shared
   static String course(String idOrSlug) => '/courses/$idOrSlug';
@@ -76,6 +78,18 @@ abstract final class Routes {
   static String quizResults(String id) => '/quizzes/$id/results';
   static String batchQuizzes(String batchId) => '/batches/$batchId/quizzes';
   static const notifications = '/notifications';
+
+  // communications
+  static const messages = '/messages';
+  static String chat(String conversationId) => '/messages/$conversationId';
+  static const announcements = '/announcements';
+  static String batchAnnouncements(String batchId) => '/batches/$batchId/announcements';
+  static const support = '/support';
+  static String newTicket({String? orderId, String? batchId}) {
+    final q = {'orderId': ?orderId, 'batchId': ?batchId};
+    return Uri(path: '/support/new', queryParameters: q.isEmpty ? null : q).toString();
+  }
+  static String ticket(String id) => '/support/$id';
   static const languageSettings = '/settings/language';
   static const editProfile = '/settings/profile';
   static const profilePhoto = '/profile-photo';

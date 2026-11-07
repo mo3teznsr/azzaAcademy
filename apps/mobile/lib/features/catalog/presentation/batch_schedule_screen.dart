@@ -11,6 +11,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
+import '../../announcements/presentation/class_hub.dart';
 import '../../me/data/me_repository.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
@@ -66,6 +67,7 @@ class BatchScheduleScreen extends ConsumerWidget {
                   child: Text(l.joiningLate(f.n(ran), f.n(left)), style: t.bodyMedium),
                 ),
               ],
+              if (enrolled) ...[const SizedBox(height: 4), ClassHub(batchId: b.id)],
               const SizedBox(height: 16),
               if (b.sessions.isEmpty)
                 EmptyState(title: l.emptyGeneric)

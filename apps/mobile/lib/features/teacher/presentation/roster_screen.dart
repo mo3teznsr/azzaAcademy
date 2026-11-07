@@ -16,6 +16,7 @@ import '../../catalog/domain/catalog_models.dart';
 import '../data/proposals_repository.dart';
 import '../data/teacher_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../chat/presentation/messages_button.dart';
 import 'batch_sessions_editor.dart';
 import 'proposal_widgets.dart';
 import 'teacher_batches_screen.dart';
@@ -63,6 +64,18 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
 
     return Scaffold(
       appBar: AppBar(actions: [
+        IconButton(
+          key: const Key('roster-announcements'),
+          tooltip: l.announcementsTitle,
+          onPressed: () => context.push(Routes.batchAnnouncements(widget.batchId)),
+          icon: const Icon(Icons.campaign_outlined),
+        ),
+        IconButton(
+          key: const Key('roster-class-chat'),
+          tooltip: l.classChat,
+          onPressed: () => openClassChat(context, ref, widget.batchId),
+          icon: const Icon(Icons.forum_outlined),
+        ),
         TextButton.icon(
           key: const Key('batch-quizzes'),
           style: TextButton.styleFrom(minimumSize: const Size(44, 44)),

@@ -3262,4 +3262,297 @@ class AppLocalizationsAr extends AppLocalizations {
   String quizCorrectOfAnswered(String correct, String answered) {
     return '$correct من $answered صحيحة';
   }
+
+  @override
+  String get messagesTitle => 'الرسائل';
+
+  @override
+  String get messagesEmptyTitle => 'لا رسائل بعد';
+
+  @override
+  String get messagesEmptyBody => 'تظهر هنا محادثات صفوفك ورسائلك مع معلّمك.';
+
+  @override
+  String get classChat => 'محادثة الصفّ';
+
+  @override
+  String get messageYourTeacher => 'راسِل معلّمك';
+
+  @override
+  String get chatPrivateLabel => 'محادثة خاصة';
+
+  @override
+  String get chatNoMessagesYet => 'لا رسائل بعد. ابدأ المحادثة بتحيّة.';
+
+  @override
+  String get chatComposerLabel => 'رسالة';
+
+  @override
+  String get chatComposerHint => 'اكتب رسالة';
+
+  @override
+  String get chatClosedNote =>
+      'انتهى هذا الصفّ، لذا أصبحت محادثته للقراءة فقط.';
+
+  @override
+  String get chatAdminReadOnly =>
+      'يمكنك قراءة هذه المحادثة الخاصة، لكن لا يمكنك الردّ فيها.';
+
+  @override
+  String get chatLoadEarlier => 'عرض الرسائل الأقدم';
+
+  @override
+  String get chatMessageDeleted => 'حُذفت هذه الرسالة';
+
+  @override
+  String get chatDeleteMessage => 'احذف الرسالة';
+
+  @override
+  String get chatDeleteConfirmTitle => 'هل تريد حذف هذه الرسالة؟';
+
+  @override
+  String get chatDeleteConfirmBody => 'ستُحذف لدى كل من في المحادثة.';
+
+  @override
+  String get chatSendFailed => 'لم تُرسَل. اضغط لإعادة المحاولة.';
+
+  @override
+  String get chatSending => 'جارٍ الإرسال…';
+
+  @override
+  String chatUnreadN(String n) {
+    return '$n غير مقروءة';
+  }
+
+  @override
+  String get announcementsTitle => 'الإعلانات';
+
+  @override
+  String get announcementsEmpty => 'لا إعلانات بعد';
+
+  @override
+  String get announcementsEmptyBody => 'ستظهر هنا أخبار معلّميك وفريق عازة.';
+
+  @override
+  String get latestFromClasses => 'آخر أخبار صفوفك';
+
+  @override
+  String get pinnedLabel => 'مثبّت';
+
+  @override
+  String get fromAzzaTeam => 'فريق عازة';
+
+  @override
+  String get newAnnouncement => 'إعلان جديد';
+
+  @override
+  String get platformAnnouncement => 'إعلان للمنصّة';
+
+  @override
+  String get announcementTitleLabel => 'العنوان';
+
+  @override
+  String get announcementTitleRequired => 'أضِف عنوانًا للإعلان.';
+
+  @override
+  String get announcementBodyLabel => 'النص';
+
+  @override
+  String get announcementBodyHint =>
+      'يمكنك استخدام Markdown: **خط عريض** وقوائم وروابط';
+
+  @override
+  String get announcementBodyRequired => 'اكتب نص الإعلان.';
+
+  @override
+  String get announcementAudience => 'مَن يراه';
+
+  @override
+  String get audienceAll => 'الجميع';
+
+  @override
+  String get audienceStudents => 'الطلاب';
+
+  @override
+  String get audienceTeachers => 'المعلّمون';
+
+  @override
+  String get announcementPin => 'ثبّته في الأعلى';
+
+  @override
+  String get announcementNotify => 'أرسِل إشعارًا';
+
+  @override
+  String get announcementNotifyClassHint =>
+      'يصل طلابك إشعار داخل التطبيق وعلى الهاتف.';
+
+  @override
+  String get announcementNotifyPlatformHint =>
+      'داخل التطبيق وعلى الهاتف وبالبريد الإلكتروني.';
+
+  @override
+  String get announcementPost => 'انشر';
+
+  @override
+  String get announcementPosted => 'نُشر الإعلان.';
+
+  @override
+  String get announcementDelete => 'احذف الإعلان';
+
+  @override
+  String get announcementDeleteConfirm => 'هل تريد حذف هذا الإعلان؟';
+
+  @override
+  String get helpSupport => 'المساعدة والدعم';
+
+  @override
+  String get helpSupportHint => 'اسأل فريق عازة';
+
+  @override
+  String get supportEmptyTitle => 'لا طلبات بعد';
+
+  @override
+  String get supportEmptyBody =>
+      'تواجه مشكلة في دفعة أو صفّ أو في حسابك؟ أخبرنا وسنساعدك.';
+
+  @override
+  String get newTicket => 'طلب جديد';
+
+  @override
+  String get newTicketIntro =>
+      'أخبرنا بما يحدث، وسنردّ عليك هنا وبالبريد الإلكتروني.';
+
+  @override
+  String get ticketSubject => 'الموضوع';
+
+  @override
+  String get ticketSubjectHint => 'باختصار، ما المشكلة؟';
+
+  @override
+  String get ticketSubjectRequired => 'أضِف موضوعًا مختصرًا.';
+
+  @override
+  String get ticketCategory => 'النوع';
+
+  @override
+  String get supportCatPayment => 'الدفع';
+
+  @override
+  String get supportCatClass => 'الصفّ';
+
+  @override
+  String get supportCatAccount => 'الحساب';
+
+  @override
+  String get supportCatTechnical => 'مشكلة تقنية';
+
+  @override
+  String get supportCatOther => 'أخرى';
+
+  @override
+  String get ticketOrder => 'الطلب (اختياري)';
+
+  @override
+  String get ticketClass => 'الصفّ (اختياري)';
+
+  @override
+  String get ticketNone => 'بدون';
+
+  @override
+  String get ticketThisOrder => 'هذا الطلب';
+
+  @override
+  String get ticketThisClass => 'هذا الصفّ';
+
+  @override
+  String get ticketMessage => 'ماذا حدث؟';
+
+  @override
+  String get ticketMessageHint => 'ما الذي جرّبته، وما الذي ظهر لك';
+
+  @override
+  String get ticketMessageRequired => 'أخبرنا بما حدث.';
+
+  @override
+  String get ticketSubmit => 'أرسِل إلى الدعم';
+
+  @override
+  String get ticketCreated => 'وصلنا طلبك. سنردّ عليك هنا وبالبريد الإلكتروني.';
+
+  @override
+  String get ticketStatusOpen => 'مفتوح';
+
+  @override
+  String get ticketStatusAwaitingYou => 'بانتظار ردّك';
+
+  @override
+  String get ticketStatusAwaitingUser => 'بانتظار المستخدم';
+
+  @override
+  String get ticketStatusResolved => 'تمّ الحلّ';
+
+  @override
+  String get ticketNewReply => 'ردّ جديد';
+
+  @override
+  String get ticketReplyLabel => 'الردّ';
+
+  @override
+  String get ticketReplyHint => 'اكتب ردًّا';
+
+  @override
+  String get ticketMarkResolved => 'تمّ الحلّ';
+
+  @override
+  String get ticketResolvedNote => 'سُجّل الطلب على أنه محلول. شكرًا لإخبارنا.';
+
+  @override
+  String get ticketResolvedReopenHint =>
+      'هذا الطلب محلول. اكتب ردًّا في أي وقت لإعادة فتحه.';
+
+  @override
+  String get ticketStaffLabel => 'دعم عازة';
+
+  @override
+  String get ticketSetStatus => 'غيّر الحالة';
+
+  @override
+  String get ticketStatusChanged => 'حُدّثت الحالة.';
+
+  @override
+  String get ticketFrom => 'من';
+
+  @override
+  String get ticketLinkedOrder => 'الطلب';
+
+  @override
+  String get ticketLinkedClass => 'الصفّ';
+
+  @override
+  String get supportInbox => 'صندوق الدعم';
+
+  @override
+  String get supportInboxEmpty => 'لا شيء هنا. أنجزت كل شيء.';
+
+  @override
+  String get supportFilterAll => 'الكل';
+
+  @override
+  String get ticketAllCategories => 'كل الأنواع';
+
+  @override
+  String get needHelp => 'تحتاج مساعدة؟';
+
+  @override
+  String get errChatTooFast =>
+      'ترسل الرسائل بسرعة كبيرة. انتظر قليلًا ثم حاول مجددًا.';
+
+  @override
+  String get errDmNotAllowed => 'الرسائل الخاصة متاحة بين الطالب ومعلّمه فقط.';
+
+  @override
+  String get errNotClassMember => 'هذا متاح لأعضاء الصفّ فقط.';
+
+  @override
+  String get errInvalidAssignee => 'لا يمكن إسناد هذا الطلب إلى هذا الشخص.';
 }

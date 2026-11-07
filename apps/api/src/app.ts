@@ -28,6 +28,9 @@ import { adminReportRoutes } from './modules/reports/report.routes';
 import { statsRoutes } from './modules/stats/stats.routes';
 import { teacherRoutes } from './modules/teachers/teacher.routes';
 import { webhookRoutes } from './modules/webhooks/webhook.routes';
+import { announcementRoutes } from './modules/announcements/announcement.routes';
+import { conversationRoutes } from './modules/conversations/conversation.routes';
+import { supportRoutes } from './modules/support/support.routes';
 
 /** `apps/api/public/media/` regardless of the process cwd. */
 const MEDIA_ROOT = fileURLToPath(new URL('../public/media/', import.meta.url));
@@ -110,7 +113,10 @@ export function createApp(container: Container) {
     .route('/', contentRoutes(services.content))
     .route('/', lessonRoutes(services.lessons))
     .route('/', quizRoutes(services.quizzes))
-    .route('/', certificateRoutes(services.certificates));
+    .route('/', certificateRoutes(services.certificates))
+    .route('/', announcementRoutes(services.announcements))
+    .route('/', conversationRoutes(services.conversations))
+    .route('/support', supportRoutes(services.support));
 
   app.route('/api/v1', api);
   return app;

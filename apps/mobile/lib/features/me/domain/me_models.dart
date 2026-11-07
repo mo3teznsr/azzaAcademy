@@ -99,10 +99,30 @@ String? notificationRoute(String type, Map<String, dynamic> data) {
   if (type == 'RECORDING_READY') return '/student/library';
   // A new quiz opens straight on the quiz (its rules and Start).
   if (type == 'QUIZ_PUBLISHED' && data['quizId'] != null) return '/quizzes/${data['quizId']}';
+  // Communications: a class announcement opens its class's list, a platform one the general list.
+  if (type == 'ANNOUNCEMENT') {
+    final batchId = _present(data['batchId']);
+    return batchId == null ? '/announcements' : '/batches/$batchId/announcements';
+  }
+  if (type == 'CHAT_MESSAGE') {
+    final id = _present(data['conversationId']);
+    return id == null ? '/messages' : '/messages/$id';
+  }
+  // Both the owner and admins open the same thread; it adapts to the reader's role.
+  if (type == 'SUPPORT_TICKET' || type == 'SUPPORT_REPLY') {
+    final id = _present(data['ticketId']);
+    return id == null ? null : '/support/$id';
+  }
   if (data['sessionId'] != null) {
     return type.contains('LIVE') || type.contains('LOBBY') ? '/sessions/${data['sessionId']}/lobby' : null;
   }
   if (data['orderId'] != null) return '/orders/${data['orderId']}';
   if (data['batchId'] != null) return '/batches/${data['batchId']}/schedule';
   return null;
+}
+
+/// A data value, unless it's missing (in-app rows stringify null as "null").
+String? _present(Object? v) {
+  final s = v?.toString();
+  return s == null || s.isEmpty || s == 'null' ? null : s;
 }

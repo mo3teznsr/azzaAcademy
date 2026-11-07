@@ -3,6 +3,9 @@ import 'package:azza/core/prefs/app_prefs.dart';
 import 'package:azza/core/providers.dart';
 import 'package:azza/core/theme/tokens.dart';
 import 'package:azza/features/admin/data/admin_repository.dart';
+import 'package:azza/features/announcements/data/announcements_repository.dart';
+import 'package:azza/features/chat/data/chat_repository.dart';
+import 'package:azza/features/support/data/support_repository.dart';
 import 'package:azza/features/instructors/data/instructors_repository.dart';
 import 'package:azza/features/auth/data/auth_repository.dart';
 import 'package:azza/features/auth/domain/app_user.dart';
@@ -43,6 +46,9 @@ Future<GoRouter> bootApp(WidgetTester tester, AppUser? user, {bool onboarded = t
       instructorsRepositoryProvider.overrideWithValue(FakeInstructorsRepository()),
       reviewsRepositoryProvider.overrideWithValue(FakeReviewsRepository()),
       realtimeClientProvider.overrideWithValue(FakeRealtimeClient()),
+      chatRepositoryProvider.overrideWithValue(FakeChatRepository()),
+      announcementsRepositoryProvider.overrideWithValue(FakeAnnouncementsRepository()),
+      supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
     ],
     child: Consumer(builder: (context, ref, _) {
       router = ref.watch(routerProvider);

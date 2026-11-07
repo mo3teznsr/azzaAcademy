@@ -80,7 +80,7 @@ export function PublicFooter() {
         { href: '/verify', label: t.landing.footerVerify },
         { href: '/teachers', label: t.nav.public.teachers },
         { href: '/teach', label: t.catalog.teach },
-        { href: 'mailto:support@azza.live', label: t.catalog.help, external: true },
+        { href: '/support', label: t.comms.support.nav },
       ],
     },
   ];

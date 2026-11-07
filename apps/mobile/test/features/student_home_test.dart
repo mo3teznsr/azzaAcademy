@@ -1,5 +1,9 @@
 import 'package:azza/core/domain/enums.dart';
 import 'package:azza/core/network/app_exception.dart';
+import 'package:azza/core/providers.dart';
+import 'package:azza/features/announcements/data/announcements_repository.dart';
+import 'package:azza/features/chat/data/chat_repository.dart';
+import 'package:azza/features/support/data/support_repository.dart';
 import 'package:azza/features/auth/presentation/auth_controller.dart';
 import 'package:azza/features/catalog/domain/catalog_models.dart';
 import 'package:azza/features/home/presentation/student_home_screen.dart';
@@ -61,6 +65,10 @@ void main() {
           learnRepositoryProvider.overrideWithValue(FakeLearnRepository()),
           quizzesRepositoryProvider.overrideWithValue(_FakeQuizzes(quizzes)),
           waitlistRepositoryProvider.overrideWithValue(FakeWaitlistRepository()),
+          realtimeClientProvider.overrideWithValue(FakeRealtimeClient()),
+          chatRepositoryProvider.overrideWithValue(FakeChatRepository()),
+          announcementsRepositoryProvider.overrideWithValue(FakeAnnouncementsRepository()),
+          supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
         ],
       );
 

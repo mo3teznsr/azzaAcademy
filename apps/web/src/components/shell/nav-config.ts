@@ -25,6 +25,8 @@ import {
   Shapes,
   ArrowLeftRight,
   GraduationCap,
+  LifeBuoy,
+  Megaphone,
   type LucideIcon, Clapperboard } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/dictionaries/en';
 
@@ -33,8 +35,8 @@ export interface NavItem {
   label: string;
   icon: LucideIcon;
   exact?: boolean;
-  /** `live` = rooms on air; `applications` = pending instructor applications. */
-  badge?: 'live' | 'count' | 'applications';
+  /** `live` = rooms on air; `applications` = pending instructor applications; `support` = open tickets. */
+  badge?: 'live' | 'count' | 'applications' | 'support';
 }
 export interface NavGroup {
   label?: string;
@@ -81,6 +83,8 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
       { href: '/admin/live', label: t.nav.admin.live, icon: Radio, badge: 'live' },
       { href: '/admin/people', label: t.nav.admin.people, icon: Users },
       { href: '/admin/instructors', label: t.nav.admin.instructors, icon: GraduationCap, badge: 'applications' },
+      { href: '/admin/announcements', label: t.nav.admin.announcements, icon: Megaphone },
+      { href: '/admin/support', label: t.nav.admin.support, icon: LifeBuoy, badge: 'support' },
     ],
   },
   {

@@ -5881,6 +5881,570 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{correct} of {answered} correct'**
   String quizCorrectOfAnswered(String correct, String answered);
+
+  /// No description provided for @messagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get messagesTitle;
+
+  /// No description provided for @messagesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get messagesEmptyTitle;
+
+  /// No description provided for @messagesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your class chats and messages with your teacher show up here.'**
+  String get messagesEmptyBody;
+
+  /// No description provided for @classChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Class chat'**
+  String get classChat;
+
+  /// No description provided for @messageYourTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Message your teacher'**
+  String get messageYourTeacher;
+
+  /// No description provided for @chatPrivateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Private chat'**
+  String get chatPrivateLabel;
+
+  /// No description provided for @chatNoMessagesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet. Say hello to get things started.'**
+  String get chatNoMessagesYet;
+
+  /// No description provided for @chatComposerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get chatComposerLabel;
+
+  /// No description provided for @chatComposerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message'**
+  String get chatComposerHint;
+
+  /// No description provided for @chatClosedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This class has ended, so its chat is read-only.'**
+  String get chatClosedNote;
+
+  /// No description provided for @chatAdminReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'You can read this private chat, but not reply to it.'**
+  String get chatAdminReadOnly;
+
+  /// No description provided for @chatLoadEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier messages'**
+  String get chatLoadEarlier;
+
+  /// No description provided for @chatMessageDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Message deleted'**
+  String get chatMessageDeleted;
+
+  /// No description provided for @chatDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete message'**
+  String get chatDeleteMessage;
+
+  /// No description provided for @chatDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this message?'**
+  String get chatDeleteConfirmTitle;
+
+  /// No description provided for @chatDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It will be removed for everyone in this chat.'**
+  String get chatDeleteConfirmBody;
+
+  /// No description provided for @chatSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sent. Tap to try again.'**
+  String get chatSendFailed;
+
+  /// No description provided for @chatSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get chatSending;
+
+  /// No description provided for @chatUnreadN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} unread'**
+  String chatUnreadN(String n);
+
+  /// No description provided for @announcementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get announcementsTitle;
+
+  /// No description provided for @announcementsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No announcements yet'**
+  String get announcementsEmpty;
+
+  /// No description provided for @announcementsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'News from your teachers and the Azza team will appear here.'**
+  String get announcementsEmptyBody;
+
+  /// No description provided for @latestFromClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest from your classes'**
+  String get latestFromClasses;
+
+  /// No description provided for @pinnedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get pinnedLabel;
+
+  /// No description provided for @fromAzzaTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Azza team'**
+  String get fromAzzaTeam;
+
+  /// No description provided for @newAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'New announcement'**
+  String get newAnnouncement;
+
+  /// No description provided for @platformAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform announcement'**
+  String get platformAnnouncement;
+
+  /// No description provided for @announcementTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get announcementTitleLabel;
+
+  /// No description provided for @announcementTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the announcement a title.'**
+  String get announcementTitleRequired;
+
+  /// No description provided for @announcementBodyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get announcementBodyLabel;
+
+  /// No description provided for @announcementBodyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Markdown works: **bold**, lists and links'**
+  String get announcementBodyHint;
+
+  /// No description provided for @announcementBodyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the announcement.'**
+  String get announcementBodyRequired;
+
+  /// No description provided for @announcementAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Who sees it'**
+  String get announcementAudience;
+
+  /// No description provided for @audienceAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone'**
+  String get audienceAll;
+
+  /// No description provided for @audienceStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get audienceStudents;
+
+  /// No description provided for @audienceTeachers.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers'**
+  String get audienceTeachers;
+
+  /// No description provided for @announcementPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin to the top'**
+  String get announcementPin;
+
+  /// No description provided for @announcementNotify.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify people'**
+  String get announcementNotify;
+
+  /// No description provided for @announcementNotifyClassHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your students get an in-app and push notification.'**
+  String get announcementNotifyClassHint;
+
+  /// No description provided for @announcementNotifyPlatformHint.
+  ///
+  /// In en, this message translates to:
+  /// **'In the app, by push and by email.'**
+  String get announcementNotifyPlatformHint;
+
+  /// No description provided for @announcementPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get announcementPost;
+
+  /// No description provided for @announcementPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement posted.'**
+  String get announcementPosted;
+
+  /// No description provided for @announcementDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete announcement'**
+  String get announcementDelete;
+
+  /// No description provided for @announcementDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this announcement?'**
+  String get announcementDeleteConfirm;
+
+  /// No description provided for @helpSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & support'**
+  String get helpSupport;
+
+  /// No description provided for @helpSupportHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the Azza team'**
+  String get helpSupportHint;
+
+  /// No description provided for @supportEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet'**
+  String get supportEmptyTitle;
+
+  /// No description provided for @supportEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Stuck with a payment, a class or your account? Tell us and we\'ll help.'**
+  String get supportEmptyBody;
+
+  /// No description provided for @newTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'New request'**
+  String get newTicket;
+
+  /// No description provided for @newTicketIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what\'s going on. We\'ll reply here and by email.'**
+  String get newTicketIntro;
+
+  /// No description provided for @ticketSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get ticketSubject;
+
+  /// No description provided for @ticketSubjectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'In a few words, what\'s wrong?'**
+  String get ticketSubjectHint;
+
+  /// No description provided for @ticketSubjectRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a short subject.'**
+  String get ticketSubjectRequired;
+
+  /// No description provided for @ticketCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic'**
+  String get ticketCategory;
+
+  /// No description provided for @supportCatPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get supportCatPayment;
+
+  /// No description provided for @supportCatClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get supportCatClass;
+
+  /// No description provided for @supportCatAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get supportCatAccount;
+
+  /// No description provided for @supportCatTechnical.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical'**
+  String get supportCatTechnical;
+
+  /// No description provided for @supportCatOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get supportCatOther;
+
+  /// No description provided for @ticketOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order (optional)'**
+  String get ticketOrder;
+
+  /// No description provided for @ticketClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class (optional)'**
+  String get ticketClass;
+
+  /// No description provided for @ticketNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get ticketNone;
+
+  /// No description provided for @ticketThisOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'This order'**
+  String get ticketThisOrder;
+
+  /// No description provided for @ticketThisClass.
+  ///
+  /// In en, this message translates to:
+  /// **'This class'**
+  String get ticketThisClass;
+
+  /// No description provided for @ticketMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened?'**
+  String get ticketMessage;
+
+  /// No description provided for @ticketMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What you tried, and what you saw'**
+  String get ticketMessageHint;
+
+  /// No description provided for @ticketMessageRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what happened.'**
+  String get ticketMessageRequired;
+
+  /// No description provided for @ticketSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to support'**
+  String get ticketSubmit;
+
+  /// No description provided for @ticketCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent. We\'ll reply here and by email.'**
+  String get ticketCreated;
+
+  /// No description provided for @ticketStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get ticketStatusOpen;
+
+  /// No description provided for @ticketStatusAwaitingYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for you'**
+  String get ticketStatusAwaitingYou;
+
+  /// No description provided for @ticketStatusAwaitingUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting user'**
+  String get ticketStatusAwaitingUser;
+
+  /// No description provided for @ticketStatusResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get ticketStatusResolved;
+
+  /// No description provided for @ticketNewReply.
+  ///
+  /// In en, this message translates to:
+  /// **'New reply'**
+  String get ticketNewReply;
+
+  /// No description provided for @ticketReplyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get ticketReplyLabel;
+
+  /// No description provided for @ticketReplyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a reply'**
+  String get ticketReplyHint;
+
+  /// No description provided for @ticketMarkResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark resolved'**
+  String get ticketMarkResolved;
+
+  /// No description provided for @ticketResolvedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked resolved. Thanks for letting us know.'**
+  String get ticketResolvedNote;
+
+  /// No description provided for @ticketResolvedReopenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This request is resolved. Reply any time to reopen it.'**
+  String get ticketResolvedReopenHint;
+
+  /// No description provided for @ticketStaffLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Azza support'**
+  String get ticketStaffLabel;
+
+  /// No description provided for @ticketSetStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Change status'**
+  String get ticketSetStatus;
+
+  /// No description provided for @ticketStatusChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Status updated.'**
+  String get ticketStatusChanged;
+
+  /// No description provided for @ticketFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get ticketFrom;
+
+  /// No description provided for @ticketLinkedOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get ticketLinkedOrder;
+
+  /// No description provided for @ticketLinkedClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get ticketLinkedClass;
+
+  /// No description provided for @supportInbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Support inbox'**
+  String get supportInbox;
+
+  /// No description provided for @supportInboxEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here. All caught up.'**
+  String get supportInboxEmpty;
+
+  /// No description provided for @supportFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get supportFilterAll;
+
+  /// No description provided for @ticketAllCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All topics'**
+  String get ticketAllCategories;
+
+  /// No description provided for @needHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Need help?'**
+  String get needHelp;
+
+  /// No description provided for @errChatTooFast.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re sending messages too quickly. Wait a moment and try again.'**
+  String get errChatTooFast;
+
+  /// No description provided for @errDmNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Private messages are only between a student and their teacher.'**
+  String get errDmNotAllowed;
+
+  /// No description provided for @errNotClassMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Only people in this class can see this.'**
+  String get errNotClassMember;
+
+  /// No description provided for @errInvalidAssignee.
+  ///
+  /// In en, this message translates to:
+  /// **'That person can\'t take this request.'**
+  String get errInvalidAssignee;
 }
 
 class _AppLocalizationsDelegate

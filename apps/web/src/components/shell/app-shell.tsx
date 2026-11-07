@@ -18,6 +18,8 @@ import type { Dictionary } from '@/lib/i18n/dictionaries/en';
 import { cn } from '@/lib/utils';
 import { NotificationsBell } from './notifications-bell';
 import { UserMenu } from './user-menu';
+import { MessagesButton } from '@/features/comms/chat';
+import { useOpenTicketCount } from '@/features/comms/support';
 import type { NavGroup } from './nav-config';
 
 type Variant = 'student' | 'teacher' | 'admin';
@@ -42,6 +44,17 @@ function LiveBadge() {
 function ApplicationsBadge() {
   const q = useQuery({ queryKey: qk.admin.instructorApplications('PENDING'), queryFn: () => instructorsApi.list('PENDING'), refetchInterval: 60_000, retry: false });
   const n = q.data?.length ?? 0;
+  if (!n) return null;
+  return (
+    <Chip tone="sun" className="ms-auto">
+      {n}
+    </Chip>
+  );
+}
+
+/** Open support tickets (admin nav). Shares the inbox's cache. */
+function SupportBadge() {
+  const n = useOpenTicketCount();
   if (!n) return null;
   return (
     <Chip tone="sun" className="ms-auto">
@@ -80,6 +93,7 @@ function SideNav({ groups, variant, onNavigate }: { groups: NavGroup[]; variant:
                 <span className="truncate">{item.label}</span>
                 {item.badge === 'live' && <LiveBadge />}
                 {item.badge === 'applications' && <ApplicationsBadge />}
+                {item.badge === 'support' && <SupportBadge />}
               </Link>
             );
           })}
@@ -95,9 +109,9 @@ function SideFooter({ variant, t }: { variant: Variant; t: Dictionary }) {
     <div className="mt-auto flex flex-col gap-2 rounded-2xl bg-sidebar-accent p-4">
       <span className="label-mono text-muted-foreground">{t.nav.helpTitle}</span>
       <span className="text-sm leading-snug">{t.nav.helpBody}</span>
-      <a href="mailto:support@azza.live" className="link-sun text-sm">
-        {t.nav.contactSupport}
-      </a>
+      <Link href="/support" className="link-sun text-sm">
+        {t.comms.support.nav}
+      </Link>
     </div>
   );
 }
@@ -164,6 +178,7 @@ export function AppShell({ variant, groups, settingsHref, children }: { variant:
             <LocaleSwitcher className="hidden md:flex" />
             {!isAdmin && <ThemeMenu />}
             {variant === 'student' && <CurrencySwitcher className="hidden md:flex" />}
+            {!isAdmin && <MessagesButton />}
             <NotificationsBell />
             <UserMenu settingsHref={settingsHref} />
           </div>

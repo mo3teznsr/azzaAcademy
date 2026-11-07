@@ -30,14 +30,16 @@ import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
 import { ProposalNotice, ReviewNoteQuote, useProposalError } from '../admin/proposal-review';
 import { BatchQuizzes } from '../quizzes/batch-quizzes';
+import { AnnouncementsPanel } from '../comms/announcements';
+import { BatchPrivateChats, ClassChat } from '../comms/chat';
 import { AddSessionButton, MoveSessionDialog, SeatsEditor, SessionRowActions } from '../admin/batch-sessions';
 import type { LiveSession } from '@/lib/api';
 
-export function BatchWorkspace({ batchId, basePath = '/studio' }: { batchId: string; basePath?: string }) {
+export function BatchWorkspace({ batchId, basePath = '/studio', initialTab }: { batchId: string; basePath?: string; initialTab?: string }) {
   const q = useQuery({ queryKey: qk.batch(batchId), queryFn: () => batchesApi.get(batchId) });
   if (q.isPending) return <LoadingBlock rows={3} height={140} />;
   if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;
-  return <Workspace b={q.data} basePath={basePath} />;
+  return <Workspace b={q.data} basePath={basePath} initialTab={initialTab} />;
 }
 
 /** DRAFT: the admin's note (if sent back) + Submit for review. PENDING_REVIEW: a waiting notice. */
@@ -77,7 +79,9 @@ function ProposalStatus({ b }: { b: BatchDetail }) {
   );
 }
 
-function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
+const TABS = ['schedule', 'roster', 'materials', 'assignments', 'quizzes', 'announcements', 'chat'];
+
+function Workspace({ b, basePath, initialTab }: { b: BatchDetail; basePath: string; initialTab?: string }) {
   const { t, f, fill, pick } = useI18n();
   const roster = useQuery({ queryKey: qk.roster(b.id), queryFn: () => batchesApi.roster(b.id), retry: false });
   const delivered = b.sessions.filter((s) => s.status === 'ENDED').length;
@@ -127,7 +131,7 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
         <StatTile label={t.studio.batch.atRisk} value={atRisk === null ? '—' : f.number(atRisk)} />
         <StatTile label={t.studio.seats} value={`${f.number(b.seatsTaken)}/${f.number(b.capacity)}`} />
       </section>
-      <Tabs defaultValue="schedule">
+      <Tabs defaultValue={initialTab && TABS.includes(initialTab) && !(proposal && (initialTab === 'announcements' || initialTab === 'chat')) ? initialTab : 'schedule'}>
         <TabsList>
           <TabsTrigger value="schedule">{t.studio.batch.tabSchedule}</TabsTrigger>
           <TabsTrigger value="roster">
@@ -136,6 +140,8 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
           <TabsTrigger value="materials">{t.studio.batch.tabMaterials}</TabsTrigger>
           <TabsTrigger value="assignments">{t.studio.batch.tabAssignments}</TabsTrigger>
           <TabsTrigger value="quizzes">{t.learning.studio.tab}</TabsTrigger>
+          {!proposal && <TabsTrigger value="announcements">{t.comms.announcements.title}</TabsTrigger>}
+          {!proposal && <TabsTrigger value="chat">{t.comms.chat.classChat}</TabsTrigger>}
         </TabsList>
         <TabsContent value="schedule" className="mt-4 flex flex-col gap-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -234,6 +240,17 @@ function Workspace({ b, basePath }: { b: BatchDetail; basePath: string }) {
             <BatchQuizzes batchId={b.id} courseId={b.course.id} />
           </Panel>
         </TabsContent>
+        {!proposal && (
+          <TabsContent value="announcements" className="mt-4 max-w-3xl">
+            <AnnouncementsPanel batchId={b.id} canPost={b.status !== 'CANCELLED'} />
+          </TabsContent>
+        )}
+        {!proposal && (
+          <TabsContent value="chat" className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <ClassChat batchId={b.id} />
+            <BatchPrivateChats batchId={b.id} />
+          </TabsContent>
+        )}
       </Tabs>
     </>
   );

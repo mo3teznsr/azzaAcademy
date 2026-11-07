@@ -13,4 +13,10 @@ abstract final class SocketEvents {
   static const notification = 'notification:new';
   static const orderUpdated = 'order:updated';
   static const roomStats = 'admin:room-stats';
+
+  /// `{ conversationId, message }`: a new message in a class or private chat (never sent back to its sender).
+  static const conversationMessage = 'conversation:message';
+
+  /// `{ conversationId, messageId }`.
+  static const conversationMessageDeleted = 'conversation:message-deleted';
 }

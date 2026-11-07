@@ -42,6 +42,15 @@ export const qk = {
   attendance: (id: string) => ['session', id, 'attendance'] as const,
   bankAccounts: ['bank-accounts'] as const,
   order: (id: string) => ['order', id] as const,
+  /** Communications. Prefix `['me', 'announcements']` covers every page. */
+  myAnnouncements: (page = 1, pageSize = 20) => ['me', 'announcements', page, pageSize] as const,
+  batchAnnouncements: (batchId: string) => ['batch', batchId, 'announcements'] as const,
+  conversations: ['me', 'conversations'] as const,
+  classConversation: (batchId: string) => ['batch', batchId, 'conversation'] as const,
+  conversationMessages: (id: string) => ['conversation', id, 'messages'] as const,
+  /** Prefix `['support', 'tickets']` invalidates every filter. */
+  tickets: (params: object) => ['support', 'tickets', params] as const,
+  ticket: (id: string) => ['support', 'ticket', id] as const,
   earnings: ['teacher', 'earnings'] as const,
   payouts: ['teacher', 'payouts'] as const,
   bankDetails: ['teacher', 'bank-details'] as const,
@@ -59,5 +68,6 @@ export const qk = {
     payoutRun: (id: string) => ['admin', 'payout-runs', id] as const,
     /** Prefix `['admin', 'instructor-applications']` invalidates every tab. */
     instructorApplications: (status?: string) => ['admin', 'instructor-applications', status ?? 'all'] as const,
+    admins: ['admin', 'users', 'admins'] as const,
   },
 };
