@@ -15,7 +15,7 @@ import { Kicker } from './seat';
 import { useLandingTeachers, type LandingTeacher } from './use-landing-data';
 import { Wrap } from './wrap';
 
-/** 9 · The cast: the real teachers of open batches. The portrait follows the cursor; tap a name to expand on touch. */
+/** 9 · Your teachers: the real teachers of open classes. The portrait follows the cursor; tap a name to expand on touch. */
 export function Teachers() {
   const { t } = useI18n();
   const c = t.landing.teachers;

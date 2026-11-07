@@ -11,7 +11,7 @@ import { Kicker, SeatRule } from './seat';
 import { useOpenBatches } from './use-landing-data';
 import { Wrap } from './wrap';
 
-/** 12 · FAQ, the ticket line (`#pricing`, real lowest open price), then the magnetic "Find your batch" pill. */
+/** 12 · FAQ, the ticket line (`#pricing`, real lowest open price), then the magnetic "Find your course" pill. */
 export function Finale() {
   const { t } = useI18n();
   const l = t.landing;

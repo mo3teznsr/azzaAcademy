@@ -22,7 +22,7 @@ import 'catalog_widgets.dart';
 import 'course_reviews.dart';
 import 'save_course_button.dart';
 
-/// Course detail: full-bleed cover with a header that appears on scroll, then title, teacher, outcomes, syllabus.
+/// Course detail: full-bleed cover with a header that appears on scroll, then title, outcomes, details, teacher, syllabus.
 class CourseDetailScreen extends ConsumerWidget {
   const CourseDetailScreen({super.key, required this.courseId});
   final String courseId;
@@ -82,6 +82,20 @@ class CourseDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 14),
                     if (c.introVideoUrl != null) ...[
                       _IntroVideoCard(url: ref.read(appConfigProvider).resolveMediaUrl(c.introVideoUrl)!),
+                      const SizedBox(height: 14),
+                    ],
+                    // Outcomes lead: what you'll be able to do, before how the class runs.
+                    if (c.outcomes(locale).isNotEmpty) ...[
+                      SectionCard(
+                        key: const Key('section-outcomes'),
+                        title: l.whatYoullLearn,
+                        margin: EdgeInsets.zero,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [for (final o in c.outcomes(locale)) _Bullet(text: o)],
+                        ),
+                      ),
                       const SizedBox(height: 14),
                     ],
                     Wrap(
@@ -149,7 +163,6 @@ class CourseDetailScreen extends ConsumerWidget {
                     ],
                     const SizedBox(height: 12),
                     for (final (key, title, items) in [
-                      ('outcomes', l.whatYoullLearn, c.outcomes(locale)),
                       ('requirements', l.requirementsTitle, c.requirements(locale)),
                       ('audience', l.audienceTitle, c.audience(locale)),
                     ])
@@ -253,9 +266,18 @@ class CourseDetailScreen extends ConsumerWidget {
                         showCharged: true,
                       ),
                     ),
-                    FilledButton(
-                      onPressed: () => context.push(Routes.batchPicker(course.requireValue.id)),
-                      child: Text(l.chooseBatchN(f.n(ref.watch(courseBatchesProvider(course.requireValue.id)).value?.length ?? 0))),
+                    const SizedBox(width: 12),
+                    // Capped so a long label (or a large text size) ellipsises instead of crushing the price.
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.6),
+                      child: FilledButton(
+                        onPressed: () => context.push(Routes.batchPicker(course.requireValue.id)),
+                        child: Text(
+                          l.chooseBatchN(f.n(ref.watch(courseBatchesProvider(course.requireValue.id)).value?.length ?? 0)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ),
                   ],
                 ),

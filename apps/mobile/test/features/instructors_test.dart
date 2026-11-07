@@ -108,7 +108,7 @@ void main() {
     expect(find.text('Product designer'), findsOneWidget);
     expect(find.text('DESIGN'), findsOneWidget, reason: 'category chips use the category name, not the slug');
     expect(find.text('LANGUAGES'), findsOneWidget);
-    expect(find.text('1 courses · 2 open batches'), findsOneWidget);
+    expect(find.text('1 courses · 2 open classes'), findsOneWidget);
     expect(find.text('ARABIC · ENGLISH'), findsOneWidget);
     expect(find.byKey(const Key('instructor-t2')), findsOneWidget);
   });
@@ -136,7 +136,7 @@ void main() {
 
     testWidgets('validates, then submits the application and shows the pending card', (tester) async {
       final repo = await pumpTeach(tester);
-      expect(find.text('Share what you know, live.'), findsOneWidget);
+      expect(find.text('Teach what you know.'), findsOneWidget);
       expect(find.text('Product designer · 8 years at agencies'), findsOneWidget, reason: 'the headline field shows a sample');
 
       await scrollTo(tester, find.byKey(const Key('apply-submit')));

@@ -64,6 +64,9 @@ export function LearnDashboard() {
       </section>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] items-start gap-4">
+        {/* Practice first; live sessions are one item among the rest. */}
+        <DueSoon />
+        <QuizzesDuePanel />
         <Panel aria-labelledby="next">
           <SectionHeader title={<span id="next">{t.learn.nextUp}</span>} href="/schedule" linkLabel={t.learn.fullSchedule} />
           {schedule.isPending ? (
@@ -82,8 +85,6 @@ export function LearnDashboard() {
             </ol>
           )}
         </Panel>
-        <DueSoon />
-        <QuizzesDuePanel />
         <RecentRecordings />
       </div>
     </>

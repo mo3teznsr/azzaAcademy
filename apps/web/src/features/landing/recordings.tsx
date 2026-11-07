@@ -17,7 +17,7 @@ import { Wrap } from './wrap';
 const W = 1200;
 const H = 170;
 
-/** 6 · Miss one? It waits. The batch's sessions as a drawn line; the ones that ended light up as kept recordings. */
+/** 6 · Learn at your pace: the class's sessions as a drawn line; the ones that ended light up as recordings in the library. */
 export function Recordings() {
   const { t, f, fill } = useI18n();
   const r = t.landing.recordings;

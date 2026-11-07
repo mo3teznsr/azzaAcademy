@@ -67,7 +67,7 @@ void main() {
     expect(find.text('AED 880.00'), findsOneWidget);
     expect(find.byKey(const Key('transfer-reference')), findsOneWidget);
     expect(find.text('AZ-B07-48213'), findsOneWidget);
-    expect(find.textContaining('SEAT HELD 47:5'), findsOneWidget);
+    expect(find.textContaining('PLACE HELD 47:5'), findsOneWidget);
     expect(find.text('Emirates NBD'), findsOneWidget);
     expect(find.text('ADCB'), findsOneWidget);
     expect(find.textContaining('AE•• •••• •••• 3456'), findsOneWidget);
@@ -110,7 +110,7 @@ void main() {
 
   testWidgets('expired hold shows the released-seat state', (tester) async {
     await pump(tester, current: order(status: OrderStatus.expired, expiresAt: DateTime.now().subtract(const Duration(minutes: 1))));
-    expect(find.text('The 48 h hold expired and the seat was released.'), findsOneWidget);
+    expect(find.text('The 48 h hold expired and your place was released.'), findsOneWidget);
   });
 
   testWidgets('rejected transfer shows the finance reason for re-upload', (tester) async {

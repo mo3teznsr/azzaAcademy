@@ -9,11 +9,11 @@
 export const LANDING_IMAGES = {
   /** Hero window — 4:5 source, cropped wide on desktop. */
   onAir: '/images/landing/on-air.jpg',
-  /** "In the room" clip-path expansion — 16:9. */
+  /** "Stuck? Ask." clip-path expansion — 16:9. */
   room: '/images/landing/room.jpg',
-  /** "Miss one? It waits." — 3:2. */
+  /** "Learn at your pace." — 3:2. */
   evening: '/images/landing/evening.jpg',
-  /** "The house fills" inset — 4:3. */
+  /** "Small classes" inset — 4:3. */
   gallery: '/images/landing/gallery.jpg',
   /** Finish line — 4:5. */
   finish: '/images/landing/finish.jpg',

@@ -12,7 +12,7 @@ import { Kicker } from './seat';
 import { useLargestRoom, useSpotlightBatch } from './use-landing-data';
 import { Wrap } from './wrap';
 
-/** 2 · The house fills: the spotlight batch's real seat plan lights up seat by seat as it scrolls in. */
+/** 2 · Small classes: the spotlight class's real places light up one by one as it scrolls in. */
 export function House() {
   const { t, f, fill } = useI18n();
   const h = t.landing.house;

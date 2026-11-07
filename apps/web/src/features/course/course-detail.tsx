@@ -101,7 +101,7 @@ function CourseView({ course }: { course: Course }) {
             <Chip tone="ivory">
               {categoryLabel(course)} · {t.status.level[course.level]}
             </Chip>
-            <Chip tone="outline">{fill(t.course.liveSessions, { n: f.number(list[0]?.schedule?.sessionCount ?? course.modules.length) })}</Chip>
+            <Chip tone="outline">{fill(t.course.liveSessions, { n: f.number((list.find((b) => b.status === 'ENROLLING') ?? list[0])?.schedule?.sessionCount ?? course.modules.length) })}</Chip>
             <Chip tone="outline">{t.course.recordings}</Chip>
             {title.fallback && <Chip tone="dashed">{t.common.englishOnly}</Chip>}
           </div>
@@ -134,6 +134,15 @@ function CourseView({ course }: { course: Course }) {
         </div>
       </section>
 
+      {/* What you'll learn leads; the syllabus and session counts are the detail. */}
+      {(outcomes.length > 0 || requirements.length > 0 || audience.length > 0) && (
+        <section className="grid gap-4 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
+          {outcomes.length > 0 && <BulletBlock id="outcomes" title={t.course.outcomes} items={outcomes} tone="sun" />}
+          {requirements.length > 0 && <BulletBlock id="requirements" title={t.course.requirements} items={requirements} />}
+          {audience.length > 0 && <BulletBlock id="audience" title={t.course.audience} items={audience} />}
+        </section>
+      )}
+
       {course.modules.length > 0 && (
         <Panel aria-labelledby="syllabus" className="gap-2">
           <h2 id="syllabus" className="label-mono text-muted-foreground">
@@ -165,14 +174,6 @@ function CourseView({ course }: { course: Course }) {
             })}
           </ol>
         </Panel>
-      )}
-
-      {(outcomes.length > 0 || requirements.length > 0 || audience.length > 0) && (
-        <section className="grid gap-4 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
-          {outcomes.length > 0 && <BulletBlock id="outcomes" title={t.course.outcomes} items={outcomes} tone="sun" />}
-          {requirements.length > 0 && <BulletBlock id="requirements" title={t.course.requirements} items={requirements} />}
-          {audience.length > 0 && <BulletBlock id="audience" title={t.course.audience} items={audience} />}
-        </section>
       )}
 
       <section aria-labelledby="pick" className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">

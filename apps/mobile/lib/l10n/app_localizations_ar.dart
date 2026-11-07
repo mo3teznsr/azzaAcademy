@@ -15,7 +15,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get retry => 'حاول مجددًا';
 
   @override
-  String get errorTitle => 'حدث خلل في البث.';
+  String get errorTitle => 'تعذّر التحميل.';
 
   @override
   String get emptyGeneric => 'لا شيء هنا بعد.';
@@ -30,7 +30,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cancel => 'إلغاء';
 
   @override
-  String get noOpenBatchesShort => 'لا توجد دفعات مفتوحة';
+  String get noOpenBatchesShort => 'لا صفوف مفتوحة';
 
   @override
   String chargedAsAed(String amount) {
@@ -60,7 +60,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String confirmingPaymentBody(String code, String amount) {
-    return 'أكمل دفع $amount على صفحة Stripe الآمنة. مقعدك في $code محجوز، وتتحدث هذه الشاشة فور تأكيد الدفع.';
+    return 'أكمل دفع $amount على صفحة Stripe الآمنة. مكانك في $code محجوز، وتتحدّث هذه الشاشة فور تأكيد الدفع.';
   }
 
   @override
@@ -350,11 +350,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderRefunded => 'مسترد';
 
   @override
-  String get splashTagline =>
-      'دورات مباشرة عبر الإنترنت · بالعربية والإنجليزية';
+  String get splashTagline => 'دورات بالعربية والإنجليزية';
 
   @override
-  String get splashLine => 'تعلّم مباشرةً، مع معلّم حقيقي.';
+  String get splashLine => 'تعلّمها. تدرّب عليها. أتقِنها.';
 
   @override
   String get chooseLanguage => 'اختر لغتك';
@@ -367,20 +366,24 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get languageHint =>
-      'يمكنك تغيير اللغة في أي وقت من حسابي ← اللغة والمنطقة. لغة الجلسات تحدّدها كل دفعة على حدة.';
+      'يمكنك تغيير لغة التطبيق في أي وقت من حسابي ← اللغة والمنطقة. ولكل صفّ لغة تدريس خاصة به.';
 
   @override
-  String get onboardingTitle => 'ماذا تريد أن تتعلّم مباشرةً؟';
+  String get onboardingTitle => 'ماذا تريد أن تتعلّم؟';
+
+  @override
+  String get onboardingLine =>
+      'تتعلّم خطوة بخطوة، وتتدرّب وتتلقّى ملاحظات، ويساعدك معلّمك متى احتجت، ثم تُثبت ما تعلّمته بشهادة.';
 
   @override
   String get onboardingTimezone =>
-      'منطقتك الزمنية — تُحوَّل مواعيد الدفعات إليها';
+      'منطقتك الزمنية — تُحوَّل إليها مواعيد الحصص المباشرة';
 
   @override
   String get detected => 'تم اكتشافها';
 
   @override
-  String get bestTime => 'أنسب وقت لك';
+  String get bestTime => 'أنسب وقت للحصص المباشرة';
 
   @override
   String get mornings => 'الصباح';
@@ -410,14 +413,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get interestMusic => 'الموسيقى';
 
   @override
-  String get signInTitle => 'احجز مقعدك.';
+  String get signInTitle => 'أهلًا بعودتك.';
 
   @override
-  String get signInSubtitle =>
-      'حساب واحد لكل دفعة تنضم إليها — على هاتفك أو على الويب.';
+  String get signInSubtitle => 'تابع من حيث توقّفت.';
 
   @override
-  String get signUpTitle => 'أنشئ حسابك.';
+  String get signUpTitle => 'ابدأ التعلّم اليوم.';
+
+  @override
+  String get signUpSubtitle =>
+      'مسار واضح، وتدريب مع ملاحظات، وشهادة تُثبت ما تعلّمته.';
 
   @override
   String get email => 'البريد الإلكتروني';
@@ -456,7 +462,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get invalidEmail => 'أدخل بريدًا إلكترونيًا صالحًا';
 
   @override
-  String get passwordTooShort => '٨ أحرف على الأقل';
+  String get passwordTooShort => '8 أحرف على الأقل';
 
   @override
   String get nameTooShort => 'حرفان على الأقل';
@@ -482,7 +488,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verifyPermissions =>
-      'بعد ذلك سنطلب الكاميرا والميكروفون مرة واحدة، لتنضم إلى الجلسات بلمسة واحدة.';
+      'بعدها نطلب إذن الكاميرا والميكروفون مرة واحدة، لتنضم إلى الحصص المباشرة بلمسة واحدة.';
 
   @override
   String get verifyContinue => 'تحقّق وتابع';
@@ -506,38 +512,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String get liveNow => 'مباشر الآن';
 
   @override
-  String get joinLiveRoom => 'انضم الآن';
+  String get joinLiveRoom => 'انضم إلى الحصّة';
 
   @override
   String inRoom(String count) {
-    return '$count في الغرفة';
+    return 'الحاضرون: $count';
   }
 
   @override
-  String get myBatches => 'دفعاتي';
+  String get myBatches => 'دوراتك';
 
   @override
   String nextAt(String when) {
-    return 'التالية · $when';
+    return 'الحصّة التالية · $when';
   }
 
   @override
-  String get continueWatching => 'تابع المشاهدة';
+  String get continueWatching => 'استدرك ما فاتك';
 
   @override
-  String get noBatchesTitle => 'لا دفعات بعد';
+  String get noBatchesTitle => 'لا دورات بعد';
 
   @override
-  String get noBatchesBody => 'اختر دورة ودفعة يناسب جدولها أسبوعك.';
+  String get noBatchesBody =>
+      'اعثر على دورة، ثم اختر صفًّا تناسب حصصه المباشرة أسبوعك.';
 
   @override
-  String get exploreCta => 'استكشف الدورات';
+  String get exploreCta => 'اعثر على دورتك';
 
   @override
-  String get upNext => 'التالي';
+  String get upNext => 'الحصّة المباشرة التالية';
 
   @override
-  String get exploreTitle => 'اعثر على دفعة تناسب أسبوعك.';
+  String get practiceDue => 'تدريب بانتظارك';
+
+  @override
+  String get exploreTitle => 'اعثر على ما تريد تعلّمه.';
 
   @override
   String get searchCourses => 'ابحث في الدورات';
@@ -560,7 +570,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String liveSessionsN(String n) {
-    return '$n جلسة مباشرة';
+    return '$n حصّة مباشرة';
   }
 
   @override
@@ -589,11 +599,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String chooseBatchN(String n) {
-    return 'اختر دفعة · $n';
+    return 'اختر صفّك · $n';
   }
 
   @override
-  String get pickBatch => 'اختر دفعة';
+  String get pickBatch => 'اختر صفّك.';
 
   @override
   String timesShownIn(String tz) {
@@ -605,12 +615,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String enrollIn(String code) {
-    return 'سجّل في $code';
+    return 'انضم إلى الصفّ $code';
   }
 
   @override
   String seatsLeft(String n) {
-    return '$n مقاعد متبقية';
+    return 'الأماكن المتبقية: $n';
   }
 
   @override
@@ -619,11 +629,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get noOpenBatches => 'لا دفعات مفتوحة حاليًا. عُد قريبًا.';
+  String get noOpenBatches => 'لا صفوف مفتوحة حاليًا. عُد قريبًا.';
 
   @override
   String joiningLate(String ran, String left) {
-    return 'تنضم متأخرًا؟ انعقدت $ran جلسات — تجدها في المكتبة كتسجيلات. تتبقى $left جلسات مباشرة.';
+    return 'تنضم متأخرًا؟ انعقدت $ran حصص، وتسجيلاتها في مكتبتك لتستدرك ما فاتك. تتبقى $left حصص مباشرة.';
   }
 
   @override
@@ -636,7 +646,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String sessionN(String n) {
-    return 'الجلسة $n';
+    return 'الحصّة $n';
   }
 
   @override
@@ -654,7 +664,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get showPricesIn => 'اعرض الأسعار بـ';
 
   @override
-  String get batchPrice => 'سعر الدفعة';
+  String get batchPrice => 'سعر الصفّ';
 
   @override
   String get coupon => 'قسيمة';
@@ -686,13 +696,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get payCard => 'بطاقة · Google Pay';
 
   @override
-  String get payCardSub => 'مقعد فوري · 3-D Secure';
+  String get payCardSub => 'تأكيد فوري · 3-D Secure';
 
   @override
   String get payBank => 'تحويل بنكي';
 
   @override
-  String get payBankSub => 'يُحجز المقعد ٤٨ ساعة أثناء التحويل';
+  String get payBankSub => 'نحجز مكانك 48 ساعة أثناء التحويل';
 
   @override
   String continueAmount(String amount) {
@@ -730,7 +740,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String seatHeld(String time) {
-    return 'المقعد محجوز $time';
+    return 'مكانك محجوز $time';
   }
 
   @override
@@ -754,19 +764,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get uploadReceipt =>
-      'ارفع إيصال التحويل (PDF أو JPG أو PNG · حتى ١٠ م.ب)';
+      'ارفع إيصال التحويل (PDF أو JPG أو PNG · حتى 10 م.ب)';
 
   @override
   String get chooseFile => 'اختر ملفًا';
 
   @override
-  String get fileTooLarge => 'الملف أكبر من ١٠ م.ب.';
+  String get fileTooLarge => 'الملف أكبر من 10 م.ب.';
 
   @override
   String get iSentTransfer => 'أرسلت التحويل';
 
   @override
-  String get holdExpired => 'انتهت مهلة الـ٤٨ ساعة وأُطلق المقعد.';
+  String get holdExpired => 'انتهت مهلة الـ48 ساعة وأُطلق مكانك.';
 
   @override
   String get noBanks => 'لا توجد بنوك مستلِمة مفعّلة. تواصل مع الدعم.';
@@ -777,15 +787,15 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get almostOnAir => 'على وشك البث.';
+  String get almostOnAir => 'اقتربنا من الانتهاء.';
 
   @override
   String verifyingBody(String code, String amount) {
-    return 'نحجز مقعدك في $code بينما يتحقق قسم المالية من تحويل $amount.';
+    return 'نحجز مكانك في $code بينما يتحقق قسم المالية من تحويل $amount.';
   }
 
   @override
-  String get tlOrderCreated => 'المقعد محجوز';
+  String get tlOrderCreated => 'المكان محجوز';
 
   @override
   String get tlReceiptUploaded => 'رُفع الإيصال';
@@ -794,7 +804,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tlFinanceVerifying => 'المالية تتحقق';
 
   @override
-  String get tlSeatConfirmed => 'تأكد المقعد';
+  String get tlSeatConfirmed => 'تأكّد مكانك';
 
   @override
   String get rejectedTitle => 'الإيصال يحتاج إلى مراجعة';
@@ -809,7 +819,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderFailedBody => 'لم يكتمل الدفع. يمكنك المحاولة مجددًا.';
 
   @override
-  String get orderExpiredBody => 'انتهت صلاحية هذا الطلب وأُطلق المقعد.';
+  String get orderExpiredBody => 'انتهت صلاحية هذا الطلب وأُطلق مكانك.';
 
   @override
   String get goToSchedule => 'اذهب إلى جدولي';
@@ -819,11 +829,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String enrolledBody(String course, String code, String n) {
-    return 'مقعدك في $course · $code محجوز لك. أُضيفت $n جلسات مباشرة إلى جدولك.';
+    return 'تأكّد مكانك في $course · $code. ابدأ بالدروس، وقد أُضيفت $n حصص مباشرة إلى جدولك.';
   }
 
   @override
-  String get nextTake => 'الجلسة التالية';
+  String get nextTake => 'الحصّة المباشرة التالية';
 
   @override
   String get days => 'أيام';
@@ -836,12 +846,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String lobbyOpensAt(String time) {
-    return 'تُفتح الردهة $time';
+    return 'يمكنك الانضمام من $time';
   }
 
   @override
   String syncCalendar(String n) {
-    return 'زامن $n جلسات مع التقويم';
+    return 'زامن $n حصص مع التقويم';
   }
 
   @override
@@ -857,7 +867,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get thisWeek => 'هذا الأسبوع';
 
   @override
-  String get noSessionsWeek => 'لا جلسات هذا الأسبوع.';
+  String get noSessionsWeek => 'لا حصص مباشرة هذا الأسبوع.';
 
   @override
   String get prevWeek => 'الأسبوع السابق';
@@ -867,12 +877,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String lobbyOpenStarts(String time) {
-    return 'الردهة مفتوحة · تبدأ $time';
+    return 'غرفة الانتظار مفتوحة · تبدأ $time';
   }
 
   @override
   String lobbyStarts(String time) {
-    return 'الردهة · تبدأ $time';
+    return 'غرفة الانتظار · تبدأ $time';
   }
 
   @override
@@ -890,10 +900,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get lobbyClosed => 'تُفتح الردهة قبل ١٥ دقيقة من بدء الجلسة.';
+  String get lobbyClosed => 'يمكنك الانضمام قبل 15 دقيقة من بدء الحصّة.';
 
   @override
-  String get goLive => 'ابدأ البث';
+  String get goLive => 'ابدأ الجلسة';
 
   @override
   String get recordSession => 'سجّل الجلسة';
@@ -980,15 +990,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onlyYou => 'أنت الوحيد هنا حتى الآن.';
 
   @override
-  String get liveUnavailable => 'الفيديو غير متاح لهذه الجلسة بعد.';
+  String get liveUnavailable => 'الفيديو غير متاح لهذه الحصّة بعد.';
 
   @override
   String edgeWaitingTitle(String host) {
-    return 'لم تبدأ الجلسة بعد مع $host';
+    return 'لم يبدأ $host الحصّة بعد';
   }
 
   @override
-  String get edgeWaitingSub => 'تبدأ عادةً خلال ٥ دقائق · ستنضم تلقائيًا';
+  String get edgeWaitingSub => 'تبدأ عادةً خلال 5 دقائق · ستنضم تلقائيًا';
 
   @override
   String get edgeLiveNow => 'مباشر الآن';
@@ -998,7 +1008,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get edgePermBody =>
-      'لا يستطيع عازة استخدام الكاميرا أو الميكروفون، لذا لا يراك الصف ولا يسمعك.';
+      'لا يستطيع تطبيق عازة استخدام الكاميرا أو الميكروفون، لذا لا يراك الصف ولا يسمعك.';
 
   @override
   String get edgePermStepsIos =>
@@ -1035,7 +1045,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get edgeLostTitle => 'انقطع الاتصال';
 
   @override
-  String get edgeLostBody => 'تعذّرت إعادتك تلقائيًا. مقعدك ما زال محجوزًا.';
+  String get edgeLostBody => 'تعذّرت إعادتك تلقائيًا. مكانك في الصفّ محفوظ.';
 
   @override
   String get edgeRejoin => 'أعد الانضمام';
@@ -1050,7 +1060,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get edgeRoomFullBody =>
-      'يتوفر مقعد بمجرد مغادرة أحدهم. حاول بعد دقيقة، أو شاهد التسجيل بعد الحصة.';
+      'يتوفر مكان بمجرد مغادرة أحدهم. حاول بعد دقيقة، أو شاهد التسجيل بعد الحصّة.';
 
   @override
   String edgeCancelledTitle(String s, String teacher) {
@@ -1071,17 +1081,17 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get edgeEndedTitle => 'انتهت هذه الجلسة';
+  String get edgeEndedTitle => 'انتهت هذه الحصّة';
 
   @override
-  String get edgeEndedBody => 'يظهر التسجيل في صفحة تعلّمك عندما يصبح جاهزًا.';
+  String get edgeEndedBody => 'يظهر التسجيل في مكتبتك عندما يصبح جاهزًا.';
 
   @override
-  String get edgeNotEnrolledTitle => 'لست مسجّلًا في هذه الدفعة';
+  String get edgeNotEnrolledTitle => 'لست مسجّلًا في هذا الصفّ';
 
   @override
   String get edgeNotEnrolledBody =>
-      'تحتاج إلى تسجيل نشط في هذه الدفعة للانضمام.';
+      'تحتاج إلى تسجيل نشط في هذا الصفّ للانضمام.';
 
   @override
   String get edgeBackToSchedule => 'العودة إلى الجدول';
@@ -1090,7 +1100,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get edgeWaitingButton => 'بانتظار المضيف…';
 
   @override
-  String get wrapTitle => 'انتهى التصوير.';
+  String get wrapTitle => 'انتهت الحصّة.';
 
   @override
   String endedStayed(String time, String min) {
@@ -1121,7 +1131,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get recordingProcessing => 'التسجيل قيد المعالجة';
 
   @override
-  String get recordingSoon => 'جاهز خلال ٢٠ دقيقة تقريبًا · سنُعلمك';
+  String get recordingSoon => 'جاهز خلال 20 دقيقة تقريبًا · سنُعلمك';
 
   @override
   String get nextLabel => 'التالي';
@@ -1134,6 +1144,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get libraryTitle => 'المكتبة';
+
+  @override
+  String get libraryEmptyTitle => 'تعلّم بإيقاعك';
 
   @override
   String continueAt(String at) {
@@ -1149,7 +1162,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get materials => 'المواد';
 
   @override
-  String get noRecordings => 'تظهر التسجيلات هنا بعد كل جلسة.';
+  String get noRecordings =>
+      'تظهر التسجيلات هنا بعد كل حصّة، لتعيد المشاهدة أو تستدرك ما فاتك.';
 
   @override
   String get noMaterials => 'لم تُشارك مواد بعد.';
@@ -1192,7 +1206,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get enrollFirst => 'سجّل في دفعة لتفتح التسجيلات والمواد.';
+  String get enrollFirst => 'انضم إلى صفّ لتفتح دروسه وتسجيلاته وموادّه.';
 
   @override
   String get inbox => 'الوارد';
@@ -1223,7 +1237,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String batchesN(String n) {
-    return '$n دفعات';
+    return 'الصفوف: $n';
   }
 
   @override
@@ -1251,7 +1265,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get editProfile => 'تعديل الملف';
 
   @override
-  String get nextTakeLobbyOpen => 'الجلسة التالية · الردهة مفتوحة';
+  String get nextTakeLobbyOpen => 'الجلسة التالية · غرفة الانتظار مفتوحة';
 
   @override
   String nextTakeIn(String time) {
@@ -1259,7 +1273,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get enterLobby => 'افتح الردهة';
+  String get enterLobby => 'ادخل غرفة الانتظار';
 
   @override
   String studentsN(String n) {
@@ -1345,7 +1359,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reschedule => 'إعادة جدولة';
 
   @override
-  String get openLobby => 'افتح الردهة';
+  String get openLobby => 'افتح غرفة الانتظار';
 
   @override
   String get moveSession => 'انقل هذه الجلسة';
@@ -1366,7 +1380,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sendToAdmin => 'أرسل للإدارة للموافقة';
 
   @override
-  String get adminReviews => 'تراجع الإدارة الطلبات خلال ٢٤ ساعة.';
+  String get adminReviews => 'تراجع الإدارة الطلبات خلال 24 ساعة.';
 
   @override
   String get requestSent => 'أُرسل الطلب إلى الإدارة.';
@@ -1388,7 +1402,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get attendanceRule =>
-      'احتُسب الحضور من سجلات الانضمام والمغادرة في LiveKit. الحضور الكامل = ٧٥٪ من مدة الجلسة على الأقل.';
+      'احتُسب الحضور من سجلات الانضمام والمغادرة في LiveKit. الحضور الكامل = 75% من مدة الحصّة على الأقل.';
 
   @override
   String publishRecording(String code) {
@@ -1477,10 +1491,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noBankDetails => 'أضف حسابًا بنكيًا إماراتيًا لاستلام المستحقات.';
 
   @override
-  String get ibanInvalid => 'آيبان إماراتي: AE + ٢١ رقمًا';
+  String get ibanInvalid => 'آيبان إماراتي: AE + 21 رقمًا';
 
   @override
-  String get swiftInvalid => '٨ أو ١١ حرفًا/رقمًا';
+  String get swiftInvalid => '8 أو 11 حرفًا/رقمًا';
 
   @override
   String sessionsDelivered(String n) {
@@ -1493,7 +1507,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get onAirLabel => 'على الهواء';
+  String get onAirLabel => 'مباشر الآن';
 
   @override
   String roomsPeople(String rooms, String people) {
@@ -1519,7 +1533,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noAlerts => 'لا شيء يحتاج قرارًا الآن.';
 
   @override
-  String get liveMonitorTitle => 'على الهواء الآن';
+  String get liveMonitorTitle => 'مباشر الآن';
 
   @override
   String autoRefresh(String s) {
@@ -1535,7 +1549,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get joinSilently => 'انضم بصمت';
 
   @override
-  String get noLiveRooms => 'لا غرف على الهواء.';
+  String get noLiveRooms => 'لا جلسات مباشرة الآن.';
 
   @override
   String participantsN(String n) {
@@ -1722,11 +1736,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get certificatesTitle => 'الشهادات';
 
   @override
-  String get certificatesEmptyTitle => 'لا شهادات بعد';
+  String get certificatesEmptyTitle => 'دليل على ما تعلّمته';
 
   @override
   String get certificatesEmptyBody =>
-      'احضر 80٪ على الأقل من جلسات الدفعة، وستظهر شهادتك هنا عند انتهائها.';
+      'احضر 80% على الأقل من حصص صفّك المباشرة، وستظهر شهادتك هنا عند انتهاء الصفّ. ويمكن لأي شخص التحقق منها.';
 
   @override
   String get certificatesEarned => 'المكتسبة';
@@ -1746,23 +1760,23 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String certificateSessionsNeeded(String n) {
-    return 'يلزم حضور $n جلسات أخرى';
+    return 'يلزم حضور $n حصص أخرى';
   }
 
   @override
-  String get certificateOneSessionNeeded => 'يلزم حضور جلسة واحدة أخرى';
+  String get certificateOneSessionNeeded => 'يلزم حضور حصّة واحدة أخرى';
 
   @override
   String get certificateRequirementMet =>
-      'اكتمل الحضور المطلوب — تصدر شهادتك عند انتهاء الدفعة.';
+      'اكتمل الحضور المطلوب — تصدر شهادتك عند انتهاء الصفّ.';
 
   @override
   String get certificateUnreachable =>
-      'لم تعد الجلسات المتبقية كافية لبلوغ 80٪ في هذه الدفعة.';
+      'لم تعد الحصص المتبقية كافية لبلوغ 80% في هذا الصفّ.';
 
   @override
   String certificateAttendedOfRequired(String attended, String required) {
-    return '$attended من $required جلسة مطلوبة للحصول عليها';
+    return '$attended من $required حصّة مطلوبة للحصول عليها';
   }
 
   @override
@@ -1778,7 +1792,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get certificateForCompleting => 'لإتمام دورة';
 
   @override
-  String get certificateBatch => 'الدفعة';
+  String get certificateBatch => 'الصفّ';
 
   @override
   String get certificateTeacher => 'المدرّس';
@@ -1803,12 +1817,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String certificateCompleteBody(String attended, String total) {
-    return 'حضرت $attended من $total جلسة مباشرة.';
+    return 'حضرت $attended من $total حصّة مباشرة.';
   }
 
   @override
   String certificateVerifyHint(String url) {
-    return 'يمكن لأي شخص التحقق منها عبر $url';
+    return 'دليل على المهارة. يمكن لأي شخص التحقق منها عبر $url';
   }
 
   @override
@@ -1834,15 +1848,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get waitlistStepSeat =>
-      'عندما يتوفر مقعد، يُعرض على أول شخص في الدور.';
+      'عندما يتوفر مكان، يُعرض على أول شخص في الدور.';
 
   @override
   String get waitlistStepNotify =>
-      'سنرسل لك إشعارًا وبريدًا إلكترونيًا فور أن يصبح المقعد لك.';
+      'سنرسل لك إشعارًا وبريدًا إلكترونيًا فور أن يصبح المكان لك.';
 
   @override
   String get waitlistStepHold =>
-      'سيكون أمامك 24 ساعة لإتمام الدفع قبل أن ينتقل المقعد إلى التالي.';
+      'سيكون أمامك 24 ساعة لإتمام الدفع قبل أن ينتقل المكان إلى التالي.';
 
   @override
   String get waitlistNoCharge => 'لا يُخصم أي مبلغ أثناء الانتظار.';
@@ -1865,7 +1879,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get waitlistLeft => 'غادرت قائمة الانتظار';
 
   @override
-  String get waitlistSeatOpen => 'توفّر مقعد لك';
+  String get waitlistSeatOpen => 'توفّر مكان لك';
 
   @override
   String waitlistHeldFor(String time) {
@@ -1876,7 +1890,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get waitlistHoldExpired => 'انتهت مدة الحجز';
 
   @override
-  String get waitlistClaimSeat => 'احجز المقعد';
+  String get waitlistClaimSeat => 'احجز مكانك';
 
   @override
   String get teacherAbout => 'نبذة';
@@ -1888,7 +1902,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get teacherCourses => 'الدورات';
 
   @override
-  String get teacherUpcomingBatches => 'الدفعات القادمة';
+  String get teacherUpcomingBatches => 'الصفوف القادمة';
 
   @override
   String get teacherViewProfile => 'عرض الملف الشخصي';
@@ -1973,7 +1987,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pushSettingsHint =>
-      'غيّر الإشعارات من إعدادات هاتفك ← التطبيقات ← Azza.';
+      'غيّر الإشعارات من إعدادات هاتفك ← التطبيقات ← عازة.';
 
   @override
   String get forgotPassword => 'نسيت كلمة المرور؟';
@@ -1996,11 +2010,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hidePassword => 'إخفاء كلمة المرور';
 
   @override
-  String get errNetwork =>
-      'لا يوجد اتصال بـ Azza. تحقّق من الشبكة وحاول مجددًا.';
+  String get errNetwork => 'لا يوجد اتصال بعازة. تحقّق من الشبكة وحاول مجددًا.';
 
   @override
-  String get errTimeout => 'استغرقت Azza وقتًا طويلًا للرد. حاول مجددًا.';
+  String get errTimeout => 'استغرقت عازة وقتًا طويلًا للرد. حاول مجددًا.';
 
   @override
   String get errCancelled => 'أُلغي.';
@@ -2033,7 +2046,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileSaved => 'حُفظ الملف الشخصي.';
 
   @override
-  String get timezoneHint => 'تُعرض مواعيد الجلسات بهذه المنطقة الزمنية.';
+  String get timezoneHint =>
+      'تُعرض مواعيد الحصص المباشرة بهذه المنطقة الزمنية.';
 
   @override
   String useDeviceTimezone(String zone) {
@@ -2068,7 +2082,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get appStoreNote =>
-      'تتولى Apple عملية الدفع. يُؤكَّد مقعدك فور اكتمال الشراء.';
+      'تتولى Apple عملية الدفع. يُؤكَّد مكانك فور اكتمال الشراء.';
 
   @override
   String appStoreBuy(String price) {
@@ -2101,7 +2115,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enrolOnWebsite => 'التسجيل عبر موقعنا الإلكتروني';
 
   @override
-  String get enrolOnWebsiteBody => 'هذا المقعد غير متاح للشراء داخل التطبيق.';
+  String get enrolOnWebsiteBody => 'هذا الصفّ غير متاح للشراء داخل التطبيق.';
 
   @override
   String get clear => 'مسح';
@@ -2145,14 +2159,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get photoPickFailed =>
-      'تعذّر فتح الكاميرا أو الصور. تحقّق من أذونات Azza في الإعدادات.';
+      'تعذّر فتح الكاميرا أو الصور. تحقّق من أذونات عازة في الإعدادات.';
 
   @override
   String get addPhotoTitle => 'أضف صورتك';
 
   @override
   String get addPhotoBody =>
-      'يرى معلمك صورتك في قائمة الصف وفي الجلسات المباشرة ليعرف من في القاعة.';
+      'يرى معلّمك صورتك في قائمة الصف وفي الحصص المباشرة ليعرف من في الصفّ.';
 
   @override
   String get addPhotoTips =>
@@ -2728,7 +2742,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errReviewNotEligible =>
-      'يمكنك تقييم هذه الدورة بعد حضور إحدى جلساتها.';
+      'يمكنك تقييم هذه الدورة بعد حضور إحدى حصصها المباشرة.';
 
   @override
   String get teacherRecordingsTitle => 'تسجيلاتك';
@@ -2751,7 +2765,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get instructorsLede =>
-      'من يدرّسون مباشرةً على عزّة. افتح ملفًا لترى دوراته ودفعاته المفتوحة.';
+      'من يدرّسون على عازة. افتح ملفًا لترى دوراته وصفوفه المفتوحة.';
 
   @override
   String get instructorsEmpty => 'لا يوجد مدرّبون بعد';
@@ -2760,7 +2774,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get meetInstructors => 'تعرّف على المدرّبين';
 
   @override
-  String get meetInstructorsHint => 'من يدرّس على عزّة، وماذا يدرّس';
+  String get meetInstructorsHint => 'من يدرّس على عازة، وماذا يدرّس';
 
   @override
   String get allInstructors => 'كل المدرّبين';
@@ -2772,28 +2786,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String instructorOpenBatchesN(String count) {
-    return 'الدفعات المفتوحة: $count';
+    return 'الصفوف المفتوحة: $count';
   }
 
   @override
-  String get teachOnAzza => 'درّس على عزّة';
+  String get teachOnAzza => 'درّس على عازة';
 
   @override
   String get teachRowHint => 'قدّم طلبك';
 
   @override
-  String get teachSignUpLink => 'تريد أن تدرّس على عزّة؟';
+  String get teachSignUpLink => 'تريد أن تدرّس على عازة؟';
 
   @override
   String get teachSignUpHint =>
-      'أنشئ حسابك أولًا، ثم افتح «أنا» ← «درّس على عزّة» لتقديم طلبك.';
+      'أنشئ حسابك أولًا، ثم افتح «حسابي» ← «درّس على عازة» لتقديم طلبك.';
 
   @override
-  String get teachPitchTitle => 'شارك ما تعرفه، مباشرةً.';
+  String get teachPitchTitle => 'علّم ما تعرفه.';
 
   @override
   String get teachPitchBody =>
-      'درّس دفعات صغيرة مباشرةً لمتعلّمين في أنحاء المنطقة، بالعربية أو الإنجليزية. أخبرنا من أنت وماذا ستدرّس، ويراجع فريقنا كل طلب عادةً خلال أيام قليلة.';
+      'أرشد صفوفًا صغيرة من المتعلّمين في أنحاء المنطقة، بالعربية أو الإنجليزية، عبر الدروس والتدريب والحصص المباشرة. أخبرنا من أنت وماذا ستدرّس، ويراجع فريقنا كل طلب عادةً خلال أيام قليلة.';
 
   @override
   String get applySectionAbout => 'عنك';
@@ -2897,7 +2911,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get refresh => 'تحديث';
 
   @override
-  String get errAlreadyInstructor => 'أنت مدرّب على عزّة بالفعل.';
+  String get errAlreadyInstructor => 'أنت مدرّب على عازة بالفعل.';
 
   @override
   String get errApplicationPending => 'طلبك قيد المراجعة بالفعل.';

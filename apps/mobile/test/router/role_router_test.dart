@@ -59,7 +59,7 @@ void main() {
   testWidgets('unauthenticated user is sent to sign-in', (tester) async {
     final router = await bootApp(tester, null);
     expect(location(router), Routes.signIn);
-    expect(find.text('Take your seat.'), findsOneWidget);
+    expect(find.text('Welcome back.'), findsOneWidget);
   });
 
   testWidgets('first run without a session shows the language picker', (tester) async {

@@ -46,7 +46,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         value: enrollments,
         onRetry: () => ref.invalidate(enrollmentsProvider),
         isEmpty: (list) => list.where((e) => e.isActive).isEmpty,
-        empty: EmptyState(title: l.noRecordings, body: l.enrollFirst, action: l.exploreCta, onAction: () => context.go(Routes.studentExplore)),
+        empty: EmptyState(title: l.libraryEmptyTitle, body: l.enrollFirst, action: l.exploreCta, onAction: () => context.go(Routes.studentExplore)),
         data: (list) {
           final active = list.where((e) => e.isActive).toList();
           final batchId = _batchId ?? active.first.batch.id;

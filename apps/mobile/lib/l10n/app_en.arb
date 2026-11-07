@@ -2,12 +2,12 @@
   "@@locale": "en",
   "appName": "azza",
   "retry": "Try again",
-  "errorTitle": "Something went off-air.",
+  "errorTitle": "That didn't load.",
   "emptyGeneric": "Nothing here yet.",
   "seeAll": "See all",
   "continueLabel": "Continue",
   "cancel": "Cancel",
-  "noOpenBatchesShort": "No open batches",
+  "noOpenBatchesShort": "No open classes",
   "chargedAsAed": "Charged as {amount}",
   "@chargedAsAed": {"placeholders": {"amount": {"type": "String"}}},
   "ratesUnavailableHint": "Shown in AED: exchange rates are unavailable right now.",
@@ -16,7 +16,7 @@
   "paymentPageNotOpened": "Couldn't open the payment page. Tap “Open payment page” to try again.",
   "payCardCheckoutSub": "Card, Apple Pay or Google Pay on Stripe's secure page · charged in AED",
   "confirmingPayment": "Confirming your payment…",
-  "confirmingPaymentBody": "Finish paying {amount} on Stripe's secure page. Your seat in {code} is held, and this screen updates as soon as the payment is confirmed.",
+  "confirmingPaymentBody": "Finish paying {amount} on Stripe's secure page. Your place in {code} is held, and this screen updates as soon as the payment is confirmed.",
   "@confirmingPaymentBody": {"placeholders": {"code": {"type": "String"}, "amount": {"type": "String"}}},
   "checkingPayment": "Checking every few seconds…",
   "openPaymentPage": "Open payment page",
@@ -120,16 +120,17 @@
   "orderRejected": "Rejected",
   "orderExpired": "Expired",
   "orderRefunded": "Refunded",
-  "splashTagline": "Live online courses · Arabic & English",
-  "splashLine": "Learn live, with a real teacher.",
+  "splashTagline": "Courses in Arabic & English",
+  "splashLine": "Learn it. Practise it. Make it yours.",
   "chooseLanguage": "Choose your language",
   "leftToRight": "Left to right",
   "rightToLeft": "Right to left",
-  "languageHint": "You can change the language any time from Me → Language & region. Each batch sets its own session language.",
-  "onboardingTitle": "What do you want to learn live?",
-  "onboardingTimezone": "Your timezone — batch times convert to it",
+  "languageHint": "You can change the language any time from Me → Language & region. Each class is taught in its own language.",
+  "onboardingTitle": "What do you want to learn?",
+  "onboardingLine": "Learn step by step, practise with feedback, get help from your teacher, and prove it with a certificate.",
+  "onboardingTimezone": "Your timezone — live session times convert to it",
   "detected": "detected",
-  "bestTime": "Best time for you",
+  "bestTime": "Best time for live sessions",
   "mornings": "Mornings",
   "evenings": "Evenings",
   "weekends": "Weekends",
@@ -139,9 +140,10 @@
   "interestBusiness": "Business",
   "interestArt": "Art",
   "interestMusic": "Music",
-  "signInTitle": "Take your seat.",
-  "signInSubtitle": "One account for every batch you join — on your phone or the web.",
-  "signUpTitle": "Create your account.",
+  "signInTitle": "Welcome back.",
+  "signInSubtitle": "Pick up where you left off.",
+  "signUpTitle": "Start learning today.",
+  "signUpSubtitle": "A clear path, practice with feedback, and a certificate that proves it.",
   "email": "Email",
   "password": "Password",
   "fullName": "Full name",
@@ -175,7 +177,7 @@
   },
   "resend": "Resend",
   "changeEmail": "Change email",
-  "verifyPermissions": "After this we'll ask for camera and mic once, so you can join sessions in one tap.",
+  "verifyPermissions": "After this we'll ask for camera and mic once, so you can join live sessions in one tap.",
   "verifyContinue": "Verify & continue",
   "greetingMorning": "Morning, {name}",
   "@greetingMorning": {
@@ -202,8 +204,8 @@
     }
   },
   "liveNow": "Live now",
-  "joinLiveRoom": "Join live room",
-  "inRoom": "{count} in room",
+  "joinLiveRoom": "Join session",
+  "inRoom": "{count} joined",
   "@inRoom": {
     "placeholders": {
       "count": {
@@ -211,8 +213,8 @@
       }
     }
   },
-  "myBatches": "My batches",
-  "nextAt": "Next · {when}",
+  "myBatches": "Your courses",
+  "nextAt": "Next session · {when}",
   "@nextAt": {
     "placeholders": {
       "when": {
@@ -220,12 +222,13 @@
       }
     }
   },
-  "continueWatching": "Continue watching",
-  "noBatchesTitle": "No batches yet",
-  "noBatchesBody": "Pick a course and a batch whose schedule fits your week.",
-  "exploreCta": "Explore courses",
-  "upNext": "Up next",
-  "exploreTitle": "Find a batch that fits your week.",
+  "continueWatching": "Catch up",
+  "noBatchesTitle": "No courses yet",
+  "noBatchesBody": "Find a course, then choose a class whose live sessions fit your week.",
+  "exploreCta": "Find your course",
+  "upNext": "Next live session",
+  "practiceDue": "Practice due",
+  "exploreTitle": "Find what you want to learn.",
   "searchCourses": "Search courses",
   "allFilter": "All",
   "coursesCount": "{count} courses",
@@ -280,7 +283,7 @@
       }
     }
   },
-  "chooseBatchN": "Choose a batch · {n}",
+  "chooseBatchN": "Choose your class · {n}",
   "@chooseBatchN": {
     "placeholders": {
       "n": {
@@ -288,7 +291,7 @@
       }
     }
   },
-  "pickBatch": "Pick your batch.",
+  "pickBatch": "Choose your class.",
   "timesShownIn": "Times shown in {tz}",
   "@timesShownIn": {
     "placeholders": {
@@ -298,7 +301,7 @@
     }
   },
   "fullSchedule": "Full schedule",
-  "enrollIn": "Enroll in {code}",
+  "enrollIn": "Join class {code}",
   "@enrollIn": {
     "placeholders": {
       "code": {
@@ -306,7 +309,7 @@
       }
     }
   },
-  "seatsLeft": "{n} seats left",
+  "seatsLeft": "{n} places left",
   "@seatsLeft": {
     "placeholders": {
       "n": {
@@ -325,8 +328,8 @@
       }
     }
   },
-  "noOpenBatches": "No open batches right now. Check back soon.",
-  "joiningLate": "Joining late? {ran} sessions already ran — they're in the library as recordings. {left} live sessions left.",
+  "noOpenBatches": "No classes are open right now. Check back soon.",
+  "joiningLate": "Joining late? {ran} sessions already ran — catch up on their recordings in your library. {left} live sessions left.",
   "@joiningLate": {
     "placeholders": {
       "ran": {
@@ -368,7 +371,7 @@
     }
   },
   "showPricesIn": "Show prices in",
-  "batchPrice": "Batch price",
+  "batchPrice": "Class price",
   "coupon": "Coupon",
   "apply": "Apply",
   "discount": "Discount",
@@ -391,9 +394,9 @@
   "chargedExact": "Charged in AED. This is the exact amount.",
   "payWith": "Pay with",
   "payCard": "Card · Google Pay",
-  "payCardSub": "Instant seat · 3-D Secure",
+  "payCardSub": "Confirmed instantly · 3-D Secure",
   "payBank": "Bank transfer",
-  "payBankSub": "Seat held 48 h while you transfer",
+  "payBankSub": "Your place is held for 48 h while you transfer",
   "continueAmount": "Continue · {amount}",
   "@continueAmount": {
     "placeholders": {
@@ -424,7 +427,7 @@
   "stripeUnavailable": "Card payments aren't configured in this build. Use bank transfer.",
   "paymentCancelled": "Payment cancelled.",
   "bankTransfer": "Bank transfer",
-  "seatHeld": "Seat held {time}",
+  "seatHeld": "Place held {time}",
   "@seatHeld": {
     "placeholders": {
       "time": {
@@ -455,7 +458,7 @@
   "chooseFile": "Choose file",
   "fileTooLarge": "File is larger than 10 MB.",
   "iSentTransfer": "I've sent the transfer",
-  "holdExpired": "The 48 h hold expired and the seat was released.",
+  "holdExpired": "The 48 h hold expired and your place was released.",
   "noBanks": "No receiving banks are active. Contact support.",
   "orderRef": "Order {ref}",
   "@orderRef": {
@@ -465,8 +468,8 @@
       }
     }
   },
-  "almostOnAir": "Almost on air.",
-  "verifyingBody": "We hold your seat in {code} while finance checks the transfer of {amount}.",
+  "almostOnAir": "Nearly done.",
+  "verifyingBody": "We're holding your place in {code} while finance checks the transfer of {amount}.",
   "@verifyingBody": {
     "placeholders": {
       "code": {
@@ -477,18 +480,18 @@
       }
     }
   },
-  "tlOrderCreated": "Seat held",
+  "tlOrderCreated": "Place held",
   "tlReceiptUploaded": "Receipt uploaded",
   "tlFinanceVerifying": "Finance verifying",
-  "tlSeatConfirmed": "Seat confirmed",
+  "tlSeatConfirmed": "Place confirmed",
   "rejectedTitle": "Receipt needs attention",
   "reupload": "Re-upload receipt",
   "contactSupport": "Contact finance support",
   "orderFailedBody": "The payment didn't go through. You can try again.",
-  "orderExpiredBody": "This order expired and the seat was released.",
+  "orderExpiredBody": "This order expired and your place was released.",
   "goToSchedule": "Go to my schedule",
   "youreIn": "You're in.",
-  "enrolledBody": "Your seat in {course} · {code} is yours. {n} live sessions are now in your schedule.",
+  "enrolledBody": "Your place in {course} · {code} is confirmed. Start with the lessons; your {n} live sessions are in your schedule.",
   "@enrolledBody": {
     "placeholders": {
       "course": {
@@ -502,11 +505,11 @@
       }
     }
   },
-  "nextTake": "Next take",
+  "nextTake": "Next live session",
   "days": "days",
   "hrs": "hrs",
   "mins": "min",
-  "lobbyOpensAt": "lobby opens {time}",
+  "lobbyOpensAt": "you can join from {time}",
   "@lobbyOpensAt": {
     "placeholders": {
       "time": {
@@ -526,7 +529,7 @@
   "myOrders": "My orders",
   "noOrders": "No orders yet.",
   "thisWeek": "This week",
-  "noSessionsWeek": "No sessions this week.",
+  "noSessionsWeek": "No live sessions this week.",
   "prevWeek": "Previous week",
   "nextWeek": "Next week",
   "lobbyOpenStarts": "Lobby open · starts {time}",
@@ -556,7 +559,7 @@
       }
     }
   },
-  "lobbyClosed": "The lobby opens 15 min before the session starts.",
+  "lobbyClosed": "You can join 15 min before the session starts.",
   "goLive": "Go live",
   "recordSession": "Record session",
   "recordSessionSub": "Saved to the batch library after processing",
@@ -628,7 +631,7 @@
   "edgeJoinListenOnly": "Join to listen only",
   "edgeReconnecting": "Reconnecting… your video paused, audio kept",
   "edgeLostTitle": "Connection lost",
-  "edgeLostBody": "We couldn't get you back in automatically. Your seat is still yours.",
+  "edgeLostBody": "We couldn't get you back in automatically. Your place in the class is safe.",
   "edgeRejoin": "Rejoin",
   "edgeRoomFullTitle": "Room is at {n}/{max}",
   "@edgeRoomFullTitle": {
@@ -642,7 +645,7 @@
     }
   },
   "edgeRoomFullGeneric": "This room is full",
-  "edgeRoomFullBody": "A seat frees up as soon as someone leaves. Try again in a minute, or catch the recording after class.",
+  "edgeRoomFullBody": "A place frees up as soon as someone leaves. Try again in a minute, or watch the recording after the session.",
   "edgeCancelledTitle": "{s} cancelled by {teacher}",
   "@edgeCancelledTitle": {
     "placeholders": {
@@ -678,12 +681,12 @@
     }
   },
   "edgeEndedTitle": "This session has ended",
-  "edgeEndedBody": "The recording appears in your learning once it's ready.",
-  "edgeNotEnrolledTitle": "You're not in this batch",
-  "edgeNotEnrolledBody": "You need an active enrollment in this batch to join.",
+  "edgeEndedBody": "The recording appears in your library once it's ready.",
+  "edgeNotEnrolledTitle": "You're not in this class",
+  "edgeNotEnrolledBody": "You need an active enrolment in this class to join.",
   "edgeBackToSchedule": "Back to schedule",
   "edgeWaitingButton": "Waiting for the host…",
-  "wrapTitle": "That's a wrap.",
+  "wrapTitle": "Session complete.",
   "endedStayed": "Ended {time} · you stayed {min} min",
   "@endedStayed": {
     "placeholders": {
@@ -714,6 +717,7 @@
   "sendFeedback": "Send feedback",
   "thanksFeedback": "Thanks — Feedback sent.",
   "libraryTitle": "Library",
+  "libraryEmptyTitle": "Learn at your pace",
   "continueAt": "Continue · {at}",
   "@continueAt": {
     "placeholders": {
@@ -731,7 +735,7 @@
     }
   },
   "materials": "Materials",
-  "noRecordings": "Recordings land here after each session.",
+  "noRecordings": "Recordings appear here after each session, so you can rewatch or catch up.",
   "noMaterials": "No materials shared yet.",
   "assignments": "Assignments",
   "dueTab": "Due",
@@ -761,7 +765,7 @@
       }
     }
   },
-  "enrollFirst": "Enroll in a batch to unlock recordings and materials.",
+  "enrollFirst": "Join a class to unlock its lessons, recordings and materials.",
   "inbox": "Inbox",
   "markAllRead": "Mark all read",
   "today": "Today",
@@ -771,7 +775,7 @@
   "language": "Language",
   "notifications": "Notifications",
   "account": "Account",
-  "batchesN": "{n} batches",
+  "batchesN": "{n} classes",
   "@batchesN": {
     "placeholders": {
       "n": {
@@ -787,8 +791,8 @@
   "preview": "Preview",
   "displayCurrency": "Display currency",
   "editProfile": "Edit profile",
-  "nextTakeLobbyOpen": "Next take · lobby open",
-  "nextTakeIn": "Next take · starts in {time}",
+  "nextTakeLobbyOpen": "Next session · lobby open",
+  "nextTakeIn": "Next session · starts in {time}",
   "@nextTakeIn": {
     "placeholders": {
       "time": {
@@ -930,7 +934,7 @@
       }
     }
   },
-  "onAirLabel": "On air",
+  "onAirLabel": "Live now",
   "roomsPeople": "{rooms} rooms · {people} people",
   "@roomsPeople": {
     "placeholders": {
@@ -948,7 +952,7 @@
   "seatsFilled": "Seats filled",
   "needsYou": "Needs you",
   "noAlerts": "Nothing needs a decision right now.",
-  "liveMonitorTitle": "On air now",
+  "liveMonitorTitle": "Live now",
   "autoRefresh": "auto-refresh {s}s",
   "@autoRefresh": {
     "placeholders": {
@@ -966,7 +970,7 @@
     }
   },
   "joinSilently": "Join silently",
-  "noLiveRooms": "No rooms are on air.",
+  "noLiveRooms": "No sessions are live right now.",
   "participantsN": "{n} people",
   "@participantsN": {
     "placeholders": {
@@ -1113,8 +1117,8 @@
   "requestDeclined": "Declined",
   "videoDevMode": "Video is off in this environment (LiveKit isn't configured). Chat and raised hands still work.",
   "certificatesTitle": "Certificates",
-  "certificatesEmptyTitle": "No certificates yet",
-  "certificatesEmptyBody": "Attend at least 80% of a batch's sessions and your certificate appears here when the batch ends.",
+  "certificatesEmptyTitle": "Proof you learned it",
+  "certificatesEmptyBody": "Attend at least 80% of your class's live sessions and your certificate appears here when the class ends. Anyone can verify it.",
   "certificatesEarned": "Earned",
   "certificatesInProgress": "In progress",
   "certificateAttended": "Attended {attended}/{total}",
@@ -1145,8 +1149,8 @@
     }
   },
   "certificateOneSessionNeeded": "1 more session needed",
-  "certificateRequirementMet": "Attendance met — your certificate is issued when the batch ends.",
-  "certificateUnreachable": "Not enough sessions left to reach 80% in this batch.",
+  "certificateRequirementMet": "Attendance met — your certificate is issued when the class ends.",
+  "certificateUnreachable": "Not enough sessions left to reach 80% in this class.",
   "certificateAttendedOfRequired": "{attended} of {required} sessions to earn it",
   "@certificateAttendedOfRequired": {
     "placeholders": {
@@ -1162,7 +1166,7 @@
   "certificateOfCompletion": "Certificate of completion",
   "certificateAwardedTo": "Awarded to",
   "certificateForCompleting": "for completing",
-  "certificateBatch": "Batch",
+  "certificateBatch": "Class",
   "certificateTeacher": "Teacher",
   "certificateIssued": "Issued",
   "certificateDates": "Dates",
@@ -1181,7 +1185,7 @@
       }
     }
   },
-  "certificateVerifyHint": "Anyone can check it at {url}",
+  "certificateVerifyHint": "Proof of the skill. Anyone can check it at {url}",
   "@certificateVerifyHint": {
     "placeholders": {
       "url": {
@@ -1218,9 +1222,9 @@
     }
   },
   "waitlistWhatNext": "What happens next",
-  "waitlistStepSeat": "When a seat frees up, it goes to the first person in line.",
+  "waitlistStepSeat": "When a place frees up, it goes to the first person in line.",
   "waitlistStepNotify": "We'll notify and email you the moment it's yours.",
-  "waitlistStepHold": "You then have 24 hours to check out before the seat moves on.",
+  "waitlistStepHold": "You then have 24 hours to check out before the place moves on.",
   "waitlistNoCharge": "Nothing is charged while you wait.",
   "waitlistLeave": "Leave waitlist",
   "waitlistLeaveConfirmTitle": "Leave the waitlist?",
@@ -1234,7 +1238,7 @@
   },
   "waitlistStay": "Stay in line",
   "waitlistLeft": "You left the waitlist",
-  "waitlistSeatOpen": "A seat opened for you",
+  "waitlistSeatOpen": "A place opened for you",
   "waitlistHeldFor": "Held for you · {time}",
   "@waitlistHeldFor": {
     "placeholders": {
@@ -1244,11 +1248,11 @@
     }
   },
   "waitlistHoldExpired": "The hold has expired",
-  "waitlistClaimSeat": "Claim seat",
+  "waitlistClaimSeat": "Claim your place",
   "teacherAbout": "About",
   "teacherTeachesIn": "Teaches in",
   "teacherCourses": "Courses",
-  "teacherUpcomingBatches": "Upcoming batches",
+  "teacherUpcomingBatches": "Upcoming classes",
   "teacherViewProfile": "View profile",
   "teacherBatchFull": "Full",
   "certificateAttendance": "Attendance",
@@ -1300,7 +1304,7 @@
   "errServer": "Something went wrong on our side. Try again shortly.",
   "errGeneric": "Something went wrong. Try again.",
   "profileSaved": "Profile saved.",
-  "timezoneHint": "Session times are shown in this timezone.",
+  "timezoneHint": "Live session times are shown in this timezone.",
   "useDeviceTimezone": "Use this phone's timezone: {zone}",
   "@useDeviceTimezone": {
     "placeholders": {
@@ -1317,7 +1321,7 @@
   "payAppStore": "App Store",
   "payAppStoreSub": "In-app purchase, charged to your Apple Account",
   "payWithAppStore": "Pay with the App Store",
-  "appStoreNote": "Payment is handled by Apple. Your seat is confirmed as soon as the purchase completes.",
+  "appStoreNote": "Payment is handled by Apple. Your place is confirmed as soon as the purchase completes.",
   "appStoreBuy": "Buy · {price}",
   "appStoreConfirming": "Confirming your purchase…",
   "appStorePending": "Waiting for approval. We'll enrol you as soon as the App Store confirms the purchase.",
@@ -1326,7 +1330,7 @@
   "appStoreRetryLater": "We couldn't confirm the purchase yet. It's safe — we'll retry automatically the next time you open the app.",
   "appStoreRejected": "We couldn't apply this purchase to your order. Contact support — Apple can refund the purchase.",
   "enrolOnWebsite": "Enrol on our website",
-  "enrolOnWebsiteBody": "This seat isn't available as an in-app purchase.",
+  "enrolOnWebsiteBody": "This class isn't available as an in-app purchase.",
   "@appStoreBuy": {
     "placeholders": {
       "price": {
@@ -1349,7 +1353,7 @@
   "chooseFromLibrary": "Choose from library",
   "photoPickFailed": "Couldn't open the camera or photos. Check Azza's permissions in Settings.",
   "addPhotoTitle": "Add your photo",
-  "addPhotoBody": "Your teacher sees your photo on the class list and in live sessions, so they know who's in the room.",
+  "addPhotoBody": "Your teacher sees your photo on the class list and in live sessions, so they know who's in the class.",
   "addPhotoTips": "Use a clear, recent photo of your face. Only your teachers and classmates see it.",
   "addPhotoAction": "Add photo",
   "watchIntro": "Watch the intro",
@@ -1680,14 +1684,14 @@
       }
     }
   },
-  "errReviewNotEligible": "You can review this course after attending one of its sessions.",
+  "errReviewNotEligible": "You can review this course after attending one of its live sessions.",
   "teacherRecordingsTitle": "Your recordings",
   "teacherRecordingsLede": "Every session you teach is recorded automatically when you press Start. Recordings show here once processed, usually within the hour.",
   "teacherRecordingsEmpty": "No recordings yet",
   "shareRecording": "Share or save the recording",
   "playRecording": "Play recording",
   "instructorsTitle": "Instructors",
-  "instructorsLede": "The people who teach live on Azza. Open a profile to see their courses and open batches.",
+  "instructorsLede": "The people who teach on Azza. Open a profile to see their courses and open classes.",
   "instructorsEmpty": "No instructors yet",
   "meetInstructors": "Meet the instructors",
   "meetInstructorsHint": "Who teaches on Azza, and what",
@@ -1700,7 +1704,7 @@
       }
     }
   },
-  "instructorOpenBatchesN": "{count} open batches",
+  "instructorOpenBatchesN": "{count} open classes",
   "@instructorOpenBatchesN": {
     "placeholders": {
       "count": {
@@ -1712,8 +1716,8 @@
   "teachRowHint": "Apply",
   "teachSignUpLink": "Want to teach on Azza?",
   "teachSignUpHint": "Create your account first, then open Me → Teach on Azza to apply.",
-  "teachPitchTitle": "Share what you know, live.",
-  "teachPitchBody": "Teach small live batches to learners across the region, in Arabic or English. Tell us who you are and what you'd teach; our team reviews every application, usually within a few days.",
+  "teachPitchTitle": "Teach what you know.",
+  "teachPitchBody": "Guide small classes of learners across the region, in Arabic or English, with lessons, practice and live sessions. Tell us who you are and what you'd teach; our team reviews every application, usually within a few days.",
   "applySectionAbout": "About you",
   "applySectionTeach": "What you'd teach",
   "applySectionExperience": "Your experience",
