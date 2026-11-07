@@ -10,6 +10,14 @@ import '../features/admin/presentation/approvals_screen.dart';
 import '../features/admin/presentation/live_monitor_screen.dart';
 import '../features/admin/presentation/payout_run_screen.dart';
 import '../features/admin/presentation/transfer_verify_screen.dart';
+import '../features/announcements/presentation/announcements_screen.dart';
+import '../features/chat/domain/chat_models.dart';
+import '../features/chat/presentation/chat_thread_screen.dart';
+import '../features/chat/presentation/messages_inbox_screen.dart';
+import '../features/support/presentation/new_ticket_screen.dart';
+import '../features/support/presentation/support_inbox_screen.dart';
+import '../features/support/presentation/support_screen.dart';
+import '../features/support/presentation/ticket_screen.dart';
 import '../features/auth/presentation/auth_controller.dart';
 import '../features/auth/presentation/language_picker_screen.dart';
 import '../features/auth/presentation/onboarding_screen.dart';
@@ -124,7 +132,9 @@ List<RouteBase> buildRoutes() => [
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => RoleShell(shell: shell, role: Role.admin),
         branches: [
-          _branch(Routes.adminOverview, (_) => const AdminOverviewScreen()),
+          _branch(Routes.adminOverview, (_) => const AdminOverviewScreen(), routes: [
+            _route('support', (_) => const SupportInboxScreen()),
+          ]),
           _branch(Routes.adminLive, (_) => const LiveMonitorScreen()),
           _branch(Routes.adminBatches, (_) => const AdminBatchesScreen(), routes: [
             _route(':id', (s) => BatchQuickViewScreen(batchId: s.pathParameters['id']!)),
@@ -146,6 +156,7 @@ List<RouteBase> buildRoutes() => [
       ]),
       _route('/batches/:id/schedule', (s) => BatchScheduleScreen(batchId: s.pathParameters['id']!)),
       _route('/batches/:id/roster', (s) => RosterScreen(batchId: s.pathParameters['id']!)),
+      _route('/batches/:id/announcements', (s) => AnnouncementsScreen(batchId: s.pathParameters['id']!)),
       _route('/batches/:id/quizzes', (s) => BatchQuizzesScreen(batchId: s.pathParameters['id']!)),
       _route(Routes.myQuizzes, (_) => const MyQuizzesScreen(), routes: [
         _route(':id', (s) => QuizScreen(quizId: s.pathParameters['id']!), routes: [
@@ -179,6 +190,14 @@ List<RouteBase> buildRoutes() => [
       _route('/sessions/:id/attendance', (s) => AttendanceSummaryScreen(sessionId: s.pathParameters['id']!)),
       _route(Routes.assignments, (s) => AssignmentsScreen(batchId: s.uri.queryParameters['batchId'])),
       _route(Routes.notifications, (_) => const NotificationsScreen()),
+      _route(Routes.messages, (_) => const MessagesInboxScreen(), routes: [
+        _route(':id', (s) => ChatThreadScreen(conversationId: s.pathParameters['id']!, conversation: s.extra is Conversation ? s.extra as Conversation : null)),
+      ]),
+      _route(Routes.announcements, (_) => const AnnouncementsScreen()),
+      _route(Routes.support, (_) => const SupportScreen(), routes: [
+        _route('new', (s) => NewTicketScreen(orderId: s.uri.queryParameters['orderId'], batchId: s.uri.queryParameters['batchId'])),
+        _route(':id', (s) => TicketScreen(ticketId: s.pathParameters['id']!)),
+      ]),
       _route(Routes.languageSettings, (_) => const LanguageSettingsScreen()),
       _route(Routes.editProfile, (_) => const EditProfileScreen()),
       _route(Routes.profilePhoto, (_) => const ProfilePhotoScreen()),

@@ -85,6 +85,12 @@ import { PrismaSessionRepository } from './modules/sessions/session.repository';
 import { SessionService } from './modules/sessions/session.service';
 import { PrismaRescheduleRequestRepository } from './modules/sessions/reschedule-request.repository';
 import { RescheduleRequestService } from './modules/sessions/reschedule-request.service';
+import { PrismaAnnouncementRepository } from './modules/announcements/announcement.repository';
+import { AnnouncementService } from './modules/announcements/announcement.service';
+import { PrismaConversationRepository } from './modules/conversations/conversation.repository';
+import { ConversationService } from './modules/conversations/conversation.service';
+import { PrismaSupportRepository } from './modules/support/support.repository';
+import { SupportService } from './modules/support/support.service';
 
 export interface Adapters {
   db: Db;
@@ -233,6 +239,9 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     lessons: new LessonService(new PrismaLessonRepository(db)),
     quizzes: new QuizService(new PrismaQuizRepository(db), access, notifications, clock),
     courseMedia: new CourseMediaService(adapters.storage),
+    announcements: new AnnouncementService(new PrismaAnnouncementRepository(db), access, notifications, config.WEB_URL),
+    conversations: new ConversationService(new PrismaConversationRepository(db), realtime, notifications, clock),
+    support: new SupportService(new PrismaSupportRepository(db), notifications, clock, config.WEB_URL),
     admin: new AdminService(new PrismaAdminRepository(db), new BetterAuthUserProvisioner(auth, invites, config.WEB_URL), video, clock),
   };
 

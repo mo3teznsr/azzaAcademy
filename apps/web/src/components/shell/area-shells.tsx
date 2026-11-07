@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useI18n } from '@/lib/i18n/provider';
+import { useAuth } from '@/lib/auth/use-auth';
 import { AppShell } from './app-shell';
 import { adminNav, studentNav, teacherNav } from './nav-config';
 
@@ -30,4 +31,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {children}
     </AppShell>
   );
+}
+
+/** Picks the shell of the signed-in role (shared pages like /messages and /support). */
+export function RoleShell({ children }: { children: ReactNode }) {
+  const { role } = useAuth();
+  if (role === 'ADMIN') return <AdminShell>{children}</AdminShell>;
+  if (role === 'TEACHER') return <TeacherShell>{children}</TeacherShell>;
+  return <StudentShell>{children}</StudentShell>;
 }

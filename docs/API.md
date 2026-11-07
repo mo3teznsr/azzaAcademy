@@ -248,3 +248,52 @@ Saving a course (`PATCH /courses/:id` with `modules`) now keeps modules by `id` 
 | `GET /api/v1/quizzes/:id/results` | teacher/ADMIN → `{ quiz, summary: { students, submitted, averagePercent }, students: [{ user{id,name,email,image}, attempts, bestScore, bestPercent, lastSubmittedAt }], questions: [{ questionId, type, promptEn, promptAr, points, answered, correct, rate (0–1) }] }` (ACTIVE students; rates use each student's best attempt) |
 | `GET /api/v1/me/quizzes` | PUBLISHED quizzes of my ACTIVE batches → `{ items: [{ …quiz without questions, questionCount, totalPoints, batch{ id, code, course{id,slug,titleEn,titleAr} }, mine }] }` |
 `mine` / `progress` = `{ status: OPEN | IN_PROGRESS | SUBMITTED | MISSED, attemptsUsed (submitted), attemptsLeft, canStart, bestScore, bestPercent, maxScore }`.
+
+## Communications
+
+Announcements, chat and support. The full contract is in [COMMUNICATIONS.md](./COMMUNICATIONS.md). Below is a summary of what the API serves.
+
+**Class members** are the batch teacher plus students with an ACTIVE enrollment. Admins read everything, post in class chats and delete messages. Errors use the usual shape: `NOT_CLASS_MEMBER` (403), `DM_NOT_ALLOWED` (403), `CHAT_CLOSED` (422), `RATE_LIMITED` (429), `INVALID_ASSIGNEE` (422).
+
+**Announcements**
+
+| | |
+|---|---|
+| `GET /api/v1/me/announcements?page&pageSize` | platform announcements for my role (admins see all audiences) plus my classes' announcements, pinned first, then newest → `{ items: [{ id, scope, audience, batch: { id, code, courseTitle, courseTitleAr } \| null, title, body, pinned, author: { id, name, image }, createdAt, updatedAt }], total, page, pageSize }` |
+| `GET /api/v1/batches/:id/announcements?page&pageSize` | class members and ADMIN, same shape |
+| `POST /api/v1/batches/:id/announcements` | the batch teacher or ADMIN, `batchAnnouncementInput` `{ title ≤ 120, body (markdown) ≤ 4000, pinned?, notify? = true }` → 201 item |
+| `POST /api/v1/announcements` | ADMIN, `platformAnnouncementInput` `{ title, body, audience: ALL \| STUDENTS \| TEACHERS, pinned?, notify? }` → 201 item |
+| `PATCH /api/v1/announcements/:id` | the author or ADMIN, `updateAnnouncementInput` `{ title?, body?, pinned?, audience? (PLATFORM only) }` |
+| `DELETE /api/v1/announcements/:id` | the author or ADMIN → `{ ok: true }` |
+
+New announcements notify their recipients, except the author, with `ANNOUNCEMENT` and `data: { announcementId, batchId? }`. Both kinds go in-app, realtime and push; only PLATFORM announcements also go by email. A class announcement reaches the teacher and the ACTIVE students; a platform one reaches every role for `ALL`, or only students or teachers.
+
+**Chat:** a class chat per batch, plus a private chat between an ACTIVE student and the batch teacher. There are no student-to-student chats.
+
+| | |
+|---|---|
+| `GET /api/v1/me/conversations` | `{ items: [{ id, type, batch: { id, code, courseTitle, courseTitleAr }, counterpart: { id, name, image, role } \| null, lastMessage: { body, senderName, createdAt } \| null, lastMessageAt, createdAt, unread, closed }], unreadTotal }`, most recent activity first. Class chats are created on first listing. Teachers see every private chat of their batches. Admins get `[]`. |
+| `GET /api/v1/batches/:id/conversation` | the CLASS conversation (created if missing), one item |
+| `POST /api/v1/batches/:id/dm` | an ACTIVE student only → their DIRECT conversation with the batch teacher (created if missing) |
+| `GET /api/v1/conversations/:id/messages?before=<ISO>&limit=50` | `{ items: [{ id, sender: { id, name, image, role }, body, createdAt, deleted }], hasMore }`, newest last; deleted messages come back with `body: ''` |
+| `POST /api/v1/conversations/:id/messages` | `{ body ≤ 2000 }` → 201 message. Also marks the conversation read for the sender. |
+| `POST /api/v1/conversations/:id/read` | → `{ ok: true }` (sets `lastReadAt` to now) |
+| `DELETE /api/v1/messages/:id` | in a class chat: the sender, the batch teacher or ADMIN; in a private chat: the sender or ADMIN → `{ ok: true }` |
+
+- **Access:** a student whose enrollment is no longer ACTIVE loses access. Admins can read private chats but not post in them (`DM_NOT_ALLOWED`).
+- **Closed chats:** when a batch is COMPLETED or CANCELLED, its chats are read-only (`CHAT_CLOSED`). Only an admin can still delete messages there.
+- **Rate limit:** at most 20 messages a minute per user per conversation (429 `RATE_LIMITED`), counted in memory.
+- **Socket events:** `toUser` events go to the members (the teacher and the ACTIVE students who can see the chat), never back to the sender: `conversation:message` `{ conversationId, message }` and `conversation:message-deleted` `{ conversationId, messageId }`.
+- **Notifications:** `CHAT_MESSAGE` with `data: { conversationId }`, in-app, realtime and push. They are sent only for private chats, or when the teacher posts in the class chat, and collapse to at most one per conversation per recipient every 10 minutes (counted in memory).
+
+**Support:** in-app tickets with a thread per ticket. Admins answer them.
+
+| | |
+|---|---|
+| `POST /api/v1/support/tickets` | any signed-in user, `supportTicketInput` `{ subject ≤ 140, category: PAYMENT \| CLASS \| ACCOUNT \| TECHNICAL \| OTHER, body ≤ 4000, orderId? (must be mine), batchId? }` → 201 ticket detail. Notifies admins with `SUPPORT_TICKET` (in-app, realtime, email). |
+| `GET /api/v1/support/tickets?status&category&page&pageSize` | the owner sees their own tickets, an admin sees all, newest activity first → `{ items: [{ id, subject, category, status, user: { id, name, email }, assigneeId, createdAt, lastMessageAt, unreadForMe }], total, page, pageSize }`. `unreadForMe` means the other side wrote last: staff, for the owner; the owner, for admins, unless the ticket is resolved. |
+| `GET /api/v1/support/tickets/:id` | the owner or ADMIN → `{ …ticket, user, messages: [{ id, authorId, author: { id, name, image }, body, fromStaff, createdAt }] (oldest first), order: { id, reference, status, totalFils, createdAt } \| null, batch: { id, code, courseTitle, courseTitleAr } \| null }` |
+| `POST /api/v1/support/tickets/:id/messages` | the owner or ADMIN, `{ body }` → 201 ticket detail. A staff reply sets `AWAITING_USER` and notifies the owner with `SUPPORT_REPLY` (in-app, realtime, push, email). An owner reply sets `OPEN`, which also reopens a RESOLVED ticket, and notifies admins with `SUPPORT_REPLY` (in-app, realtime, email). |
+| `PATCH /api/v1/support/tickets/:id` | `updateSupportTicketInput` `{ status?, assigneeId? (an admin, or null) }`. ADMIN may change anything; the owner may only send `{ status: 'RESOLVED' }` (otherwise 403) → ticket detail |
+
+**Account deletion** (`DELETE /me`) also erases the user's chat messages, their private chats, their read markers, their support tickets and any support messages they wrote.

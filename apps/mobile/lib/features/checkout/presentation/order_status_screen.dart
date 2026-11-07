@@ -228,6 +228,16 @@ class _OrderBody extends ConsumerWidget {
         const SizedBox(height: 16),
         FilledButton(onPressed: () => context.pushReplacement(Routes.checkout(o.batch?.id ?? '')), child: Text(l.retry)),
       ],
+      const SizedBox(height: 16),
+      Center(
+        child: TextButton.icon(
+          key: const Key('order-need-help'),
+          style: TextButton.styleFrom(minimumSize: const Size(48, 44)),
+          onPressed: () => context.push(Routes.newTicket(orderId: o.id)),
+          icon: const Icon(Icons.support_agent_rounded, size: 20),
+          label: Text(l.needHelp),
+        ),
+      ),
     ]);
   }
 }

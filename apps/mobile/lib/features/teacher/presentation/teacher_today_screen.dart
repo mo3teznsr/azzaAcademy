@@ -12,6 +12,7 @@ import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../catalog/domain/catalog_models.dart';
+import '../../chat/presentation/messages_button.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
 import '../../home/presentation/student_home_screen.dart' show greeting;
 import '../../me/data/me_repository.dart';
@@ -47,7 +48,10 @@ class TeacherTodayScreen extends ConsumerWidget {
               children: [
                 MonoLabel('${f.dayLabel(now)} · ${f.time(now)}'),
                 const SizedBox(height: 4),
-                DisplayText(greeting(l, user?.firstName ?? '', now), size: 32),
+                Row(children: [
+                  Expanded(child: DisplayText(greeting(l, user?.firstName ?? '', now), size: 32)),
+                  const MessagesButton(),
+                ]),
                 const SizedBox(height: 20),
                 if (next == null)
                   EmptyState(title: l.noSessionsToday, icon: Icons.wb_twilight_rounded)

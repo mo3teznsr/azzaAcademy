@@ -13,6 +13,7 @@ import { useI18n } from '@/lib/i18n/provider';
 import { Price } from '@/components/brand/price';
 import { useSocketEvent } from '@/lib/realtime/socket';
 import { BankTransferDetails } from './bank-details';
+import { OrderHelpLink } from '../comms/support';
 
 const FINAL = new Set(['PAID', 'FAILED', 'REJECTED', 'EXPIRED', 'REFUNDED']);
 
@@ -66,6 +67,7 @@ export function OrderPage({ id }: { id: string }) {
         <BankTransferDetails order={o} bankAccount={o.bankAccount} reference={o.reference} expiresAt={o.expiresAt} onUploaded={() => void q.refetch()} />
       )}
       {o.rejectionReason && <p className="text-sm text-danger-fg">{o.rejectionReason}</p>}
+      <OrderHelpLink orderId={o.id} />
       <div className="flex flex-wrap gap-3">
         <Button asChild>
           <Link href="/learn">{t.checkout.goToLearning}</Link>

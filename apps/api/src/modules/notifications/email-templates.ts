@@ -87,3 +87,30 @@ export const appEmails = {
     text: `You're invited to Azza as ${role.toLowerCase()}. Set your password: ${url}`,
   }),
 };
+
+/** User-written text (announcements, support messages) goes into HTML escaped, line breaks kept. */
+const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]!);
+const paragraphs = (s: string) => `<p>${escapeHtml(s).replace(/\n/g, '<br>')}</p>`;
+
+export const communicationEmails = {
+  announcement: (title: string, body: string, url: string) => ({
+    subject: title,
+    html: layout(escapeHtml(title), `${paragraphs(body)}${button(url, 'Open announcements')}`),
+    text: `${title}\n\n${body}\n\n${url}`,
+  }),
+  supportTicket: (from: string, subject: string, body: string, url: string) => ({
+    subject: `New support ticket · ${subject}`,
+    html: layout(escapeHtml(subject), `<p>From <b>${escapeHtml(from)}</b>:</p>${paragraphs(body)}${button(url, 'Open the ticket')}`),
+    text: `New support ticket from ${from}: ${subject}\n\n${body}\n\n${url}`,
+  }),
+  supportUserReply: (from: string, subject: string, body: string, url: string) => ({
+    subject: `New reply · ${subject}`,
+    html: layout(escapeHtml(subject), `<p><b>${escapeHtml(from)}</b> replied:</p>${paragraphs(body)}${button(url, 'Open the ticket')}`),
+    text: `${from} replied on "${subject}":\n\n${body}\n\n${url}`,
+  }),
+  supportReply: (name: string, subject: string, body: string, url: string) => ({
+    subject: `We replied · ${subject}`,
+    html: layout(`Hi ${escapeHtml(name)}`, `<p>The Azza team replied to “${escapeHtml(subject)}”:</p>${paragraphs(body)}${button(url, 'Reply')}`),
+    text: `The Azza team replied to "${subject}":\n\n${body}\n\n${url}`,
+  }),
+};

@@ -20,6 +20,8 @@ import { useEnrollments, useMyAssignments, useMySchedule, useRecordings } from '
 import { WaitlistPanel } from '../waitlist/waitlist-panel';
 import { QuizzesDuePanel } from '../quizzes/my-quizzes';
 import { useCategoryLabel } from '@/components/brand/category';
+import { LatestFromClasses } from '../comms/announcements';
+import { MessageTeacherButton } from '../comms/chat';
 
 export function LearnDashboard() {
   const [range] = useState(() => {
@@ -49,6 +51,8 @@ export function LearnDashboard() {
       )}
 
       <WaitlistPanel />
+
+      <LatestFromClasses />
 
       <section aria-labelledby="batches" className="flex flex-col gap-4">
         <SectionHeader title={<span id="batches">{t.learn.myBatches}</span>} size="lg" href="/#catalog" linkLabel={t.learn.findAnother} />
@@ -236,7 +240,13 @@ function EnrolledBatchCard({ enrollment }: { enrollment: Enrollment }) {
                 <div className="h-1.5 rounded-md bg-green" style={{ width: `${pct}%` }} />
               </div>
             </div>
-            <div className="mt-auto flex items-center justify-between gap-2 text-[13px]">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button asChild size="sm">
+                <Link href={`/learn/classes/${b.id}`}>{t.comms.classPage.openClass}</Link>
+              </Button>
+              <MessageTeacherButton batchId={b.id} />
+            </div>
+            <div className="mt-auto flex flex-wrap items-center justify-between gap-2 text-[13px]">
               <span className="text-muted-foreground">{enrollment.nextSession ? fill(t.learn.next, { d: f.dateTime(enrollment.nextSession.startsAt) }) : ''}</span>
               <span className="flex items-center gap-3">
                 <Link href={`/learn/courses/${b.course.id}`} className="link-sun">

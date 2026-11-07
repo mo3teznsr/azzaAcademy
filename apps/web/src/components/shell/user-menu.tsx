@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { LogOut, Settings } from 'lucide-react';
+import { LifeBuoy, LogOut, Settings } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +40,12 @@ export function UserMenu({ settingsHref }: { settingsHref: string }) {
             <Settings /> {t.common.settings}
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={role === 'ADMIN' ? '/admin/support' : '/support'}>
+            <LifeBuoy /> {role === 'ADMIN' ? t.nav.admin.support : t.comms.support.nav}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => void signOut()}>
           <LogOut /> {t.common.signOut}
         </DropdownMenuItem>

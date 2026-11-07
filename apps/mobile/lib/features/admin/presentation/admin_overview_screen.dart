@@ -9,6 +9,7 @@ import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../live/domain/live_models.dart';
+import '../../support/data/support_repository.dart';
 import '../data/admin_repository.dart';
 import 'approvals_screen.dart' show AlertTile, RescheduleRequestTile;
 
@@ -37,7 +38,8 @@ class AdminOverviewScreen extends ConsumerWidget {
             onRefresh: () async => ref
               ..invalidate(adminDashboardProvider)
               ..invalidate(rescheduleRequestsProvider)
-              ..invalidate(liveRoomsProvider),
+              ..invalidate(liveRoomsProvider)
+              ..invalidate(openTicketsCountProvider),
             children: [
               Row(children: [
                 Expanded(
@@ -46,6 +48,22 @@ class AdminOverviewScreen extends ConsumerWidget {
                     DisplayText(l.opsGreeting(user?.firstName ?? ''), size: 32),
                   ]),
                 ),
+                IconButton(
+                  key: const Key('admin-announcements'),
+                  tooltip: l.announcementsTitle,
+                  onPressed: () => context.push(Routes.announcements),
+                  icon: const Icon(Icons.campaign_outlined),
+                ),
+                Builder(builder: (context) {
+                  final open = ref.watch(openTicketsCountProvider).value ?? 0;
+                  return IconButton(
+                    key: const Key('admin-support'),
+                    tooltip: l.supportInbox,
+                    onPressed: () => context.push(Routes.adminSupport),
+                    icon: Badge(isLabelVisible: open > 0, label: Text(f.n(open)), child: const Icon(Icons.support_agent_rounded)),
+                  );
+                }),
+                const SizedBox(width: 4),
                 InitialsAvatar(user?.name ?? '', size: 44, imageUrl: user?.image),
               ]),
               const SizedBox(height: 20),

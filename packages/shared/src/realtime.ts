@@ -14,6 +14,8 @@ export const SOCKET_EVENTS = {
   NOTIFICATION: 'notification:new',
   ORDER_UPDATED: 'order:updated',
   ROOM_STATS: 'admin:room-stats',
+  CONVERSATION_MESSAGE: 'conversation:message',
+  CONVERSATION_MESSAGE_DELETED: 'conversation:message-deleted',
 } as const;
 
 export interface ChatMessageEvent {
@@ -59,4 +61,25 @@ export interface OrderUpdatedEvent {
   orderId: string;
   reference: string;
   status: string;
+}
+
+/** A message of a class or private chat (`GET /conversations/:id/messages` items). Deleted ones have `body: ''`. */
+export interface ConversationMessageDto {
+  id: string;
+  sender: { id: string; name: string; image: string | null; role: 'STUDENT' | 'TEACHER' | 'ADMIN' };
+  body: string;
+  createdAt: string;
+  deleted: boolean;
+}
+
+/** `conversation:message`, sent to every member except the sender. */
+export interface ConversationMessageEvent {
+  conversationId: string;
+  message: ConversationMessageDto;
+}
+
+/** `conversation:message-deleted` */
+export interface ConversationMessageDeletedEvent {
+  conversationId: string;
+  messageId: string;
 }
