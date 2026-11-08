@@ -21,10 +21,10 @@ void main() {
 
     test('display currencies are rounded whole units with ≈', () {
       // 880 AED × 1.0211 = 898.57 → ≈ SAR 899 (the board's example)
-      expect(Money.convertFromAed(88000, DisplayCurrency.sar, 1.0211), 899);
-      expect(Money.display(88000, DisplayCurrency.sar, 1.0211), '≈ SAR 899');
-      expect(Money.display(502832, DisplayCurrency.usd, 0.2723), '≈ USD 1,369');
-      expect(Money.display(502832, DisplayCurrency.qar, 0.9912), '≈ QAR 4,984');
+      expect(Money.convertFromAed(88000, DisplayCurrency('SAR'), 1.0211), 899);
+      expect(Money.display(88000, DisplayCurrency('SAR'), 1.0211), '≈ SAR 899');
+      expect(Money.display(502832, DisplayCurrency('USD'), 0.2723), '≈ USD 1,369');
+      expect(Money.display(502832, DisplayCurrency('QAR'), 0.9912), '≈ QAR 4,984');
     });
 
     test('AED display ignores the rate', () {
@@ -33,7 +33,7 @@ void main() {
 
     test('Arabic-Indic digits are applied when requested', () {
       expect(Money.aed(88000, arabicDigits: true), 'AED ٨٨٠.٠٠');
-      expect(Money.display(88000, DisplayCurrency.sar, 1.0211, arabicDigits: true), '≈ SAR ٨٩٩');
+      expect(Money.display(88000, DisplayCurrency('SAR'), 1.0211, arabicDigits: true), '≈ SAR ٨٩٩');
     });
 
     test('percentOf rounds to the nearest fil', () {
@@ -54,15 +54,15 @@ void main() {
         'updatedAt': '2026-11-01T10:00:00Z',
       });
       expect(fx.rateFor(DisplayCurrency.aed), 1);
-      expect(fx.rateFor(DisplayCurrency.sar), 1.0211);
-      expect(fx.rateFor(DisplayCurrency.qar), 0.9912);
-      expect(fx.has(DisplayCurrency.usd), isTrue);
+      expect(fx.rateFor(DisplayCurrency('SAR')), 1.0211);
+      expect(fx.rateFor(DisplayCurrency('QAR')), 0.9912);
+      expect(fx.has(DisplayCurrency('USD')), isTrue);
       expect(fx.updatedAt, isNotNull);
     });
 
     test('fallback only knows AED', () {
-      expect(FxRates.fallback.has(DisplayCurrency.sar), isFalse);
-      expect(FxRates.fallback.rateFor(DisplayCurrency.sar), 1);
+      expect(FxRates.fallback.has(DisplayCurrency('SAR')), isFalse);
+      expect(FxRates.fallback.rateFor(DisplayCurrency('SAR')), 1);
     });
   });
 
@@ -79,7 +79,7 @@ void main() {
       const ar = Fmt(locale: AppLocale.ar, arabicDigits: true);
       expect(en.aed(88000), 'AED 880.00');
       expect(ar.aed(88000), 'AED ٨٨٠.٠٠');
-      expect(en.money(88000, DisplayCurrency.sar, 1.0211), '≈ SAR 899');
+      expect(en.money(88000, DisplayCurrency('SAR'), 1.0211), '≈ SAR 899');
     });
 
     test('time formatting is 24h', () {

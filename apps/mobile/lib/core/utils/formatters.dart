@@ -128,7 +128,8 @@ class Fmt {
       '$batchCode · S${sessionNumber.toString().padLeft(2, '0')}';
 
   String aed(int fils) => Money.aed(fils, arabicDigits: arabicDigits);
-  String money(int fils, DisplayCurrency c, double rate) => Money.display(fils, c, rate, arabicDigits: arabicDigits);
+  String money(int fils, DisplayCurrency c, double rate, {int? decimals}) =>
+      Money.display(fils, c, rate, arabicDigits: arabicDigits, decimals: decimals);
   String n(Object v) => '$v'.digits(arabicDigits);
 
   /// Queue position: `3rd` in English, plain (locale digits) in Arabic.

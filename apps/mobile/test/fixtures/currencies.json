@@ -1,0 +1,8 @@
+{
+  "base": "AED",
+  "items": [
+    { "code": "AED", "nameEn": "UAE dirham", "nameAr": "درهم إماراتي", "symbol": "AED", "decimals": 2, "ratePerAed": 1, "sortOrder": 0 },
+    { "code": "SAR", "nameEn": "Saudi riyal", "nameAr": "ريال سعودي", "symbol": "SAR", "decimals": 0, "ratePerAed": 1.0211, "sortOrder": 1 },
+    { "code": "KWD", "nameEn": "Kuwaiti dinar", "nameAr": "دينار كويتي", "symbol": "KD", "decimals": 3, "ratePerAed": 0.0836, "sortOrder": 2 }
+  ]
+}

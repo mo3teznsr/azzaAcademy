@@ -11,6 +11,7 @@ import { loadConfig } from '../src/core/config';
 import type { Mailer, PushNotifier } from '../src/core/ports';
 import { addMinutes } from '../src/core/time';
 import { DemoReviewers } from '../src/modules/sessions/demo-reviewers';
+import { DEFAULT_CURRENCIES } from '../src/modules/currencies/currency.service';
 
 const PASSWORD = 'password123';
 const config = loadConfig();
@@ -413,7 +414,7 @@ async function main() {
   const nadia = others.at(-1)!; // the student with the VERIFYING transfer
   const b07Students = [sara, ...others.slice(0, 22)];
 
-  console.info('Seeding bank accounts, FX, coupons…');
+  console.info('Seeding bank accounts, currencies, coupons…');
   const banks = [
     { id: 'bank_enbd', bankName: 'Emirates NBD', swift: 'EBILAEAD', iban: 'AE070331234567890123456', branch: 'Dubai Mall', sortOrder: 0 },
     { id: 'bank_adcb', bankName: 'ADCB', swift: 'ADCBAEAA', iban: 'AE460030000123456789012', branch: 'Abu Dhabi Main', sortOrder: 1 },
@@ -423,8 +424,9 @@ async function main() {
     const data = { ...b, accountName: '[COMPANY LEGAL NAME]', currency: 'AED', active: true, instructions: 'Put your order reference (AZ-…) in the transfer notes.' };
     await db.bankAccount.upsert({ where: { id: b.id }, create: data, update: data });
   }
-  for (const [currency, ratePerAed] of Object.entries({ SAR: 1.0211, QAR: 0.9912, USD: 0.2723 })) {
-    await db.fxRate.upsert({ where: { currency }, create: { currency, ratePerAed, source: 'seed' }, update: {} });
+  // Display currencies: insert the defaults when missing; never overwrite what an admin changed (idempotent).
+  for (const c of DEFAULT_CURRENCIES) {
+    await db.currency.upsert({ where: { code: c.code }, create: { ...c, enabled: true }, update: {} });
   }
   await db.coupon.upsert({ where: { code: 'WELCOME10' }, create: { code: 'WELCOME10', percentOff: 10, maxRedemptions: 100 }, update: {} });
   await db.coupon.upsert({ where: { code: 'RAMADAN100' }, create: { code: 'RAMADAN100', amountOffFils: 10_000, expiresOn: new Date('2027-03-31T00:00:00Z') }, update: {} });

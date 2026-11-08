@@ -1,5 +1,6 @@
 'use client';
 
+import { WhatsAppButton } from '@/components/brand/whatsapp-button';
 import Link from 'next/link';
 import { BookOpen, CalendarDays, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ export function StudentClassPage({ batchId, initialTab }: { batchId: string; ini
               <BookOpen aria-hidden /> {t.comms.classPage.lessons}
             </Link>
           </Button>
+          <WhatsAppButton course={course} batchCode={b.code} />
           <Button asChild variant="outline">
             <Link href={`/schedule?batch=${b.id}`}>
               <CalendarDays aria-hidden /> {t.comms.classPage.schedule}

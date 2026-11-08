@@ -1,6 +1,8 @@
 /** Central TanStack Query keys — one place to invalidate from. */
 export const qk = {
-  fxRates: ['fx-rates'] as const,
+  currencies: ['currencies'] as const,
+  adminCurrencies: ['admin', 'currencies'] as const,
+  siteSettings: ['site-settings'] as const,
   liveNow: ['stats', 'live'] as const,
   calendar: ['me', 'calendar'] as const,
   me: ['me'] as const,

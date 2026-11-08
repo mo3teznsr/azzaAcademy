@@ -10,6 +10,7 @@ import '../../../core/network/error_text.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/phone_field.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
@@ -222,7 +223,7 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
   late final _bio = TextEditingController(text: widget.rejected?.bio);
   late final _experience = TextEditingController(text: widget.rejected?.experience);
   late final _sample = TextEditingController(text: widget.rejected?.sampleUrl);
-  late final _phone = TextEditingController(text: widget.rejected?.phone);
+  late final _phone = PhoneController(initialE164: widget.rejected?.phone);
   late final Set<String> _categories = {...?widget.rejected?.categories};
   late final Set<SessionLanguage> _languages = {...?widget.rejected?.languages};
   bool _busy = false;
@@ -230,9 +231,10 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
 
   @override
   void dispose() {
-    for (final c in [_headline, _bio, _experience, _sample, _phone]) {
+    for (final c in [_headline, _bio, _experience, _sample]) {
       c.dispose();
     }
+    _phone.dispose();
     super.dispose();
   }
 
@@ -250,7 +252,7 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
             languages: SessionLanguage.values.where(_languages.contains).toList(),
             experience: _experience.text,
             sampleUrl: _sample.text,
-            phone: _phone.text,
+            phone: _phone.e164OrNull,
           ));
       ref.invalidate(myInstructorApplicationProvider);
       if (mounted) showToast(context, l.applySent);
@@ -404,11 +406,7 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
                   autofill: const [AutofillHints.url],
                   validator: (v) => (v ?? '').trim().isEmpty || isHttpsUrl(v!) ? null : l.applyUrlInvalid),
               const SizedBox(height: 12),
-              text(_phone, l.applyPhone, Icons.phone_outlined,
-                  key: const Key('apply-phone'),
-                  hint: l.applyPhoneHint,
-                  keyboard: TextInputType.phone,
-                  autofill: const [AutofillHints.telephoneNumber]),
+              PhoneField(key: const Key('apply-phone'), controller: _phone, label: l.applyPhone),
             ]),
           ),
           const SizedBox(height: 20),

@@ -13,7 +13,11 @@ import type {
   Coupon,
   CouponUsage,
   Course,
-  FxRates,
+  AdminCurrency,
+  ContactSettingsInput,
+  CurrencyInput,
+  CurrencyPatch,
+  RuleSettingsInput,
   Items,
   LiveRooms,
   Order,
@@ -34,6 +38,9 @@ export const adminApi = {
   /** Inclusive `YYYY-MM-DD` days in Asia/Dubai; defaults to the last 30 days. */
   reports: (p: { from?: string; to?: string } = {}) => http.get<AdminReport>('/api/v1/admin/reports', { ...p }),
   settings: () => http.get<PlatformSettings>('/api/v1/admin/settings'),
+  /** `null` on a rule goes back to its env default. A VAT change re-syncs recorded-course Stripe prices. */
+  saveRules: (input: RuleSettingsInput) => http.put<PlatformSettings>('/api/v1/admin/settings/rules', input),
+  saveContact: (input: ContactSettingsInput) => http.put<PlatformSettings>('/api/v1/admin/settings/contact', input),
   /** Default teacher cuts (percent) for live and recorded courses. */
   cuts: () => http.get<PlatformCuts>('/api/v1/admin/settings/cuts'),
   saveCuts: (input: CutSettingsInput) => http.put<PlatformCuts>('/api/v1/admin/settings/cuts', input),
@@ -56,7 +63,10 @@ export const adminApi = {
   createBankAccount: (input: BankAccountInput) => http.post<BankAccount>('/api/v1/admin/bank-accounts', input),
   updateBankAccount: (id: string, input: Partial<BankAccountInput>) => http.patch<BankAccount>(`/api/v1/admin/bank-accounts/${id}`, input),
 
-  setFxRate: (input: { currency: 'SAR' | 'QAR' | 'USD'; ratePerAed: number }) => http.put<FxRates>('/api/v1/admin/fx-rates', input),
+  currencies: () => items(http.get<Items<AdminCurrency>>('/api/v1/admin/currencies')),
+  createCurrency: (input: CurrencyInput) => http.post<AdminCurrency>('/api/v1/admin/currencies', input),
+  updateCurrency: (code: string, input: CurrencyPatch) => http.patch<AdminCurrency>(`/api/v1/admin/currencies/${code}`, input),
+  deleteCurrency: (code: string) => http.del<unknown>(`/api/v1/admin/currencies/${code}`),
 
   coupons: () => items(http.get<Items<Coupon>>('/api/v1/admin/coupons')),
   createCoupon: (input: CouponInput) => http.post<Coupon>('/api/v1/admin/coupons', input),

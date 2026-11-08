@@ -10,6 +10,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
+import '../../../core/widgets/whatsapp_button.dart';
 import '../../../router/routes.dart';
 import '../../announcements/presentation/class_hub.dart';
 import '../../auth/presentation/auth_controller.dart';
@@ -70,7 +71,13 @@ class BatchScheduleScreen extends ConsumerWidget {
                   child: Text(f.n(l.joiningLate(ran, left)), style: t.bodyMedium),
                 ),
               ],
-              if (enrolled) ...[const SizedBox(height: 4), ClassHub(batchId: b.id)],
+              if (enrolled) ...[
+                const SizedBox(height: 4),
+                ClassHub(batchId: b.id, courseTitle: b.course?.title(locale), batchCode: b.code),
+              ] else if (b.course != null) ...[
+                const SizedBox(height: 16),
+                WhatsAppButton(message: l.whatsappBatchMessage(b.course!.title(locale), b.code)),
+              ],
               const SizedBox(height: 16),
               if (b.sessions.isEmpty)
                 EmptyState(title: l.emptyGeneric)

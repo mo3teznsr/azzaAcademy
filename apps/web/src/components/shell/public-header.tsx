@@ -1,5 +1,6 @@
 'use client';
 
+import { ContactDetails } from '@/components/brand/contact-details';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo, LogoMark } from '@/components/brand/signal-mark';
@@ -91,6 +92,7 @@ export function PublicFooter() {
           <LogoMark className="h-[clamp(64px,9vw,120px)] self-start text-foreground light:text-ink" />
           <span className="sr-only">عازة Azza</span>
           <p className="max-w-xs text-sm text-muted-foreground">{t.landing.footerTagline}</p>
+          <ContactDetails />
         </div>
         {cols.map((c) => (
           <nav key={c.title} aria-label={c.title} className="flex flex-col gap-1">

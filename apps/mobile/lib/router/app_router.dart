@@ -12,6 +12,7 @@ import '../features/admin/presentation/admin_courses_screen.dart';
 import '../features/admin/presentation/admin_orders_screen.dart';
 import '../features/admin/presentation/admin_people_screen.dart';
 import '../features/admin/presentation/admin_subscriptions_screen.dart';
+import '../features/admin/presentation/admin_currencies_screen.dart';
 import '../features/admin/presentation/bank_accounts_screen.dart';
 import '../features/admin/presentation/categories_screen.dart';
 import '../features/admin/presentation/coupons_screen.dart';

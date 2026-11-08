@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/money/money.dart';
@@ -38,7 +37,7 @@ class EarningsScreen extends ConsumerWidget {
         value: earnings,
         onRetry: () => ref.invalidate(earningsProvider),
         data: (e) {
-          final others = [DisplayCurrency.sar, DisplayCurrency.qar, DisplayCurrency.usd].where(fx.has);
+          final others = fx.others;
           return RefreshList(
             onRefresh: () async => ref.invalidate(earningsProvider),
             children: [
@@ -57,7 +56,7 @@ class EarningsScreen extends ConsumerWidget {
                   if (others.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Text(
-                      '${others.map((c) => f.money(e.earnedThisMonthFils, c, fx.rateFor(c))).join(' · ')}. ${l.displayOnly}',
+                      '${others.map((c) => f.money(e.earnedThisMonthFils, c, fx.rateFor(c), decimals: fx.decimalsFor(c))).join(' · ')}. ${l.displayOnly}',
                       style: const TextStyle(color: AzzaColors.ink),
                     ),
                   ],

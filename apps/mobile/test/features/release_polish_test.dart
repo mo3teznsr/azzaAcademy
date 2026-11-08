@@ -156,17 +156,18 @@ void main() {
     expect([for (final f in fields) f.autofillHints], [
       [AutofillHints.name],
       [AutofillHints.email],
+      [AutofillHints.telephoneNumber],
       [AutofillHints.newPassword],
     ]);
-    expect([for (final f in fields) f.textInputAction], [TextInputAction.next, TextInputAction.next, TextInputAction.done]);
+    expect([for (final f in fields) f.textInputAction], [TextInputAction.next, TextInputAction.next, TextInputAction.next, TextInputAction.done]);
     // Input groups without placeholders.
-    expect([for (final f in fields) f.decoration?.hintText], [null, null, null]);
+    expect([for (final f in fields) f.decoration?.hintText], [null, null, null, null]);
 
     // Quiet until the first submit; then each edit re-checks its field.
     final form = find.byType(Form);
     expect(tester.widget<Form>(form).autovalidateMode, AutovalidateMode.disabled);
     final submit = find.widgetWithText(FilledButton, 'Create account');
-    await tester.ensureVisible(submit);
+    await tester.scrollUntilVisible(submit, 200, scrollable: find.byType(Scrollable).first);
     await settle(tester);
     await tester.tap(submit);
     await settle(tester);

@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { FileStorage, StoredFile } from '../../core/ports';
 import { newStorageKey, storageKeyContentType, storageKeyFromUrl } from './storage-key';
@@ -34,6 +34,11 @@ export class LocalDiskStorage implements FileStorage {
   keyFromUrl(url: string) {
     return storageKeyFromUrl(url, this.publicBaseUrl);
   }
+
+  async delete(key: string) {
+    if (!storageKeyContentType(key)) return;
+    await rm(join(this.root, key), { force: true });
+  }
 }
 
 /** In-memory adapter for tests. */
@@ -50,5 +55,8 @@ export class MemoryFileStorage implements FileStorage {
   }
   keyFromUrl(url: string) {
     return storageKeyFromUrl(url, 'http://files.test');
+  }
+  async delete(key: string) {
+    this.files.delete(key);
   }
 }

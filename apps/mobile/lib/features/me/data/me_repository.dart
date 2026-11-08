@@ -11,7 +11,7 @@ import '../domain/me_models.dart';
 /// `/api/v1/me/*`.
 abstract class MeRepository {
   Future<AppUser> me();
-  Future<AppUser> updateProfile({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency});
+  Future<AppUser> updateProfile({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency, String? phone});
   Future<void> registerDevice(String token, DevicePlatform platform);
   Future<void> unregisterDevice(String token);
   Future<List<SessionSummary>> schedule({required DateTime from, required DateTime to});
@@ -37,12 +37,13 @@ class DioMeRepository extends DioRepository implements MeRepository {
   }
 
   @override
-  Future<AppUser> updateProfile({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency}) async {
+  Future<AppUser> updateProfile({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency, String? phone}) async {
     final j = await patchJson('/api/v1/me', {
       'name': ?name,
       'locale': ?locale?.wire,
       'timezone': ?timezone,
       'displayCurrency': ?displayCurrency?.wire,
+      'phone': ?phone,
     });
     return AppUser.fromJson(j['user'] is Map ? asMap(j['user']) : j);
   }

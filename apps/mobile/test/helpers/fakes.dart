@@ -56,8 +56,13 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<AppUser> signIn({required String email, required String password}) async => user!;
 
+  final List<String> signUpPhones = [];
+
   @override
-  Future<AppUser> signUp({required String name, required String email, required String password}) async => user!;
+  Future<AppUser> signUp({required String name, required String email, required String password, required String phone}) async {
+    signUpPhones.add(phone);
+    return user!;
+  }
 
   @override
   Future<void> signOut() async => user = null;
@@ -120,7 +125,7 @@ class FakeMeRepository implements MeRepository {
   Future<void> unregisterDevice(String token) async {}
 
   @override
-  Future<AppUser> updateProfile({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency}) async => student;
+  Future<AppUser> updateProfile({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency, String? phone}) async => student;
 }
 
 class FakeLearnRepository implements LearnRepository {
@@ -259,7 +264,7 @@ class FakeCheckoutRepository implements CheckoutRepository {
   @override
   Future<CheckoutResult> checkout(CheckoutRequest request) async => CheckoutResult(order: current);
   @override
-  Future<FxRates> fxRates() async => const FxRates(rates: {DisplayCurrency.aed: 1, DisplayCurrency.sar: 1.0211});
+  Future<FxRates> fxRates() async => const FxRates(rates: {DisplayCurrency.aed: 1, DisplayCurrency('SAR'): 1.0211});
   @override
   Future<List<Order>> myOrders() async => [current];
   @override

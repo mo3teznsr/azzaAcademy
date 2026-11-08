@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Check, ChevronRight, Lock, PlayCircle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WhatsAppButton } from '@/components/brand/whatsapp-button';
 import { BatchCard } from '@/components/brand/batch-card';
 import { CourseCover } from '@/components/brand/course-cover';
 import { CourseIntroVideo } from '@/components/brand/course-intro-video';
@@ -156,6 +157,8 @@ function CourseView({ course }: { course: Course }) {
             {recorded && !hasPlan && course.previewLessonId && <FreeLessonLink slug={course.slug} />}
             <SaveToggle course={course} labelled />
             <ShareButton title={title.text} slug={course.slug} />
+            {/* Live courses ask about a specific class from the seat panel instead. */}
+            {(recorded || !batches.data?.items.length) && <WhatsAppButton course={title.text} />}
           </div>
           {teacher && (
             <div className="flex items-center gap-3">
@@ -300,7 +303,7 @@ function CourseView({ course }: { course: Course }) {
             )}
             {selectedId && <BatchSchedule batchId={selectedId} tz={tz} />}
           </div>
-          {selectedId && <SeatPanel batchId={selectedId} tz={tz} />}
+          {selectedId && <SeatPanel batchId={selectedId} tz={tz} courseTitle={title.text} />}
         </section>
       )}
 
@@ -439,7 +442,7 @@ function BatchSchedule({ batchId, tz }: { batchId: string; tz: string }) {
   );
 }
 
-function SeatPanel({ batchId, tz }: { batchId: string; tz: string }) {
+function SeatPanel({ batchId, tz, courseTitle }: { batchId: string; tz: string; courseTitle: string }) {
   const { t, f, fill } = useI18n();
   const { isSignedIn, user } = useAuth();
   const q = useBatch(batchId);
@@ -526,6 +529,7 @@ function SeatPanel({ batchId, tz }: { batchId: string; tz: string }) {
           {t.checkout.notOpen}
         </Button>
       )}
+      <WhatsAppButton course={courseTitle} batchCode={b.code} />
       <p className="text-xs text-stone-2">{t.course.switchNote}</p>
     </aside>
   );

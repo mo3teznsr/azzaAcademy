@@ -9,6 +9,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
+import '../../../core/widgets/whatsapp_button.dart';
 import '../../../router/routes.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
@@ -79,6 +80,8 @@ class _BatchPickerScreenState extends ConsumerState<BatchPickerScreen> {
                 ),
                 const SizedBox(height: 12),
               ],
+              if (course != null && list.where((b) => b.id == _selected).isNotEmpty)
+                WhatsAppButton(message: l.whatsappBatchMessage(course.title(locale), list.firstWhere((b) => b.id == _selected).code)),
             ],
           );
         },

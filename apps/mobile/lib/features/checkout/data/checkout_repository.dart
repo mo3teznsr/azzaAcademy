@@ -25,7 +25,7 @@ class DioCheckoutRepository extends DioRepository implements CheckoutRepository 
   DioCheckoutRepository(super.dio);
 
   @override
-  Future<FxRates> fxRates() async => FxRates.fromJson(await getJson('/api/v1/fx-rates'));
+  Future<FxRates> fxRates() async => FxRates.fromJson(await getJson('/api/v1/currencies'));
 
   @override
   Future<Quote> quote(CheckoutRequest request) async =>

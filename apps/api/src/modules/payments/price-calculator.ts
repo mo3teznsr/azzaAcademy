@@ -18,9 +18,17 @@ export interface Quote {
   display: { currency: DisplayCurrency; amount: number; rate: number };
 }
 
+/** A fixed VAT percent, or a getter read at every quote (the admin-editable rule; see SiteSettingsService.ruleSnapshot). */
+export type VatSource = number | (() => number);
+
 /** Pure pricing in fils: base price → coupon → VAT. Display currency is informational only. */
 export class PriceCalculator {
-  constructor(private readonly vatPercent: number) {}
+  constructor(private readonly vat: VatSource) {}
+
+  /** The VAT percent in effect now. */
+  get vatPercent(): number {
+    return typeof this.vat === 'function' ? this.vat() : this.vat;
+  }
 
   /** A batch can override its course's price. */
   static basePrice(batchPriceFils: number | null, coursePriceFils: number): number {
@@ -34,12 +42,14 @@ export class PriceCalculator {
 
   /** Splits a VAT-inclusive total back into its pre-VAT part and VAT, the inverse of `quote` (exact whenever the total came from `quote`). */
   splitInclusive(totalFils: number): { subtotalFils: number; vatFils: number } {
-    const guess = Math.round((totalFils * 100) / (100 + this.vatPercent));
-    const subtotalFils = [guess, guess - 1, guess + 1].find((s) => s >= 0 && this.inclusive(s) === totalFils) ?? guess;
+    const vat = this.vatPercent;
+    const fixed = new PriceCalculator(vat); // one VAT value for the whole split
+    const guess = Math.round((totalFils * 100) / (100 + vat));
+    const subtotalFils = [guess, guess - 1, guess + 1].find((s) => s >= 0 && fixed.inclusive(s) === totalFils) ?? guess;
     return { subtotalFils, vatFils: totalFils - subtotalFils };
   }
 
-  quote(args: { priceFils: number; coupon?: CouponTerms | null; displayCurrency?: DisplayCurrency; fxRate?: number }): Quote {
+  quote(args: { priceFils: number; coupon?: CouponTerms | null; displayCurrency?: DisplayCurrency; fxRate?: number; displayDecimals?: number }): Quote {
     const subtotalFils = Math.max(0, Math.round(args.priceFils));
     const c = args.coupon;
     let discountFils = 0;
@@ -59,7 +69,7 @@ export class PriceCalculator {
       vatFils,
       totalFils,
       couponCode: c ? c.code : null,
-      display: { currency, amount: convertFromAed(totalFils, currency, rate), rate },
+      display: { currency, amount: convertFromAed(totalFils, currency, rate, args.displayDecimals), rate },
     };
   }
 }

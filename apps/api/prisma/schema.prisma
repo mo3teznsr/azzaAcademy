@@ -535,10 +535,18 @@ model BankAccount {
   subscriptionPayments SubscriptionPayment[]
 }
 
-model FxRate {
-  currency   String   @id
+/// Display currencies (admin-managed). AED is the base: always present, enabled, rate 1. Display only — charges are always AED.
+model Currency {
+  /// ISO 4217, uppercase.
+  code       String   @id
+  nameEn     String
+  nameAr     String
+  symbol     String?
+  decimals   Int      @default(2)
+  /// Units of this currency per 1 AED.
   ratePerAed Decimal  @db.Decimal(12, 6)
-  source     String   @default("manual")
+  enabled    Boolean  @default(true)
+  sortOrder  Int      @default(0)
   updatedAt  DateTime @updatedAt
 }
 
@@ -836,6 +844,8 @@ model Category {
   nameAr    String?
   /// lucide icon name (web) — mobile maps it to a Material icon.
   icon      String?
+  /// Uploaded tile image (FileStorage URL); the icon is the fallback.
+  imageUrl  String?
   order     Int      @default(0)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -963,6 +973,19 @@ model PlatformSettings {
   /// Default teacher cuts, in percent. A course's own `teacherCutPercent` wins when set.
   liveCutPercent     Int
   recordedCutPercent Int
+  /// Business rules; null = the env default (VAT_PERCENT, EARNING_HOLD_DAYS, MIN_PAYOUT_AED, BANK_TRANSFER_HOLD_HOURS).
+  vatPercent            Int?
+  earningHoldDays       Int?
+  minPayoutAed          Int?
+  bankTransferHoldHours Int?
+  /// Public contact details (footer, help, WhatsApp buttons). whatsappNumber: digits with country code, no `+`.
+  contactEmail   String?
+  contactPhone   String?
+  whatsappNumber String?
+  addressEn      String?
+  addressAr      String?
+  /// { instagram?, x?, facebook?, linkedin?, youtube?, tiktok?, snapchat? } — https URLs.
+  socials        Json     @default("{}")
   updatedAt          DateTime @updatedAt
 }
 

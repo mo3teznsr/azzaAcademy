@@ -107,7 +107,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final l = context.l10n;
     final f = ref.watch(fmtProvider);
     final price = ref.watch(priceFormatProvider);
-    final currency = ref.watch(displayCurrencyProvider);
     final fx = ref.watch(fxRatesProvider).value ?? FxRates.fallback;
     final key = (batchId: widget.batchId, coupon: _appliedCoupon, currency: price.shown);
     final quote = ref.watch(quoteProvider(key));
@@ -128,15 +127,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           children: [
             _BatchSummary(batch: b),
             SectionHeader(l.showPricesIn),
-            Row(children: [
-              for (final c in DisplayCurrency.values)
-                Expanded(
+            Wrap(spacing: 6, runSpacing: 6, children: [
+              for (final c in fx.currencies)
+                SizedBox(
+                  width: 84,
                   child: Padding(
-                    padding: const EdgeInsetsDirectional.only(end: 6),
+                    padding: EdgeInsets.zero,
                     child: _CurrencyChip(
                       code: c.wire,
                       sub: c.isBase ? '× 1' : (fx.has(c) ? '× ${f.n(fx.rateFor(c).toStringAsFixed(2))}' : '—'),
-                      selected: c == currency,
+                      selected: c == price.shown,
                       onTap: fx.has(c) ? () => ref.read(displayCurrencyProvider.notifier).set(c) : null,
                     ),
                   ),

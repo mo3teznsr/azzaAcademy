@@ -13,7 +13,9 @@ import '../../../core/theme/typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/cover_scroll_view.dart';
 import '../../../core/widgets/price.dart';
+import '../../../core/site/site_settings.dart';
 import '../../../core/widgets/ui.dart';
+import '../../../core/widgets/whatsapp_button.dart';
 import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/guest_gate.dart';
@@ -86,6 +88,11 @@ class CourseDetailScreen extends ConsumerWidget {
                     DisplayText(c.title(locale), size: 34, maxLines: 3),
                     if (c.ratingCount > 0) ...[const SizedBox(height: 6), RatingLine(avg: c.ratingAvg, count: c.ratingCount)],
                     const SizedBox(height: 14),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: WhatsAppButton(expand: false, message: l.whatsappCourseMessage(c.title(locale))),
+                    ),
+                    if (ref.watch(siteSettingsProvider).value?.whatsappNumber != null) const SizedBox(height: 14),
                     if (c.introVideoUrl != null) ...[
                       _IntroVideoCard(url: ref.read(appConfigProvider).resolveMediaUrl(c.introVideoUrl)!),
                       const SizedBox(height: 14),

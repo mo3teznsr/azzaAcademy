@@ -58,6 +58,10 @@ extension AppExceptionText on AppException {
       'START_IN_PAST' => l.errStartInPast,
       'BATCH_CLOSED' => l.errBatchClosed,
       'CAPACITY_TOO_LOW' => l.errCapacityTooLow,
+      'PHONE_REQUIRED' => l.phoneRequired,
+      'PHONE_INVALID' => l.errPhoneInvalid,
+      'CURRENCY_UNAVAILABLE' => l.errCurrencyUnavailable,
+      'BASE_CURRENCY_LOCKED' => l.errBaseCurrencyLocked,
       _ when (statusCode ?? 0) >= 500 || code.startsWith('HTTP_5') => l.errServer,
       _ => null,
     };

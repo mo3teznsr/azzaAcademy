@@ -111,7 +111,7 @@ describe('course reviews', () => {
 
 describe('categories', () => {
   class InMemoryCategories implements CategoryRepository {
-    rows: CategoryRecord[] = [{ slug: 'design', nameEn: 'Design', nameAr: 'تصميم', icon: 'pen-tool', order: 0, active: true }];
+    rows: CategoryRecord[] = [{ slug: 'design', nameEn: 'Design', nameAr: 'تصميم', icon: 'pen-tool', imageUrl: null, order: 0, active: true }];
     used = new Set(['design']);
     async list(all: boolean) {
       return this.rows.filter((r) => all || r.active).map((r) => ({ ...r, courseCount: this.used.has(r.slug) ? 1 : 0 }));
@@ -120,7 +120,7 @@ describe('categories', () => {
       return this.rows.find((r) => r.slug === slug) ?? null;
     }
     async create(i: CategoryInput) {
-      this.rows.push({ ...i, nameAr: i.nameAr ?? null, icon: i.icon ?? null });
+      this.rows.push({ ...i, nameAr: i.nameAr ?? null, icon: i.icon ?? null, imageUrl: null });
       return this.rows.at(-1)!;
     }
     async update(slug: string, i: Partial<CategoryRecord>) {
@@ -128,6 +128,9 @@ describe('categories', () => {
     }
     async delete(slug: string) {
       this.rows = this.rows.filter((r) => r.slug !== slug);
+    }
+    async setImage(slug: string, imageUrl: string | null) {
+      return Object.assign((await this.find(slug))!, { imageUrl });
     }
     async courseCount(slug: string) {
       return this.used.has(slug) ? 1 : 0;

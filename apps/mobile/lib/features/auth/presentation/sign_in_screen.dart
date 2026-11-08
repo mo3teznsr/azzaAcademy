@@ -8,6 +8,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/providers.dart';
 import '../../../core/utils/links.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/phone_field.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../data/auth_repository.dart';
@@ -30,6 +31,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _phone = PhoneController();
   bool _busy = false;
   String? _error;
 
@@ -41,6 +43,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     _name.dispose();
     _email.dispose();
     _password.dispose();
+    _phone.dispose();
     super.dispose();
   }
 
@@ -54,7 +57,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     try {
       final auth = ref.read(authControllerProvider.notifier);
       if (widget.signUp) {
-        final user = await auth.signUp(_name.text, _email.text, _password.text);
+        final user = await auth.signUp(_name.text, _email.text, _password.text, _phone.e164);
         if (mounted && !user.emailVerified) {
           context.go(Uri(path: Routes.verifyEmail, queryParameters: {'email': user.email, 'from': ?widget.from}).toString());
         }
@@ -147,6 +150,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 decoration: fieldDecoration(label: l.email, icon: Icons.mail_outline_rounded, action: ClearFieldButton(controller: _email)),
                 validator: (v) => RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch((v ?? '').trim()) ? null : l.invalidEmail,
               ),
+              if (up) ...[
+                const SizedBox(height: 12),
+                PhoneField(key: const Key('signup-phone'), controller: _phone, required: true, textInputAction: TextInputAction.next),
+              ],
               const SizedBox(height: 12),
               PasswordField(
                 key: const Key('password'),

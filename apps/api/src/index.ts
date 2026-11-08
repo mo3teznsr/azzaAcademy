@@ -9,6 +9,8 @@ import { attachSocketServer } from './realtime/socket-server';
 const config = loadConfig();
 const container = createContainer(config);
 const app = createApp(container);
+// Business rules (VAT, holds, minimum payout) are DB-backed with env fallback; load them before taking traffic.
+await container.services.siteSettings.warm();
 
 const server = serve({ fetch: app.fetch, port: config.PORT }, (info) => {
   console.info(`Azza API on http://localhost:${info.port}`);

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { categoryInput } from '@azza/shared';
 import type { z } from 'zod';
-import { MoreHorizontal } from 'lucide-react';
+import { ImagePlus, MoreHorizontal, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { CategoryIcon } from '@/components/brand/category';
+import { CategoryIcon, CategoryThumb } from '@/components/brand/category';
 import { Chip } from '@/components/brand/status-chip';
 import { PageTitle, Panel } from '@/components/brand/section';
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states';
@@ -100,9 +100,7 @@ export function AdminCategories() {
                 <TableRow key={c.slug} className={cn(!c.active && 'text-muted-foreground')}>
                   <TableCell>
                     <span className="flex items-center gap-2.5">
-                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted">
-                        <CategoryIcon name={c.icon} />
-                      </span>
+                      <CategoryThumb category={c} className="size-10" />
                       <span>
                         <b className="block">{pick(c.nameEn, c.nameAr).text}</b>
                         <span className="text-[13px] text-muted-foreground" dir="ltr">
@@ -232,6 +230,7 @@ function CategoryDialog({ category, nextOrder, onClose, onSaved }: { category: C
           <F id="cat-order" label={t.admin.categories.order} hint={t.admin.categories.orderHint} error={err.order?.message}>
             <Input id="cat-order" type="number" min={0} {...form.register('order', { valueAsNumber: true })} />
           </F>
+          {existing && <CategoryImageField slug={existing.slug} category={existing} onChanged={onSaved} />}
           <label className="flex items-center justify-between gap-3 text-sm sm:col-span-2">
             {t.admin.categories.active}
             <Controller control={form.control} name="active" render={({ field }) => <Switch checked={!!field.value} onCheckedChange={field.onChange} />} />
@@ -247,6 +246,63 @@ function CategoryDialog({ category, nextOrder, onClose, onSaved }: { category: C
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Upload, replace or remove a category's picture; the icon above stays as the fallback. */
+function CategoryImageField({ slug, category, onChanged }: { slug: string; category: Category; onChanged: () => void }) {
+  const { t } = useI18n();
+  const ref = useRef<HTMLInputElement>(null);
+  const [current, setCurrent] = useState<Category>(category);
+  const done = (c: Category) => {
+    setCurrent(c);
+    onChanged();
+  };
+  const upload = useMutation({
+    mutationFn: (file: File) => categoriesApi.uploadImage(slug, file),
+    onSuccess: (c) => (toast.success(t.admin.categories.imageSaved), done(c)),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const remove = useMutation({
+    mutationFn: () => categoriesApi.removeImage(slug),
+    onSuccess: (c) => (toast.success(t.admin.categories.imageRemoved), done(c)),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const has = !!current.imageUrl;
+  const busy = upload.isPending || remove.isPending;
+  return (
+    <div className="flex flex-col gap-1.5 sm:col-span-2">
+      <span className="text-[13px] text-muted-foreground">{t.admin.categories.image}</span>
+      <div className="flex flex-wrap items-center gap-3">
+        <CategoryThumb category={current} className="size-20 rounded-xl" />
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => ref.current?.click()}>
+              <ImagePlus aria-hidden /> {upload.isPending ? t.common.saving : has ? t.admin.categories.imageReplace : t.admin.categories.imageUpload}
+            </Button>
+            {has && (
+              <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => remove.mutate()}>
+                <Trash2 aria-hidden /> {t.admin.categories.imageRemove}
+              </Button>
+            )}
+          </div>
+          <span className="text-[13px] text-muted-foreground">{t.admin.categories.imageHint}</span>
+        </div>
+        <input
+          ref={ref}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="sr-only"
+          aria-label={t.admin.categories.image}
+          tabIndex={-1}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file) upload.mutate(file);
+          }}
+        />
+      </div>
+    </div>
   );
 }
 

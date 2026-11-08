@@ -1,4 +1,4 @@
-import { GetObjectCommand, NoSuchKey, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, NoSuchKey, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import type { FileStorage, StoredFile } from '../../core/ports';
 import { newStorageKey, storageKeyContentType, storageKeyFromUrl } from './storage-key';
 
@@ -49,5 +49,10 @@ export class S3FileStorage implements FileStorage {
 
   keyFromUrl(url: string) {
     return storageKeyFromUrl(url, this.cdnBaseUrl);
+  }
+
+  async delete(key: string) {
+    if (!storageKeyContentType(key)) return;
+    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
   }
 }

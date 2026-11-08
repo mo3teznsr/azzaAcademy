@@ -4766,8 +4766,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adminHubBankSub => 'الحسابات التي يحوّل إليها الطلاب';
 
   @override
-  String get adminHubCurrenciesSub =>
-      'أسعار عرض الريال السعودي والقطري والدولار';
+  String get adminHubCurrenciesSub => 'إضافة العملات وتعديلها وترتيبها';
 
   @override
   String get adminHubCoursesSub => 'إنشاء وتعديل ونشر وإبراز';
@@ -4785,7 +4784,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adminHubLiveSub => 'كل الغرف المباشرة الآن';
 
   @override
-  String get adminHubSettingsSub => 'قواعد المنصّة والتكاملات';
+  String get adminHubSettingsSub => 'قواعد العمل والتواصل والتكاملات';
 
   @override
   String get adminHubNoSettings =>
@@ -4796,10 +4795,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminSettingsBody =>
-      'تأتي هذه القواعد من إعدادات الخادم، وتُغيَّر من هناك.';
+      'يمكن تعديل قواعد العمل وبيانات التواصل من هنا، أما المفاتيح والأسرار فتبقى في بيئة الخادم.';
 
   @override
-  String get adminRules => 'القواعد';
+  String get adminRules => 'قواعد العمل';
 
   @override
   String get adminIntegrations => 'التكاملات';
@@ -5109,7 +5108,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adminNameRequired => 'أضف اسمًا (حرفان على الأقل).';
 
   @override
-  String get adminEmailInvalid => 'أدخل بريدًا إلكترونيًّا صحيحًا.';
+  String get adminEmailInvalid => 'أدخل بريدًا إلكترونيًا صحيحًا.';
 
   @override
   String get adminRole => 'الدور';
@@ -5817,24 +5816,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminCurrenciesBody =>
-      'تتم المدفوعات بالدرهم دائمًا، وهذه الأسعار تغيّر فقط الأسعار التقريبية التي يراها الطلاب.';
-
-  @override
-  String adminRatesUpdated(String when) {
-    return 'آخر تحديث $when';
-  }
-
-  @override
-  String get adminFxRates => 'السعر مقابل 1 درهم';
+      'تتم المدفوعات بالدرهم دائمًا، وتغيّر العملات الأخرى فقط الأسعار التقريبية التي يراها الطلاب.';
 
   @override
   String adminRateLabel(String currency) {
     return '$currency لكل درهم';
-  }
-
-  @override
-  String adminRateHelper(String currency) {
-    return 'كم $currency يساوي درهم واحد';
   }
 
   @override
@@ -6544,4 +6530,256 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get transferBackToQueue => 'العودة إلى التحويلات';
+
+  @override
+  String get whatsappChat => 'تواصل عبر واتساب';
+
+  @override
+  String get whatsappOpenFailed => 'تعذّر فتح واتساب.';
+
+  @override
+  String whatsappCourseMessage(String course) {
+    return 'مرحبًا عازة، لديّ سؤال عن $course.';
+  }
+
+  @override
+  String whatsappBatchMessage(String course, String batchCode) {
+    return 'مرحبًا عازة، لديّ سؤال عن $course ($batchCode).';
+  }
+
+  @override
+  String get whatsappGeneralMessage => 'مرحبًا عازة، أحتاج إلى مساعدة.';
+
+  @override
+  String get contactUs => 'تواصل معنا';
+
+  @override
+  String get contactEmail => 'البريد الإلكتروني';
+
+  @override
+  String get contactPhone => 'الهاتف';
+
+  @override
+  String get contactAddress => 'العنوان';
+
+  @override
+  String get followUs => 'تابعنا';
+
+  @override
+  String get adminRulesBody =>
+      'تسري هذه القواعد على المنصّة كلها. اترك القاعدة على قيمتها الافتراضية لتتبع إعداد الخادم.';
+
+  @override
+  String adminRuleRange(int min, int max) {
+    return 'أدخل عددًا صحيحًا من $min إلى $max.';
+  }
+
+  @override
+  String get adminRulesSaved => 'تم حفظ القواعد.';
+
+  @override
+  String get adminRulesSave => 'حفظ القواعد';
+
+  @override
+  String adminRuleResetDone(String rule) {
+    return 'أُعيدت قاعدة $rule إلى قيمتها الافتراضية.';
+  }
+
+  @override
+  String adminRuleDefault(String value) {
+    return 'الافتراضي: $value';
+  }
+
+  @override
+  String get adminRuleReset => 'إعادة إلى الافتراضي';
+
+  @override
+  String get adminIntegrationsNote => 'تُضبط من بيئة الخادم.';
+
+  @override
+  String get adminContactTitle => 'التواصل والمنصّات الاجتماعية';
+
+  @override
+  String get adminContactBody =>
+      'تظهر في المساعدة والدعم وتستخدمها أزرار واتساب. اترك الحقل فارغًا لإخفائه.';
+
+  @override
+  String get adminContactSave => 'حفظ بيانات التواصل';
+
+  @override
+  String get adminContactSaved => 'تم حفظ بيانات التواصل.';
+
+  @override
+  String get adminWhatsappInvalid =>
+      'استخدم من 8 إلى 15 رقمًا مع رمز الدولة، دون + أو مسافات.';
+
+  @override
+  String get adminWhatsappHelper => 'أرقام مع رمز الدولة، مثل 971501234567';
+
+  @override
+  String get adminAddressEn => 'العنوان (بالإنجليزية)';
+
+  @override
+  String get adminAddressAr => 'العنوان (بالعربية)';
+
+  @override
+  String get adminAddressTooLong => 'اجعل العنوان أقل من 300 حرف.';
+
+  @override
+  String get adminSocialInvalid => 'أدخل رابطًا كاملًا يبدأ بـ https://';
+
+  @override
+  String get adminCurrencySaved => 'تم حفظ العملة.';
+
+  @override
+  String adminCurrencyDeleteTitle(String code) {
+    return 'حذف $code؟';
+  }
+
+  @override
+  String adminCurrencyDeleteBody(String code) {
+    return 'كل من اختار $code سيرى الأسعار بالدرهم بدلًا منها. تحتفظ الطلبات السابقة بالعملة والسعر الذي تمّت به.';
+  }
+
+  @override
+  String adminCurrencyDeleted(String code) {
+    return 'تم حذف $code.';
+  }
+
+  @override
+  String get adminNewCurrency => 'إضافة عملة';
+
+  @override
+  String adminEditCurrency(String code) {
+    return 'تعديل $code';
+  }
+
+  @override
+  String get adminNoCurrencies => 'لا توجد عملات بعد.';
+
+  @override
+  String get adminCurrencyBase => 'الأساسية';
+
+  @override
+  String get adminCurrencyBaseHint =>
+      'تتم المدفوعات والتحويلات بالدرهم دائمًا، وسعره 1 دائمًا.';
+
+  @override
+  String get adminCurrencyLocked => 'مفعّلة دائمًا';
+
+  @override
+  String get adminMoveUp => 'تحريك للأعلى';
+
+  @override
+  String get adminMoveDown => 'تحريك للأسفل';
+
+  @override
+  String get adminCurrencyCode => 'الرمز';
+
+  @override
+  String get adminCurrencyCodeHelper =>
+      'ثلاثة أحرف مثل EUR، ولا يمكن تغييره لاحقًا.';
+
+  @override
+  String get adminCurrencyCodeInvalid => 'أدخل رمز عملة من ثلاثة أحرف.';
+
+  @override
+  String get adminCurrencyDecimalsInvalid => 'الخانات العشرية من 0 إلى 3.';
+
+  @override
+  String get adminCurrencySymbol => 'الرمز المختصر (اختياري)';
+
+  @override
+  String get adminCurrencyDecimals => 'الخانات العشرية';
+
+  @override
+  String get adminCurrencyDecimalsHelper =>
+      'عدد الخانات العشرية في الأسعار، من 0 إلى 3';
+
+  @override
+  String get adminRatePerAed => 'السعر مقابل 1 درهم';
+
+  @override
+  String get adminRatePerAedHelper => 'كم وحدة يشتريها درهم واحد';
+
+  @override
+  String get adminCurrencyEnabled => 'إظهارها للطلاب';
+
+  @override
+  String get adminCategoryImageAdd => 'إضافة صورة';
+
+  @override
+  String get adminCategoryImageChange => 'تغيير الصورة';
+
+  @override
+  String get adminCategoryImageSaved => 'تم حفظ صورة التصنيف.';
+
+  @override
+  String get adminCategoryImageRemoved => 'تمت إزالة صورة التصنيف.';
+
+  @override
+  String get adminCategoryImageHint =>
+      'JPG أو PNG أو WebP. يراها الطلاب بدلًا من الأيقونة.';
+
+  @override
+  String get adminCategoryImageAfterSave => 'احفظ التصنيف أولًا ثم أضف صورة.';
+
+  @override
+  String get phoneLabel => 'رقم الجوال';
+
+  @override
+  String get phoneRequired => 'أدخل رقم جوالك';
+
+  @override
+  String phoneInvalidFor(String country) {
+    return 'يبدو أن الرقم غير صحيح لدولة $country';
+  }
+
+  @override
+  String get phoneSearchCountries => 'ابحث عن دولة أو رمز الاتصال';
+
+  @override
+  String get phoneCountryPicker => 'اختر الدولة';
+
+  @override
+  String get phoneNoCountries => 'لا توجد دولة مطابقة للبحث.';
+
+  @override
+  String adminCurrencyRateLine(String rate, String code) {
+    return '1 درهم = $rate $code';
+  }
+
+  @override
+  String adminCurrencyDecimalsCount(int decimals) {
+    String _temp0 = intl.Intl.pluralLogic(
+      decimals,
+      locale: localeName,
+      other: '$decimals خانة عشرية',
+      many: '$decimals خانة عشرية',
+      few: '$decimals خانات عشرية',
+      two: 'خانتان عشريتان',
+      one: 'خانة عشرية واحدة',
+      zero: 'بلا خانات عشرية',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminCurrencyNameArRequired => 'أدخل الاسم بالعربية.';
+
+  @override
+  String get adminCurrencyNameTooLong => 'يصل الاسم إلى 60 حرفًا.';
+
+  @override
+  String get adminCurrencySymbolTooLong => 'يصل الرمز المختصر إلى 8 أحرف.';
+
+  @override
+  String get errPhoneInvalid => 'يبدو أن رقم الهاتف غير صحيح.';
+
+  @override
+  String get errCurrencyUnavailable => 'هذه العملة لم تعد متاحة.';
+
+  @override
+  String get errBaseCurrencyLocked =>
+      'الدرهم هو العملة الأساسية ولا يمكن تغييرها بهذه الطريقة.';
 }

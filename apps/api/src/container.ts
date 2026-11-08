@@ -63,7 +63,7 @@ import { CheckoutService } from './modules/payments/checkout.service';
 import { EnrollmentLifecycle } from './modules/payments/enrollment-lifecycle';
 import { EnrollmentStateMachine } from './modules/payments/enrollment-state';
 import { FinanceAdminService } from './modules/payments/finance-admin.service';
-import { FxService, PrismaFxRepository } from './modules/payments/fx.service';
+import { FxService } from './modules/payments/fx.service';
 import { OrderQueries } from './modules/payments/order.queries';
 import { PrismaPaymentsRepository } from './modules/payments/payments.repository';
 import { PriceCalculator } from './modules/payments/price-calculator';
@@ -81,6 +81,9 @@ import { PrismaStatsRepository } from './modules/stats/stats.repository';
 import { StatsService } from './modules/stats/stats.service';
 import { PrismaSettingsRepository } from './modules/settings/settings.repository';
 import { SettingsService } from './modules/settings/settings.service';
+import { PrismaSiteSettingsRepository } from './modules/settings/site-settings.repository';
+import { SiteSettingsService } from './modules/settings/site-settings.service';
+import { CurrencyService, PrismaCurrencyRepository } from './modules/currencies/currency.service';
 import { EarningsCalculator } from './modules/payouts/earnings-calculator';
 import { PrismaPayoutRepository } from './modules/payouts/payout.repository';
 import { PayoutService } from './modules/payouts/payout.service';
@@ -113,12 +116,23 @@ export interface Adapters {
   storage: FileStorage;
   /** App Store Connect; null when no API key is configured (the sync is then off). */
   appStore?: AppStoreCatalog | null;
+  /** What the gateway's PriceCalculator reads the VAT from; createContainer points it at the site settings. */
+  vat?: VatHolder;
 }
 
 /** `apps/api/uploads/` regardless of the process cwd. */
 const DEFAULT_UPLOADS_DIR = fileURLToPath(new URL('../uploads/', import.meta.url));
 
-export function createAdapters(config: AppConfig): Adapters {
+/**
+ * The VAT percent in effect, read at every quote. Adapters are built before the container, so the gateway's
+ * PriceCalculator reads through this holder, which createContainer points at the admin-editable rule.
+ */
+export interface VatHolder {
+  current: () => number;
+}
+
+export function createAdapters(config: AppConfig, vat: VatHolder = { current: () => config.VAT_PERCENT }): Adapters {
+  const prices = new PriceCalculator(() => vat.current());
   return {
     db: createDb(config.DATABASE_URL),
     clock: systemClock,
@@ -138,8 +152,9 @@ export function createAdapters(config: AppConfig): Adapters {
         ? new LiveKitVideoProvider(config.LIVEKIT_URL, config.LIVEKIT_API_KEY, config.LIVEKIT_API_SECRET)
         : new DisabledVideoProvider(),
     payments: config.STRIPE_SECRET_KEY
-      ? new StripePaymentGateway(config.STRIPE_SECRET_KEY, config.STRIPE_WEBHOOK_SECRET, new PriceCalculator(config.VAT_PERCENT))
-      : new FakePaymentGateway(new PriceCalculator(config.VAT_PERCENT)),
+      ? new StripePaymentGateway(config.STRIPE_SECRET_KEY, config.STRIPE_WEBHOOK_SECRET, prices)
+      : new FakePaymentGateway(prices),
+    vat,
     apple: new AppStoreSignedDataVerifier({
       bundleId: config.APPLE_BUNDLE_ID,
       environments: config.appleEnvironments,
@@ -166,11 +181,12 @@ export function createAdapters(config: AppConfig): Adapters {
 export function createContainer(config: AppConfig, adapters: Adapters = createAdapters(config)) {
   const { db, clock, mailer, push, video, payments, realtime } = adapters;
   const invites = new InviteRegistry();
-  const auth = createAuth(db, config, mailer, invites);
+  const currencies = new CurrencyService(new PrismaCurrencyRepository(db));
+  const auth = createAuth(db, config, mailer, invites, currencies);
 
   // repositories
   const courseRepo = new PrismaCourseRepository(db);
-  const categories = new CategoryService(new PrismaCategoryRepository(db));
+  const categories = new CategoryService(new PrismaCategoryRepository(db), adapters.storage);
   const batchRepo = new PrismaBatchRepository(db);
   const notificationRepo = new PrismaNotificationRepository(db);
   const paymentsRepo = new PrismaPaymentsRepository(db);
@@ -185,9 +201,39 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const access = new BatchAccessPolicy(new PrismaBatchAccessRepository(db));
 
   const settings = new SettingsService(new PrismaSettingsRepository(db));
-  const payouts = new PayoutService(new PrismaPayoutRepository(db), new EarningsCalculator(), settings, notifications, clock, {
-    earningHoldDays: config.EARNING_HOLD_DAYS,
-    minPayoutFils: Math.round(config.MIN_PAYOUT_AED * 100),
+  // Business rules are admin-editable (env = fallback) and read at use time: everything below reads them through
+  // getters on this service's 30 s cache, which an admin update replaces at once.
+  let resyncRecordedPrices: () => Promise<unknown> = async () => null;
+  const siteSettings = new SiteSettingsService(new PrismaSiteSettingsRepository(db), {
+    defaults: {
+      vatPercent: config.VAT_PERCENT,
+      earningHoldDays: config.EARNING_HOLD_DAYS,
+      minPayoutAed: config.MIN_PAYOUT_AED,
+      bankTransferHoldHours: config.BANK_TRANSFER_HOLD_HOURS,
+    },
+    integrations: {
+      stripe: !!config.STRIPE_SECRET_KEY,
+      appleIap: config.appleEnvironments.length > 0,
+      livekit: !!(config.LIVEKIT_API_KEY && config.LIVEKIT_API_SECRET && config.LIVEKIT_URL),
+      smtp: !!config.SMTP_HOST,
+      push: !!(config.FIREBASE_PROJECT_ID && config.FIREBASE_CLIENT_EMAIL && config.FIREBASE_PRIVATE_KEY),
+      appStoreConnect: !!config.appStoreConnect,
+    },
+    cuts: () => settings.cuts(),
+    onVatChanged: () => resyncRecordedPrices(),
+  });
+  // Money paths await the effective rules (30 s TTL cache, refreshed before use once stale). The sync snapshot is only for
+  // code that cannot await (the PriceCalculator inside the payment gateway and the App Store sync); the
+  // `refresh-site-settings` job keeps it at most ~40 s old on every instance.
+  const rules = () => siteSettings.rules();
+  const vatPercentNow = async () => (await rules()).vatPercent;
+  const holdHours = async () => (await rules()).bankTransferHoldHours;
+  const vatSnapshot = () => siteSettings.ruleSnapshot().vatPercent;
+  if (adapters.vat) adapters.vat.current = vatSnapshot;
+  const prices = new PriceCalculator(vatSnapshot);
+  const payouts = new PayoutService(new PrismaPayoutRepository(db), new EarningsCalculator(), settings, notifications, clock, async () => {
+    const r = await rules();
+    return { earningHoldDays: r.earningHoldDays, minPayoutFils: Math.round(r.minPayoutAed * 100) };
   });
 
   const rescheduleRequestRepo = new PrismaRescheduleRequestRepository(db);
@@ -206,24 +252,25 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
 
   const machine = new EnrollmentStateMachine();
   const lifecycle = new EnrollmentLifecycle(paymentsRepo, machine, notifications, realtime, clock, config.WEB_URL);
-  const fx = new FxService(new PrismaFxRepository(db));
+  const fx = new FxService(currencies);
   const strategies = new CheckoutStrategyRegistry([
     new StripeCheckout(payments, config.WEB_URL),
-    new BankTransferCheckout(paymentsRepo, notifications, config.BANK_TRANSFER_HOLD_HOURS),
+    new BankTransferCheckout(paymentsRepo, notifications, holdHours),
     new AppleIapCheckout(),
   ]);
   const checkout = new CheckoutService(
     paymentsRepo,
     strategies,
-    new PriceCalculator(config.VAT_PERCENT),
+    prices,
     fx,
     machine,
     lifecycle,
     new ReferenceGenerator(),
     notifications,
+    vatPercentNow,
   );
 
-  const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, config.BANK_TRANSFER_HOLD_HOURS);
+  const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, holdHours);
 
   const subscriptionRepo = new PrismaSubscriptionRepository(db);
   const subscriptions = new SubscriptionService(
@@ -233,18 +280,18 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     payouts,
     clock,
     new ReferenceGenerator(),
-    new PriceCalculator(config.VAT_PERCENT),
+    prices,
     config.WEB_URL,
     undefined,
     adapters.apple,
     undefined,
-    { repo: subscriptionRepo, bankAccounts: paymentsRepo, holdHours: config.BANK_TRANSFER_HOLD_HOURS },
+    { repo: subscriptionRepo, bankAccounts: paymentsRepo, holdHours },
     subscriptionRepo,
   );
 
   const appStoreSyncer: AppStoreSyncer = adapters.appStore
     ? (() => {
-        const engine = new AppStoreSyncService(adapters.appStore, new PriceCalculator(config.VAT_PERCENT));
+        const engine = new AppStoreSyncService(adapters.appStore, prices);
         return {
           configured: true,
           syncSeatPrice: (priceFils) => engine.syncSeatPrice(priceFils),
@@ -254,12 +301,16 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     : new DisabledAppStoreSync();
   const appStoreSync = new AppStoreSyncCoordinator(appStoreSyncer, new PrismaAppleSyncStore(db), courseRepo, clock);
 
-  const meService = new MeService(new PrismaMeRepository(db), clock, lifecycle, adapters.storage);
+  const meService = new MeService(new PrismaMeRepository(db), clock, lifecycle, adapters.storage, currencies);
   const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator());
+  const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
+  resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
   const services = {
     settings,
+    siteSettings,
+    currencies,
     appStoreSync,
-    courses: new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync),
+    courses,
     categories,
     reviews: new ReviewService(new PrismaReviewRepository(db), notifications, () => clock.now()),
     savedCourses: new SavedCourseService(db),
@@ -308,26 +359,20 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     { name: 'expire-transfer-subscriptions', everyMs: 24 * 3_600_000, run: () => subscriptions.expireTransferSubscriptions() },
     // Sequential and slow on purpose (Apple rate limits); a no-op without an App Store Connect key. First run at 03:00 UAE (23:00 UTC), never at boot: a restart must not hit Apple.
     { name: 'sync-app-store-catalog', everyMs: 24 * 3_600_000, firstRunInMs: msUntilUtcHour(clock.now(), 23), run: () => appStoreSync.syncAppStoreCatalog() },
+    // Keeps the sync rule snapshot fresh (reloads once the 30 s cache is stale), so no instance prices with an old VAT for long.
+    {
+      name: 'refresh-site-settings',
+      everyMs: 10_000,
+      runAtBoot: false, // index.ts warms the cache before serving
+      run: async () => {
+        await siteSettings.rules();
+        return null; // quiet: the scheduler logs non-zero results
+      },
+    },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 
-  const platformSettings = {
-    rules: {
-      EARNING_HOLD_DAYS: config.EARNING_HOLD_DAYS,
-      MIN_PAYOUT_AED: config.MIN_PAYOUT_AED,
-      BANK_TRANSFER_HOLD_HOURS: config.BANK_TRANSFER_HOLD_HOURS,
-      VAT_PERCENT: config.VAT_PERCENT,
-    },
-    integrations: {
-      stripe: !!config.STRIPE_SECRET_KEY,
-      appleIap: config.appleEnvironments.length > 0,
-      livekit: !!(config.LIVEKIT_API_KEY && config.LIVEKIT_API_SECRET && config.LIVEKIT_URL),
-      smtp: !!config.SMTP_HOST,
-      push: !!(config.FIREBASE_PROJECT_ID && config.FIREBASE_CLIENT_EMAIL && config.FIREBASE_PRIVATE_KEY),
-    },
-  };
-
-  return { config, auth, adapters, services, jobs, platformSettings };
+  return { config, auth, adapters, services, jobs };
 }
 
 export type Container = ReturnType<typeof createContainer>;

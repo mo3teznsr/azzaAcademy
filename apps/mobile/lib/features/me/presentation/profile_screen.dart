@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/config/app_config.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/money/money.dart';
+import '../../../core/widgets/price.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/providers.dart';
 import '../../../core/push/push_service.dart';
+import '../../../core/site/site_settings.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/links.dart';
@@ -30,7 +32,10 @@ class ProfileScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final f = ref.watch(fmtProvider);
     final locale = ref.watch(localeProvider);
-    final currency = ref.watch(displayCurrencyProvider);
+    final supportEmail = ref.watch(supportEmailProvider);
+    final pf = ref.watch(priceFormatProvider);
+    // A stored currency that is no longer listed shows (and is used) as AED.
+    final currency = pf.fx == null ? pf.currency : pf.shown;
     final push = ref.watch(pushServiceProvider);
     final t = Theme.of(context).textTheme;
     final p = AzzaPalette.of(context);
@@ -140,9 +145,9 @@ class ProfileScreen extends ConsumerWidget {
                 row(l.termsOfService, '', icon: Icons.description_outlined, onTap: () => openExternal(context, ref.read(appConfigProvider).termsUrl)),
                 row(
                   l.contactSupport,
-                  AppConfig.supportEmail,
+                  supportEmail,
                   icon: Icons.mail_outline_rounded,
-                  onTap: () => openExternal(context, 'mailto:${AppConfig.supportEmail}'),
+                  onTap: () => openExternal(context, 'mailto:$supportEmail'),
                 ),
               ],
             ),
@@ -184,6 +189,7 @@ class ProfileScreen extends ConsumerWidget {
           onTap: onTap,
         );
     final config = ref.read(appConfigProvider);
+    final supportEmail = ref.watch(supportEmailProvider);
     return GuestTab(
       heading: l.navMe,
       title: l.guestMeTitle,
@@ -199,8 +205,8 @@ class ProfileScreen extends ConsumerWidget {
         CardGroup(title: l.legal, children: [
           row(const Key('guest-privacy'), l.privacyPolicy, '', Icons.privacy_tip_outlined, () => openExternal(context, config.privacyUrl)),
           row(const Key('guest-terms'), l.termsOfService, '', Icons.description_outlined, () => openExternal(context, config.termsUrl)),
-          row(const Key('guest-contact'), l.contactSupport, AppConfig.supportEmail, Icons.mail_outline_rounded,
-              () => openExternal(context, 'mailto:${AppConfig.supportEmail}')),
+          row(const Key('guest-contact'), l.contactSupport, supportEmail, Icons.mail_outline_rounded,
+              () => openExternal(context, 'mailto:$supportEmail')),
         ]),
       ],
     );
@@ -252,15 +258,25 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Future<void> _pickCurrency(BuildContext context, WidgetRef ref) async {
-    final current = ref.read(displayCurrencyProvider);
+    final pf = ref.read(priceFormatProvider);
+    final fx = pf.fx ?? FxRates.fallback;
+    final current = pf.fx == null ? pf.currency : pf.shown;
+    final arabic = ref.read(localeProvider) == AppLocale.ar;
     final picked = await showModalBottomSheet<DisplayCurrency>(
       context: context,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (final c in DisplayCurrency.values)
-              ListTile(title: Text(c.wire), trailing: c == current ? const Icon(Icons.check_rounded) : null, onTap: () => Navigator.pop(context, c)),
+            for (final c in fx.currencies)
+              ListTile(
+                key: Key('currency-${c.wire}'),
+                minTileHeight: 56,
+                title: Text(c.wire),
+                subtitle: fx.nameOf(c, arabic: arabic) == null ? null : Text(fx.nameOf(c, arabic: arabic)!),
+                trailing: c == current ? const Icon(Icons.check_rounded) : null,
+                onTap: () => Navigator.pop(context, c),
+              ),
           ],
         ),
       ),

@@ -2667,17 +2667,17 @@
   "adminHubPayoutsSub": "Monthly payouts to teachers",
   "adminHubCouponsSub": "Discount codes and who used them",
   "adminHubBankSub": "Where students send bank transfers",
-  "adminHubCurrenciesSub": "Display rates for SAR, QAR and USD",
+  "adminHubCurrenciesSub": "Add, edit and order display currencies",
   "adminHubCoursesSub": "Create, edit, publish and feature",
   "adminHubBatchesSub": "Classes, schedules and enrolments",
   "adminHubCategoriesSub": "Order, names and visibility",
   "adminHubReportsSub": "Revenue, fill, attendance, completion",
   "adminHubLiveSub": "Every room on air right now",
-  "adminHubSettingsSub": "Platform rules and integrations",
+  "adminHubSettingsSub": "Business rules, contact and integrations",
   "adminHubNoSettings": "Arabic course text is edited inside each course; there is no separate translations area.",
   "adminSettingsTitle": "Settings",
-  "adminSettingsBody": "These rules come from the server configuration. Change them there.",
-  "adminRules": "Rules",
+  "adminSettingsBody": "Business rules and contact details are editable here. Keys and secrets stay in the server environment.",
+  "adminRules": "Business rules",
   "adminIntegrations": "Integrations",
   "adminConfigured": "Configured",
   "adminNotConfigured": "Not configured",
@@ -3284,26 +3284,9 @@
   "adminIbanInvalid": "A UAE IBAN is AE followed by 21 digits.",
   "adminSwiftInvalid": "SWIFT is 8 or 11 letters and numbers.",
   "adminCurrenciesTitle": "Currencies",
-  "adminCurrenciesBody": "Money always moves in AED. These rates only change the approximate prices students see.",
-  "adminRatesUpdated": "Updated {when}",
-  "@adminRatesUpdated": {
-    "placeholders": {
-      "when": {
-        "type": "String"
-      }
-    }
-  },
-  "adminFxRates": "Rates per 1 AED",
+  "adminCurrenciesBody": "Money always moves in AED. Other currencies only change the approximate prices students see.",
   "adminRateLabel": "{currency} per AED",
   "@adminRateLabel": {
-    "placeholders": {
-      "currency": {
-        "type": "String"
-      }
-    }
-  },
-  "adminRateHelper": "How many {currency} one dirham buys",
-  "@adminRateHelper": {
     "placeholders": {
       "currency": {
         "type": "String"
@@ -3698,5 +3681,169 @@
   "reportsVat": "VAT",
   "reportsNet": "Net",
   "transferNotFound": "We couldn't find this transfer. It may already be reviewed.",
-  "transferBackToQueue": "Back to transfers"
+  "transferBackToQueue": "Back to transfers",
+  "whatsappChat": "Chat on WhatsApp",
+  "whatsappOpenFailed": "Couldn't open WhatsApp.",
+  "whatsappCourseMessage": "Hi Azza, I have a question about {course}.",
+  "@whatsappCourseMessage": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappBatchMessage": "Hi Azza, I have a question about {course} ({batchCode}).",
+  "@whatsappBatchMessage": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      },
+      "batchCode": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappGeneralMessage": "Hi Azza, I need some help.",
+  "contactUs": "Contact us",
+  "contactEmail": "Email",
+  "contactPhone": "Phone",
+  "contactAddress": "Address",
+  "followUs": "Follow us",
+  "adminRulesBody": "These apply platform-wide. Leave a rule at its default to follow the server setting.",
+  "adminRuleRange": "Enter a whole number from {min} to {max}.",
+  "@adminRuleRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "adminRulesSaved": "Rules saved.",
+  "adminRulesSave": "Save rules",
+  "adminRuleResetDone": "{rule} reset to its default.",
+  "@adminRuleResetDone": {
+    "placeholders": {
+      "rule": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRuleDefault": "Default: {value}",
+  "@adminRuleDefault": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRuleReset": "Reset to default",
+  "adminIntegrationsNote": "Set in the server environment.",
+  "adminContactTitle": "Contact & social",
+  "adminContactBody": "Shown in Help & support and used by the WhatsApp buttons. Leave a field empty to hide it.",
+  "adminContactSave": "Save contact details",
+  "adminContactSaved": "Contact details saved.",
+  "adminEmailInvalid": "Enter a valid email address.",
+  "adminWhatsappInvalid": "Use 8 to 15 digits with the country code, no + or spaces.",
+  "adminWhatsappHelper": "Digits with country code, e.g. 971501234567",
+  "adminAddressEn": "Address (English)",
+  "adminAddressAr": "Address (Arabic)",
+  "adminAddressTooLong": "Keep the address under 300 characters.",
+  "adminSocialInvalid": "Enter a full link that starts with https://",
+  "adminCurrencySaved": "Currency saved.",
+  "adminCurrencyDeleteTitle": "Remove {code}?",
+  "@adminCurrencyDeleteTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCurrencyDeleteBody": "Anyone who chose {code} will see prices in AED instead. Past orders keep the currency and rate they were placed with.",
+  "@adminCurrencyDeleteBody": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCurrencyDeleted": "{code} removed.",
+  "@adminCurrencyDeleted": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminNewCurrency": "Add currency",
+  "adminEditCurrency": "Edit {code}",
+  "@adminEditCurrency": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminNoCurrencies": "No currencies yet.",
+  "adminCurrencyBase": "Base",
+  "adminCurrencyBaseHint": "Charges and payouts are always in AED. Its rate is always 1.",
+  "adminCurrencyLocked": "Always on",
+  "adminMoveUp": "Move up",
+  "adminMoveDown": "Move down",
+  "adminCurrencyCode": "Code",
+  "adminCurrencyCodeHelper": "Three letters, e.g. EUR. It can't be changed later.",
+  "adminCurrencyCodeInvalid": "Enter a three-letter currency code.",
+  "adminCurrencyDecimalsInvalid": "Decimals must be 0 to 3.",
+  "adminCurrencySymbol": "Symbol (optional)",
+  "adminCurrencyDecimals": "Decimals",
+  "adminCurrencyDecimalsHelper": "How many decimals prices show, 0 to 3",
+  "adminRatePerAed": "Rate per 1 AED",
+  "adminRatePerAedHelper": "How many units one dirham buys",
+  "adminCurrencyEnabled": "Show to students",
+  "adminCategoryImageAdd": "Add image",
+  "adminCategoryImageChange": "Change image",
+  "adminCategoryImageSaved": "Category image saved.",
+  "adminCategoryImageRemoved": "Category image removed.",
+  "adminCategoryImageHint": "JPG, PNG or WebP. Students see it instead of the icon.",
+  "adminCategoryImageAfterSave": "Save the category first, then add an image.",
+  "phoneLabel": "Mobile number",
+  "phoneRequired": "Enter your mobile number",
+  "phoneInvalidFor": "That number doesn't look right for {country}",
+  "@phoneInvalidFor": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "phoneSearchCountries": "Search country or dial code",
+  "phoneCountryPicker": "Choose country",
+  "phoneNoCountries": "No country matches that search.",
+  "adminCurrencyRateLine": "1 AED = {rate} {code}",
+  "@adminCurrencyRateLine": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCurrencyDecimalsCount": "{decimals, plural, =0{no decimals} one{{decimals} decimal} other{{decimals} decimals}}",
+  "@adminCurrencyDecimalsCount": {
+    "placeholders": {
+      "decimals": {
+        "type": "int"
+      }
+    }
+  },
+  "adminCurrencyNameArRequired": "Enter the Arabic name.",
+  "adminCurrencyNameTooLong": "Names can be up to 60 characters.",
+  "adminCurrencySymbolTooLong": "The symbol can be up to 8 characters.",
+  "errPhoneInvalid": "That phone number doesn't look right.",
+  "errCurrencyUnavailable": "That currency isn't available any more.",
+  "errBaseCurrencyLocked": "The dirham is the base currency and can't be changed that way."
 }

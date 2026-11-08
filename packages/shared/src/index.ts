@@ -5,3 +5,5 @@ export * from './realtime';
 export * from './apple-iap';
 export * from './course-media';
 export * from './subscriptions';
+export * from './countries';
+export * from './phone';

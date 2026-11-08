@@ -7703,7 +7703,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminHubCurrenciesSub.
   ///
   /// In en, this message translates to:
-  /// **'Display rates for SAR, QAR and USD'**
+  /// **'Add, edit and order display currencies'**
   String get adminHubCurrenciesSub;
 
   /// No description provided for @adminHubCoursesSub.
@@ -7739,7 +7739,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminHubSettingsSub.
   ///
   /// In en, this message translates to:
-  /// **'Platform rules and integrations'**
+  /// **'Business rules, contact and integrations'**
   String get adminHubSettingsSub;
 
   /// No description provided for @adminHubNoSettings.
@@ -7757,13 +7757,13 @@ abstract class AppLocalizations {
   /// No description provided for @adminSettingsBody.
   ///
   /// In en, this message translates to:
-  /// **'These rules come from the server configuration. Change them there.'**
+  /// **'Business rules and contact details are editable here. Keys and secrets stay in the server environment.'**
   String get adminSettingsBody;
 
   /// No description provided for @adminRules.
   ///
   /// In en, this message translates to:
-  /// **'Rules'**
+  /// **'Business rules'**
   String get adminRules;
 
   /// No description provided for @adminIntegrations.
@@ -9419,32 +9419,14 @@ abstract class AppLocalizations {
   /// No description provided for @adminCurrenciesBody.
   ///
   /// In en, this message translates to:
-  /// **'Money always moves in AED. These rates only change the approximate prices students see.'**
+  /// **'Money always moves in AED. Other currencies only change the approximate prices students see.'**
   String get adminCurrenciesBody;
-
-  /// No description provided for @adminRatesUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'Updated {when}'**
-  String adminRatesUpdated(String when);
-
-  /// No description provided for @adminFxRates.
-  ///
-  /// In en, this message translates to:
-  /// **'Rates per 1 AED'**
-  String get adminFxRates;
 
   /// No description provided for @adminRateLabel.
   ///
   /// In en, this message translates to:
   /// **'{currency} per AED'**
   String adminRateLabel(String currency);
-
-  /// No description provided for @adminRateHelper.
-  ///
-  /// In en, this message translates to:
-  /// **'How many {currency} one dirham buys'**
-  String adminRateHelper(String currency);
 
   /// No description provided for @adminRateInvalid.
   ///
@@ -10693,6 +10675,426 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to transfers'**
   String get transferBackToQueue;
+
+  /// No description provided for @whatsappChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat on WhatsApp'**
+  String get whatsappChat;
+
+  /// No description provided for @whatsappOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open WhatsApp.'**
+  String get whatsappOpenFailed;
+
+  /// No description provided for @whatsappCourseMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi Azza, I have a question about {course}.'**
+  String whatsappCourseMessage(String course);
+
+  /// No description provided for @whatsappBatchMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi Azza, I have a question about {course} ({batchCode}).'**
+  String whatsappBatchMessage(String course, String batchCode);
+
+  /// No description provided for @whatsappGeneralMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi Azza, I need some help.'**
+  String get whatsappGeneralMessage;
+
+  /// No description provided for @contactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get contactUs;
+
+  /// No description provided for @contactEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get contactEmail;
+
+  /// No description provided for @contactPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get contactPhone;
+
+  /// No description provided for @contactAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get contactAddress;
+
+  /// No description provided for @followUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow us'**
+  String get followUs;
+
+  /// No description provided for @adminRulesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'These apply platform-wide. Leave a rule at its default to follow the server setting.'**
+  String get adminRulesBody;
+
+  /// No description provided for @adminRuleRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from {min} to {max}.'**
+  String adminRuleRange(int min, int max);
+
+  /// No description provided for @adminRulesSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules saved.'**
+  String get adminRulesSaved;
+
+  /// No description provided for @adminRulesSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save rules'**
+  String get adminRulesSave;
+
+  /// No description provided for @adminRuleResetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{rule} reset to its default.'**
+  String adminRuleResetDone(String rule);
+
+  /// No description provided for @adminRuleDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default: {value}'**
+  String adminRuleDefault(String value);
+
+  /// No description provided for @adminRuleReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get adminRuleReset;
+
+  /// No description provided for @adminIntegrationsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Set in the server environment.'**
+  String get adminIntegrationsNote;
+
+  /// No description provided for @adminContactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact & social'**
+  String get adminContactTitle;
+
+  /// No description provided for @adminContactBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown in Help & support and used by the WhatsApp buttons. Leave a field empty to hide it.'**
+  String get adminContactBody;
+
+  /// No description provided for @adminContactSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save contact details'**
+  String get adminContactSave;
+
+  /// No description provided for @adminContactSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact details saved.'**
+  String get adminContactSaved;
+
+  /// No description provided for @adminWhatsappInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 8 to 15 digits with the country code, no + or spaces.'**
+  String get adminWhatsappInvalid;
+
+  /// No description provided for @adminWhatsappHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Digits with country code, e.g. 971501234567'**
+  String get adminWhatsappHelper;
+
+  /// No description provided for @adminAddressEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Address (English)'**
+  String get adminAddressEn;
+
+  /// No description provided for @adminAddressAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Address (Arabic)'**
+  String get adminAddressAr;
+
+  /// No description provided for @adminAddressTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the address under 300 characters.'**
+  String get adminAddressTooLong;
+
+  /// No description provided for @adminSocialInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a full link that starts with https://'**
+  String get adminSocialInvalid;
+
+  /// No description provided for @adminCurrencySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency saved.'**
+  String get adminCurrencySaved;
+
+  /// No description provided for @adminCurrencyDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {code}?'**
+  String adminCurrencyDeleteTitle(String code);
+
+  /// No description provided for @adminCurrencyDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone who chose {code} will see prices in AED instead. Past orders keep the currency and rate they were placed with.'**
+  String adminCurrencyDeleteBody(String code);
+
+  /// No description provided for @adminCurrencyDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} removed.'**
+  String adminCurrencyDeleted(String code);
+
+  /// No description provided for @adminNewCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Add currency'**
+  String get adminNewCurrency;
+
+  /// No description provided for @adminEditCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {code}'**
+  String adminEditCurrency(String code);
+
+  /// No description provided for @adminNoCurrencies.
+  ///
+  /// In en, this message translates to:
+  /// **'No currencies yet.'**
+  String get adminNoCurrencies;
+
+  /// No description provided for @adminCurrencyBase.
+  ///
+  /// In en, this message translates to:
+  /// **'Base'**
+  String get adminCurrencyBase;
+
+  /// No description provided for @adminCurrencyBaseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Charges and payouts are always in AED. Its rate is always 1.'**
+  String get adminCurrencyBaseHint;
+
+  /// No description provided for @adminCurrencyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Always on'**
+  String get adminCurrencyLocked;
+
+  /// No description provided for @adminMoveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get adminMoveUp;
+
+  /// No description provided for @adminMoveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get adminMoveDown;
+
+  /// No description provided for @adminCurrencyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get adminCurrencyCode;
+
+  /// No description provided for @adminCurrencyCodeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Three letters, e.g. EUR. It can\'t be changed later.'**
+  String get adminCurrencyCodeHelper;
+
+  /// No description provided for @adminCurrencyCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a three-letter currency code.'**
+  String get adminCurrencyCodeInvalid;
+
+  /// No description provided for @adminCurrencyDecimalsInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Decimals must be 0 to 3.'**
+  String get adminCurrencyDecimalsInvalid;
+
+  /// No description provided for @adminCurrencySymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbol (optional)'**
+  String get adminCurrencySymbol;
+
+  /// No description provided for @adminCurrencyDecimals.
+  ///
+  /// In en, this message translates to:
+  /// **'Decimals'**
+  String get adminCurrencyDecimals;
+
+  /// No description provided for @adminCurrencyDecimalsHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'How many decimals prices show, 0 to 3'**
+  String get adminCurrencyDecimalsHelper;
+
+  /// No description provided for @adminRatePerAed.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate per 1 AED'**
+  String get adminRatePerAed;
+
+  /// No description provided for @adminRatePerAedHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'How many units one dirham buys'**
+  String get adminRatePerAedHelper;
+
+  /// No description provided for @adminCurrencyEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Show to students'**
+  String get adminCurrencyEnabled;
+
+  /// No description provided for @adminCategoryImageAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add image'**
+  String get adminCategoryImageAdd;
+
+  /// No description provided for @adminCategoryImageChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change image'**
+  String get adminCategoryImageChange;
+
+  /// No description provided for @adminCategoryImageSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Category image saved.'**
+  String get adminCategoryImageSaved;
+
+  /// No description provided for @adminCategoryImageRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Category image removed.'**
+  String get adminCategoryImageRemoved;
+
+  /// No description provided for @adminCategoryImageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'JPG, PNG or WebP. Students see it instead of the icon.'**
+  String get adminCategoryImageHint;
+
+  /// No description provided for @adminCategoryImageAfterSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the category first, then add an image.'**
+  String get adminCategoryImageAfterSave;
+
+  /// No description provided for @phoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get phoneLabel;
+
+  /// No description provided for @phoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your mobile number'**
+  String get phoneRequired;
+
+  /// No description provided for @phoneInvalidFor.
+  ///
+  /// In en, this message translates to:
+  /// **'That number doesn\'t look right for {country}'**
+  String phoneInvalidFor(String country);
+
+  /// No description provided for @phoneSearchCountries.
+  ///
+  /// In en, this message translates to:
+  /// **'Search country or dial code'**
+  String get phoneSearchCountries;
+
+  /// No description provided for @phoneCountryPicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose country'**
+  String get phoneCountryPicker;
+
+  /// No description provided for @phoneNoCountries.
+  ///
+  /// In en, this message translates to:
+  /// **'No country matches that search.'**
+  String get phoneNoCountries;
+
+  /// No description provided for @adminCurrencyRateLine.
+  ///
+  /// In en, this message translates to:
+  /// **'1 AED = {rate} {code}'**
+  String adminCurrencyRateLine(String rate, String code);
+
+  /// No description provided for @adminCurrencyDecimalsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{decimals, plural, =0{no decimals} one{{decimals} decimal} other{{decimals} decimals}}'**
+  String adminCurrencyDecimalsCount(int decimals);
+
+  /// No description provided for @adminCurrencyNameArRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the Arabic name.'**
+  String get adminCurrencyNameArRequired;
+
+  /// No description provided for @adminCurrencyNameTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Names can be up to 60 characters.'**
+  String get adminCurrencyNameTooLong;
+
+  /// No description provided for @adminCurrencySymbolTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The symbol can be up to 8 characters.'**
+  String get adminCurrencySymbolTooLong;
+
+  /// No description provided for @errPhoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That phone number doesn\'t look right.'**
+  String get errPhoneInvalid;
+
+  /// No description provided for @errCurrencyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'That currency isn\'t available any more.'**
+  String get errCurrencyUnavailable;
+
+  /// No description provided for @errBaseCurrencyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'The dirham is the base currency and can\'t be changed that way.'**
+  String get errBaseCurrencyLocked;
 }
 
 class _AppLocalizationsDelegate

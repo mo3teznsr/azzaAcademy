@@ -17,6 +17,8 @@ export interface CategoryRef {
   nameEn: string;
   nameAr: string | null;
   icon: string | null;
+  /** Uploaded tile image; the icon is the fallback. */
+  imageUrl?: string | null;
 }
 
 export interface CourseRecord {
@@ -143,7 +145,7 @@ const include = {
     orderBy: { order: 'asc' as const },
     include: { lessons: { orderBy: { order: 'asc' as const }, select: { id: true, order: true, titleEn: true, titleAr: true } } },
   },
-  categoryRef: { select: { slug: true, nameEn: true, nameAr: true, icon: true } },
+  categoryRef: { select: { slug: true, nameEn: true, nameAr: true, icon: true, imageUrl: true } },
 };
 
 const ORDER: Record<CourseSort, object[]> = {

@@ -52,8 +52,8 @@ class AuthController extends AsyncNotifier<AppUser?> {
     return user;
   }
 
-  Future<AppUser> signUp(String name, String email, String password) async {
-    final user = await ref.read(authRepositoryProvider).signUp(name: name, email: email, password: password);
+  Future<AppUser> signUp(String name, String email, String password, String phone) async {
+    final user = await ref.read(authRepositoryProvider).signUp(name: name, email: email, password: password, phone: phone);
     state = AsyncData(user);
     unawaited(_runHook(postSignUpHookProvider, user));
     return user;

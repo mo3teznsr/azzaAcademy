@@ -83,6 +83,8 @@ export interface CategoryRef {
   nameAr: string | null;
   /** A lucide icon name (kebab-case), e.g. `book-open`. */
   icon: string | null;
+  /** Uploaded picture (admin-managed); the icon is the fallback. */
+  imageUrl?: string | null;
 }
 
 /** GET /categories item. `courseCount` = published courses. */
@@ -459,11 +461,40 @@ export interface AttendanceReport {
 }
 
 // ---------- Money ----------
-export interface FxRates {
+/** One currency in GET /currencies (enabled only) and GET /admin/currencies (all). */
+export interface Currency {
+  code: string;
+  nameEn: string;
+  nameAr: string;
+  symbol: string | null;
+  decimals: number;
+  ratePerAed: number;
+  sortOrder: number;
+}
+
+/** GET /currencies: the display currencies people can pick, AED is always the base. */
+export interface CurrencyList {
   base: 'AED';
-  rates: Partial<Record<Exclude<DisplayCurrency, 'AED'>, number>>;
+  items: Currency[];
+}
+
+export interface AdminCurrency extends Currency {
+  enabled: boolean;
   updatedAt: ISODate;
 }
+
+export interface CurrencyInput {
+  code: string;
+  nameEn: string;
+  nameAr: string;
+  symbol?: string | null;
+  decimals: number;
+  ratePerAed: number;
+  enabled?: boolean;
+  sortOrder?: number;
+}
+
+export type CurrencyPatch = Partial<Omit<CurrencyInput, 'code'>>;
 
 export interface Quote {
   subtotalFils: number;
@@ -762,10 +793,9 @@ export interface PlatformCuts {
   recordedCutPercent: number;
 }
 
-export interface PlatformSettings {
-  rules: { TEACHER_SHARE_PERCENT: number; EARNING_HOLD_DAYS: number; MIN_PAYOUT_AED: number; BANK_TRANSFER_HOLD_HOURS: number; VAT_PERCENT: number };
-  integrations: { stripe: boolean; livekit: boolean; smtp: boolean; push: boolean };
-}
+export type { RuleSettingsInput, ContactSettingsInput, SiteSettings, SocialNetwork as SocialKey } from '@azza/shared';
+export type PlatformSettings = import('@azza/shared').AdminSettings;
+export type RuleKey = keyof import('@azza/shared').RuleSettings;
 
 export interface AdminUser extends User {
   _count: { enrollments: number; teaching: number };

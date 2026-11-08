@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/network/error_text.dart';
 import '../../../core/theme/tokens.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
 import '../data/back_office_repository.dart';
 import 'admin_widgets.dart';
@@ -172,104 +170,6 @@ class _BankAccountSheetState extends ConsumerState<_BankAccountSheet> {
           child: Text(l.save),
         ),
       ],
-    );
-  }
-}
-
-/// Currencies: AED is the money; SAR / QAR / USD are display rates (units per 1 AED).
-class CurrenciesScreen extends ConsumerStatefulWidget {
-  const CurrenciesScreen({super.key});
-
-  @override
-  ConsumerState<CurrenciesScreen> createState() => _CurrenciesScreenState();
-}
-
-class _CurrenciesScreenState extends ConsumerState<CurrenciesScreen> {
-  static const _editable = [DisplayCurrency.sar, DisplayCurrency.qar, DisplayCurrency.usd];
-  final Map<DisplayCurrency, TextEditingController> _c = {for (final c in _editable) c: TextEditingController()};
-  bool _filled = false;
-  DisplayCurrency? _saving;
-
-  @override
-  void dispose() {
-    for (final c in _c.values) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  Future<void> _save(DisplayCurrency currency) async {
-    final l = context.l10n;
-    final rate = double.tryParse(_c[currency]!.text.trim().replaceAll(',', '.'));
-    if (rate == null || rate <= 0) return showToast(context, l.adminRateInvalid);
-    setState(() => _saving = currency);
-    try {
-      await ref.read(backOfficeRepositoryProvider).setFxRate(currency, rate);
-      ref.invalidate(adminFxRatesProvider);
-      if (mounted) showToast(context, l.adminRateSaved(currency.wire));
-    } catch (e) {
-      if (mounted) showToast(context, errorText(context, e));
-    } finally {
-      if (mounted) setState(() => _saving = null);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final f = ref.watch(fmtProvider);
-    final rates = ref.watch(adminFxRatesProvider);
-    final t = Theme.of(context).textTheme;
-
-    return Scaffold(
-      appBar: AppBar(title: Text(l.adminCurrenciesTitle)),
-      body: AsyncView(
-        value: rates,
-        onRetry: () => ref.invalidate(adminFxRatesProvider),
-        data: (fx) {
-          if (!_filled) {
-            for (final c in _editable) {
-              _c[c]!.text = fx.has(c) ? fx.rateFor(c).toString() : '';
-            }
-            _filled = true;
-          }
-          return RefreshList(
-            onRefresh: () async {
-              _filled = false;
-              ref.invalidate(adminFxRatesProvider);
-            },
-            children: [
-              Text(l.adminCurrenciesBody, style: t.bodyMedium),
-              if (fx.updatedAt != null) ...[const SizedBox(height: 6), Kicker(l.adminRatesUpdated(f.dayTime(fx.updatedAt!)))],
-              SectionCard(
-                title: l.adminFxRates,
-                child: Column(children: [
-                  for (final c in _editable)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: TextField(
-                        key: Key('fx-${c.wire}'),
-                        controller: _c[c],
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-                        textDirection: TextDirection.ltr,
-                        decoration: fieldDecoration(
-                          label: l.adminRateLabel(c.wire),
-                          icon: Icons.currency_exchange_rounded,
-                          hint: '1.0211',
-                          helper: l.adminRateHelper(c.wire),
-                          action: _saving == c
-                              ? const Padding(padding: EdgeInsets.all(12), child: SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2)))
-                              : FieldActionButton(label: l.save, onPressed: () => _save(c)),
-                        ),
-                      ),
-                    ),
-                ]),
-              ),
-            ],
-          );
-        },
-      ),
     );
   }
 }

@@ -56,8 +56,13 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 /** Money only moves in AED. The others are display currencies. */
 export const BASE_CURRENCY = 'AED' as const;
+/**
+ * @deprecated Currencies are admin-managed data now: read `GET /currencies`. Kept only as the seed/migration defaults
+ * (and so older clients compile); it no longer limits which codes are valid.
+ */
 export const DISPLAY_CURRENCIES = ['AED', 'SAR', 'QAR', 'USD'] as const;
-export type DisplayCurrency = (typeof DISPLAY_CURRENCIES)[number];
+/** An uppercase ISO 4217 code of an enabled currency (validated against the `Currency` table by the API). */
+export type DisplayCurrency = string;
 
 export const EARNING_STATUSES = ['PENDING', 'AVAILABLE', 'PAID', 'REVERSED'] as const;
 export type EarningStatus = (typeof EARNING_STATUSES)[number];

@@ -10,12 +10,13 @@ List<String> _pickList(AppLocale l, List<String> en, List<String> ar) => l == Ap
 /// `GET /categories` item, and `Course.categoryRef`. A course's `category` field is the [slug].
 @immutable
 class CourseCategory {
-  const CourseCategory({required this.slug, required this.nameEn, this.nameAr, this.icon, this.courseCount});
+  const CourseCategory({required this.slug, required this.nameEn, this.nameAr, this.icon, this.imageUrl, this.courseCount});
   factory CourseCategory.fromJson(Json j) => CourseCategory(
         slug: str(j, 'slug'),
         nameEn: str(j, 'nameEn', str(j, 'slug')),
         nameAr: strOrNull(j, 'nameAr'),
         icon: strOrNull(j, 'icon'),
+        imageUrl: strOrNull(j, 'imageUrl'),
         courseCount: intOrNull(j, 'courseCount'),
       );
   final String slug;
@@ -24,6 +25,9 @@ class CourseCategory {
 
   /// lucide icon name from the web admin (mapped to a Material icon on mobile).
   final String? icon;
+
+  /// Uploaded picture; tiles show it instead of [icon] when present.
+  final String? imageUrl;
 
   /// Published courses in it (only on `GET /categories`).
   final int? courseCount;

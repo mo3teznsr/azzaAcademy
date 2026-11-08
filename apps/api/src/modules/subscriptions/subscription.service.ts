@@ -1,3 +1,4 @@
+import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { randomUUID } from 'node:crypto';
 import { filsToAed, formatMoney, YEARLY_REMINDER_DAYS, type Role, type SubscribeInput, type SubscriptionProvider, type SubscriptionPlan, type SubscriptionStatus } from '@azza/shared';
 import { AppError, BusinessRuleError, ForbiddenError, NotFoundError } from '../../core/errors';
@@ -25,7 +26,8 @@ export interface SubscriptionEarningsAccrual {
 export interface TransferOptions {
   repo: SubscriptionTransferRepository;
   bankAccounts: Pick<PaymentsRepository, 'findBankAccount' | 'firstActiveBankAccount'>;
-  holdHours: number;
+  /** Fixed, or read per use (the admin-editable rule). */
+  holdHours: RuleValue<number>;
 }
 
 export interface TransferReviewInput {
@@ -253,7 +255,7 @@ export class SubscriptionService {
       }
     }
     const total = this.prices.inclusive(priceFils);
-    const expiresAt = addHours(now, T.holdHours);
+    const expiresAt = addHours(now, await resolveRule(T.holdHours));
     const payment = await T.repo.createTransferPayment({
       subscriptionId: row.id,
       userId,
@@ -412,7 +414,7 @@ export class SubscriptionService {
     const user = await this.repo.findUser(payment.userId);
 
     if (input.newReceipt) {
-      const expiresAt = addHours(now, T.holdHours);
+      const expiresAt = addHours(now, await resolveRule(T.holdHours));
       const reopened = await T.repo.reviewTransferPayment(payment.id, { status: 'AWAITING_RECEIPT', receiptUrl: null, reviewNote: note, reviewedById: adminId, expiresAt });
       if (!reopened) throw await this.notReviewable(payment.id);
       await this.notifier.notify([payment.userId], {

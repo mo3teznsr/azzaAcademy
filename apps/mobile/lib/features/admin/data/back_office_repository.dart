@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -285,12 +286,13 @@ class CouponRedemption {
 /// `GET /categories?all=true` item (admin: includes hidden ones).
 @immutable
 class AdminCategory {
-  const AdminCategory({required this.slug, required this.nameEn, this.nameAr, this.icon, this.order = 0, this.active = true, this.courseCount = 0});
+  const AdminCategory({required this.slug, required this.nameEn, this.nameAr, this.icon, this.imageUrl, this.order = 0, this.active = true, this.courseCount = 0});
   factory AdminCategory.fromJson(Json j) => AdminCategory(
         slug: str(j, 'slug'),
         nameEn: str(j, 'nameEn', str(j, 'slug')),
         nameAr: strOrNull(j, 'nameAr'),
         icon: strOrNull(j, 'icon'),
+        imageUrl: strOrNull(j, 'imageUrl'),
         order: integer(j, 'order'),
         active: boolean(j, 'active', true),
         courseCount: integer(j, 'courseCount'),
@@ -299,6 +301,7 @@ class AdminCategory {
   final String nameEn;
   final String? nameAr;
   final String? icon;
+  final String? imageUrl;
   final int order;
   final bool active;
   final int courseCount;
@@ -417,21 +420,44 @@ class AdminReport {
   final RecordedRevenue? recorded;
 }
 
-/// `GET /admin/settings` (read-only platform rules; integrations are booleans, never secrets).
+/// `GET /admin/settings` (also the reply of `PUT /admin/settings/rules` and `/contact`).
+/// Integrations are booleans, never secrets; rules are the effective values with the env defaults beside them.
 @immutable
 class PlatformSettings {
-  const PlatformSettings({this.rules = const {}, this.integrations = const {}});
+  const PlatformSettings({
+    this.rules = const {},
+    this.ruleDefaults = const {},
+    this.integrations = const {},
+    this.contact = const {},
+    this.socials = const {},
+  });
   factory PlatformSettings.fromJson(Json j) {
-    final r = obj(j, 'rules');
-    final i = obj(j, 'integrations');
+    Map<String, num> nums(Json m) => {for (final e in m.entries) if (e.value is num) e.key: e.value as num};
+    Map<String, String> strs(Json m) => {for (final e in m.entries) if (e.value is String && (e.value as String).trim().isNotEmpty) e.key: (e.value as String).trim()};
     return PlatformSettings(
-      rules: {for (final e in r.entries) if (e.value is num) e.key: e.value as num},
-      integrations: {for (final e in i.entries) e.key: e.value == true},
+      rules: nums(obj(j, 'rules')),
+      ruleDefaults: nums(obj(j, 'ruleDefaults')),
+      integrations: {for (final e in obj(j, 'integrations').entries) e.key: e.value == true},
+      contact: strs(obj(j, 'contact')),
+      socials: strs(obj(j, 'socials')),
     );
   }
   final Map<String, num> rules;
+  final Map<String, num> ruleDefaults;
   final Map<String, bool> integrations;
+
+  /// contactEmail, contactPhone, whatsappNumber, addressEn, addressAr (only the ones set).
+  final Map<String, String> contact;
+  final Map<String, String> socials;
 }
+
+/// The four rules an admin can edit: API rule key and the `PUT /admin/settings/rules` field, with the allowed range.
+const editableRules = <({String key, String field, int min, int max})>[
+  (key: 'VAT_PERCENT', field: 'vatPercent', min: 0, max: 30),
+  (key: 'EARNING_HOLD_DAYS', field: 'earningHoldDays', min: 0, max: 90),
+  (key: 'MIN_PAYOUT_AED', field: 'minPayoutAed', min: 0, max: 100000),
+  (key: 'BANK_TRANSFER_HOLD_HOURS', field: 'bankTransferHoldHours', min: 1, max: 168),
+];
 
 /// `GET /admin/settings/cuts`: the platform's default teacher cut per course type, in percent.
 @immutable
@@ -592,17 +618,33 @@ abstract class BackOfficeRepository {
   Future<AdminCategory> updateCategory(String slug, Map<String, dynamic> body);
   Future<void> deleteCategory(String slug);
 
+  /// `POST /admin/categories/:slug/image` (multipart `file`): returns the category with its new `imageUrl`.
+  Future<AdminCategory> uploadCategoryImage(String slug, List<int> bytes, {String filename = 'category.jpg'});
+
+  /// `DELETE /admin/categories/:slug/image`.
+  Future<AdminCategory> removeCategoryImage(String slug);
+
   // Reports
   Future<AdminReport> report({DateTime? from, DateTime? to});
 
   // Bank accounts & currencies
   Future<List<AdminBankAccount>> bankAccounts();
   Future<AdminBankAccount> saveBankAccount(String? id, Map<String, dynamic> body);
-  Future<FxRates> fxRates();
-  Future<void> setFxRate(DisplayCurrency currency, double ratePerAed);
 
-  // Settings (read-only)
+  // Currencies (display-only; AED is the locked base)
+  Future<List<CurrencyInfo>> adminCurrencies();
+  Future<CurrencyInfo> createCurrency(Map<String, dynamic> body);
+  Future<CurrencyInfo> updateCurrency(String code, Map<String, dynamic> body);
+  Future<void> deleteCurrency(String code);
+
+  // Settings
   Future<PlatformSettings> settings();
+
+  /// `PUT /admin/settings/rules`: a null value resets that rule to its default.
+  Future<PlatformSettings> saveRules(Map<String, int?> changes);
+
+  /// `PUT /admin/settings/contact`.
+  Future<PlatformSettings> saveContact(Map<String, dynamic> body);
 
   // Recorded courses
   /// `GET /admin/settings/cuts`.
@@ -743,6 +785,20 @@ class DioBackOfficeRepository extends DioRepository implements BackOfficeReposit
   Future<void> deleteCategory(String slug) => guard(() => dio.delete<dynamic>('$_api/categories/$slug'));
 
   @override
+  Future<AdminCategory> uploadCategoryImage(String slug, List<int> bytes, {String filename = 'category.jpg'}) => guard(() async {
+        final form = FormData.fromMap({'file': MultipartFile.fromBytes(bytes, filename: filename, contentType: _imageType(filename))});
+        final res = await dio.post<dynamic>('$_api/admin/categories/$slug/image', data: form);
+        return AdminCategory.fromJson(asMap(res.data));
+      });
+
+  @override
+  Future<AdminCategory> removeCategoryImage(String slug) => guard(() async {
+        final res = await dio.delete<dynamic>('$_api/admin/categories/$slug/image');
+        final body = asMap(res.data);
+        return body.isEmpty ? AdminCategory(slug: slug, nameEn: slug) : AdminCategory.fromJson(body);
+      });
+
+  @override
   Future<AdminReport> report({DateTime? from, DateTime? to}) async => AdminReport.fromJson(await getJson('$_api/admin/reports', query: {
         if (from != null) 'from': isoDay(from),
         if (to != null) 'to': isoDay(to),
@@ -757,14 +813,29 @@ class DioBackOfficeRepository extends DioRepository implements BackOfficeReposit
       id == null ? await postJson('$_api/admin/bank-accounts', body) : await patchJson('$_api/admin/bank-accounts/$id', body));
 
   @override
-  Future<FxRates> fxRates() async => FxRates.fromJson(await getJson('$_api/fx-rates'));
+  Future<List<CurrencyInfo>> adminCurrencies() async =>
+      (await getItems('$_api/admin/currencies')).map(CurrencyInfo.fromJson).toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
   @override
-  Future<void> setFxRate(DisplayCurrency currency, double ratePerAed) =>
-      putJson('$_api/admin/fx-rates', {'currency': currency.wire, 'ratePerAed': ratePerAed});
+  Future<CurrencyInfo> createCurrency(Map<String, dynamic> body) async => CurrencyInfo.fromJson(await postJson('$_api/admin/currencies', body));
+
+  @override
+  Future<CurrencyInfo> updateCurrency(String code, Map<String, dynamic> body) async =>
+      CurrencyInfo.fromJson(await patchJson('$_api/admin/currencies/$code', body));
+
+  @override
+  Future<void> deleteCurrency(String code) => guard(() => dio.delete<dynamic>('$_api/admin/currencies/$code'));
 
   @override
   Future<PlatformSettings> settings() async => PlatformSettings.fromJson(await getJson('$_api/admin/settings'));
+
+  @override
+  Future<PlatformSettings> saveRules(Map<String, int?> changes) async =>
+      PlatformSettings.fromJson(await putJson('$_api/admin/settings/rules', changes));
+
+  @override
+  Future<PlatformSettings> saveContact(Map<String, dynamic> body) async =>
+      PlatformSettings.fromJson(await putJson('$_api/admin/settings/contact', body));
 
   @override
   Future<TeacherCuts> cuts() async => TeacherCuts.fromJson(await getJson('$_api/admin/settings/cuts'));
@@ -842,10 +913,20 @@ final adminReportProvider = FutureProvider.autoDispose.family<AdminReport, int>(
   return ref.watch(backOfficeRepositoryProvider).report(from: to.subtract(Duration(days: days - 1)), to: to);
 });
 final adminBankAccountsProvider = FutureProvider.autoDispose<List<AdminBankAccount>>((ref) => ref.watch(backOfficeRepositoryProvider).bankAccounts());
-final adminFxRatesProvider = FutureProvider.autoDispose<FxRates>((ref) => ref.watch(backOfficeRepositoryProvider).fxRates());
+final adminCurrenciesProvider = FutureProvider.autoDispose<List<CurrencyInfo>>((ref) => ref.watch(backOfficeRepositoryProvider).adminCurrencies());
 final platformSettingsProvider = FutureProvider.autoDispose<PlatformSettings>((ref) => ref.watch(backOfficeRepositoryProvider).settings());
 
 final teacherCutsProvider = FutureProvider.autoDispose<TeacherCuts>((ref) => ref.watch(backOfficeRepositoryProvider).cuts());
 final adminSubscriptionsProvider = FutureProvider.autoDispose.family<List<AdminSubscription>, SubscriptionQuery>(
   (ref, q) => ref.watch(backOfficeRepositoryProvider).subscriptions(q),
 );
+
+/// jpg/jpeg, png and webp by file extension (the API accepts those three); anything else is sent as JPEG.
+DioMediaType _imageType(String filename) {
+  final ext = filename.contains('.') ? filename.split('.').last.toLowerCase() : '';
+  return switch (ext) {
+    'png' => DioMediaType('image', 'png'),
+    'webp' => DioMediaType('image', 'webp'),
+    _ => DioMediaType('image', 'jpeg'),
+  };
+}

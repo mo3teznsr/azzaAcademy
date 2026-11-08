@@ -4608,7 +4608,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminHubBankSub => 'Where students send bank transfers';
 
   @override
-  String get adminHubCurrenciesSub => 'Display rates for SAR, QAR and USD';
+  String get adminHubCurrenciesSub => 'Add, edit and order display currencies';
 
   @override
   String get adminHubCoursesSub => 'Create, edit, publish and feature';
@@ -4626,7 +4626,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminHubLiveSub => 'Every room on air right now';
 
   @override
-  String get adminHubSettingsSub => 'Platform rules and integrations';
+  String get adminHubSettingsSub => 'Business rules, contact and integrations';
 
   @override
   String get adminHubNoSettings =>
@@ -4637,10 +4637,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminSettingsBody =>
-      'These rules come from the server configuration. Change them there.';
+      'Business rules and contact details are editable here. Keys and secrets stay in the server environment.';
 
   @override
-  String get adminRules => 'Rules';
+  String get adminRules => 'Business rules';
 
   @override
   String get adminIntegrations => 'Integrations';
@@ -5638,24 +5638,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminCurrenciesBody =>
-      'Money always moves in AED. These rates only change the approximate prices students see.';
-
-  @override
-  String adminRatesUpdated(String when) {
-    return 'Updated $when';
-  }
-
-  @override
-  String get adminFxRates => 'Rates per 1 AED';
+      'Money always moves in AED. Other currencies only change the approximate prices students see.';
 
   @override
   String adminRateLabel(String currency) {
     return '$currency per AED';
-  }
-
-  @override
-  String adminRateHelper(String currency) {
-    return 'How many $currency one dirham buys';
   }
 
   @override
@@ -6380,4 +6367,258 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transferBackToQueue => 'Back to transfers';
+
+  @override
+  String get whatsappChat => 'Chat on WhatsApp';
+
+  @override
+  String get whatsappOpenFailed => 'Couldn\'t open WhatsApp.';
+
+  @override
+  String whatsappCourseMessage(String course) {
+    return 'Hi Azza, I have a question about $course.';
+  }
+
+  @override
+  String whatsappBatchMessage(String course, String batchCode) {
+    return 'Hi Azza, I have a question about $course ($batchCode).';
+  }
+
+  @override
+  String get whatsappGeneralMessage => 'Hi Azza, I need some help.';
+
+  @override
+  String get contactUs => 'Contact us';
+
+  @override
+  String get contactEmail => 'Email';
+
+  @override
+  String get contactPhone => 'Phone';
+
+  @override
+  String get contactAddress => 'Address';
+
+  @override
+  String get followUs => 'Follow us';
+
+  @override
+  String get adminRulesBody =>
+      'These apply platform-wide. Leave a rule at its default to follow the server setting.';
+
+  @override
+  String adminRuleRange(int min, int max) {
+    return 'Enter a whole number from $min to $max.';
+  }
+
+  @override
+  String get adminRulesSaved => 'Rules saved.';
+
+  @override
+  String get adminRulesSave => 'Save rules';
+
+  @override
+  String adminRuleResetDone(String rule) {
+    return '$rule reset to its default.';
+  }
+
+  @override
+  String adminRuleDefault(String value) {
+    return 'Default: $value';
+  }
+
+  @override
+  String get adminRuleReset => 'Reset to default';
+
+  @override
+  String get adminIntegrationsNote => 'Set in the server environment.';
+
+  @override
+  String get adminContactTitle => 'Contact & social';
+
+  @override
+  String get adminContactBody =>
+      'Shown in Help & support and used by the WhatsApp buttons. Leave a field empty to hide it.';
+
+  @override
+  String get adminContactSave => 'Save contact details';
+
+  @override
+  String get adminContactSaved => 'Contact details saved.';
+
+  @override
+  String get adminWhatsappInvalid =>
+      'Use 8 to 15 digits with the country code, no + or spaces.';
+
+  @override
+  String get adminWhatsappHelper =>
+      'Digits with country code, e.g. 971501234567';
+
+  @override
+  String get adminAddressEn => 'Address (English)';
+
+  @override
+  String get adminAddressAr => 'Address (Arabic)';
+
+  @override
+  String get adminAddressTooLong => 'Keep the address under 300 characters.';
+
+  @override
+  String get adminSocialInvalid =>
+      'Enter a full link that starts with https://';
+
+  @override
+  String get adminCurrencySaved => 'Currency saved.';
+
+  @override
+  String adminCurrencyDeleteTitle(String code) {
+    return 'Remove $code?';
+  }
+
+  @override
+  String adminCurrencyDeleteBody(String code) {
+    return 'Anyone who chose $code will see prices in AED instead. Past orders keep the currency and rate they were placed with.';
+  }
+
+  @override
+  String adminCurrencyDeleted(String code) {
+    return '$code removed.';
+  }
+
+  @override
+  String get adminNewCurrency => 'Add currency';
+
+  @override
+  String adminEditCurrency(String code) {
+    return 'Edit $code';
+  }
+
+  @override
+  String get adminNoCurrencies => 'No currencies yet.';
+
+  @override
+  String get adminCurrencyBase => 'Base';
+
+  @override
+  String get adminCurrencyBaseHint =>
+      'Charges and payouts are always in AED. Its rate is always 1.';
+
+  @override
+  String get adminCurrencyLocked => 'Always on';
+
+  @override
+  String get adminMoveUp => 'Move up';
+
+  @override
+  String get adminMoveDown => 'Move down';
+
+  @override
+  String get adminCurrencyCode => 'Code';
+
+  @override
+  String get adminCurrencyCodeHelper =>
+      'Three letters, e.g. EUR. It can\'t be changed later.';
+
+  @override
+  String get adminCurrencyCodeInvalid => 'Enter a three-letter currency code.';
+
+  @override
+  String get adminCurrencyDecimalsInvalid => 'Decimals must be 0 to 3.';
+
+  @override
+  String get adminCurrencySymbol => 'Symbol (optional)';
+
+  @override
+  String get adminCurrencyDecimals => 'Decimals';
+
+  @override
+  String get adminCurrencyDecimalsHelper =>
+      'How many decimals prices show, 0 to 3';
+
+  @override
+  String get adminRatePerAed => 'Rate per 1 AED';
+
+  @override
+  String get adminRatePerAedHelper => 'How many units one dirham buys';
+
+  @override
+  String get adminCurrencyEnabled => 'Show to students';
+
+  @override
+  String get adminCategoryImageAdd => 'Add image';
+
+  @override
+  String get adminCategoryImageChange => 'Change image';
+
+  @override
+  String get adminCategoryImageSaved => 'Category image saved.';
+
+  @override
+  String get adminCategoryImageRemoved => 'Category image removed.';
+
+  @override
+  String get adminCategoryImageHint =>
+      'JPG, PNG or WebP. Students see it instead of the icon.';
+
+  @override
+  String get adminCategoryImageAfterSave =>
+      'Save the category first, then add an image.';
+
+  @override
+  String get phoneLabel => 'Mobile number';
+
+  @override
+  String get phoneRequired => 'Enter your mobile number';
+
+  @override
+  String phoneInvalidFor(String country) {
+    return 'That number doesn\'t look right for $country';
+  }
+
+  @override
+  String get phoneSearchCountries => 'Search country or dial code';
+
+  @override
+  String get phoneCountryPicker => 'Choose country';
+
+  @override
+  String get phoneNoCountries => 'No country matches that search.';
+
+  @override
+  String adminCurrencyRateLine(String rate, String code) {
+    return '1 AED = $rate $code';
+  }
+
+  @override
+  String adminCurrencyDecimalsCount(int decimals) {
+    String _temp0 = intl.Intl.pluralLogic(
+      decimals,
+      locale: localeName,
+      other: '$decimals decimals',
+      one: '$decimals decimal',
+      zero: 'no decimals',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminCurrencyNameArRequired => 'Enter the Arabic name.';
+
+  @override
+  String get adminCurrencyNameTooLong => 'Names can be up to 60 characters.';
+
+  @override
+  String get adminCurrencySymbolTooLong =>
+      'The symbol can be up to 8 characters.';
+
+  @override
+  String get errPhoneInvalid => 'That phone number doesn\'t look right.';
+
+  @override
+  String get errCurrencyUnavailable =>
+      'That currency isn\'t available any more.';
+
+  @override
+  String get errBaseCurrencyLocked =>
+      'The dirham is the base currency and can\'t be changed that way.';
 }

@@ -112,6 +112,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           _filters.category == c.slug,
                           () => setState(() => _filters = _filters.copyWith(category: () => _filters.category == c.slug ? null : c.slug)),
                           icon: categoryIcon(c.icon),
+                          imageUrl: c.imageUrl,
                           key: Key('category-${c.slug}'),
                         ),
                     ],
@@ -158,13 +159,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _chip(String label, bool selected, VoidCallback onTap, {IconData? icon, Key? key}) {
+  Widget _chip(String label, bool selected, VoidCallback onTap, {IconData? icon, String? imageUrl, Key? key}) {
     final p = AzzaPalette.of(context);
     return Padding(
       padding: const EdgeInsetsDirectional.only(end: 8),
       child: ChoiceChip(
         key: key,
-        avatar: icon == null ? null : Icon(icon, size: 16, color: selected ? p.onAccent : p.text),
+        avatar: imageUrl != null
+            ? ClipOval(
+                child: SizedBox.square(
+                  dimension: 20,
+                  child: MediaImage(imageUrl, key: key == null ? null : Key('${(key as ValueKey).value}-image'), cacheWidth: 20, fallback: Icon(icon, size: 16, color: selected ? p.onAccent : p.text)),
+                ),
+              )
+            : icon == null
+                ? null
+                : Icon(icon, size: 16, color: selected ? p.onAccent : p.text),
         label: Text(label),
         selected: selected,
         showCheckmark: false,

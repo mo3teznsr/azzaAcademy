@@ -14,6 +14,9 @@ export interface PayoutRules {
   minPayoutFils: number;
 }
 
+/** Fixed rules (tests), or a loader awaited at every use (the admin-editable rules, 30 s cache). */
+export type PayoutRulesSource = PayoutRules | (() => Promise<PayoutRules>);
+
 /** Implemented here, consumed by payments when money goes back to a student (DIP). */
 export interface RefundEarningsReverser {
   reverseForRefund(args: { batchId: string; refundFils: number; totalFils: number; vatFils: number; reference: string }): Promise<unknown>;
@@ -38,8 +41,12 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     private readonly settings: Pick<SettingsService, 'cuts'>,
     private readonly notifier: Notifier,
     private readonly clock: Clock,
-    private readonly rules: PayoutRules,
+    private readonly rules: PayoutRulesSource,
   ) {}
+
+  private async currentRules(): Promise<PayoutRules> {
+    return typeof this.rules === 'function' ? this.rules() : this.rules;
+  }
 
   // ───────── accrual ─────────
 
@@ -48,6 +55,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
    * Never accrues for unpaid payments, Apple tombstones (REFUNDED, no money), manual-refund cases or admin-authored courses.
    */
   async accrueForSubscriptionPayment(paymentId: string) {
+    const rules = await this.currentRules();
     const p = await this.repo.subscriptionPaymentForAccrual(paymentId);
     if (!p || p.status !== 'PAID' || p.reviewNote === 'MANUAL_REFUND_NEEDED' || p.totalFils <= 0 || !p.paidAt) return null;
     const course = p.subscription.course;
@@ -60,7 +68,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
       subscriptionPaymentId: p.id,
       amountFils,
       status: 'PENDING',
-      availableAt: new Date(p.paidAt.getTime() + this.rules.earningHoldDays * DAY_MS),
+      availableAt: new Date(p.paidAt.getTime() + rules.earningHoldDays * DAY_MS),
     });
   }
 
@@ -105,6 +113,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
 
   /** Idempotent thanks to the unique (sessionId, teacherId, kind) key. */
   async accrueForSession(sessionId: string) {
+    const rules = await this.currentRules();
     const s = await this.repo.sessionForAccrual(sessionId);
     if (!s || s.status !== 'ENDED') return null;
     const sessionCount = s.batch.schedule?.sessionCount ?? s.batch._count.sessions;
@@ -117,7 +126,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
       batchId: s.batchId,
       sessionId: s.id,
       amountFils,
-      availableAt: new Date(endedAt.getTime() + this.rules.earningHoldDays * DAY_MS),
+      availableAt: new Date(endedAt.getTime() + rules.earningHoldDays * DAY_MS),
     });
   }
 
@@ -242,6 +251,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
   }
 
   async verifyBankDetails(teacherId: string) {
+    const rules = await this.currentRules();
     if (!(await this.repo.bankDetails(teacherId))) throw new NotFoundError('Bank details for teacher', teacherId);
     const details = await this.repo.verifyBankDetails(teacherId, this.clock.now());
     // re-evaluate payouts held only because of the bank in draft runs
@@ -250,7 +260,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
         amountFils: p.amountFils + p.adjustmentsFils,
         bankVerified: true,
         hasBankDetails: true,
-        minPayoutFils: this.rules.minPayoutFils,
+        minPayoutFils: rules.minPayoutFils,
       });
       await this.repo.updatePayout(p.id, { status: d.status, holdReason: d.holdReason });
     }
@@ -260,6 +270,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
   // ───────── admin payout runs ─────────
 
   async createRun(input: { periodStart: string; periodEnd: string }) {
+    const rules = await this.currentRules();
     const periodStart = new Date(`${input.periodStart}T00:00:00.000Z`);
     const periodEnd = new Date(`${input.periodEnd}T00:00:00.000Z`);
     if (periodEnd < periodStart) throw new BusinessRuleError('periodEnd must be on or after periodStart', 'INVALID_PERIOD');
@@ -281,7 +292,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
         amountFils: agg.amountFils,
         hasBankDetails: !!bank,
         bankVerified: bank?.verified ?? false,
-        minPayoutFils: this.rules.minPayoutFils,
+        minPayoutFils: rules.minPayoutFils,
       });
       return { teacherId, ...agg, ...decision };
     });
@@ -322,6 +333,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
   }
 
   async adjust(input: { payoutId: string; amountAed: number; reason: string }) {
+    const rules = await this.currentRules();
     const payout = await this.repo.findPayout(input.payoutId);
     if (!payout) throw new NotFoundError('Payout', input.payoutId);
     if (payout.run.status !== 'DRAFT') throw new BusinessRuleError('Only draft runs can be adjusted', 'RUN_NOT_DRAFT');
@@ -349,7 +361,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
       amountFils: payout.amountFils + adjustmentsFils,
       hasBankDetails: !!bank,
       bankVerified: bank?.verified ?? false,
-      minPayoutFils: this.rules.minPayoutFils,
+      minPayoutFils: rules.minPayoutFils,
     });
     await this.repo.updatePayout(payout.id, { adjustmentsFils, status: decision.status, holdReason: decision.holdReason });
     return this.getRun(payout.runId);

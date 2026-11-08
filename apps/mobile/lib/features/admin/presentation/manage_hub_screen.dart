@@ -10,7 +10,9 @@ import '../../../router/routes.dart';
 import '../data/admin_queue.dart';
 import '../data/back_office_repository.dart';
 import 'admin_app_store_card.dart';
+import 'admin_contact_card.dart';
 import 'admin_cuts_card.dart';
+import 'admin_rules_card.dart';
 import 'admin_widgets.dart';
 
 /// The "Manage" tab: every back-office area one tap away, grouped by job.
@@ -82,24 +84,8 @@ class PlatformSettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
-    final f = ref.watch(fmtProvider);
     final settings = ref.watch(platformSettingsProvider);
     final p = AzzaPalette.of(context);
-    String rule(String key, num v) => switch (key) {
-          'TEACHER_SHARE_PERCENT' || 'VAT_PERCENT' => f.percent(v),
-          'MIN_PAYOUT_AED' => f.aed((v * 100).round()),
-          'EARNING_HOLD_DAYS' => f.n(l.adminDaysValue(v.round())),
-          'BANK_TRANSFER_HOLD_HOURS' => f.n(l.adminHoursValue(v.round())),
-          _ => f.number(v),
-        };
-    String ruleLabel(String key) => switch (key) {
-          'TEACHER_SHARE_PERCENT' => l.adminRuleTeacherShare,
-          'EARNING_HOLD_DAYS' => l.adminRuleEarningHold,
-          'MIN_PAYOUT_AED' => l.adminRuleMinPayout,
-          'BANK_TRANSFER_HOLD_HOURS' => l.adminRuleTransferHold,
-          'VAT_PERCENT' => l.adminRuleVat,
-          _ => key,
-        };
     return Scaffold(
       appBar: AppBar(title: Text(l.adminSettingsTitle)),
       body: AsyncView<PlatformSettings>(
@@ -111,13 +97,13 @@ class PlatformSettingsScreen extends ConsumerWidget {
             Text(l.adminSettingsBody, style: Theme.of(context).textTheme.bodyMedium),
             const TeacherCutsCard(),
             const AdminAppStoreCard(),
-            SectionCard(
-              title: l.adminRules,
-              child: Column(children: [for (final e in s.rules.entries) KeyValueRow(ruleLabel(e.key), rule(e.key, e.value))]),
-            ),
+            BusinessRulesCard(settings: s),
+            ContactSettingsCard(settings: s),
             SectionCard(
               title: l.adminIntegrations,
-              child: Column(children: [
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                Text(l.adminIntegrationsNote, style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 8),
                 for (final e in s.integrations.entries)
                   KeyValueRow(e.key, e.value ? l.adminConfigured : l.adminNotConfigured, valueColor: e.value ? p.success : p.warning),
               ]),

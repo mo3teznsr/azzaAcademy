@@ -1,5 +1,6 @@
 import { formatMoney } from '@azza/shared';
 import { BusinessRuleError, NotFoundError } from '../../../core/errors';
+import { resolveRule, type RuleValue } from '../../../core/rule-value';
 import { addHours, formatInZone } from '../../../core/time';
 import { appEmails } from '../../notifications/email-templates';
 import type { Notifier } from '../../notifications/notification.types';
@@ -22,13 +23,14 @@ export class BankTransferCheckout implements CheckoutStrategy {
   constructor(
     private readonly repo: Pick<PaymentsRepository, 'findBankAccount' | 'firstActiveBankAccount'>,
     private readonly notifier: Notifier,
-    private readonly holdHours: number,
+    /** Fixed, or read per checkout (the admin-editable rule). */
+    private readonly holdHours: RuleValue<number>,
   ) {}
 
   async start(ctx: CheckoutContext): Promise<CheckoutStart> {
     const account = await resolveBankAccount(this.repo, ctx.input.bankAccountId);
 
-    const expiresAt = addHours(ctx.now, this.holdHours);
+    const expiresAt = addHours(ctx.now, await resolveRule(this.holdHours));
     const amount = formatMoney(ctx.quote.totalFils / 100, 'AED');
     return {
       orderStatus: 'AWAITING_RECEIPT',

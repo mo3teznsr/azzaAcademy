@@ -206,6 +206,40 @@ export class CourseService {
     return present(updated, ADMIN_VIEWER);
   }
 
+  /**
+   * ADMIN (after a VAT change): re-syncs the Stripe Prices of every published recorded course that has plan prices.
+   * Stripe Prices are VAT-inclusive, so `upsertRecordedProduct` (which reads the VAT at call time) creates new Prices
+   * for changed inclusive amounts and archives the old ones; subscribers keep theirs. One course failing never stops the rest.
+   */
+  async resyncRecordedStripePrices(log: (message: string, error?: unknown) => void = (m, e) => (e ? console.error(m, e) : console.info(m))) {
+    const totals = { synced: 0, failed: 0, skipped: 0 };
+    if (!this.payments) return totals;
+    const { items } = await this.courses.list({ type: 'RECORDED', status: 'PUBLISHED', skip: 0, take: 10_000 });
+    for (const course of items) {
+      if (!course.monthlyPriceFils || !course.yearlyPriceFils) {
+        totals.skipped++;
+        continue;
+      }
+      try {
+        const stripe = await this.payments.upsertRecordedProduct({
+          productId: course.stripeProductId ?? undefined,
+          name: course.titleEn,
+          courseId: course.id,
+          monthlyFils: course.monthlyPriceFils,
+          yearlyFils: course.yearlyPriceFils,
+          currentMonthlyPriceId: course.stripeMonthlyPriceId ?? undefined,
+          currentYearlyPriceId: course.stripeYearlyPriceId ?? undefined,
+        });
+        await this.courses.update(course.id, { stripeProductId: stripe.productId, stripeMonthlyPriceId: stripe.monthlyPriceId, stripeYearlyPriceId: stripe.yearlyPriceId });
+        totals.synced++;
+      } catch (e) {
+        totals.failed++;
+        log(`[stripe] re-syncing the prices of course ${course.id} failed`, e);
+      }
+    }
+    return totals;
+  }
+
   /** Course editors: the one lesson anyone can watch. It must belong to this course. */
   async setPreviewLesson(id: string, input: PreviewLessonInput, actor: Actor) {
     const course = await this.courses.findById(id);

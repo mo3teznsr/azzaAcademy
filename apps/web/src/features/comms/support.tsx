@@ -1,5 +1,6 @@
 'use client';
 
+import { ContactDetails } from '@/components/brand/contact-details';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent, type KeyboardEvent } from 'react';
@@ -72,6 +73,7 @@ export function SupportHome({ openNew, orderId, batchId }: { openNew?: boolean; 
         }
       />
       <p className="max-w-2xl text-muted-foreground">{t.comms.support.intro}</p>
+      <ContactDetails className="max-w-md" />
       {role === 'ADMIN' && (
         <Link href="/admin/support" className="link-sun self-start text-sm">
           {t.comms.support.adminInbox}

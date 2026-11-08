@@ -1,11 +1,12 @@
 import type { CheckoutInput } from '@azza/shared';
 import { http, items, request } from './client';
-import type { BankAccount, CheckoutResult, Items, Order, FxRates, Quote } from './types';
+import type { BankAccount, CheckoutResult, Items, Order, CurrencyList, Quote } from './types';
 
 type Started = Exclude<CheckoutResult, { waitlisted: true }>;
 
 export const checkoutApi = {
-  fxRates: () => http.get<FxRates>('/api/v1/fx-rates'),
+  /** Public: the enabled display currencies with their rates and decimals. */
+  currencies: () => http.get<CurrencyList>('/api/v1/currencies'),
   bankAccounts: () => items(http.get<Items<BankAccount>>('/api/v1/bank-accounts')),
   quote: (input: CheckoutInput) => http.post<Quote>('/api/v1/checkout/quote', input),
   checkout: (input: CheckoutInput) => http.post<CheckoutResult>('/api/v1/checkout', input),

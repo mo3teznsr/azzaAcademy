@@ -1,5 +1,6 @@
 import 'package:azza/core/domain/enums.dart';
 import 'package:azza/core/money/money.dart';
+import 'package:azza/core/network/app_exception.dart';
 import 'package:azza/features/admin/data/admin_repository.dart';
 import 'package:azza/features/admin/data/back_office_repository.dart';
 import 'package:azza/features/catalog/domain/catalog_models.dart';
@@ -178,14 +179,87 @@ class FakeBackOfficeRepository implements BackOfficeRepository {
   @override
   Future<AdminBankAccount> saveBankAccount(String? id, Map<String, dynamic> body) async => throw UnimplementedError();
 
-  @override
-  Future<FxRates> fxRates() async => FxRates.fallback;
+  // Currencies
+  List<CurrencyInfo> currencyList = const [
+    CurrencyInfo(code: 'AED', nameEn: 'UAE dirham', decimals: 2),
+    CurrencyInfo(code: 'SAR', nameEn: 'Saudi riyal', ratePerAed: 1.0211, decimals: 0, sortOrder: 1),
+  ];
+  final List<Map<String, dynamic>> createdCurrencies = [];
+  final List<(String, Map<String, dynamic>)> updatedCurrencies = [];
+  final List<String> deletedCurrencies = [];
 
   @override
-  Future<void> setFxRate(DisplayCurrency currency, double ratePerAed) async {}
+  Future<List<CurrencyInfo>> adminCurrencies() async => [...currencyList];
 
   @override
-  Future<PlatformSettings> settings() async => const PlatformSettings();
+  Future<CurrencyInfo> createCurrency(Map<String, dynamic> body) async {
+    // The API requires an Arabic name of 1-60 characters.
+    final ar = body['nameAr'];
+    if (ar is! String || ar.trim().isEmpty || ar.length > 60) throw const AppException('VALIDATION', 'nameAr is required');
+    createdCurrencies.add(body);
+    final c = CurrencyInfo(code: body['code'] as String, nameEn: body['nameEn'] as String, nameAr: ar, ratePerAed: (body['ratePerAed'] as num).toDouble(), decimals: body['decimals'] as int, sortOrder: currencyList.length);
+    currencyList = [...currencyList, c];
+    return c;
+  }
+
+  @override
+  Future<CurrencyInfo> updateCurrency(String code, Map<String, dynamic> body) async {
+    updatedCurrencies.add((code, body));
+    return currencyList.firstWhere((c) => c.code == code);
+  }
+
+  @override
+  Future<void> deleteCurrency(String code) async {
+    deletedCurrencies.add(code);
+    currencyList = currencyList.where((c) => c.code != code).toList();
+  }
+
+  // Settings
+  PlatformSettings platformSettings = const PlatformSettings(
+    rules: {'VAT_PERCENT': 10, 'EARNING_HOLD_DAYS': 7, 'MIN_PAYOUT_AED': 200, 'BANK_TRANSFER_HOLD_HOURS': 48, 'TEACHER_SHARE_PERCENT': 60},
+    ruleDefaults: {'VAT_PERCENT': 5, 'EARNING_HOLD_DAYS': 7, 'MIN_PAYOUT_AED': 200, 'BANK_TRANSFER_HOLD_HOURS': 48},
+    integrations: {'stripe': true, 'smtp': false},
+  );
+  final List<Map<String, int?>> savedRules = [];
+  final List<Map<String, dynamic>> savedContact = [];
+
+  @override
+  Future<PlatformSettings> settings() async => platformSettings;
+
+  @override
+  Future<PlatformSettings> saveRules(Map<String, int?> changes) async {
+    savedRules.add(changes);
+    final rules = {...platformSettings.rules};
+    const fields = {'vatPercent': 'VAT_PERCENT', 'earningHoldDays': 'EARNING_HOLD_DAYS', 'minPayoutAed': 'MIN_PAYOUT_AED', 'bankTransferHoldHours': 'BANK_TRANSFER_HOLD_HOURS'};
+    changes.forEach((f, v) => rules[fields[f]!] = v ?? platformSettings.ruleDefaults[fields[f]!]!);
+    return platformSettings = PlatformSettings(rules: rules, ruleDefaults: platformSettings.ruleDefaults, integrations: platformSettings.integrations);
+  }
+
+  @override
+  Future<PlatformSettings> saveContact(Map<String, dynamic> body) async {
+    savedContact.add(body);
+    return platformSettings;
+  }
+
+  final Map<String, String?> categoryImages = {};
+  final List<String> uploadedCategoryImages = [];
+  final List<String> removedCategoryImages = [];
+
+  @override
+  Future<AdminCategory> uploadCategoryImage(String slug, List<int> bytes, {String filename = 'category.jpg'}) async {
+    uploadedCategoryImages.add(slug);
+    categoryImages[slug] = '/uploads/categories/$slug.jpg';
+    final c = categoryList.firstWhere((c) => c.slug == slug);
+    return AdminCategory(slug: slug, nameEn: c.nameEn, imageUrl: categoryImages[slug]);
+  }
+
+  @override
+  Future<AdminCategory> removeCategoryImage(String slug) async {
+    removedCategoryImages.add(slug);
+    categoryImages[slug] = null;
+    final c = categoryList.firstWhere((c) => c.slug == slug);
+    return AdminCategory(slug: slug, nameEn: c.nameEn);
+  }
 
   @override
   Future<TeacherCuts> cuts() async => defaultCuts;

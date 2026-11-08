@@ -200,6 +200,8 @@ export interface FileStorage {
   read(key: string): Promise<{ bytes: Uint8Array; contentType: string } | null>;
   /** The key of a URL this storage returned from `save`, or `null` for any other URL. */
   keyFromUrl(url: string): string | null;
+  /** Removes a stored file; a missing or malformed key is a no-op. Optional so simple fakes need not implement it. */
+  delete?(key: string): Promise<void>;
 }
 
 /** A StoreKit 2 transaction whose JWS signature, certificate chain, bundle id and environment were verified. */

@@ -114,16 +114,16 @@ void main() {
   group('checkout', () {
     test('fx, quote in SAR, bank list stays masked', () async {
       final repo = DioCheckoutRepository(fixtureDio({
-        'GET /api/v1/fx-rates': 'fx',
+        'GET /api/v1/currencies': 'currencies',
         'POST /api/v1/checkout/quote': 'quote',
         'GET /api/v1/bank-accounts': 'bank_accounts',
       }));
       final fx = await repo.fxRates();
-      expect(fx.rateFor(DisplayCurrency.sar), closeTo(1.0211, 1e-9));
-      final q = await repo.quote(const CheckoutRequest(batchId: b08, method: PaymentMethod.bankTransfer, displayCurrency: DisplayCurrency.sar));
+      expect(fx.rateFor(DisplayCurrency('SAR')), closeTo(1.0211, 1e-9));
+      final q = await repo.quote(const CheckoutRequest(batchId: b08, method: PaymentMethod.bankTransfer, displayCurrency: DisplayCurrency('SAR')));
       expect(q.totalFils, 92400);
       expect(q.vatFils, 4400);
-      expect(q.displayCurrency, DisplayCurrency.sar);
+      expect(q.displayCurrency, DisplayCurrency('SAR'));
       expect(q.displayAmount, 943);
       final banks = await repo.bankAccounts();
       expect(banks, hasLength(3));
