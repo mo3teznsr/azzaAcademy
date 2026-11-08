@@ -356,7 +356,7 @@ class _AddSessionSheetState extends ConsumerState<_AddSessionSheet> {
                   Icon(Icons.circle, size: 6, color: p.danger),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: MonoLabel(
+                    child: Kicker(
                       [l.conflictWith(c.withBatch), if (c.localDate.isNotEmpty) c.localDate.digits(f.arabicDigits)].join(' · '),
                       color: p.danger,
                     ),
@@ -423,7 +423,7 @@ class _EditSeatsSheetState extends ConsumerState<_EditSeatsSheet> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
         Text(l.editSeatsTitle(b.code), style: t.titleLarge),
         const SizedBox(height: 4),
-        Text(l.editSeatsLead(f.n(b.seatsTaken)), style: t.bodySmall),
+        Text(f.n(l.editSeatsLead(b.seatsTaken)), style: t.bodySmall),
         const SizedBox(height: 16),
         CountStepper(
           key: const ValueKey('seats-stepper'),

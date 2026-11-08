@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { COURSE_LEVELS, createCourseInput, type CourseStatus } from '@azza/shared';
+import { COURSE_LEVELS, createCourseInput, type CourseStatus, type CourseType } from '@azza/shared';
 import type { z } from 'zod';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -31,6 +31,8 @@ import { CoverPhotoField, IntroVideoField } from './course-media-fields';
 import { ProposalNotice, ReviewActions, ReviewNoteQuote, useProposalError } from './proposal-review';
 import { ReviewModeration } from '../course/reviews';
 import { ModuleLessons } from '../lessons/module-lessons';
+import { CourseQuizzes } from '../quizzes/batch-quizzes';
+import { CourseTypePicker, PreviewLessonPicker, ReadinessChecklist, RecordedPricingPanel, SubscribersPanel, missingFromError, useRecordedMissing } from './recorded-panels';
 
 type In = z.input<typeof createCourseInput>;
 type Out = z.output<typeof createCourseInput>;
@@ -43,7 +45,15 @@ export function CourseEditor({ courseId, mode = 'admin' }: { courseId?: string; 
   const q = useQuery({ queryKey: qk.course(courseId ?? 'new'), queryFn: () => coursesApi.get(courseId!), enabled: !!courseId });
   if (courseId && q.isPending) return <LoadingBlock rows={4} height={80} />;
   if (courseId && q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;
+  if (!courseId) return <NewCourse mode={mode} />;
   return <Editor course={q.data} mode={mode} />;
+}
+
+/** New course: Live or Recorded first, then the usual form. */
+function NewCourse({ mode }: { mode: EditorMode }) {
+  const [type, setType] = useState<CourseType | null>(null);
+  if (!type) return <CourseTypePicker onPick={setType} />;
+  return <Editor mode={mode} newType={type} />;
 }
 
 const BULLET_LISTS = ['outcomes', 'requirements', 'audience'] as const;
@@ -59,8 +69,9 @@ function clean(v: In): In {
 const baseResolver = zodResolver(createCourseInput);
 const resolver: typeof baseResolver = (values, ctx, opts) => baseResolver(clean(values), ctx, opts);
 
-function toForm(c?: Course): In {
+function toForm(c?: Course, newType?: CourseType): In {
   return {
+    type: c?.type ?? newType ?? 'LIVE',
     slug: c?.slug,
     titleEn: c?.titleEn ?? '',
     titleAr: c?.titleAr ?? '',
@@ -83,7 +94,7 @@ function toForm(c?: Course): In {
   };
 }
 
-function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
+function Editor({ course, mode, newType }: { course?: Course; mode: EditorMode; newType?: CourseType }) {
   const { t, f, fill, pick } = useI18n();
   const router = useRouter();
   const qc = useQueryClient();
@@ -95,11 +106,11 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
   // A teacher edits their proposal only while it's a draft or waiting; published/archived courses belong to the admins.
   const locked = teacher && !!course && status !== 'DRAFT' && !pendingReview;
   const uploader = teacher ? coursesApi.uploadMedia : uploadCourseMediaAsAdmin;
-  const form = useForm<In, unknown, Out>({ resolver, defaultValues: toForm(course) });
+  const form = useForm<In, unknown, Out>({ resolver, defaultValues: toForm(course, newType) });
   const faq = useFieldArray({ control: form.control, name: 'faq' });
   // Admins may file a course under a hidden category; teachers pick from the visible ones.
   const categories = useQuery({ queryKey: qk.categories(!teacher), queryFn: () => categoriesApi.list(!teacher) });
-  useEffect(() => form.reset(toForm(course)), [course, form]);
+  useEffect(() => form.reset(toForm(course, newType)), [course, newType, form]);
   const modules = useFieldArray({ control: form.control, name: 'modules' });
   const preview = useWatch({ control: form.control });
   const err = form.formState.errors;
@@ -122,7 +133,11 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
       // Featured placement is an admin decision; blank clears it.
       featuredRank: teacher ? undefined : (values.featuredRank ?? null),
     };
-    return course ? coursesApi.update(course.id, { ...body, status: nextStatus }) : coursesApi.create(body);
+    if (!course) return coursesApi.create(body);
+    // The type is fixed at creation, so an update never sends it.
+    const { type: _type, ...rest } = body;
+    void _type;
+    return coursesApi.update(course.id, { ...rest, status: nextStatus });
   };
   const settle = (c: Course) => {
     void qc.invalidateQueries({ queryKey: ['courses'] });
@@ -136,7 +151,10 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
       toast.success(course ? t.admin.editor.saved : t.admin.editor.created);
       settle(c);
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => {
+      setApiMissing(missingFromError(e) ?? []);
+      toast.error(errorMessage(e));
+    },
   });
   const submit = (next?: CourseStatus) => form.handleSubmit((values) => save.mutate({ values, status: next }))();
 
@@ -168,9 +186,16 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
       toast.success(v.approve ? t.proposals.approvedCourse : t.proposals.sentBack);
       settle(c);
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => {
+      setApiMissing(missingFromError(e) ?? []);
+      toast.error(errorMessage(e));
+    },
   });
   const busy = save.isPending || submitForReview.isPending || review.isPending;
+  const recorded = course?.type === 'RECORDED';
+  const [apiMissing, setApiMissing] = useState<Array<'PRICES' | 'LESSONS'>>([]);
+  const { missing, lessons } = useRecordedMissing(course, apiMissing);
+  const notReady = recorded && missing.length > 0;
   const proposer = useQuery({
     queryKey: qk.teacher(course?.createdById ?? ''),
     queryFn: () => coursesApi.teacher(course!.createdById!),
@@ -232,6 +257,7 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
           <span className="text-[13px]">{[proposedBy, submittedOn].filter(Boolean).join(' · ')}</span>
         </ProposalNotice>
       )}
+      {course && recorded && (!teacher || status === 'DRAFT') && status !== 'PUBLISHED' && status !== 'ARCHIVED' && <ReadinessChecklist missing={missing} />}
       <form onSubmit={(e) => (e.preventDefault(), void submit())} noValidate className="flex flex-col gap-6">
         <Tabs defaultValue="details">
           <TabsList>
@@ -240,7 +266,10 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
               {t.admin.editor.tabCurriculum} · {f.number(modules.fields.length)}
             </TabsTrigger>
             <TabsTrigger value="content">{t.admin.editor.tabContent}</TabsTrigger>
-            {course && <TabsTrigger value="batches">{t.admin.editor.tabBatches}</TabsTrigger>}
+            {course && !recorded && <TabsTrigger value="batches">{t.admin.editor.tabBatches}</TabsTrigger>}
+            {course && recorded && <TabsTrigger value="subscribers">{t.recordedOps.tabs.subscribers}</TabsTrigger>}
+            {course && recorded && <TabsTrigger value="quizzes">{t.recordedOps.tabs.quizzes}</TabsTrigger>}
+            {course && recorded && !teacher && <TabsTrigger value="pricing">{t.recordedOps.tabs.pricing}</TabsTrigger>}
             {course && !teacher && <TabsTrigger value="reviews">{t.admin.editor.tabReviews}</TabsTrigger>}
           </TabsList>
           <TabsContent value="details" className="mt-4">
@@ -382,7 +411,8 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="curriculum" className="mt-4">
+          <TabsContent value="curriculum" className="mt-4 flex flex-col gap-5">
+            {course && recorded && !locked && <PreviewLessonPicker course={course} lessons={lessons} />}
             <fieldset disabled={locked} className="contents">
               <Panel>
                 <p className="text-sm text-muted-foreground">{t.admin.editor.modulesNote}</p>
@@ -453,7 +483,22 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
               </div>
             </fieldset>
           </TabsContent>
-          {course && (
+          {course && recorded && (
+            <>
+              <TabsContent value="subscribers" className="mt-4">
+                <SubscribersPanel course={course} admin={!teacher} />
+              </TabsContent>
+              <TabsContent value="quizzes" className="mt-4">
+                <CourseQuizzes courseId={course.id} />
+              </TabsContent>
+              {!teacher && (
+                <TabsContent value="pricing" className="mt-4">
+                  <RecordedPricingPanel course={course} />
+                </TabsContent>
+              )}
+            </>
+          )}
+          {course && !recorded && (
             <TabsContent value="batches" className="mt-4">
               <CourseBatches courseId={course.id} mode={mode} canAdd={status !== 'ARCHIVED'} />
             </TabsContent>
@@ -481,12 +526,13 @@ function Editor({ course, mode }: { course?: Course; mode: EditorMode }) {
               <ReviewActions
                 onInk
                 pending={busy}
+                approveDisabled={notReady}
                 onApprove={() => void form.handleSubmit((values) => review.mutate({ approve: true, values: form.formState.isDirty ? values : undefined }))()}
                 onSendBack={(note) => review.mutateAsync({ approve: false, note })}
               />
             )}
             {!teacher && course && !pendingReview && course.status !== 'PUBLISHED' && (
-              <Button type="button" variant="sun" disabled={busy} onClick={() => void submit('PUBLISHED')}>
+              <Button type="button" variant="sun" disabled={busy || notReady} onClick={() => void submit('PUBLISHED')}>
                 {t.admin.editor.publish}
               </Button>
             )}

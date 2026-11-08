@@ -128,6 +128,8 @@ class Order {
     this.student,
     this.appleProductId,
     this.appleAppAccountToken,
+    this.subscriptionCourse,
+    this.subscriptionPlan,
   });
 
   factory Order.fromJson(Json j) {
@@ -157,6 +159,9 @@ class Order {
       student: userJson == null ? null : PersonRef.fromJson(userJson),
       appleProductId: strOrNull(j, 'appleProductId'),
       appleAppAccountToken: strOrNull(j, 'appleAppAccountToken'),
+      // The transfers inbox also lists plan payments: `kind: 'SUBSCRIPTION'` with the `course` and `plan`.
+      subscriptionCourse: str(j, 'kind') == 'SUBSCRIPTION' && objOrNull(j, 'course') != null ? Course.fromJson(obj(j, 'course')) : null,
+      subscriptionPlan: str(j, 'kind') == 'SUBSCRIPTION' ? SubscriptionPlan.parse(j['plan']) : null,
     );
   }
 
@@ -184,6 +189,11 @@ class Order {
   /// APPLE_IAP orders: the consumable product to buy and the appAccountToken that ties the purchase to this order.
   final String? appleProductId;
   final String? appleAppAccountToken;
+
+  /// A plan payment (a transfer for a recorded course's plan), not a seat: [batch] is null and these are set.
+  final Course? subscriptionCourse;
+  final SubscriptionPlan? subscriptionPlan;
+  bool get isSubscription => subscriptionPlan != null;
 
   /// An App Store order the student can still pay (a cancelled sheet leaves it AWAITING_PAYMENT).
   bool get awaitsAppStorePurchase =>

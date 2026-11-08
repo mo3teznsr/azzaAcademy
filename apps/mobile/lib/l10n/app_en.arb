@@ -7,9 +7,16 @@
   "seeAll": "See all",
   "continueLabel": "Continue",
   "cancel": "Cancel",
+  "back": "Back",
   "noOpenBatchesShort": "No open classes",
   "chargedAsAed": "Charged as {amount}",
-  "@chargedAsAed": {"placeholders": {"amount": {"type": "String"}}},
+  "@chargedAsAed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "ratesUnavailableHint": "Shown in AED: exchange rates are unavailable right now.",
   "decrease": "Decrease",
   "increase": "Increase",
@@ -17,7 +24,16 @@
   "payCardCheckoutSub": "Card, Apple Pay or Google Pay on Stripe's secure page · charged in AED",
   "confirmingPayment": "Confirming your payment…",
   "confirmingPaymentBody": "Finish paying {amount} on Stripe's secure page. Your place in {code} is held, and this screen updates as soon as the payment is confirmed.",
-  "@confirmingPaymentBody": {"placeholders": {"code": {"type": "String"}, "amount": {"type": "String"}}},
+  "@confirmingPaymentBody": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "checkingPayment": "Checking every few seconds…",
   "openPaymentPage": "Open payment page",
   "coursePricedPerBatch": "No price here: you set the seat price on each batch. Students see the lowest open batch as the course's “from” price.",
@@ -28,7 +44,13 @@
   "seatsHelper": "How many students can enrol (1–500).",
   "sessionAdded": "Session added.",
   "cancelSessionTitle": "Cancel {slate}?",
-  "@cancelSessionTitle": {"placeholders": {"slate": {"type": "String"}}},
+  "@cancelSessionTitle": {
+    "placeholders": {
+      "slate": {
+        "type": "String"
+      }
+    }
+  },
   "cancelSessionBody": "Students are notified and the session leaves their schedule. This can't be undone.",
   "keepSession": "Keep session",
   "cancelSession": "Cancel session",
@@ -39,27 +61,66 @@
   "moveSessionAction": "Move session",
   "requestMove": "Request a move",
   "showAllN": "Show all {count}",
-  "@showAllN": {"placeholders": {"count": {"type": "String"}}},
+  "@showAllN": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "sessionTitleRequired": "Give the session a title (at least 2 characters).",
   "errStartInPast": "Pick a time in the future.",
   "addSessionTitle": "Add a session to {code}",
-  "@addSessionTitle": {"placeholders": {"code": {"type": "String"}}},
+  "@addSessionTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "addSessionLead": "An extra live session outside the weekly schedule: a catch-up, a bonus or an exam.",
   "sessionTitleLabel": "Session title",
   "sessionTitleHint": "Catch-up: review and Q&A",
   "sessionDate": "Date",
   "sessionTimeOtherZone": "Times are in your phone's timezone ({device}). This batch runs in {batchZone}.",
-  "@sessionTimeOtherZone": {"placeholders": {"device": {"type": "String"}, "batchZone": {"type": "String"}}},
+  "@sessionTimeOtherZone": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "batchZone": {
+        "type": "String"
+      }
+    }
+  },
   "sessionTimeZone": "Times are in the batch timezone, {zone}.",
-  "@sessionTimeZone": {"placeholders": {"zone": {"type": "String"}}},
+  "@sessionTimeZone": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
   "sessionLengthHelper": "15 to 480 minutes, in steps of 15.",
   "notifyStudentsNow": "Notify students",
   "notifyStudentsNowSub": "Send them a notification and an email now.",
   "couldNotAddSession": "Couldn't add the session",
   "editSeatsTitle": "Seats in {code}",
-  "@editSeatsTitle": {"placeholders": {"code": {"type": "String"}}},
-  "editSeatsLead": "{count} students are enrolled. Seats can't go below that.",
-  "@editSeatsLead": {"placeholders": {"count": {"type": "String"}}},
+  "@editSeatsTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "editSeatsLead": "{count, plural, one{{count} student is enrolled.} other{{count} students are enrolled.}} Seats can't go below that.",
+  "@editSeatsLead": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "couldNotSaveSeats": "Couldn't change the seats",
   "saveSeats": "Save seats",
   "seatsSaved": "Seats updated.",
@@ -97,6 +158,22 @@
   "@statusStartsIn": {
     "placeholders": {
       "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "fmtInMinutes": "in {minutes} min",
+  "@fmtInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "fmtInHours": "in {hours} h",
+  "@fmtInHours": {
+    "placeholders": {
+      "hours": {
         "type": "String"
       }
     }
@@ -231,11 +308,11 @@
   "exploreTitle": "Find what you want to learn.",
   "searchCourses": "Search courses",
   "allFilter": "All",
-  "coursesCount": "{count} courses",
+  "coursesCount": "{count, plural, one{{count} course} other{{count} courses}}",
   "@coursesCount": {
     "placeholders": {
       "count": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -248,11 +325,11 @@
       }
     }
   },
-  "liveSessionsN": "{n} live sessions",
+  "liveSessionsN": "{n, plural, one{{n} live session} other{{n} live sessions}}",
   "@liveSessionsN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -267,11 +344,11 @@
     }
   },
   "outcomesTitle": "You'll leave able to",
-  "syllabusN": "Syllabus · {n} modules",
+  "syllabusN": "Syllabus · {n, plural, one{{n} module} other{{n} modules}}",
   "@syllabusN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -309,11 +386,11 @@
       }
     }
   },
-  "seatsLeft": "{n} places left",
+  "seatsLeft": "{n, plural, one{{n} place left} other{{n} places left}}",
   "@seatsLeft": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -329,14 +406,14 @@
     }
   },
   "noOpenBatches": "No classes are open right now. Check back soon.",
-  "joiningLate": "Joining late? {ran} sessions already ran — catch up on their recordings in your library. {left} live sessions left.",
+  "joiningLate": "Joining late? {ran, plural, one{{ran} session already ran} other{{ran} sessions already ran}} — catch up on the recordings in your library. {left, plural, one{{left} live session left.} other{{left} live sessions left.}}",
   "@joiningLate": {
     "placeholders": {
       "ran": {
-        "type": "String"
+        "type": "int"
       },
       "left": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -491,7 +568,7 @@
   "orderExpiredBody": "This order expired and your place was released.",
   "goToSchedule": "Go to my schedule",
   "youreIn": "You're in.",
-  "enrolledBody": "Your place in {course} · {code} is confirmed. Start with the lessons; your {n} live sessions are in your schedule.",
+  "enrolledBody": "Your place in {course} · {code} is confirmed. Start with the lessons; {count, plural, =0{your live sessions will appear in your schedule.} one{your {n} live session is in your schedule.} other{your {n} live sessions are in your schedule.}}",
   "@enrolledBody": {
     "placeholders": {
       "course": {
@@ -499,6 +576,9 @@
       },
       "code": {
         "type": "String"
+      },
+      "count": {
+        "type": "int"
       },
       "n": {
         "type": "String"
@@ -517,11 +597,11 @@
       }
     }
   },
-  "syncCalendar": "Sync {n} sessions to calendar",
+  "syncCalendar": "{n, plural, one{Sync {n} session to calendar} other{Sync {n} sessions to calendar}}",
   "@syncCalendar": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -563,11 +643,11 @@
   "goLive": "Go live",
   "recordSession": "Record session",
   "recordSessionSub": "Saved to the batch library after processing",
-  "waitingN": "{n} waiting",
+  "waitingN": "{n, plural, other{{n} waiting}}",
   "@waitingN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -687,14 +767,14 @@
   "edgeBackToSchedule": "Back to schedule",
   "edgeWaitingButton": "Waiting for the host…",
   "wrapTitle": "Session complete.",
-  "endedStayed": "Ended {time} · you stayed {min} min",
+  "endedStayed": "Ended {time} · you stayed {min, plural, other{{min} min}}",
   "@endedStayed": {
     "placeholders": {
       "time": {
         "type": "String"
       },
       "min": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -775,11 +855,11 @@
   "language": "Language",
   "notifications": "Notifications",
   "account": "Account",
-  "batchesN": "{n} classes",
+  "batchesN": "{n, plural, one{{n} class} other{{n} classes}}",
   "@batchesN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -801,11 +881,11 @@
     }
   },
   "enterLobby": "Enter lobby",
-  "studentsN": "{n} students",
+  "studentsN": "{n, plural, one{{n} student} other{{n} students}}",
   "@studentsN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -814,6 +894,399 @@
   "sessionsLabel": "sessions",
   "attendStat": "Attend.",
   "laterToday": "Later today",
+  "teacherHubTitle": "{course} · {code}",
+  "@teacherHubTitle": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherHubSessions": "Sessions",
+  "teacherHubStudents": "Students",
+  "teacherHubPractice": "Practice",
+  "teacherNewAssignment": "New assignment",
+  "teacherNoAssignments": "No assignments yet. Add one so students can practise after a session.",
+  "teacherSubmittedCount": "{count} handed in",
+  "@teacherSubmittedCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherNewQuiz": "New quiz",
+  "teacherEditQuiz": "Edit quiz",
+  "teacherQuizResults": "Results",
+  "teacherNoQuizzesBody": "Write a short quiz to check what your students learned.",
+  "teacherMaterialSlides": "Slides",
+  "teacherMaterialFile": "File",
+  "teacherMaterialVideo": "Video",
+  "teacherAddMaterial": "Add material",
+  "teacherAddMaterialLede": "Upload a file or a video from your phone, or share a link to slides, a web page or a video. Students open it from their library.",
+  "teacherMaterialAdded": "Material added. Your students can open it now.",
+  "teacherNoMaterials": "No materials yet. Add slides, files or links for this class.",
+  "teacherNoClassRecordings": "No recordings yet. Each session is recorded when you start it.",
+  "teacherMinutesShort": "{count} min",
+  "@teacherMinutesShort": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherVideoTooLarge": "That video is over 200 MB. Share it as a link instead.",
+  "teacherUploading": "Uploading…",
+  "teacherUploadVideo": "Upload a video",
+  "teacherUploadedFile": "Uploaded: {name}",
+  "@teacherUploadedFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherUploadVideoHint": "MP4, MOV or WEBM, up to 200 MB.",
+  "teacherMaterialTitleHint": "e.g. Week 2 slides",
+  "teacherTitleRequired": "Add a title of at least 2 characters.",
+  "teacherMaterialUrlHelper": "A link students can open, starting with https://",
+  "filesAttach": "Attach files",
+  "filesAttachHint": "Up to {count, plural, one{{n} file} other{{n} files}} · {types} · {mb} MB each",
+  "@filesAttachHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "String"
+      },
+      "types": {
+        "type": "String"
+      },
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "filesUploadingPercent": "Uploading {percent}%",
+  "@filesUploadingPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "filesRemove": "Remove {name}",
+  "@filesRemove": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filesOpen": "Open {name}",
+  "@filesOpen": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filesYourFiles": "Your files",
+  "filesSubmitted": "Files",
+  "filesTooMany": "{count, plural, one{You can attach up to {count} file.} other{You can attach up to {count} files.}}",
+  "@filesTooMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filesWaitForUpload": "Wait for your files to finish uploading.",
+  "filesTypeRefused": "{name} can't be attached. Use {types}.",
+  "@filesTypeRefused": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "types": {
+        "type": "String"
+      }
+    }
+  },
+  "filesTooLargeRefused": "{name} is larger than {mb} MB.",
+  "@filesTooLargeRefused": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "filesEmptyRefused": "{name} is empty.",
+  "@filesEmptyRefused": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filesErrType": "This file type isn't supported. Try PDF, Word, PowerPoint, Excel, an image, ZIP or text.",
+  "filesErrEmpty": "This file is empty. Choose another one.",
+  "filesErrTooLarge": "This file is too large to upload.",
+  "filesErrMissing": "Choose a file to upload.",
+  "filesErrForeignUrl": "Upload the file here first, then add it.",
+  "filesErrEmptySubmission": "Add a link, some text or a file.",
+  "filesUploadMaterial": "Upload file",
+  "filesUploadMaterialHint": "{types}, up to {mb} MB. Students open it from their library.",
+  "@filesUploadMaterialHint": {
+    "placeholders": {
+      "types": {
+        "type": "String"
+      },
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "filesLinkKindsNote": "To share a document, upload it. Links are for slides, web pages and videos.",
+  "filesEditAssignment": "Edit assignment",
+  "filesSaveChanges": "Save changes",
+  "filesAssignmentSaved": "Assignment updated.",
+  "filesAssignmentActions": "Assignment options",
+  "filesDeleteAssignment": "Delete assignment",
+  "filesDeleteAssignmentTitle": "Delete “{title}”?",
+  "@filesDeleteAssignmentTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "filesDeleteAssignmentBody": "This can't be undone. Once a student has submitted, the assignment can't be deleted, but you can still edit it.",
+  "filesDelete": "Delete",
+  "filesAssignmentDeleted": "Assignment deleted.",
+  "filesErrHasSubmissions": "Students have already submitted this assignment, so it can't be deleted. You can still edit it.",
+  "filesErrScoreTooHigh": "A submission is already graded {score}, so the max score can't go below that.",
+  "@filesErrScoreTooHigh": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherUrlInvalid": "Enter a full link, like https://example.com",
+  "teacherLinkSession": "Session",
+  "teacherOptional": "Optional",
+  "teacherNoSessionLink": "Not linked to a session",
+  "teacherAssignmentCreated": "Assignment created. Students can see it now.",
+  "teacherAssignmentLede": "Students hand in text or a link before the due time. Late work is still accepted and marked late.",
+  "teacherAssignmentTitleHint": "e.g. Build a budget spreadsheet",
+  "teacherInstructions": "Instructions",
+  "teacherInstructionsHint": "What should students do, and what does good work look like?",
+  "teacherDueHelper": "Tap to choose the date and time.",
+  "teacherChangeDue": "Choose due date",
+  "teacherDueInPast": "Pick a time in the future.",
+  "teacherMaxScore": "Max score",
+  "teacherMaxScoreHelper": "The top score for this assignment.",
+  "teacherMaxScoreInvalid": "Enter a whole number from 1 to 1000.",
+  "teacherCreateAssignment": "Create assignment",
+  "teacherGradedScore": "Graded {score}/{max}",
+  "@teacherGradedScore": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherToGrade": "To grade",
+  "teacherSubmissionsTitle": "Submissions",
+  "teacherOutOf": "Out of {max}",
+  "@teacherOutOf": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherNoSubmissions": "Nothing handed in yet.",
+  "teacherHandedIn": "Handed in {when}",
+  "@teacherHandedIn": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherGradeSaved": "Grade saved. The student has been told.",
+  "teacherTheirWork": "Their work",
+  "teacherScore": "Score",
+  "teacherScoreHint": "0 to {max}",
+  "@teacherScoreHint": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherScoreInvalid": "Enter a whole number from 0 to {max}.",
+  "@teacherScoreInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherFeedback": "Feedback",
+  "teacherFeedbackHint": "What went well, and one thing to improve.",
+  "teacherSaveGrade": "Save grade",
+  "teacherGradingTitle": "Grading",
+  "teacherGradingLede": "Work handed in across your classes, oldest first.",
+  "teacherAllGraded": "All caught up. Nothing to grade.",
+  "teacherQuizSaved": "Quiz saved.",
+  "teacherQuizNeedsQuestion": "Add at least one question before publishing.",
+  "teacherPublishQuizTitle": "Publish this quiz?",
+  "teacherPublishQuizBody": "Your students will be notified and can start it. Once someone starts, the questions can't change.",
+  "teacherPublish": "Publish",
+  "teacherQuizPublished": "Quiz published. Students have been notified.",
+  "teacherQuizUnpublished": "Quiz moved back to draft.",
+  "teacherDeleteQuizTitle": "Delete this quiz?",
+  "teacherDeleteQuizBody": "The quiz and its questions will be removed. This can't be undone.",
+  "teacherDelete": "Delete",
+  "teacherQuizDeleted": "Quiz deleted.",
+  "teacherTrue": "True",
+  "teacherFalse": "False",
+  "teacherSingleChoice": "Single choice",
+  "teacherChooseAll": "Choose all",
+  "teacherTrueFalse": "True / false",
+  "teacherQuizTotals": "{questions, plural, one{{questions} question} other{{questions} questions}} · {points, plural, one{{points} pt} other{{points} pts}}",
+  "@teacherQuizTotals": {
+    "placeholders": {
+      "questions": {
+        "type": "int"
+      },
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "teacherQuizLocked": "Students have started this quiz, so its questions are locked. You can still change the details.",
+  "teacherQuizDetails": "Details",
+  "teacherQuizTitleHint": "e.g. Module 1 check",
+  "teacherQuizInstructionsHint": "Anything students should know before they start.",
+  "teacherQuizModule": "Module",
+  "teacherQuizModuleHelper": "Students see the quiz with this module's lessons.",
+  "teacherNoModule": "No module",
+  "teacherNoDueDate": "No due date",
+  "teacherTimeLimit": "Time limit (minutes)",
+  "teacherUntimed": "Untimed",
+  "teacherTimeLimitHelper": "Leave empty for no time limit.",
+  "teacherTimeLimitInvalid": "Enter 1 to 600 minutes, or leave it empty.",
+  "teacherAttempts": "Attempts",
+  "teacherAttemptsHelper": "How many times each student can take it.",
+  "teacherAddQuestion": "Add question",
+  "teacherSaveDraft": "Save draft",
+  "teacherUnpublish": "Unpublish",
+  "teacherQuestionN": "Question {n}",
+  "@teacherQuestionN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherRemoveQuestion": "Remove question",
+  "teacherQuestionPrompt": "Question",
+  "teacherQuestionPromptHint": "Write the question students will answer.",
+  "teacherQuestionRequired": "Write the question.",
+  "teacherMarkAllCorrect": "Mark every correct answer.",
+  "teacherMarkOneCorrect": "Mark the one correct answer.",
+  "teacherCorrectAnswer": "Correct answer",
+  "teacherMarkCorrect": "Mark as correct",
+  "teacherOptionN": "Option {n}",
+  "@teacherOptionN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherOptionRequired": "Fill in this option or remove it.",
+  "teacherRemoveOption": "Remove option",
+  "teacherAddOption": "Add option",
+  "teacherPoints": "Points",
+  "teacherAttendanceBreakdown": "Breakdown",
+  "teacherAttendanceRate": "{rate} attended",
+  "@teacherAttendanceRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherAttendanceFiltered": "Showing {mark} only. Tap again to show everyone.",
+  "@teacherAttendanceFiltered": {
+    "placeholders": {
+      "mark": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherTodayAt": "Today {time}",
+  "@teacherTodayAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherTomorrowAt": "Tomorrow {time}",
+  "@teacherTomorrowAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "teacherNoUpcomingSessions": "No sessions coming up this week. Add one from your class.",
+  "teacherNextSession": "Next session",
+  "teacherReschedule": "Move",
+  "teacherNeedsAtRisk": "Students falling behind",
+  "teacherNeedsYou": "Needs you",
+  "teacherNeedsGrade": "Work to grade",
+  "teacherNeedsReschedule": "Replies to your move requests",
+  "teacherNeedsProposals": "Proposals with review notes",
+  "teacherNeedClassFirst": "Create a class first.",
+  "teacherProposeCourse": "Propose a course",
+  "teacherPostAnnouncement": "Post an announcement",
+  "teacherUploadMaterial": "Upload material",
+  "teacherQuickActions": "Quick actions",
+  "teacherMyClasses": "My classes",
+  "teacherSeeAll": "See all",
+  "teacherStudentsCount": "{count, plural, one{{count} student} other{{count} students}}",
+  "@teacherStudentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "teacherEarningsSnapshot": "Earnings",
+  "teacherEarningsUnavailable": "Earnings couldn't load. Pull to refresh.",
+  "teacherThisPeriod": "This month",
+  "teacherNextPayout": "Next payout",
+  "teacherPayoutMissing": "Add a payout method so we can pay you.",
+  "teacherAddPayoutMethod": "Add",
+  "teacherFirstClassBody": "Pick a course, set the schedule and send it for review.",
+  "teacherCreateFirstClass": "Create your first class",
   "noSessionsToday": "No sessions today. Enjoy the quiet.",
   "rosterTitle": "{code} roster",
   "@rosterTitle": {
@@ -840,11 +1313,11 @@
   "noStudents": "No students yet.",
   "noTeacherBatches": "No batches assigned to you yet.",
   "prepTitle": "Session prep",
-  "runOfShow": "Run of show · {min} min",
+  "runOfShow": "Run of show · {min, plural, other{{min} min}}",
   "@runOfShow": {
     "placeholders": {
       "min": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -918,11 +1391,11 @@
   "noBankDetails": "Add a UAE bank account to receive payouts.",
   "ibanInvalid": "UAE IBAN: AE + 21 digits",
   "swiftInvalid": "8 or 11 letters/digits",
-  "sessionsDelivered": "{n} sessions delivered",
+  "sessionsDelivered": "{n, plural, one{{n} session delivered} other{{n} sessions delivered}}",
   "@sessionsDelivered": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -935,14 +1408,14 @@
     }
   },
   "onAirLabel": "Live now",
-  "roomsPeople": "{rooms} rooms · {people} people",
+  "roomsPeople": "{rooms, plural, one{{rooms} room} other{{rooms} rooms}} · {people, plural, one{{people} person} other{{people} people}}",
   "@roomsPeople": {
     "placeholders": {
       "rooms": {
-        "type": "String"
+        "type": "int"
       },
       "people": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -971,11 +1444,11 @@
   },
   "joinSilently": "Join silently",
   "noLiveRooms": "No sessions are live right now.",
-  "participantsN": "{n} people",
+  "participantsN": "{n, plural, one{{n} person} other{{n} people}}",
   "@participantsN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -984,14 +1457,14 @@
   "seatsLabel": "seats",
   "nextSession": "Next session",
   "teacherLabel": "Teacher",
-  "sessionsRun": "{done} of {total} sessions run",
+  "sessionsRun": "{done} of {total, plural, one{{total} session run} other{{total} sessions run}}",
   "@sessionsRun": {
     "placeholders": {
       "done": {
-        "type": "String"
+        "type": "int"
       },
       "total": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1034,11 +1507,11 @@
     }
   },
   "awaitingApproval": "Awaiting approval",
-  "totalTeachers": "Total · {n} teachers",
+  "totalTeachers": "Total · {n, plural, one{{n} teacher} other{{n} teachers}}",
   "@totalTeachers": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1050,11 +1523,11 @@
       }
     }
   },
-  "approvePayouts": "Approve {n} payouts · {amount}",
+  "approvePayouts": "{n, plural, one{Approve {n} payout · {amount}} other{Approve {n} payouts · {amount}}}",
   "@approvePayouts": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       },
       "amount": {
         "type": "String"
@@ -1067,35 +1540,35 @@
   "ready": "Ready",
   "paidLabel": "Paid",
   "carriedOver": "Carried over",
-  "alertTransfersToVerify": "{n} bank transfers to verify",
+  "alertTransfersToVerify": "{n, plural, one{{n} bank transfer to verify} other{{n} bank transfers to verify}}",
   "@alertTransfersToVerify": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
-  "alertSeatHoldsExpiring": "{n} seat holds expire within 24 h",
+  "alertSeatHoldsExpiring": "{n, plural, one{{n} seat hold expires within 24 h} other{{n} seat holds expire within 24 h}}",
   "@alertSeatHoldsExpiring": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
-  "alertTeacherBankUnverified": "{n} teacher bank details to verify",
+  "alertTeacherBankUnverified": "{n, plural, one{{n} teacher's bank details to verify} other{{n} teachers' bank details to verify}}",
   "@alertTeacherBankUnverified": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
-  "alertPayoutsHeld": "{n} payouts on hold",
+  "alertPayoutsHeld": "{n, plural, one{{n} payout on hold} other{{n} payouts on hold}}",
   "@alertPayoutsHeld": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1140,25 +1613,25 @@
       }
     }
   },
-  "certificateSessionsNeeded": "{n} more sessions needed",
+  "certificateSessionsNeeded": "{n, plural, one{{n} more session needed} other{{n} more sessions needed}}",
   "@certificateSessionsNeeded": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
   "certificateOneSessionNeeded": "1 more session needed",
   "certificateRequirementMet": "Attendance met — your certificate is issued when the class ends.",
   "certificateUnreachable": "Not enough sessions left to reach 80% in this class.",
-  "certificateAttendedOfRequired": "{attended} of {required} sessions to earn it",
+  "certificateAttendedOfRequired": "{attended} of {required, plural, one{{required} session to earn it} other{{required} sessions to earn it}}",
   "@certificateAttendedOfRequired": {
     "placeholders": {
       "attended": {
-        "type": "String"
+        "type": "int"
       },
       "required": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1174,14 +1647,14 @@
   "certificateShare": "Share",
   "certificateLinkCopied": "Verification link copied",
   "certificateCompleteTitle": "Course complete.",
-  "certificateCompleteBody": "You attended {attended} of {total} live sessions.",
+  "certificateCompleteBody": "You attended {attended} of {total, plural, one{{total} live session.} other{{total} live sessions.}}",
   "@certificateCompleteBody": {
     "placeholders": {
       "attended": {
-        "type": "String"
+        "type": "int"
       },
       "total": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1527,23 +2000,23 @@
       }
     }
   },
-  "ratingSemantics": "Rated {avg} out of 5 from {count} reviews",
+  "ratingSemantics": "Rated {avg} out of 5 from {count, plural, one{{count} review} other{{count} reviews}}",
   "@ratingSemantics": {
     "placeholders": {
       "avg": {
         "type": "String"
       },
       "count": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
   "reviewsTitle": "Reviews",
-  "reviewsCount": "{count} reviews",
+  "reviewsCount": "{count, plural, one{{count} review} other{{count} reviews}}",
   "@reviewsCount": {
     "placeholders": {
       "count": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1559,11 +2032,11 @@
   "deleteReview": "Delete review",
   "deleteReviewConfirm": "Delete your review?",
   "reviewDeleted": "Review deleted.",
-  "starsN": "{n} stars",
+  "starsN": "{n, plural, one{{n} star} other{{n} stars}}",
   "@starsN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1696,19 +2169,19 @@
   "meetInstructors": "Meet the instructors",
   "meetInstructorsHint": "Who teaches on Azza, and what",
   "allInstructors": "All instructors",
-  "instructorCoursesN": "{count} courses",
+  "instructorCoursesN": "{count, plural, one{{count} course} other{{count} courses}}",
   "@instructorCoursesN": {
     "placeholders": {
       "count": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
-  "instructorOpenBatchesN": "{count} open classes",
+  "instructorOpenBatchesN": "{count, plural, one{{count} open class} other{{count} open classes}}",
   "@instructorOpenBatchesN": {
     "placeholders": {
       "count": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1769,11 +2242,11 @@
   "errNoAttemptsLeft": "You have no attempts left on this quiz.",
   "errAttemptNotStarted": "Start the quiz before submitting.",
   "lessonsTitle": "Lessons",
-  "lessonsCountN": "{n} lessons",
+  "lessonsCountN": "{n, plural, one{{n} lesson} other{{n} lessons}}",
   "@lessonsCountN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1789,11 +2262,11 @@
     }
   },
   "lessonHasVideo": "Video",
-  "lessonAttachmentsN": "{n} attachments",
+  "lessonAttachmentsN": "{n, plural, one{{n} attachment} other{{n} attachments}}",
   "@lessonAttachmentsN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1819,19 +2292,19 @@
   "quizInProgress": "In progress",
   "quizSubmitted": "Submitted",
   "quizMissed": "Missed",
-  "quizQuestionsN": "{n} questions",
+  "quizQuestionsN": "{n, plural, one{{n} question} other{{n} questions}}",
   "@quizQuestionsN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
-  "quizMinutesN": "{n} min",
+  "quizMinutesN": "{n, plural, other{{n} min}}",
   "@quizMinutesN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1878,11 +2351,11 @@
   "quizNoAttemptsNote": "You've used all your attempts.",
   "quizUnavailableNote": "This quiz can't be started right now.",
   "quizStartTimedTitle": "Start the timer?",
-  "quizStartTimedBody": "You'll have {minutes} minutes once you start. When time runs out, your answers are submitted automatically.",
+  "quizStartTimedBody": "You'll have {minutes, plural, one{{minutes} minute} other{{minutes} minutes}} once you start. When time runs out, your answers are submitted automatically.",
   "@quizStartTimedBody": {
     "placeholders": {
       "minutes": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1919,14 +2392,14 @@
   "quizNext": "Next",
   "quizSubmit": "Submit",
   "quizSubmitTitle": "Submit your answers?",
-  "quizAnsweredOf": "You answered {answered} of {total} questions.",
+  "quizAnsweredOf": "You answered {answered} of {total, plural, one{{total} question.} other{{total} questions.}}",
   "@quizAnsweredOf": {
     "placeholders": {
       "answered": {
-        "type": "String"
+        "type": "int"
       },
       "total": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -1974,25 +2447,25 @@
   "quizNotAnswered": "Not answered",
   "quizBackToQuiz": "Back to the quiz",
   "quizResultsTitle": "Quiz results",
-  "quizStudentsAttempted": "{students} students tried · {attempts} attempts",
+  "quizStudentsAttempted": "{students, plural, one{{students} student tried} other{{students} students tried}} · {attempts, plural, one{{attempts} attempt} other{{attempts} attempts}}",
   "@quizStudentsAttempted": {
     "placeholders": {
       "students": {
-        "type": "String"
+        "type": "int"
       },
       "attempts": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
   "studentsLabel": "Students",
   "quizAverage": "Average",
   "quizNoAttemptsYet": "No attempts yet",
-  "quizAttemptsN": "{n} attempts",
+  "quizAttemptsN": "{n, plural, one{{n} attempt} other{{n} attempts}}",
   "@quizAttemptsN": {
     "placeholders": {
       "n": {
-        "type": "String"
+        "type": "int"
       }
     }
   },
@@ -2026,8 +2499,14 @@
   "chatDeleteConfirmBody": "It will be removed for everyone in this chat.",
   "chatSendFailed": "Not sent. Tap to try again.",
   "chatSending": "Sending…",
-  "chatUnreadN": "{n} unread",
-  "@chatUnreadN": {"placeholders": {"n": {"type": "String"}}},
+  "chatUnreadN": "{n, plural, other{{n} unread}}",
+  "@chatUnreadN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "announcementsTitle": "Announcements",
   "announcementsEmpty": "No announcements yet",
   "announcementsEmptyBody": "News from your teachers and the Azza team will appear here.",
@@ -2102,5 +2581,1269 @@
   "errChatTooFast": "You're sending messages too quickly. Wait a moment and try again.",
   "errDmNotAllowed": "Private messages are only between a student and their teacher.",
   "errNotClassMember": "Only people in this class can see this.",
-  "errInvalidAssignee": "That person can't take this request."
+  "errInvalidAssignee": "That person can't take this request.",
+  "studentContinueLearning": "Continue learning",
+  "studentModulesN": "{n, plural, one{{n} module} other{{n} modules}}",
+  "@studentModulesN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "studentOpenLessons": "Open lessons",
+  "studentPracticeQuiz": "Quiz",
+  "studentPracticeAssignment": "Assignment",
+  "studentOverdue": "Overdue",
+  "studentWasDue": "Was due {when}",
+  "@studentWasDue": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "studentNoDueDate": "No due date",
+  "studentSessionN": "Session {n}",
+  "@studentSessionN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "studentCertificateReadyTitle": "Your certificate is ready",
+  "studentCertificateReadyBody": "{course}: proof you learned it. Open it to view and share.",
+  "@studentCertificateReadyBody": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "studentHowWasToday": "How was today's session?",
+  "studentSessionPractice": "Practise what you covered",
+  "studentPractiseNow": "Practise now",
+  "studentNextModule": "Next module",
+  "studentModuleDone": "You've reached the end of {module}.",
+  "@studentModuleDone": {
+    "placeholders": {
+      "module": {
+        "type": "String"
+      }
+    }
+  },
+  "studentModuleQuizHint": "Check what you learned with “{quiz}”.",
+  "@studentModuleQuizHint": {
+    "placeholders": {
+      "quiz": {
+        "type": "String"
+      }
+    }
+  },
+  "studentModuleNextHint": "Keep going with the next module.",
+  "studentClassLabel": "Class",
+  "studentAddToCalendar": "Add to my calendar",
+  "studentCalendarCopied": "Calendar link copied. Paste it into your calendar app to subscribe.",
+  "studentSubmittedOn": "Submitted {when}",
+  "@studentSubmittedOn": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "studentSubmittedLate": "Submitted late",
+  "studentOverdueHint": "You can still hand it in. It will be marked late.",
+  "adminNavManage": "Manage",
+  "adminManageTitle": "Manage",
+  "adminHubPeopleSection": "People and support",
+  "adminHubMoneySection": "Money",
+  "adminHubCatalogSection": "Catalog",
+  "adminHubInsightSection": "Insight and platform",
+  "adminHubSupportSub": "Tickets from students and teachers",
+  "adminHubPeopleSub": "Accounts, roles, bans and teacher profiles",
+  "adminHubPaymentsSub": "Every order, with refunds",
+  "adminHubPayoutsSub": "Monthly payouts to teachers",
+  "adminHubCouponsSub": "Discount codes and who used them",
+  "adminHubBankSub": "Where students send bank transfers",
+  "adminHubCurrenciesSub": "Add, edit and order display currencies",
+  "adminHubCoursesSub": "Create, edit, publish and feature",
+  "adminHubBatchesSub": "Classes, schedules and enrolments",
+  "adminHubCategoriesSub": "Order, names and visibility",
+  "adminHubReportsSub": "Revenue, fill, attendance, completion",
+  "adminHubLiveSub": "Every room on air right now",
+  "adminHubSettingsSub": "Business rules, contact and integrations",
+  "adminHubNoSettings": "Arabic course text is edited inside each course; there is no separate translations area.",
+  "adminSettingsTitle": "Settings",
+  "adminSettingsBody": "Business rules and contact details are editable here. Keys and secrets stay in the server environment.",
+  "adminRules": "Business rules",
+  "adminIntegrations": "Integrations",
+  "adminConfigured": "Configured",
+  "adminNotConfigured": "Not configured",
+  "adminRuleTeacherShare": "Teacher share",
+  "adminRuleEarningHold": "Earnings hold",
+  "adminRuleMinPayout": "Minimum payout",
+  "adminRuleTransferHold": "Bank transfer hold",
+  "adminRuleVat": "VAT",
+  "adminDaysValue": "{n, plural, one{{n} day} other{{n} days}}",
+  "@adminDaysValue": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "adminHoursValue": "{n, plural, one{{n} hour} other{{n} hours}}",
+  "@adminHoursValue": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "adminRoleStudent": "Student",
+  "adminRoleTeacher": "Teacher",
+  "adminRoleAdmin": "Admin",
+  "adminNeedsYouCount": "Needs you · {n}",
+  "@adminNeedsYouCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAllClear": "Nothing is waiting on you. Nice.",
+  "adminQueueProposals": "Proposals to review",
+  "adminQueueProposalsSub": "Courses and classes from teachers",
+  "adminQueueTransfers": "Transfers to verify",
+  "adminQueueTransfersSub": "Receipts waiting; seats are on hold",
+  "adminQueuePayouts": "Payout runs",
+  "adminQueuePayoutsSub": "To approve or mark paid",
+  "adminQueueReschedules": "Reschedule requests",
+  "adminQueueReschedulesSub": "Teachers asking to move a session",
+  "adminQueueTickets": "Open support tickets",
+  "adminQueueTicketsSub": "People waiting for an answer",
+  "adminQueueApplications": "Instructor applications",
+  "adminQueueApplicationsSub": "People who want to teach",
+  "adminQueueAlerts": "Other alerts",
+  "adminQueueAlertsSub": "Held payouts, bank checks, expiring holds",
+  "adminLiveNow": "Live now",
+  "adminRoomIssues": "{n} with issues",
+  "@adminRoomIssues": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "adminPeopleInRoom": "{n} in the room",
+  "@adminPeopleInRoom": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "adminQualityIssue": "quality: {quality}",
+  "@adminQualityIssue": {
+    "placeholders": {
+      "quality": {
+        "type": "String"
+      }
+    }
+  },
+  "adminHealth": "Health",
+  "adminPaymentsTitle": "Payments",
+  "adminSearchOrders": "Search orders",
+  "adminSearchOrdersHint": "Reference, student name or email",
+  "adminAnyMethod": "Any method",
+  "adminNoOrders": "No orders here",
+  "adminNoOrdersBody": "Try another status or method, or clear the search.",
+  "adminOrderTitle": "Order",
+  "adminRefundedSoFar": "{amount} refunded so far",
+  "@adminRefundedSoFar": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminOrderAmounts": "Amounts",
+  "adminSubtotal": "Subtotal",
+  "adminDiscount": "Discount",
+  "adminVat": "VAT",
+  "adminProcessorFee": "Card fee",
+  "adminReceived": "Received",
+  "adminTotal": "Total",
+  "adminOrderPeople": "Student and class",
+  "adminClass": "Class",
+  "adminOrderTrail": "Payment",
+  "adminMethod": "Method",
+  "adminCreated": "Created",
+  "adminPaidAt": "Paid",
+  "adminVerifiedBy": "Verified by",
+  "adminAppleRefundNote": "App Store purchases are refunded by Apple. The refund is recorded here when Apple tells us.",
+  "adminRefund": "Refund",
+  "adminRefundTitle": "Refund this order",
+  "adminRefundSubtitle": "{reference} · up to {amount}",
+  "@adminRefundSubtitle": {
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRefundAmount": "Amount to refund",
+  "adminRefundAmountHelper": "A partial refund keeps the student enrolled.",
+  "adminRefundReasonHint": "e.g. Student asked to cancel before the class started",
+  "adminRefundBankNote": "This was a bank transfer: finance sends the money back by hand after you confirm.",
+  "adminAmountInvalid": "Enter an amount above zero.",
+  "adminRefundTooLarge": "You can refund up to {amount}.",
+  "@adminRefundTooLarge": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminReasonRequired": "Add a short reason (3 characters or more).",
+  "adminRefundConfirmTitle": "Refund {amount}?",
+  "@adminRefundConfirmTitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRefundConfirmFull": "This refunds the whole order. The student loses their seat and the teacher's earnings are adjusted. This can't be undone.",
+  "adminRefundConfirmPartial": "The student keeps their seat. The teacher's earnings are adjusted. This can't be undone.",
+  "adminRefundDone": "Refunded {amount}.",
+  "@adminRefundDone": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRefundManualDone": "Refund of {amount} recorded. Finance will send the transfer.",
+  "@adminRefundManualDone": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminPeopleTitle": "People",
+  "adminSearchPeople": "Search people",
+  "adminSearchPeopleHint": "Name or email",
+  "adminNoPeople": "No one matches",
+  "adminPeopleCount": "{n} shown",
+  "@adminPeopleCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "adminBanned": "Banned",
+  "adminInviteUser": "Invite someone",
+  "adminInviteBody": "They get an email with a link to set their password.",
+  "adminInviteSent": "Invite sent to {email}.",
+  "@adminInviteSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "adminSendInvite": "Send invite",
+  "adminNameHint": "e.g. Lina Haddad",
+  "adminNameRequired": "Add a name (2 characters or more).",
+  "adminEmailInvalid": "Enter a valid email address.",
+  "adminRole": "Role",
+  "adminEmailLanguage": "Email language",
+  "adminLanguageEnglish": "English",
+  "adminLanguageArabic": "Arabic",
+  "adminAccount": "Account",
+  "adminEmailVerified": "Email verified",
+  "adminYes": "Yes",
+  "adminNo": "No",
+  "adminJoined": "Joined",
+  "adminActiveEnrollments": "Active enrolments",
+  "adminTeachingBatches": "Classes taught",
+  "adminCannotEditSelf": "You can't change your own role or ban yourself.",
+  "adminChangeRole": "Change role",
+  "adminChangeRoleTitle": "Make {name} a {role}?",
+  "@adminChangeRoleTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "adminChangeRoleBody": "Their tabs and permissions change the next time they open the app.",
+  "adminChangeRoleAdminBody": "Admins can see every payment and account and change them. Only give this to people who run Azza.",
+  "adminRoleChanged": "Role changed to {role}.",
+  "@adminRoleChanged": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "adminBan": "Ban account",
+  "adminUnban": "Lift ban",
+  "adminBanTitle": "Ban {name}?",
+  "@adminBanTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminUnbanTitle": "Lift the ban on {name}?",
+  "@adminUnbanTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminBanBody": "They are signed out everywhere and can't sign in until you lift the ban.",
+  "adminUnbanBody": "They can sign in again straight away.",
+  "adminBannedDone": "Account banned.",
+  "adminUnbannedDone": "Ban lifted.",
+  "adminPublicProfile": "Public teacher profile",
+  "adminHeadline": "Headline",
+  "adminHeadlineHint": "e.g. Data analyst teaching Excel and SQL",
+  "adminBio": "Bio",
+  "adminBioHint": "What they do, who they help, and how they teach",
+  "adminProfileSaved": "Profile saved.",
+  "adminMarkPaid": "Mark as paid",
+  "adminMarkPaidBody": "{count, plural, one{{count} teacher} other{{count} teachers}} · {total}. Add the bank's reference for the transfer.",
+  "@adminMarkPaidBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "adminTransferRef": "Transfer reference",
+  "adminTransferRefHint": "e.g. ENBD-2026-11-05",
+  "adminTransferRefRequired": "Add the transfer reference (3 characters or more).",
+  "adminMarkPaidConfirmTitle": "Mark {total} as paid?",
+  "@adminMarkPaidConfirmTitle": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "adminMarkPaidConfirmBody": "Teachers are emailed that their payout is on the way. Held and carried-over amounts roll into next month.",
+  "adminRunMarkedPaid": "Payout run marked as paid.",
+  "adminAdjustHint": "Tap a teacher to add a bonus or a deduction before you approve.",
+  "adminAdjustTitle": "Adjust {name}",
+  "@adminAdjustTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAdjustSubtitle": "Currently {amount}",
+  "@adminAdjustSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminBonus": "Bonus",
+  "adminDeduction": "Deduction",
+  "adminAdjustAmount": "Amount",
+  "adminAdjustReasonHint": "e.g. Extra catch-up session on 12 Nov",
+  "adminSaveAdjustment": "Save adjustment",
+  "adminAdjustmentSaved": "Adjustment saved.",
+  "adminVerifyBank": "Verify bank details",
+  "adminVerifyBankTitle": "Verify {name}'s bank details?",
+  "@adminVerifyBankTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminVerifyBankBody": "{bank}\n{holder}\n{iban}\n\nCheck these match the teacher's documents. Their held payouts are released.",
+  "@adminVerifyBankBody": {
+    "placeholders": {
+      "bank": {
+        "type": "String"
+      },
+      "holder": {
+        "type": "String"
+      },
+      "iban": {
+        "type": "String"
+      }
+    }
+  },
+  "adminBankVerified": "{name}'s bank details are verified.",
+  "@adminBankVerified": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCoursesTitle": "Courses",
+  "adminNoCourses": "No courses here",
+  "adminFromPrice": "from {price}",
+  "@adminFromPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "adminFeaturedAt": "featured #{rank}",
+  "@adminFeaturedAt": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCourseVisibility": "Status and visibility",
+  "adminCourseStatus": "Status",
+  "adminCourseStatusHelper": "Published courses show in the catalog. Archived ones are hidden.",
+  "adminFeaturedRank": "Featured rank",
+  "adminFeaturedRankHint": "Leave empty to keep it off the rail",
+  "adminFeaturedRankHelper": "0–999. Lower numbers come first on the home rail.",
+  "adminFeaturedRankInvalid": "Featured rank must be a whole number from 0 to 999.",
+  "adminLastReviewNote": "Last review note: {note}",
+  "@adminLastReviewNote": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "adminPublish": "Publish",
+  "adminCoursePublished": "Course published. It's in the catalog now.",
+  "adminCourseSaved": "Course saved.",
+  "adminPickTeacher": "Pick the teacher",
+  "adminBatchDraftBody": "Saved as a draft. Open enrolment when it's ready for students.",
+  "adminBatchOpenBody": "Enrolment is open. Students can book a seat.",
+  "adminOpenEnrolment": "Open enrolment",
+  "adminEnrolmentOpened": "Enrolment is open.",
+  "adminBatchTools": "Admin tools",
+  "adminShiftSchedule": "Shift schedule",
+  "adminShiftBody": "Moves every scheduled session from the one you pick, keeping the same time of day. Students are told.",
+  "adminShiftFrom": "From session",
+  "adminShiftDays": "Days to move",
+  "adminShiftDaysHelper": "Negative moves earlier, positive moves later (−60 to 60).",
+  "adminShiftZero": "Pick a number of days other than 0.",
+  "adminShiftConfirmTitle": "Shift {code}'s schedule?",
+  "@adminShiftConfirmTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminShiftConfirmBody": "{sessions, plural, one{{sessions} session moves by {days} days.} other{{sessions} sessions move by {days} days.}} Students get a notification.",
+  "@adminShiftConfirmBody": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "adminScheduleShifted": "Schedule shifted. Students have been told.",
+  "adminAttendance": "Attendance",
+  "adminEnrollments": "Enrolments",
+  "adminNoEnrollments": "No one has enrolled yet.",
+  "adminEnrollmentSummary": "{active} active of {total}",
+  "@adminEnrollmentSummary": {
+    "placeholders": {
+      "active": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "adminEnrolPending": "Awaiting payment",
+  "adminEnrolAwaitingTransfer": "Awaiting transfer",
+  "adminEnrolActive": "Active",
+  "adminEnrolCancelled": "Cancelled",
+  "adminCouponsTitle": "Coupons",
+  "adminNewCoupon": "New coupon",
+  "adminNoCoupons": "No coupons yet",
+  "adminNoCouponsBody": "Create a code for a launch, a partner or a season.",
+  "adminCouponActive": "Active",
+  "adminCouponScheduled": "Scheduled",
+  "adminCouponExpired": "Expired",
+  "adminCouponPaused": "Paused",
+  "adminCouponExhausted": "Used up",
+  "adminPercentOff": "{n}% off",
+  "@adminPercentOff": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAmountOff": "{amount} off",
+  "@adminAmountOff": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAllCourses": "All courses",
+  "adminUntil": "until {date}",
+  "@adminUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminUsedCount": "{n, plural, =0{Not used yet} one{Used once} other{Used {n} times}}",
+  "@adminUsedCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "adminUsedOf": "Used {n} of {max}",
+  "@adminUsedOf": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "adminUsage": "Usage",
+  "adminCouponCodeSection": "Code and discount",
+  "adminCouponCode": "Code",
+  "adminCouponCodeHelper": "3–20 capital letters, numbers or dashes. It can't change later.",
+  "adminCouponCodeFixed": "The code can't change once created.",
+  "adminCouponCodeInvalid": "Use 3–20 capital letters, numbers or dashes.",
+  "adminPercent": "Percent",
+  "adminFixedAmount": "Fixed amount",
+  "adminPercentOffLabel": "Percent off",
+  "adminAmountOffLabel": "Amount off",
+  "adminPercentInvalid": "Enter a percent from 1 to 100.",
+  "adminCouponLimits": "Limits",
+  "adminMaxRedemptions": "Total uses",
+  "adminPerUserLimit": "Uses per student",
+  "adminMinOrder": "Minimum order",
+  "adminUnlimited": "Unlimited",
+  "adminNoMinimum": "No minimum",
+  "adminCouponWhen": "When and where",
+  "adminStartsOn": "Valid from",
+  "adminExpiresOn": "Valid through",
+  "adminNoDate": "No date",
+  "adminDatesInvalid": "The end date must be on or after the start date.",
+  "adminCouponScope": "Applies to",
+  "adminCouponScopeHelper": "One course, or every course.",
+  "adminCouponActiveSwitch": "Active",
+  "adminCouponActiveHelper": "Turn off to pause the code at checkout.",
+  "adminCreateCoupon": "Create coupon",
+  "adminCouponCreated": "{code} is ready to use.",
+  "@adminCouponCreated": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCouponSaved": "Coupon saved.",
+  "adminTotalDiscount": "Total discount given",
+  "adminNoRedemptions": "No one has used this code yet.",
+  "adminCategoriesTitle": "Categories",
+  "adminNewCategory": "New category",
+  "adminEditCategory": "Edit category",
+  "adminNoCategories": "No categories yet",
+  "adminCourseCount": "{n, plural, one{{n} course} other{{n} courses}}",
+  "@adminCourseCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "adminHidden": "hidden",
+  "adminHide": "Hide from the catalog",
+  "adminShow": "Show in the catalog",
+  "adminDelete": "Delete",
+  "adminDeleteCategoryTitle": "Delete {name}?",
+  "@adminDeleteCategoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminDeleteCategoryBody": "This removes the category for good. It can't be undone.",
+  "adminCategoryDeleted": "{name} deleted.",
+  "@adminCategoryDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCategoryInUseTitle": "This category still has courses",
+  "adminCategoryInUseBody": "Move the courses in {name} to another category first, or hide it so students stop seeing it.",
+  "@adminCategoryInUseBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adminHideInstead": "Hide it instead",
+  "adminCategoryHidden": "Category hidden.",
+  "adminCategoryShown": "Category is visible again.",
+  "adminCategorySaved": "Category saved.",
+  "adminSlug": "Slug",
+  "adminSlugHelper": "Lowercase letters, numbers and dashes. Used in links; it can't change later.",
+  "adminSlugFixed": "The slug can't change once created.",
+  "adminSlugInvalid": "Use 2–40 lowercase letters, numbers or dashes.",
+  "adminNameEn": "Name in English",
+  "adminNameAr": "Name in Arabic",
+  "adminOrder": "Order",
+  "adminOrderHelper": "Lower numbers come first.",
+  "adminVisibleInCatalog": "Visible in the catalog",
+  "adminReportsTitle": "Reports",
+  "adminLastDays": "Last {n, plural, one{{n} day} other{{n} days}}",
+  "@adminLastDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "adminVsPrevious": "vs the period before",
+  "adminRevenue": "Revenue",
+  "adminNewEnrollments": "New enrolments",
+  "adminCompletion": "Completion",
+  "adminRefunds": "Refunds",
+  "adminRevenueByCourse": "Revenue by course",
+  "adminTeachersReport": "Teachers",
+  "adminTeacherStats": "{sessions, plural, one{{sessions} session} other{{sessions} sessions}} · {attendance} attendance · {onTime} on time",
+  "@adminTeacherStats": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "attendance": {
+        "type": "String"
+      },
+      "onTime": {
+        "type": "String"
+      }
+    }
+  },
+  "adminBankAccountsTitle": "Bank accounts",
+  "adminNewBankAccount": "New bank account",
+  "adminEditBankAccount": "Edit bank account",
+  "adminNoBankAccounts": "No bank accounts yet",
+  "adminBankAccountSaved": "Bank account saved.",
+  "adminActive": "Active",
+  "adminInactive": "Hidden",
+  "adminBankName": "Bank",
+  "adminAccountName": "Account name",
+  "adminBranch": "Branch",
+  "adminOptional": "Optional",
+  "adminInstructions": "Instructions for students",
+  "adminInstructionsHint": "e.g. Put the order reference in the transfer note",
+  "adminShowAtCheckout": "Show at checkout",
+  "adminIbanInvalid": "A UAE IBAN is AE followed by 21 digits.",
+  "adminSwiftInvalid": "SWIFT is 8 or 11 letters and numbers.",
+  "adminCurrenciesTitle": "Currencies",
+  "adminCurrenciesBody": "Money always moves in AED. Other currencies only change the approximate prices students see.",
+  "adminRateLabel": "{currency} per AED",
+  "@adminRateLabel": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRateInvalid": "Enter a rate above zero.",
+  "adminRateSaved": "{currency} rate saved.",
+  "@adminRateSaved": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "progressMarkComplete": "Mark as complete",
+  "progressCompleted": "Completed",
+  "progressUndoHint": "Tap to mark it as not done",
+  "progressLessonsOf": "{done} of {total, plural, one{{total} lesson} other{{total} lessons}}",
+  "@progressLessonsOf": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressResume": "Resume: {lesson}",
+  "@progressResume": {
+    "placeholders": {
+      "lesson": {
+        "type": "String"
+      }
+    }
+  },
+  "progressStart": "Start: {lesson}",
+  "@progressStart": {
+    "placeholders": {
+      "lesson": {
+        "type": "String"
+      }
+    }
+  },
+  "progressAllDone": "All lessons done",
+  "progressAllDoneBody": "Revisit any lesson, or practise what you learned.",
+  "progressSaveFailed": "Your progress wasn't saved. Try again.",
+  "guestBrowseCourses": "Browse courses",
+  "guestResumeNotice": "Sign in and we'll bring you right back.",
+  "guestPromptTitle": "Sign in to continue",
+  "guestPromptBody": "Sign in or create an account to do this.",
+  "guestHomeTitle": "Your learning, in one place",
+  "guestHomeBody": "Sign in to see your next lesson, the practice that's due and your live sessions.",
+  "guestScheduleTitle": "Your week of learning",
+  "guestScheduleBody": "Sign in to see your live sessions and add them to your calendar.",
+  "guestLibraryTitle": "Your lessons and recordings",
+  "guestLibraryBody": "Sign in to open your lessons, session recordings and class materials.",
+  "guestMeTitle": "Make it yours",
+  "guestMeBody": "Create an account to save courses, join a class and earn a certificate.",
+  "guestReviewCta": "Sign in to write a review",
+  "guestTeachCta": "Create an account to apply",
+  "guestTeachBody": "Applications are tied to your account, so we can reach you and set up your teaching tools once you're approved.",
+  "guestVerifyTitle": "Verify a certificate",
+  "guestVerifyValid": "Certificate verified",
+  "guestVerifyValidBody": "Azza issued this certificate to {name} for completing {course}.",
+  "@guestVerifyValidBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "guestVerifyInvalid": "We couldn't verify this certificate",
+  "guestVerifyInvalidBody": "Check the code and try again. Codes look like AZ-CERT-7Q4K.",
+  "guestVerifyLearnCta": "Learn with Azza",
+  "courseTypeRecorded": "Recorded",
+  "filterFormat": "Format",
+  "formatLive": "Live classes",
+  "formatRecorded": "Recorded lessons",
+  "pricePerMonth": "{price} / month",
+  "@pricePerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "pricePerYear": "{price} / year",
+  "@pricePerYear": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "fromPricePerMonth": "From {price} / month",
+  "@fromPricePerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "planTitle": "Choose your plan",
+  "planIntro": "Start any time. Learn at your pace.",
+  "planMonthly": "Monthly",
+  "planYearly": "Yearly",
+  "planYearlyDetail": "{price} / month, billed yearly",
+  "@planYearlyDetail": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "planSaveMonths": "Save {n, plural, one{{n} month} other{{n} months}}",
+  "@planSaveMonths": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "planYouGet": "What you get",
+  "planGetLessons": "All lessons and quizzes",
+  "planGetCertificate": "A certificate when you finish",
+  "planGetCancel": "Cancel any time",
+  "planCancelLine": "Cancel any time. You keep access until the end of the period you paid for.",
+  "planNextCharge": "Next charge on {date}",
+  "@planNextCharge": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planPaidUntil": "You're covered until {date}. This plan doesn't renew by itself.",
+  "@planPaidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planPaidUntilShort": "Paid until {date}",
+  "@planPaidUntilShort": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planRenews": "Renews {date}",
+  "@planRenews": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planEnds": "Ends {date}",
+  "@planEnds": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planYourPlan": "Your plan",
+  "planEnded": "Your plan has ended. Your progress is saved.",
+  "planTransferNote": "Pay by bank transfer. Your access starts once we confirm it, usually within 1 working day.",
+  "planStart": "Start learning",
+  "planWebsiteOnly": "Available on our website for now",
+  "planWebsiteOnlyBody": "Open our website in your browser to start this plan.",
+  "planAppleNote": "Payment is handled by Apple. Manage or cancel in your App Store subscriptions.",
+  "planWatchFree": "Watch the free lesson",
+  "planVatNote": "Prices are before VAT. Any VAT is added at checkout.",
+  "planFreeLesson": "Free lesson",
+  "planTransferBefore": "Send it before {date}.",
+  "@planTransferBefore": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planReceiptSent": "We've got your receipt",
+  "planReceiptSentBody": "We'll confirm your transfer, usually within 1 working day. Your plan starts then.",
+  "planBackToCourse": "Back to the course",
+  "returnSettingUp": "Setting up your access…",
+  "returnSettingUpBody": "This usually takes a few seconds.",
+  "returnSlowTitle": "This is taking longer than usual",
+  "returnSlowBody": "Your payment is safe. Your access will appear as soon as it's confirmed.",
+  "returnCheckAgain": "Check again",
+  "returnHome": "Go to home",
+  "lessonLocked": "Locked",
+  "lessonLockedBody": "This lesson is part of the plan.",
+  "lessonsLockedTitle": "Start a plan to unlock every lesson",
+  "lessonsSeePlans": "See plans",
+  "errAlreadySubscribed": "You already have a plan for this course.",
+  "errPlanRequired": "You need a plan to open this.",
+  "errAppleProductMissing": "This plan isn't available in the app yet.",
+  "plansTitle": "Your plans",
+  "plansRowHint": "Renew, cancel or change a plan",
+  "plansEmptyTitle": "No plans yet",
+  "plansEmptyBody": "Pick a recorded course and start any time.",
+  "plansFind": "Find a course",
+  "plansOpenCourse": "Open course",
+  "planProviderCard": "Card",
+  "planProviderApple": "App Store",
+  "planCancel": "Cancel plan",
+  "planCancelTitle": "Cancel this plan?",
+  "planCancelBody": "You can keep learning until {date}. Your progress and certificate stay yours.",
+  "@planCancelBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planCancelStep2Title": "Are you sure?",
+  "planCancelStep2Body": "Your plan will end on {date} and won't renew.",
+  "@planCancelStep2Body": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planCancelConfirm": "Yes, cancel my plan",
+  "planKeep": "Keep my plan",
+  "planCancelledToast": "Done. You can keep learning until {date}.",
+  "@planCancelledToast": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planResume": "Resume plan",
+  "planResumedToast": "Your plan will renew as before.",
+  "planSwitchToYearly": "Switch to yearly",
+  "planSwitchToMonthly": "Switch to monthly",
+  "planSwitchNote": "Stripe credits the unused time on your current plan.",
+  "planSwitchedToast": "Plan changed.",
+  "planUpdateCard": "Update card",
+  "planManageAppStore": "Manage it in the App Store",
+  "planRenewTransfer": "Renew by transfer",
+  "planSwitchToCard": "Switch to card",
+  "planUploadReceipt": "Upload receipt",
+  "planPendingReceipt": "Waiting for your receipt",
+  "planPendingReview": "We're checking your transfer. This usually takes 1 working day.",
+  "planPendingRejected": "We couldn't confirm your transfer: {note}",
+  "@planPendingRejected": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "planPendingRejectedPlain": "We couldn't confirm your transfer. You can try again.",
+  "planPastDue": "Your last payment didn't go through. Update your card to keep learning.",
+  "planCancellingBanner": "Your plan ends on {date}. Your progress and certificate stay yours.",
+  "@planCancellingBanner": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "returnSeePlans": "See your plans",
+  "recordedRenew": "Renew to continue",
+  "recordedCourses": "Recorded courses",
+  "recordedNext": "Next: {title}",
+  "@recordedNext": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "courseTypeTitle": "What kind of course?",
+  "courseTypeLive": "Live",
+  "courseTypeLiveBody": "Classes with set dates and a teacher in the room. Learners join a class.",
+  "courseTypeRecordedBody": "Lessons learners watch any time, on a monthly or yearly plan. No classes to schedule.",
+  "courseTypeFixed": "The type can't be changed once the course is created.",
+  "hubTitle": "Recorded course",
+  "hubSubscribers": "Subscribers",
+  "hubEarnings": "Your earnings",
+  "hubEarningsNote": "Your share of plan payments for this course.",
+  "hubEarningsUnknown": "Earnings from plans appear here once payments arrive.",
+  "hubQuizzes": "Course quizzes",
+  "hubNoQuizzes": "No quizzes yet. Learners must pass every published quiz to earn the certificate.",
+  "hubAddQuiz": "Add a quiz",
+  "hubPassMark": "Pass mark {percent}%",
+  "@hubPassMark": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "hubPreview": "Free preview lesson",
+  "hubPreviewBody": "Anyone can watch this lesson, even without an account.",
+  "hubPreviewNone": "No preview lesson",
+  "hubPreviewSaved": "Preview lesson saved.",
+  "hubNoLessons": "Add lessons on the web to choose a preview.",
+  "hubEditDetails": "Edit course details",
+  "quizPassPercent": "Pass mark (%)",
+  "quizPassHelper": "The share of the points needed to pass.",
+  "quizPassInvalid": "Enter a number from 0 to 100.",
+  "quizCourseNote": "Learners can retake this quiz as many times as they like.",
+  "adminCutsTitle": "Teacher cuts",
+  "adminCutsBody": "The share of each payment, after VAT and fees, that goes to the teacher. It is read when the payment is made and never changed afterwards.",
+  "adminCutLive": "Live courses (%)",
+  "adminCutRecorded": "Recorded courses (%)",
+  "adminCutsSave": "Save cuts",
+  "adminCutsSaved": "Cuts saved.",
+  "adminCutInvalid": "Enter a whole number from 0 to 100.",
+  "adminCourseCut": "Teacher cut for this course (%)",
+  "adminCourseCutHelp": "For rare cases. Leave empty to use the default, {percent}%.",
+  "@adminCourseCutHelp": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCourseCutSaved": "Course cut saved.",
+  "adminRecordedPrices": "Recorded prices",
+  "adminMonthlyPrice": "Monthly price (AED, before VAT)",
+  "adminYearlyPrice": "Yearly price (AED, before VAT)",
+  "adminPricesInvalid": "The yearly price must be lower than 12 monthly payments.",
+  "adminPricesSaved": "Prices saved.",
+  "adminAppleIds": "App Store product ids",
+  "adminAppleMonthly": "Monthly product id",
+  "adminAppleYearly": "Yearly product id",
+  "adminAppleSaved": "Product ids saved.",
+  "adminSubsTitle": "Subscriptions",
+  "adminHubSubsSub": "Plans on recorded courses",
+  "adminSubsEmpty": "No subscriptions match.",
+  "adminSubsAll": "All",
+  "adminSubCancel": "Cancel plan",
+  "adminSubCancelTitle": "Cancel this plan now?",
+  "adminSubCancelBody": "The learner loses access straight away. Their progress and certificate stay.",
+  "adminRefundNone": "Cancel only",
+  "adminRefundFull": "Cancel and refund the last payment",
+  "adminSubCancelled": "Plan cancelled.",
+  "adminSubApple": "Managed by Apple",
+  "adminSubLastPayment": "Last payment {amount}",
+  "@adminSubLastPayment": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "adminTransferPlan": "Plan",
+  "adminTransferCourse": "Course",
+  "adminTransferPlanChip": "Plan transfer",
+  "planPastDueChip": "Payment failed",
+  "planCancellingChip": "Ending",
+  "planExpiredChip": "Ended",
+  "planSettingUpChip": "Setting up",
+  "planActiveChip": "Active",
+  "certificateRecordedCompletion": "Completed every lesson and passed every quiz",
+  "certificateCompletion": "Completed",
+  "earningsRecordedCourses": "Recorded courses",
+  "hubSubscribersUnavailable": "Subscriber numbers aren't available right now.",
+  "adminSubReceiptReturnByHand": "A transfer receipt was under review; return that money by hand.",
+  "appStoreTitle": "App Store",
+  "appStoreSyncNow": "Sync now",
+  "appStoreSyncStarted": "Sync started. The list updates in a few seconds.",
+  "appStoreNotConfigured": "Add your App Store Connect API key to enable automatic product setup.",
+  "appStoreNothingYet": "No products yet. Sync to create them.",
+  "appStoreSeats": "Seat prices",
+  "appStoreCourses": "Recorded courses",
+  "appleSyncSynced": "Synced",
+  "appleSyncSkipped": "Skipped",
+  "appleSyncFailed": "Failed",
+  "appleSyncNever": "Not synced yet",
+  "adminPricesRequired": "Enter a monthly and a yearly price.",
+  "planTransferNotOnIos": "Bank transfer isn't available on iPhone. Manage your plan in the App Store.",
+  "reportsRecordedTitle": "Recorded courses",
+  "reportsRecordedNone": "No recorded-course payments in this range.",
+  "reportsGross": "Gross",
+  "reportsFees": "Fees",
+  "reportsVat": "VAT",
+  "reportsNet": "Net",
+  "transferNotFound": "We couldn't find this transfer. It may already be reviewed.",
+  "transferBackToQueue": "Back to transfers",
+  "whatsappChat": "Chat on WhatsApp",
+  "whatsappOpenFailed": "Couldn't open WhatsApp.",
+  "whatsappCourseMessage": "Hi Azza, I have a question about {course}.",
+  "@whatsappCourseMessage": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappBatchMessage": "Hi Azza, I have a question about {course} ({batchCode}).",
+  "@whatsappBatchMessage": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      },
+      "batchCode": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappGeneralMessage": "Hi Azza, I need some help.",
+  "contactUs": "Contact us",
+  "contactEmail": "Email",
+  "contactPhone": "Phone",
+  "contactAddress": "Address",
+  "followUs": "Follow us",
+  "adminRulesBody": "These apply platform-wide. Leave a rule at its default to follow the server setting.",
+  "adminRuleRange": "Enter a whole number from {min} to {max}.",
+  "@adminRuleRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "adminRulesSaved": "Rules saved.",
+  "adminRulesSave": "Save rules",
+  "adminRuleResetDone": "{rule} reset to its default.",
+  "@adminRuleResetDone": {
+    "placeholders": {
+      "rule": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRuleDefault": "Default: {value}",
+  "@adminRuleDefault": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "adminRuleReset": "Reset to default",
+  "adminIntegrationsNote": "Set in the server environment.",
+  "adminContactTitle": "Contact & social",
+  "adminContactBody": "Shown in Help & support and used by the WhatsApp buttons. Leave a field empty to hide it.",
+  "adminContactSave": "Save contact details",
+  "adminContactSaved": "Contact details saved.",
+  "adminEmailInvalid": "Enter a valid email address.",
+  "adminWhatsappInvalid": "Use 8 to 15 digits with the country code, no + or spaces.",
+  "adminWhatsappHelper": "Digits with country code, e.g. 971501234567",
+  "adminAddressEn": "Address (English)",
+  "adminAddressAr": "Address (Arabic)",
+  "adminAddressTooLong": "Keep the address under 300 characters.",
+  "adminSocialInvalid": "Enter a full link that starts with https://",
+  "adminCurrencySaved": "Currency saved.",
+  "adminCurrencyDeleteTitle": "Remove {code}?",
+  "@adminCurrencyDeleteTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCurrencyDeleteBody": "Anyone who chose {code} will see prices in AED instead. Past orders keep the currency and rate they were placed with.",
+  "@adminCurrencyDeleteBody": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCurrencyDeleted": "{code} removed.",
+  "@adminCurrencyDeleted": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminNewCurrency": "Add currency",
+  "adminEditCurrency": "Edit {code}",
+  "@adminEditCurrency": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminNoCurrencies": "No currencies yet.",
+  "adminCurrencyBase": "Base",
+  "adminCurrencyBaseHint": "Charges and payouts are always in AED. Its rate is always 1.",
+  "adminCurrencyLocked": "Always on",
+  "adminMoveUp": "Move up",
+  "adminMoveDown": "Move down",
+  "adminCurrencyCode": "Code",
+  "adminCurrencyCodeHelper": "Three letters, e.g. EUR. It can't be changed later.",
+  "adminCurrencyCodeInvalid": "Enter a three-letter currency code.",
+  "adminCurrencyDecimalsInvalid": "Decimals must be 0 to 3.",
+  "adminCurrencySymbol": "Symbol (optional)",
+  "adminCurrencyDecimals": "Decimals",
+  "adminCurrencyDecimalsHelper": "How many decimals prices show, 0 to 3",
+  "adminRatePerAed": "Rate per 1 AED",
+  "adminRatePerAedHelper": "How many units one dirham buys",
+  "adminCurrencyEnabled": "Show to students",
+  "adminCategoryImageAdd": "Add image",
+  "adminCategoryImageChange": "Change image",
+  "adminCategoryImageSaved": "Category image saved.",
+  "adminCategoryImageRemoved": "Category image removed.",
+  "adminCategoryImageHint": "JPG, PNG or WebP. Students see it instead of the icon.",
+  "adminCategoryImageAfterSave": "Save the category first, then add an image.",
+  "phoneLabel": "Mobile number",
+  "phoneRequired": "Enter your mobile number",
+  "phoneInvalidFor": "That number doesn't look right for {country}",
+  "@phoneInvalidFor": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "phoneSearchCountries": "Search country or dial code",
+  "phoneCountryPicker": "Choose country",
+  "phoneNoCountries": "No country matches that search.",
+  "adminCurrencyRateLine": "1 AED = {rate} {code}",
+  "@adminCurrencyRateLine": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "adminCurrencyDecimalsCount": "{decimals, plural, =0{no decimals} one{{decimals} decimal} other{{decimals} decimals}}",
+  "@adminCurrencyDecimalsCount": {
+    "placeholders": {
+      "decimals": {
+        "type": "int"
+      }
+    }
+  },
+  "adminCurrencyNameArRequired": "Enter the Arabic name.",
+  "adminCurrencyNameTooLong": "Names can be up to 60 characters.",
+  "adminCurrencySymbolTooLong": "The symbol can be up to 8 characters.",
+  "errPhoneInvalid": "That phone number doesn't look right.",
+  "errCurrencyUnavailable": "That currency isn't available any more.",
+  "errBaseCurrencyLocked": "The dirham is the base currency and can't be changed that way."
 }

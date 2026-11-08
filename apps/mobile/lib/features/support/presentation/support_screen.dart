@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/site/site_settings.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../data/support_repository.dart';
 import '../domain/support_models.dart';
+import 'contact_card.dart';
 import 'support_widgets.dart';
 
 const TicketFilter allTickets = (status: null, category: null);
@@ -33,14 +35,36 @@ class SupportScreen extends ConsumerWidget {
         icon: const Icon(Icons.add_comment_outlined),
         label: Text(l.newTicket),
       ),
-      body: AsyncView<TicketsPage>(
+      // Contact details stay visible while tickets load, and when they fail.
+      body: !value.hasValue || value.hasError
+          ? RefreshList(
+              onRefresh: () async {
+                ref.invalidate(siteSettingsProvider);
+                ref.invalidate(ticketsProvider(allTickets));
+              },
+              children: [
+                const ContactCard(),
+                if (value.hasError) ErrorState(error: value.error!, onRetry: () => ref.invalidate(ticketsProvider(allTickets))) else const LoadingState(compact: true),
+              ],
+            )
+          : AsyncView<TicketsPage>(
         value: value,
         onRetry: () => ref.invalidate(ticketsProvider(allTickets)),
         isEmpty: (p) => p.items.isEmpty,
-        empty: EmptyState(title: l.supportEmptyTitle, body: l.supportEmptyBody, icon: Icons.support_agent_rounded),
-        data: (page) => RefreshList(
-          onRefresh: () => ref.refresh(ticketsProvider(allTickets).future),
+        empty: ListView(
+          padding: const EdgeInsets.only(bottom: 72),
           children: [
+            const ContactCard(),
+            EmptyState(title: l.supportEmptyTitle, body: l.supportEmptyBody, icon: Icons.support_agent_rounded),
+          ],
+        ),
+        data: (page) => RefreshList(
+          onRefresh: () async {
+            ref.invalidate(siteSettingsProvider);
+            final _ = await ref.refresh(ticketsProvider(allTickets).future);
+          },
+          children: [
+            const ContactCard(),
             CardGroup(children: [
               for (final t in page.items)
                 TicketTile(

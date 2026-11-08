@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 
 const envSchema = z.object({
@@ -44,10 +45,17 @@ const envSchema = z.object({
   APPLE_IAP_ENVIRONMENT: z.string().default('Sandbox'),
   APPLE_APP_APPLE_ID: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().positive().optional()),
 
+  /** App Store Connect API key (automatic App Store product setup). All optional: without them the sync is off.
+   * The key is the .p8 file, by path (preferred) or inline with literal `\n` for newlines. */
+  ASC_ISSUER_ID: z.string().optional(),
+  ASC_KEY_ID: z.string().optional(),
+  ASC_PRIVATE_KEY_PATH: z.string().optional(),
+  ASC_PRIVATE_KEY: z.string().optional(),
+
   /** App Review demo accounts, comma-separated emails: may enter their batch's live room at any time (see DemoReviewers). */
   DEMO_REVIEWER_EMAILS: z.string().default(''),
 
-  TEACHER_SHARE_PERCENT: z.coerce.number().min(0).max(100).default(60),
+  // TEACHER_SHARE_PERCENT is retired: teacher cuts are admin-editable (PlatformSettings). Old .env files may still set it; it is ignored.
   EARNING_HOLD_DAYS: z.coerce.number().int().min(0).default(14),
   MIN_PAYOUT_AED: z.coerce.number().min(0).default(200),
   BANK_TRANSFER_HOLD_HOURS: z.coerce.number().int().min(1).default(48),
@@ -57,7 +65,40 @@ const envSchema = z.object({
 export const APPLE_ENVIRONMENTS = ['Production', 'Sandbox'] as const;
 export type AppleEnvironment = (typeof APPLE_ENVIRONMENTS)[number];
 
-export type AppConfig = z.infer<typeof envSchema> & { trustedOrigins: string[]; appleEnvironments: AppleEnvironment[] };
+/** Credentials of the App Store Connect API, present only when everything needed is set and the key could be read. */
+export interface AppStoreConnectConfig {
+  issuerId: string;
+  keyId: string;
+  privateKey: string;
+  appAppleId: string;
+}
+
+export type AppConfig = z.infer<typeof envSchema> & {
+  trustedOrigins: string[];
+  appleEnvironments: AppleEnvironment[];
+  appStoreConnect: AppStoreConnectConfig | null;
+};
+
+/** Never throws: a missing or unreadable key just leaves the sync disabled. The key is never logged. */
+export function resolveAppStoreConnect(
+  env: Pick<z.infer<typeof envSchema>, 'ASC_ISSUER_ID' | 'ASC_KEY_ID' | 'ASC_PRIVATE_KEY_PATH' | 'ASC_PRIVATE_KEY' | 'APPLE_APP_APPLE_ID'>,
+  readFile: (path: string) => string = (p) => readFileSync(p, 'utf8'),
+): AppStoreConnectConfig | null {
+  const issuerId = env.ASC_ISSUER_ID?.trim();
+  const keyId = env.ASC_KEY_ID?.trim();
+  if (!issuerId || !keyId || !env.APPLE_APP_APPLE_ID) return null;
+  let privateKey: string | undefined;
+  if (env.ASC_PRIVATE_KEY_PATH?.trim()) {
+    try {
+      privateKey = readFile(env.ASC_PRIVATE_KEY_PATH.trim());
+    } catch {
+      console.warn('[app-store] ASC_PRIVATE_KEY_PATH could not be read; App Store sync is disabled');
+    }
+  }
+  if (!privateKey && env.ASC_PRIVATE_KEY?.trim()) privateKey = env.ASC_PRIVATE_KEY.replace(/\\n/g, '\n');
+  if (!privateKey?.includes('PRIVATE KEY')) return null;
+  return { issuerId, keyId, privateKey, appAppleId: String(env.APPLE_APP_APPLE_ID) };
+}
 
 export function loadConfig(env: Record<string, string | undefined> = process.env): AppConfig {
   const parsed = envSchema.safeParse(env);
@@ -80,6 +121,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   return {
     ...parsed.data,
     appleEnvironments: appleEnvironments as AppleEnvironment[],
+    appStoreConnect: resolveAppStoreConnect(parsed.data),
     trustedOrigins: parsed.data.TRUSTED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean),
   };
 }

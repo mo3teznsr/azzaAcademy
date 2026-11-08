@@ -1,16 +1,17 @@
 'use client';
 
 import { useId } from 'react';
-import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Check, Link2, Phone, Sparkles, X } from 'lucide-react';
+import { Check, Link2, Sparkles, X } from 'lucide-react';
 import { instructorApplicationInput, SESSION_LANGUAGES, type InstructorApplicationInput } from '@azza/shared';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, InputGroupTextarea } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { PhoneInput } from '@/components/brand/phone-input';
 import { CategoryIcon, useCategories } from '@/components/brand/category';
 import { LoadingBlock } from '@/components/brand/states';
 import { instructorsApi, type InstructorApplication } from '@/lib/api';
@@ -34,7 +35,7 @@ export function ApplicationForm({ previous }: { previous?: InstructorApplication
   const toMessage = useInstructorError();
   const categories = useCategories();
   const form = useForm<InstructorApplicationInput>({
-    resolver: zodResolver(instructorApplicationInput),
+    resolver: zodResolver(instructorApplicationInput) as Resolver<InstructorApplicationInput>,
     defaultValues: {
       headline: previous?.headline ?? '',
       bio: previous?.bio ?? '',
@@ -211,23 +212,13 @@ export function ApplicationForm({ previous }: { previous?: InstructorApplication
           <Label htmlFor={fid('phone')} className="text-[13px] font-bold">
             {c.phone} <span className="font-normal text-muted-foreground">· {c.optional}</span>
           </Label>
-          <InputGroup>
-            <InputGroupAddon>
-              <Phone aria-hidden />
-            </InputGroupAddon>
-            <InputGroupInput
-              id={fid('phone')}
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              dir="ltr"
-              maxLength={30}
-              placeholder={c.phonePh}
-              aria-invalid={!!errors.phone || undefined}
-              aria-describedby={described('phone')}
-              {...form.register('phone', { setValueAs: optional })}
-            />
-          </InputGroup>
+          <Controller
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <PhoneInput id={fid('phone')} value={field.value} onChange={(v) => field.onChange(v || undefined)} onBlur={field.onBlur} invalid={!!errors.phone} aria-describedby={described('phone')} />
+            )}
+          />
           <FieldError id={`${fid('phone')}-error`} message={errors.phone && c.errors.phone} />
         </div>
       </div>

@@ -6,6 +6,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/network/error_text.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/device_timezone.dart';
+import '../../../core/widgets/phone_field.dart';
 import '../../../core/widgets/ui.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
@@ -24,6 +25,8 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late final _name = TextEditingController(text: ref.read(currentUserProvider)?.name ?? '');
   late final _email = TextEditingController(text: ref.read(currentUserProvider)?.email ?? '');
+  late final _phone = PhoneController(initialE164: ref.read(currentUserProvider)?.phone);
+  String? _phoneError;
   late String _timezone = ref.read(currentUserProvider)?.timezone ?? '';
   String? _device;
   final _current = TextEditingController();
@@ -44,6 +47,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void dispose() {
     _name.dispose();
     _email.dispose();
+    _phone.dispose();
     _current.dispose();
     _next.dispose();
     super.dispose();
@@ -53,9 +57,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final l = context.l10n;
     final name = _name.text.trim();
     if (name.length < 2) return showToast(context, l.nameTooShort);
+    final phoneError = _phone.error(l, required: false, languageCode: Localizations.localeOf(context).languageCode);
+    setState(() => _phoneError = phoneError);
+    if (phoneError != null) return;
     setState(() => _saving = true);
     try {
-      final updated = await ref.read(meRepositoryProvider).updateProfile(name: name, timezone: _timezone.isEmpty ? null : _timezone);
+      final updated = await ref.read(meRepositoryProvider).updateProfile(
+            name: name,
+            timezone: _timezone.isEmpty ? null : _timezone,
+            // Clearing a saved number sends '' so the API clears it.
+            phone: _phone.e164OrNull ?? ((ref.read(currentUserProvider)?.phone ?? '').isEmpty ? null : ''),
+          );
       ref.read(authControllerProvider.notifier).updateUser(updated);
       if (mounted) showToast(context, l.profileSaved);
     } catch (e) {
@@ -130,6 +142,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     action: user?.emailVerified ?? true ? Icon(Icons.verified_outlined, color: p.accent, size: 20) : null,
                   ),
                 ),
+                const SizedBox(height: 12),
+                PhoneField(key: const Key('profile-phone'), controller: _phone, errorText: _phoneError),
                 const SizedBox(height: 12),
                 InputDecorator(
                   decoration: fieldDecoration(

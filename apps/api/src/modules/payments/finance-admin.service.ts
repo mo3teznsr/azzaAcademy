@@ -1,4 +1,5 @@
 import { aedToFils, formatMoney, type ReviewTransferInput } from '@azza/shared';
+import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { BusinessRuleError, NotFoundError } from '../../core/errors';
 import type { PaymentGateway } from '../../core/ports';
 import { addHours, formatInZone } from '../../core/time';
@@ -18,7 +19,8 @@ export class FinanceAdminService {
     private readonly gateway: PaymentGateway,
     private readonly earnings: RefundEarningsReverser,
     private readonly notifier: Notifier,
-    private readonly bankTransferHoldHours: number,
+    /** Fixed, or read per use (the admin-editable rule). */
+    private readonly bankTransferHoldHours: RuleValue<number>,
   ) {}
 
   private async loadOrder(id: string) {
@@ -87,7 +89,7 @@ export class FinanceAdminService {
     }
 
     // REQUEST_NEW_RECEIPT: back to awaiting receipt with a fresh hold
-    const expiresAt = addHours(now, this.bankTransferHoldHours);
+    const expiresAt = addHours(now, await resolveRule(this.bankTransferHoldHours));
     const reopened = await this.repo.updateOrder(order.id, {
       status: 'AWAITING_RECEIPT',
       receiptUrl: null,

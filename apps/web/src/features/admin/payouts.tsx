@@ -80,7 +80,7 @@ export function Payouts() {
 }
 
 function RunDetail({ id }: { id: string }) {
-  const { t, f } = useI18n();
+  const { t, f, pick } = useI18n();
   const money = useMoney();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: qk.admin.payoutRun(id), queryFn: () => adminApi.payoutRun(id) });
@@ -153,6 +153,16 @@ function RunDetail({ id }: { id: string }) {
                 <TableCell>
                   <bdi className="font-medium">{p.teacher.name}</bdi>
                   {p.holdReason && <span className="block text-xs text-muted-foreground">{p.holdReason}</span>}
+                  {p.courses && p.courses.length > 0 && (
+                    <ul className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground">
+                      {p.courses.map((c) => (
+                        <li key={c.courseId} className="flex justify-between gap-3">
+                          <span>{pick(c.titleEn, c.titleAr).text}</span>
+                          <span>{money.aed(c.amountFils)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </TableCell>
                 <TableCell>{money.aed(p.amountFils)}</TableCell>
                 <TableCell>{p.adjustmentsFils ? money.aed(p.adjustmentsFils) : '—'}</TableCell>

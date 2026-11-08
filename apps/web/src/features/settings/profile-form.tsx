@@ -1,18 +1,20 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DISPLAY_CURRENCIES, updateProfileInput, type UpdateProfileInput } from '@azza/shared';
+import { isValidPhone, updateProfileInput, type UpdateProfileInput } from '@azza/shared';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PhoneInput } from '@/components/brand/phone-input';
 import { Panel, SectionHeader } from '@/components/brand/section';
 import { ErrorState, LoadingBlock } from '@/components/brand/states';
 import { meApi } from '@/lib/api';
+import { useApiError } from '@/lib/api-errors';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
@@ -22,11 +24,17 @@ const ZONES = ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Asia/Kuwait', 'Asia/B
 
 /** Profile (shared by student + teacher settings) — validates with `updateProfileInput`. */
 export function ProfileForm() {
-  const { t, setLocale } = useI18n();
+  const { t, setLocale, pick } = useI18n();
   const money = useMoney();
   const qc = useQueryClient();
   const me = useQuery({ queryKey: qk.me, queryFn: meApi.get });
-  const form = useForm<UpdateProfileInput>({ resolver: zodResolver(updateProfileInput) });
+  const apiError = useApiError();
+  // The phone is checked on submit, and only when it was edited, so a stored legacy number never blocks the rest.
+  const schema = useMemo(() => updateProfileInput.omit({ phone: true }), []);
+  const form = useForm<UpdateProfileInput>({ resolver: zodResolver(schema) as unknown as Resolver<UpdateProfileInput> });
+  const { dirtyFields } = form.formState;
+  const [phoneBad, setPhoneBad] = useState(false);
+  const knownCurrency = (code: string | undefined) => (code && money.currencies.some((c) => c.code === code) ? code : 'AED');
 
   useEffect(() => {
     if (me.data)
@@ -37,6 +45,7 @@ export function ProfileForm() {
         timezone: me.data.timezone,
         displayCurrency: me.data.displayCurrency,
       });
+    // Seed once per loaded profile; a currency list arriving later must not wipe edits.
   }, [me.data, form]);
 
   const save = useMutation({
@@ -48,7 +57,19 @@ export function ProfileForm() {
       if (v.locale) setLocale(v.locale);
       if (v.displayCurrency) money.setCurrency(v.displayCurrency);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(apiError(e)),
+  });
+
+  const submit = form.handleSubmit((v) => {
+    const { phone, ...rest } = v;
+    // A currency that was removed or disabled falls back to AED.
+    const body: UpdateProfileInput = { ...rest, displayCurrency: knownCurrency(rest.displayCurrency) };
+    if (dirtyFields.phone) {
+      if (phone && !isValidPhone(phone)) return setPhoneBad(true);
+      body.phone = phone || null;
+    }
+    setPhoneBad(false);
+    save.mutate(body);
   });
 
   return (
@@ -59,7 +80,7 @@ export function ProfileForm() {
       ) : me.isError ? (
         <ErrorState error={me.error} onRetry={() => void me.refetch()} />
       ) : (
-        <form className="grid gap-5 md:grid-cols-2" onSubmit={form.handleSubmit((v) => save.mutate(v))} noValidate>
+        <form className="grid gap-5 md:grid-cols-2" onSubmit={submit} noValidate>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="name">{t.settings.name}</Label>
             <Input id="name" {...form.register('name')} aria-invalid={!!form.formState.errors.name} />
@@ -70,7 +91,7 @@ export function ProfileForm() {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="phone">{t.settings.phone}</Label>
-            <Input id="phone" type="tel" dir="ltr" {...form.register('phone')} />
+            <Controller control={form.control} name="phone" render={({ field }) => <PhoneInput id="phone" value={field.value} onChange={(v) => (setPhoneBad(false), field.onChange(v))} onBlur={field.onBlur} invalid={phoneBad} />} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>{t.settings.appLanguage}</Label>
@@ -117,14 +138,14 @@ export function ProfileForm() {
               control={form.control}
               name="displayCurrency"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={knownCurrency(field.value)} onValueChange={field.onChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {DISPLAY_CURRENCIES.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
+                    {money.currencies.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.code} · {pick(c.nameEn, c.nameAr).text}
                       </SelectItem>
                     ))}
                   </SelectContent>

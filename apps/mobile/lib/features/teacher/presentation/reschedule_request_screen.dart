@@ -87,10 +87,10 @@ class _RescheduleRequestScreenState extends ConsumerState<RescheduleRequestScree
             padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
             children: [
               DisplayText(s.title, size: 30),
-              MonoLabel('${d.slate} · ${f.dayTime(s.startsAt)}'),
+              Kicker('${d.slate} · ${f.dayTime(s.startsAt)}'),
               SectionHeader(l.newDay),
               SizedBox(
-                height: 72,
+                height: context.scaled(72),
                 child: ListView(scrollDirection: Axis.horizontal, children: [
                   for (final day in days)
                     Padding(
@@ -107,7 +107,7 @@ class _RescheduleRequestScreenState extends ConsumerState<RescheduleRequestScree
                             border: Border.all(color: p.line),
                           ),
                           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            MonoLabel(f.weekday(day), size: 9, color: _day == day ? p.onAccent : p.muted),
+                            FittedBox(fit: BoxFit.scaleDown, child: Kicker(f.weekday(day), color: _day == day ? p.onAccent : p.textSecondary)),
                             Text(f.dayNumber(day), style: AzzaFonts.mono(size: 18, color: _day == day ? p.onAccent : p.text, tracking: 0)),
                           ]),
                         ),

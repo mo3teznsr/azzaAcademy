@@ -66,17 +66,17 @@ class _Body extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
       children: [
-        MonoLabel(l.orderRef(order.reference)),
+        Kicker(l.orderRef(order.reference)),
         const SizedBox(height: 12),
         DisplayText(l.youreIn, size: 64, weight: FontWeight.w800),
         const SizedBox(height: 12),
-        Text(l.enrolledBody(courseTitle, batch.code, f.n(upcoming.length)), style: t.bodyLarge),
+        Text(l.enrolledBody(courseTitle, batch.code, upcoming.length, f.n(upcoming.length)), style: t.bodyLarge),
         if (next != null) ...[
           const SizedBox(height: 24),
           RaisedCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                MonoLabel('${l.nextTake} · S${next.number.toString().padLeft(2, '0')}'),
+                Kicker('${l.nextTake} · S${next.number.toString().padLeft(2, '0')}'),
                 const Spacer(),
                 StatusChip.session(context, next.status, startsAt: next.startsAt),
               ]),
@@ -90,7 +90,7 @@ class _Body extends ConsumerWidget {
                   Widget cell(int v, String label) => Expanded(
                         child: Column(children: [
                           Text(v.toString().padLeft(2, '0'), style: AzzaFonts.mono(size: 34, color: p.text, tracking: 0)),
-                          MonoLabel(label),
+                          Kicker(label),
                         ]),
                       );
                   return Row(children: [
@@ -109,7 +109,7 @@ class _Body extends ConsumerWidget {
         FilledButton.icon(
           onPressed: upcoming.isEmpty ? null : () => addSessionsToCalendar(upcoming, courseTitle),
           icon: const Icon(Icons.event_available_rounded),
-          label: Text(l.syncCalendar(f.n(upcoming.length))),
+          label: Text(f.n(l.syncCalendar(upcoming.length))),
         ),
         const SizedBox(height: 10),
         OutlinedButton(

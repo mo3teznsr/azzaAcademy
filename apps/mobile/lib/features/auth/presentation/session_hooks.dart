@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/push/push_service.dart';
+import '../../checkout/data/checkout_repository.dart' show fxRatesProvider;
 import '../../checkout/presentation/apple_purchase_coordinator.dart';
 import '../../me/data/me_repository.dart';
 import '../domain/app_user.dart';
@@ -25,9 +26,17 @@ List<Override> productionSessionHooks() => [
             if (locale != user.locale ||
                 (onboarding.timezone != null && onboarding.timezone != user.timezone) ||
                 currency != user.displayCurrency) {
-              unawaited(me
-                  .updateProfile(locale: locale, timezone: onboarding.timezone, displayCurrency: currency)
-                  .then<void>((_) {}, onError: (_) {}));
+              // The currency goes separately, and only if it is still offered, so a rejected currency
+              // never blocks the locale and timezone sync.
+              unawaited(me.updateProfile(locale: locale, timezone: onboarding.timezone).then<void>((_) {}, onError: (_) {}));
+              if (currency != user.displayCurrency) {
+                unawaited(() async {
+                  try {
+                    final fx = await ref.read(fxRatesProvider.future);
+                    if (fx.has(currency)) await me.updateProfile(displayCurrency: currency);
+                  } catch (_) {}
+                }());
+              }
             }
             unawaited(ref.read(appleIapCoordinatorProvider).start());
             await _registerDevice(ref, user);

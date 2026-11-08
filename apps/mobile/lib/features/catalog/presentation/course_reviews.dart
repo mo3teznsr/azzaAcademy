@@ -10,6 +10,8 @@ import '../data/reviews_repository.dart';
 import '../domain/catalog_models.dart';
 import '../domain/review_models.dart';
 import 'catalog_widgets.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../auth/presentation/guest_gate.dart';
 
 /// Rating summary, the student's own review (write / edit / delete), and the paged list with teacher replies.
 /// [canReply] = the viewer teaches this course; [isAdmin] adds Hide / Unhide.
@@ -122,7 +124,16 @@ class _CourseReviewsSectionState extends ConsumerState<CourseReviewsSection> {
         margin: const EdgeInsets.only(top: 24),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           if (data.ratingCount > 0) _Summary(page: data) else Text(l.noReviewsYet, style: Theme.of(context).textTheme.bodyMedium),
-          if (data.canReview && data.mine == null) ...[
+          if (ref.watch(isGuestProvider)) ...[
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              key: const Key('guest-write-review'),
+              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              onPressed: () => requireAccount(context, ref),
+              icon: const Icon(Icons.rate_review_outlined, size: 18),
+              label: Text(l.guestReviewCta),
+            ),
+          ] else if (data.canReview && data.mine == null) ...[
             const SizedBox(height: 14),
             OutlinedButton.icon(
               key: const Key('write-review'),
@@ -177,13 +188,13 @@ class _Summary extends ConsumerWidget {
     final bar = p.isDark ? AzzaColors.sun : AzzaColors.sunDeep;
     return Row(key: const Key('rating-summary'), crossAxisAlignment: CrossAxisAlignment.start, children: [
       Semantics(
-        label: l.ratingSemantics(f.n(page.ratingAvg.toStringAsFixed(1)), f.n(page.ratingCount)),
+        label: f.n(l.ratingSemantics(f.n(page.ratingAvg.toStringAsFixed(1)), page.ratingCount)),
         child: ExcludeSemantics(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             DisplayText(f.n(page.ratingAvg.toStringAsFixed(1)), size: 44),
             RatingStars(page.ratingAvg, size: 16),
             const SizedBox(height: 4),
-            Text(l.reviewsCount(f.n(page.ratingCount)), style: t.bodySmall),
+            Text(f.n(l.reviewsCount(page.ratingCount)), style: t.bodySmall),
           ]),
         ),
       ),
@@ -240,7 +251,7 @@ class _ReviewTile extends ConsumerWidget {
               Text(mine ? l.yourReview : r.userName, style: t.titleSmall),
               Row(children: [
                 RatingStars(r.rating.toDouble(), size: 13),
-                if (r.createdAt != null) ...[const SizedBox(width: 8), MonoLabel(f.shortDate(r.createdAt!))],
+                if (r.createdAt != null) ...[const SizedBox(width: 8), Kicker(f.shortDate(r.createdAt!))],
               ]),
             ]),
           ),
@@ -255,7 +266,7 @@ class _ReviewTile extends ConsumerWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: p.ground, borderRadius: BorderRadius.circular(AzzaSpace.radiusSm)),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              MonoLabel(l.teacherReply),
+              Kicker(l.teacherReply),
               const SizedBox(height: 4),
               Text(r.teacherReply!, style: t.bodyMedium),
             ]),
@@ -340,7 +351,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
           for (var i = 1; i <= 5; i++)
             IconButton(
               key: Key('star-$i'),
-              tooltip: l.starsN('$i'),
+              tooltip: l.starsN(i),
               iconSize: 34,
               constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               onPressed: () => setState(() {

@@ -33,7 +33,7 @@ abstract final class AzzaTheme {
       onInverseSurface: p.ground,
       inversePrimary: AzzaColors.green,
     );
-    final text = AzzaFonts.textTheme(arabic: arabic, color: p.text, muted: p.muted);
+    final text = AzzaFonts.textTheme(arabic: arabic, color: p.text, muted: p.textSecondary);
     const pill = StadiumBorder();
     final buttonText = AzzaFonts.body(arabic: arabic, size: 15, weight: FontWeight.w700);
     final card = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AzzaSpace.radius), side: BorderSide(color: p.line));
@@ -114,9 +114,9 @@ abstract final class AzzaTheme {
         filled: true,
         fillColor: p.raised,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-        labelStyle: TextStyle(color: p.muted),
+        labelStyle: TextStyle(color: p.textSecondary),
         floatingLabelStyle: WidgetStateTextStyle.resolveWith((s) => TextStyle(color: s.contains(WidgetState.focused) ? focusRing : p.muted)),
-        hintStyle: TextStyle(color: p.isDark ? AzzaColors.mutedDeep : AzzaColors.muted),
+        hintStyle: TextStyle(color: p.hint),
         prefixIconColor: WidgetStateColor.resolveWith((s) => s.contains(WidgetState.focused) ? focusRing : p.muted),
         suffixIconColor: WidgetStateColor.resolveWith((s) => s.contains(WidgetState.focused) ? focusRing : p.muted),
         border: field(p.fieldLine),
@@ -151,7 +151,7 @@ abstract final class AzzaTheme {
         surfaceTintColor: Colors.transparent,
         height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith(
-          (s) => AzzaFonts.mono(size: 10, color: s.contains(WidgetState.selected) ? p.text : p.muted),
+          (s) => AzzaFonts.body(arabic: arabic, size: 12, weight: FontWeight.w700, color: s.contains(WidgetState.selected) ? p.text : p.textSecondary),
         ),
         iconTheme: WidgetStateProperty.resolveWith(
           (s) => IconThemeData(color: s.contains(WidgetState.selected) ? p.text : p.muted),
@@ -159,7 +159,7 @@ abstract final class AzzaTheme {
       ),
       tabBarTheme: TabBarThemeData(
         labelColor: p.text,
-        unselectedLabelColor: p.muted,
+        unselectedLabelColor: p.textSecondary,
         indicatorColor: AzzaColors.green,
         dividerColor: p.line,
       ),

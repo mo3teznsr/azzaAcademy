@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../core/domain/enums.dart';
 import '../core/l10n/l10n.dart';
+import '../features/admin/data/admin_queue.dart';
+import '../features/auth/presentation/auth_controller.dart';
 import '../features/me/data/me_repository.dart';
 
 class _Tab {
@@ -36,10 +38,11 @@ class RoleShell extends ConsumerWidget {
             _Tab(l.navMe, Icons.person_outline_rounded, Icons.person_rounded),
           ],
         Role.admin => [
+            // "Live" made way for "Manage": the overview's "Live now" section and the Manage hub open the monitor.
             _Tab(l.navOverview, Icons.space_dashboard_outlined, Icons.space_dashboard_rounded),
-            _Tab(l.navLive, Icons.sensors_outlined, Icons.sensors_rounded),
             _Tab(l.navBatches, Icons.view_agenda_outlined, Icons.view_agenda_rounded),
             _Tab(l.navApprovals, Icons.fact_check_outlined, Icons.fact_check_rounded),
+            _Tab(l.adminNavManage, Icons.grid_view_outlined, Icons.grid_view_rounded),
             _Tab(l.navMe, Icons.person_outline_rounded, Icons.person_rounded),
           ],
       };
@@ -47,7 +50,10 @@ class RoleShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tabs = _tabs(context.l10n);
-    final unread = role == Role.student ? ref.watch(unreadCountProvider) : 0;
+    // Guests browse the student shell too; they have no inbox to count.
+    final unread = role == Role.student && !ref.watch(isGuestProvider) ? ref.watch(unreadCountProvider) : 0;
+    // Admin: decisions waiting on the Approvals tab.
+    final approvals = role == Role.admin ? ref.watch(adminQueueProvider).approvalsTotal : 0;
     return Scaffold(
       body: shell,
       bottomNavigationBar: NavigationBar(
@@ -56,7 +62,11 @@ class RoleShell extends ConsumerWidget {
         destinations: [
           for (final (i, t) in tabs.indexed)
             NavigationDestination(
-              icon: i == 4 && unread > 0 ? Badge(label: Text('$unread'), child: Icon(t.icon)) : Icon(t.icon),
+              icon: i == 4 && unread > 0
+                  ? Badge(label: Text('$unread'), child: Icon(t.icon))
+                  : (role == Role.admin && i == 2 && approvals > 0)
+                      ? Badge(key: const Key('approvals-badge'), label: Text('$approvals'), child: Icon(t.icon))
+                      : Icon(t.icon),
               selectedIcon: Icon(t.selectedIcon),
               label: t.label,
             ),

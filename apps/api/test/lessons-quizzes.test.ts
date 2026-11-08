@@ -110,6 +110,25 @@ class InMemoryQuizzes implements QuizRepository {
   async batch(id: string) {
     return this.batches[id] ?? null;
   }
+  // Course (recorded) quizzes are covered in recorded-access.test.ts; these satisfy the interface.
+  async course() {
+    return null;
+  }
+  async recordedSubscription() {
+    return null;
+  }
+  async hadSubscription() {
+    return false;
+  }
+  async listByCourse() {
+    return [];
+  }
+  async createForCourse(): Promise<QuizRecord> {
+    throw new Error('not a batch quiz repository operation');
+  }
+  async attemptUsers(): Promise<StudentRef[]> {
+    return [];
+  }
   async moduleInCourse(moduleId: string, courseId: string) {
     return courseId === 'c1' && moduleId === 'm1';
   }
@@ -121,7 +140,7 @@ class InMemoryQuizzes implements QuizRepository {
   }
   async create(batchId: string, d: QuizWriteData & { title: string; questions: StoredQuestion[] }) {
     const row: QuizRecord = {
-      id: `quiz${++this.seq}`, batchId, moduleId: null, description: '', status: 'DRAFT', dueAt: null, timeLimitMin: null, maxAttempts: 1,
+      id: `quiz${++this.seq}`, batchId, courseId: null, passPercent: 70, moduleId: null, description: '', status: 'DRAFT', dueAt: null, timeLimitMin: null, maxAttempts: 1,
       publishedAt: null, createdAt: this.now(), updatedAt: this.now(), ...d,
     };
     this.quizzes.push(row);
@@ -378,7 +397,7 @@ describe('results', () => {
 class InMemoryLessons implements LessonRepository {
   courses: LessonCourse[] = [
     {
-      id: 'c1', slug: 'pdf', titleEn: 'Product Design', titleAr: null, status: 'DRAFT', createdById: 'lina',
+      id: 'c1', slug: 'pdf', titleEn: 'Product Design', titleAr: null, status: 'DRAFT', createdById: 'lina', type: 'LIVE', previewLessonId: null,
       modules: [{ id: 'm1', order: 0, titleEn: 'Basics', titleAr: null, descriptionEn: null, descriptionAr: null }],
     },
   ];
@@ -417,6 +436,34 @@ class InMemoryLessons implements LessonRepository {
   async teachesCourse(courseId: string, userId: string) {
     return courseId === 'c1' && userId === 'omar';
   }
+  done = new Set<string>();
+  async completedLessonIds(userId: string, ids: string[]) {
+    return ids.filter((id) => this.done.has(`${userId}:${id}`));
+  }
+  async setCompleted(userId: string, lessonId: string, completed: boolean) {
+    if (completed) this.done.add(`${userId}:${lessonId}`);
+    else this.done.delete(`${userId}:${lessonId}`);
+  }
+  async activeCourseIds(userId: string) {
+    return userId === 'sara' ? ['c1'] : [];
+  }
+  async learnerSubscription() {
+    return null;
+  }
+  async courseOfLesson(lessonId: string) {
+    return this.rows.some((l) => l.id === lessonId) ? 'c1' : null;
+  }
+  // Recorded-course access is covered in recorded-access.test.ts; these satisfy the interface.
+  async recordedSubscription() {
+    return null;
+  }
+  async hadSubscription() {
+    return false;
+  }
+  async videoPosition() {
+    return null;
+  }
+  async setVideoPosition() {}
 }
 
 describe('lessons', () => {
@@ -454,5 +501,28 @@ describe('lessons', () => {
     expect((await service.list('c1', admin)).modules).toHaveLength(1);
     expect(await codeOf(service.list('c1', nadia))).toBe('FORBIDDEN');
     expect(await codeOf(service.list('c1', mariam))).toBe('FORBIDDEN');
+  });
+});
+
+describe('lesson progress', () => {
+  const input = { titleEn: 'Grids', bodyEn: '', attachments: [] };
+
+  test('marking lessons done moves progress and the next lesson; outsiders cannot', async () => {
+    const repo = new InMemoryLessons();
+    repo.courses[0]!.modules.push({ id: 'm2', order: 1, titleEn: 'Type', titleAr: null, descriptionEn: null, descriptionAr: null });
+    const service = new LessonService(repo);
+    const a = await service.create('c1', 'm1', { ...input, titleEn: 'Grids' }, lina);
+    const b = await service.create('c1', 'm2', { ...input, titleEn: 'Pairing fonts' }, lina);
+    expect((await service.list('c1', sara)).progress).toMatchObject({ completed: 0, total: 2, nextLesson: { id: a.id, moduleTitleEn: 'Basics' } });
+    await service.setCompleted(a.id, true, sara);
+    const after = await service.list('c1', sara);
+    expect(after.progress).toMatchObject({ completed: 1, total: 2, nextLesson: { id: b.id, moduleTitleEn: 'Type' } });
+    expect(after.modules[0]!.lessons[0]!.completed).toBe(true);
+    await service.setCompleted(b.id, true, sara);
+    expect((await service.myProgress(sara)).items).toMatchObject([{ courseId: 'c1', completed: 2, total: 2, nextLesson: null }]);
+    await service.setCompleted(b.id, false, sara);
+    expect((await service.myProgress(sara)).items[0]!.completed).toBe(1);
+    expect(await codeOf(service.setCompleted(a.id, true, nadia))).toBe('FORBIDDEN');
+    expect(await codeOf(service.setCompleted('nope', true, sara))).toBe('NOT_FOUND');
   });
 });

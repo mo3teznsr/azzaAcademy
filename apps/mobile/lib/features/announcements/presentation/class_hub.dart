@@ -6,6 +6,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/ui.dart';
+import '../../../core/widgets/whatsapp_button.dart';
 import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../chat/presentation/messages_button.dart';
@@ -14,8 +15,12 @@ import 'announcement_widgets.dart';
 
 /// On a class I'm in: the latest announcements, the class chat and (students only) a private line to the teacher.
 class ClassHub extends ConsumerWidget {
-  const ClassHub({super.key, required this.batchId});
+  const ClassHub({super.key, required this.batchId, this.courseTitle, this.batchCode});
   final String batchId;
+
+  /// With [batchCode], enables the WhatsApp question button.
+  final String? courseTitle;
+  final String? batchCode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,6 +68,10 @@ class ClassHub extends ConsumerWidget {
           if (role == Role.student)
             row(l.messageYourTeacher, Icons.mark_chat_unread_outlined, () => openTeacherChat(context, ref, batchId), const Key('message-teacher')),
         ]),
+        if (courseTitle != null && batchCode != null) ...[
+          const SizedBox(height: 12),
+          WhatsAppButton(message: l.whatsappBatchMessage(courseTitle!, batchCode!)),
+        ],
       ],
     );
   }

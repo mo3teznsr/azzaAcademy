@@ -11,6 +11,7 @@ import { loadConfig } from '../src/core/config';
 import type { Mailer, PushNotifier } from '../src/core/ports';
 import { addMinutes } from '../src/core/time';
 import { DemoReviewers } from '../src/modules/sessions/demo-reviewers';
+import { DEFAULT_CURRENCIES } from '../src/modules/currencies/currency.service';
 
 const PASSWORD = 'password123';
 const config = loadConfig();
@@ -86,6 +87,14 @@ type CourseDetail = {
 const FAQ_COMMON = [
   { qEn: 'What if I miss a session?', aEn: 'Every session is recorded and stays in your library.', qAr: 'ماذا لو فاتتني جلسة؟', aAr: 'كل جلسة مسجلة وتبقى في مكتبتك.' },
   { qEn: 'Do I get a certificate?', aEn: 'Yes — attend most sessions and pass the assignments.', qAr: 'هل أحصل على شهادة؟', aAr: 'نعم — احضر معظم الجلسات واجتز الواجبات.' },
+];
+
+/** FAQ for recorded courses: a plan, not a class. */
+const FAQ_RECORDED = [
+  { qEn: 'Can I try it first?', aEn: 'Yes. The first lesson is free to watch, no plan needed.', qAr: 'هل يمكنني التجربة أولًا؟', aAr: 'نعم، الدرس الأول مجاني ولا يحتاج إلى اشتراك.' },
+  { qEn: 'Can I cancel any time?', aEn: 'Yes. You keep access until the end of the period you paid for.', qAr: 'هل يمكنني الإلغاء في أي وقت؟', aAr: 'نعم، ويبقى وصولك حتى نهاية المدة التي دفعت مقابلها.' },
+  { qEn: 'What happens to my progress if my plan ends?', aEn: 'It is saved. Renew any time and pick up where you left off.', qAr: 'ماذا يحدث لتقدّمي إذا انتهى اشتراكي؟', aAr: 'يبقى محفوظًا، جدّد متى شئت وتابع من حيث توقفت.' },
+  { qEn: 'Do I get a certificate?', aEn: 'Yes. Finish every lesson and pass every quiz.', qAr: 'هل أحصل على شهادة؟', aAr: 'نعم، بعد إتمام جميع الدروس واجتياز جميع الاختبارات.' },
 ];
 
 /** Rich detail for the catalog demo (outcomes, requirements, audience, FAQ), one per course. */
@@ -195,6 +204,93 @@ async function ensureCourse(c: (typeof COURSES)[number]) {
     create: { ...data, status: 'PUBLISHED', modules: { create: modules.map((titleEn, order) => ({ order, titleEn })) } },
     update: { ...data, status: 'PUBLISHED' },
   });
+}
+
+/** A RECORDED course: 2 modules x 2 lessons, a preview lesson and a published course quiz. Re-runnable (natural keys: slug, order, title). */
+async function ensureRecordedCourse(teacherId: string) {
+  const slug = 'excel-for-everyday-work';
+  const videoUrl = process.env.DEMO_RECORDING_URL?.trim() || 'https://recordings.azza.test/excel/intro.mp4';
+  const base = {
+    titleEn: 'Excel for Everyday Work',
+    titleAr: 'إكسل للعمل اليومي',
+    descriptionEn: 'Self-paced Excel: tidy data, formulas and quick summaries for the tasks you actually do.',
+    descriptionAr: 'إكسل بالسرعة التي تناسبك: ترتيب البيانات والصيغ وملخصات سريعة للمهام التي تؤديها فعلًا.',
+    category: 'business',
+    level: 'BEGINNER' as const,
+    type: 'RECORDED' as const,
+    coverStyle: 'sky',
+    priceFils: 4_900,
+    monthlyPriceFils: 4_900,
+    yearlyPriceFils: 49_000,
+    status: 'PUBLISHED' as const,
+    createdById: teacherId,
+    outcomesEn: ['Build clean, well-formatted tables', 'Use the formulas you need every day', 'Summarise data with a pivot table'],
+    outcomesAr: ['بناء جداول نظيفة ومنسقة', 'استخدام الصيغ التي تحتاجها يوميًا', 'تلخيص البيانات بجدول محوري'],
+    requirementsEn: ['Excel on a laptop or desktop', 'No prior experience needed'],
+    requirementsAr: ['برنامج إكسل على حاسوب', 'لا تحتاج إلى خبرة سابقة'],
+    audienceEn: ['Office staff who live in spreadsheets', 'Students preparing for their first job'],
+    audienceAr: ['موظفو المكاتب الذين يعتمدون على الجداول', 'الطلاب الذين يستعدون لوظيفتهم الأولى'],
+    faq: FAQ_RECORDED,
+  };
+  const course = await db.course.upsert({ where: { slug }, create: { slug, ...base }, update: base });
+
+  const modules = [
+    {
+      titleEn: 'Getting started', titleAr: 'البداية',
+      lessons: [
+        { titleEn: 'The Excel workspace', titleAr: 'بيئة إكسل', bodyEn: 'A quick tour of the ribbon, cells and sheets.', bodyAr: 'جولة سريعة في الشريط والخلايا وأوراق العمل.', videoUrl },
+        { titleEn: 'Entering and formatting data', titleAr: 'إدخال البيانات وتنسيقها', bodyEn: 'Type, fill and format a simple table.', bodyAr: 'اكتب البيانات واملأها ونسّق جدولًا بسيطًا.', videoUrl: null },
+      ],
+    },
+    {
+      titleEn: 'Formulas and summaries', titleAr: 'الصيغ والملخصات',
+      lessons: [
+        { titleEn: 'Everyday formulas', titleAr: 'الصيغ اليومية', bodyEn: 'SUM, AVERAGE and IF in real examples.', bodyAr: 'الدوال SUM وAVERAGE وIF في أمثلة حقيقية.', videoUrl: null },
+        { titleEn: 'Pivot tables in five minutes', titleAr: 'الجداول المحورية في خمس دقائق', bodyEn: 'Summarise a list by category.', bodyAr: 'لخّص قائمة بحسب الفئة.', videoUrl: null },
+      ],
+    },
+  ];
+  const lessonIds: string[] = [];
+  for (const [mi, m] of modules.entries()) {
+    const { lessons, ...mdata } = m;
+    const mod = await db.courseModule.upsert({
+      where: { courseId_order: { courseId: course.id, order: mi } },
+      create: { courseId: course.id, order: mi, ...mdata },
+      update: mdata,
+    });
+    for (const [li, l] of lessons.entries()) {
+      const existing = await db.lesson.findFirst({ where: { moduleId: mod.id, order: li } });
+      const lesson = existing
+        ? await db.lesson.update({ where: { id: existing.id }, data: l })
+        : await db.lesson.create({ data: { moduleId: mod.id, order: li, ...l } });
+      lessonIds.push(lesson.id);
+    }
+  }
+  await db.course.update({ where: { id: course.id }, data: { previewLessonId: lessonIds[0]! } });
+
+  const opt = (id: string, textEn: string, textAr: string, correct: boolean) => ({ id, textEn, textAr, correct });
+  const quizData = {
+    description: 'Check what you learned in the course.',
+    status: 'PUBLISHED' as const,
+    publishedAt: new Date('2026-11-01T00:00:00Z'),
+    maxAttempts: 3,
+    passPercent: 70,
+    questions: [
+      {
+        id: 'q1', type: 'SINGLE', promptEn: 'Which formula adds the values in A1 to A5?', promptAr: 'أي صيغة تجمع القيم من A1 إلى A5؟', points: 1,
+        options: [opt('a', '=SUM(A1:A5)', '=SUM(A1:A5)', true), opt('b', '=ADD(A1:A5)', '=ADD(A1:A5)', false), opt('c', '=TOTAL(A1,A5)', '=TOTAL(A1,A5)', false)],
+      },
+      {
+        id: 'q2', type: 'SINGLE', promptEn: 'What does a pivot table do?', promptAr: 'ماذا يفعل الجدول المحوري؟', points: 1,
+        options: [opt('a', 'Summarises data by category', 'يلخّص البيانات بحسب الفئة', true), opt('b', 'Rotates the page', 'يدوّر الصفحة', false), opt('c', 'Locks the sheet', 'يقفل الورقة', false)],
+      },
+    ],
+  };
+  const title = 'Excel basics check';
+  const quiz = await db.quiz.findFirst({ where: { courseId: course.id, title } });
+  if (quiz) await db.quiz.update({ where: { id: quiz.id }, data: quizData });
+  else await db.quiz.create({ data: { courseId: course.id, batchId: null, title, ...quizData } });
+  return course;
 }
 
 async function ensureBatch(args: {
@@ -318,7 +414,7 @@ async function main() {
   const nadia = others.at(-1)!; // the student with the VERIFYING transfer
   const b07Students = [sara, ...others.slice(0, 22)];
 
-  console.info('Seeding bank accounts, FX, coupons…');
+  console.info('Seeding bank accounts, currencies, coupons…');
   const banks = [
     { id: 'bank_enbd', bankName: 'Emirates NBD', swift: 'EBILAEAD', iban: 'AE070331234567890123456', branch: 'Dubai Mall', sortOrder: 0 },
     { id: 'bank_adcb', bankName: 'ADCB', swift: 'ADCBAEAA', iban: 'AE460030000123456789012', branch: 'Abu Dhabi Main', sortOrder: 1 },
@@ -328,8 +424,9 @@ async function main() {
     const data = { ...b, accountName: '[COMPANY LEGAL NAME]', currency: 'AED', active: true, instructions: 'Put your order reference (AZ-…) in the transfer notes.' };
     await db.bankAccount.upsert({ where: { id: b.id }, create: data, update: data });
   }
-  for (const [currency, ratePerAed] of Object.entries({ SAR: 1.0211, QAR: 0.9912, USD: 0.2723 })) {
-    await db.fxRate.upsert({ where: { currency }, create: { currency, ratePerAed, source: 'seed' }, update: {} });
+  // Display currencies: insert the defaults when missing; never overwrite what an admin changed (idempotent).
+  for (const c of DEFAULT_CURRENCIES) {
+    await db.currency.upsert({ where: { code: c.code }, create: { ...c, enabled: true }, update: {} });
   }
   await db.coupon.upsert({ where: { code: 'WELCOME10' }, create: { code: 'WELCOME10', percentOff: 10, maxRedemptions: 100 }, update: {} });
   await db.coupon.upsert({ where: { code: 'RAMADAN100' }, create: { code: 'RAMADAN100', amountOffFils: 10_000, expiresOn: new Date('2027-03-31T00:00:00Z') }, update: {} });
@@ -571,6 +668,9 @@ async function main() {
       ],
     });
   }
+
+  const excel = await ensureRecordedCourse(tomas.id);
+  console.info(`Recorded course: ${excel.slug} (${excel.id})`);
 
   const counts = {
     users: await db.user.count(),

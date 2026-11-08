@@ -88,9 +88,39 @@ class BatchEarning {
   String title(AppLocale l) => l == AppLocale.ar && courseTitleAr != null ? courseTitleAr! : courseTitle;
 }
 
+/// What one recorded course contributed to an amount: `{ courseId, titleEn, titleAr, earnedFils | amountFils }`.
+@immutable
+class CourseEarning {
+  const CourseEarning({required this.courseId, required this.titleEn, this.titleAr, required this.amountFils});
+
+  /// `amountKey` is `earnedFils` on `GET /teacher/earnings` and `amountFils` on a payout run line.
+  factory CourseEarning.fromJson(Json j, {String amountKey = 'earnedFils'}) => CourseEarning(
+        courseId: str(j, 'courseId', str(j, 'id')),
+        titleEn: str(j, 'titleEn'),
+        titleAr: strOrNull(j, 'titleAr'),
+        amountFils: integer(j, amountKey),
+      );
+
+  final String courseId;
+  final String titleEn;
+  final String? titleAr;
+  final int amountFils;
+
+  String title(AppLocale l) => l == AppLocale.ar && titleAr != null ? titleAr! : (titleEn.isEmpty ? (titleAr ?? '') : titleEn);
+}
+
 @immutable
 class LedgerEntry {
-  const LedgerEntry({required this.id, required this.amountFils, required this.status, required this.kind, this.createdAt, this.note});
+  const LedgerEntry({
+    required this.id,
+    required this.amountFils,
+    required this.status,
+    required this.kind,
+    this.createdAt,
+    this.note,
+    this.courseId,
+    this.course,
+  });
   factory LedgerEntry.fromJson(Json j) => LedgerEntry(
         id: str(j, 'id'),
         amountFils: integer(j, 'amountFils'),
@@ -98,6 +128,8 @@ class LedgerEntry {
         kind: str(j, 'kind', 'SESSION'),
         createdAt: date(j, 'createdAt'),
         note: strOrNull(j, 'note'),
+        courseId: strOrNull(obj(j, 'course'), 'id') ?? strOrNull(j, 'courseId'),
+        course: objOrNull(j, 'course') == null ? null : CourseEarning.fromJson(obj(j, 'course'), amountKey: 'amountFils'),
       );
   final String id;
   final int amountFils;
@@ -105,6 +137,14 @@ class LedgerEntry {
   final String kind;
   final DateTime? createdAt;
   final String? note;
+
+  /// Plan payments on a recorded course carry its id (they have no batch).
+  final String? courseId;
+
+  /// The recorded course behind this entry (`ledger[].course`); null for live session earnings.
+  final CourseEarning? course;
+
+  bool get isRecorded => course != null || courseId != null;
 }
 
 @immutable
@@ -118,6 +158,7 @@ class EarningsSummary {
     this.nextPayout,
     this.nextPayoutEstimateFils,
     this.batches = const [],
+    this.courses = const [],
     this.ledger = const [],
   });
 
@@ -135,6 +176,7 @@ class EarningsSummary {
       nextPayout: expectedOn == null ? null : DateTime.tryParse(expectedOn),
       nextPayoutEstimateFils: intOrNull(next, 'estimatedFils'),
       batches: list(j, 'batches').map(BatchEarning.fromJson).toList(),
+      courses: list(j, 'courses').map(CourseEarning.fromJson).toList(),
       ledger: list(j, 'ledger').map(LedgerEntry.fromJson).toList(),
     );
   }
@@ -147,7 +189,26 @@ class EarningsSummary {
   final DateTime? nextPayout;
   final int? nextPayoutEstimateFils;
   final List<BatchEarning> batches;
+
+  /// Recorded (subscription) earnings per course.
+  final List<CourseEarning> courses;
   final List<LedgerEntry> ledger;
+}
+
+/// `GET /teacher/courses/:id/subscribers` → `{ active, cancelling, pastDue, total }`.
+@immutable
+class CourseSubscribers {
+  const CourseSubscribers({this.active = 0, this.cancelling = 0, this.pastDue = 0, this.total = 0});
+  factory CourseSubscribers.fromJson(Json j) => CourseSubscribers(
+        active: integer(j, 'active'),
+        cancelling: integer(j, 'cancelling'),
+        pastDue: integer(j, 'pastDue'),
+        total: integer(j, 'total'),
+      );
+  final int active;
+  final int cancelling;
+  final int pastDue;
+  final int total;
 }
 
 @immutable
@@ -203,6 +264,9 @@ class TeacherBankDetails {
 abstract class TeacherRepository {
   Future<List<RosterStudent>> roster(String batchId);
   Future<EarningsSummary> earnings();
+
+  /// Who subscribes to one of my recorded courses (author or admin).
+  Future<CourseSubscribers> courseSubscribers(String courseId);
   Future<List<PayoutEntry>> payouts();
   Future<TeacherBankDetails?> bankDetails();
   Future<TeacherBankDetails> saveBankDetails(TeacherBankDetails details);
@@ -222,6 +286,10 @@ class DioTeacherRepository extends DioRepository implements TeacherRepository {
 
   @override
   Future<EarningsSummary> earnings() async => EarningsSummary.fromJson(await getJson('/api/v1/teacher/earnings'));
+
+  @override
+  Future<CourseSubscribers> courseSubscribers(String courseId) async =>
+      CourseSubscribers.fromJson(await getJson('/api/v1/teacher/courses/${Uri.encodeComponent(courseId)}/subscribers'));
 
   @override
   Future<List<PayoutEntry>> payouts() async => (await getItems('/api/v1/teacher/payouts')).map(PayoutEntry.fromJson).toList();
@@ -251,6 +319,9 @@ final rosterProvider = FutureProvider.autoDispose.family<List<RosterStudent>, St
   (ref, batchId) => ref.watch(teacherRepositoryProvider).roster(batchId),
 );
 final earningsProvider = FutureProvider.autoDispose<EarningsSummary>((ref) => ref.watch(teacherRepositoryProvider).earnings());
+final courseSubscribersProvider = FutureProvider.autoDispose.family<CourseSubscribers, String>(
+  (ref, courseId) => ref.watch(teacherRepositoryProvider).courseSubscribers(courseId),
+);
 final payoutsProvider = FutureProvider.autoDispose<List<PayoutEntry>>((ref) => ref.watch(teacherRepositoryProvider).payouts());
 final bankDetailsProvider = FutureProvider.autoDispose<TeacherBankDetails?>((ref) => ref.watch(teacherRepositoryProvider).bankDetails());
 final myRescheduleRequestsProvider =

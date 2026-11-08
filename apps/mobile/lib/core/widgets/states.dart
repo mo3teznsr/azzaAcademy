@@ -49,7 +49,7 @@ class EmptyState extends StatelessWidget {
             Text(title, style: t.headlineSmall, textAlign: TextAlign.center),
             if (body != null) ...[
               const SizedBox(height: 8),
-              Text(body!, style: t.bodyMedium?.copyWith(color: p.muted), textAlign: TextAlign.center),
+              Text(body!, style: t.bodyMedium?.copyWith(color: p.textSecondary), textAlign: TextAlign.center),
             ],
             if (action != null && onAction != null) ...[
               const SizedBox(height: 20),
@@ -83,7 +83,7 @@ class ErrorState extends StatelessWidget {
             const SizedBox(height: 16),
             Text(l.errorTitle, style: t.headlineSmall, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(message, style: t.bodyMedium?.copyWith(color: p.muted), textAlign: TextAlign.center),
+            Text(message, style: t.bodyMedium?.copyWith(color: p.textSecondary), textAlign: TextAlign.center),
             if (onRetry != null) ...[
               const SizedBox(height: 20),
               OutlinedButton(onPressed: onRetry, child: Text(l.retry)),

@@ -3,7 +3,7 @@
 import { useId, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { lessonInput } from '@azza/shared';
-import { ArrowDown, ArrowUp, ChevronDown, Link2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronDown, CircleCheck, Link2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +53,8 @@ export function ModuleLessons({ courseId, moduleId, editable, uploader }: { cour
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: qk.lessons(courseId!) });
     if (courseId) void qc.invalidateQueries({ queryKey: qk.course(courseId) });
+    // Adding, removing or moving lessons changes totals and the next lesson.
+    void qc.invalidateQueries({ queryKey: qk.learningProgress });
   };
   const reorder = useMutation({
     mutationFn: (ids: string[]) => learningApi.reorderLessons(courseId!, moduleId!, ids),
@@ -99,6 +101,11 @@ export function ModuleLessons({ courseId, moduleId, editable, uploader }: { cour
                 <li key={l.id} className="flex items-center gap-2 rounded-[12px] border border-border bg-background px-3 py-1.5">
                   <span className="timecode w-8 text-xs text-muted-foreground">L{String(i + 1).padStart(2, '0')}</span>
                   <span className="min-w-0 flex-1 truncate text-sm">{pick(l.titleEn, l.titleAr).text}</span>
+                  {l.completed && (
+                    <span className="inline-flex items-center gap-1 text-xs text-sun-fg">
+                      <CircleCheck className="size-3.5" aria-hidden /> {t.learning.lessons.doneSr}
+                    </span>
+                  )}
                   {editable && (
                     <>
                       <Button type="button" variant="ghost" size="icon-xs" aria-label={t.learning.editor.moveUp} disabled={i === 0 || reorder.isPending} onClick={() => move(i, -1)}>

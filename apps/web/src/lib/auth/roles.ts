@@ -12,7 +12,7 @@ export const homeFor = (role: string | null | undefined): string => ROLE_HOME[(r
 /** Signed-in pages every role shares (messages, support, announcements). */
 const SHARED_PREFIXES = ['/messages', '/support', '/announcements'];
 
-const STUDENT_PREFIXES = ['/learn', '/schedule', '/library', '/assignments', '/checkout', '/orders', '/live', '/settings', '/certificates'];
+const STUDENT_PREFIXES = ['/learn', '/schedule', '/library', '/assignments', '/checkout', '/orders', '/live', '/settings', '/certificates', '/plans'];
 
 /** Which roles may open a given path. `null` = public. */
 export function rolesForPath(pathname: string): Role[] | null {

@@ -1,5 +1,5 @@
-import type { LessonInput, QuizInput, QuizQuestionType, QuizStatus, UpdateLessonInput, UpdateQuizInput } from '@azza/shared';
-import { http } from './client';
+import type { LessonInput, QuizInput, QuizQuestionType, QuizStatus, SubscriptionStatus, UpdateLessonInput, UpdateQuizInput } from '@azza/shared';
+import { API_URL, http } from './client';
 import type { ISODate } from './types';
 
 // ───────── Lessons ─────────
@@ -22,6 +22,12 @@ export interface Lesson {
   attachments: LessonAttachment[];
   createdAt: ISODate;
   updatedAt: ISODate;
+  /** For the caller; present on `GET /courses/:id/lessons`, absent on editor writes. */
+  completed?: boolean;
+  /** RECORDED course, no plan: the title shows but the lesson doesn't open (the preview lesson is never locked). */
+  locked?: boolean;
+  /** Where the caller stopped watching (seconds); on `GET /lessons/:id`. */
+  videoPositionSec?: number | null;
 }
 
 /** A module's lesson titles on the public course page (the syllabus preview). */
@@ -32,8 +38,46 @@ export interface LessonTitle {
   titleAr: string | null;
 }
 
+/** The first lesson the caller hasn't completed (module order, then lesson order). */
+export interface NextLesson {
+  id: string;
+  titleEn: string;
+  titleAr: string | null;
+  moduleId: string;
+  moduleTitleEn: string;
+  moduleTitleAr: string | null;
+}
+
+export interface LessonProgress {
+  completed: number;
+  total: number;
+  nextLesson: NextLesson | null;
+}
+
+/** One course with an ACTIVE enrollment on `GET /me/learning-progress` ("Continue learning"). */
+export interface CourseLearningProgress extends LessonProgress {
+  /** Absent until the API sends it; treat missing as LIVE. */
+  type?: 'LIVE' | 'RECORDED';
+  /** Recorded courses: the plan behind the course; null when there is none. Absent until the API sends it. */
+  subscription?: { status: SubscriptionStatus; currentPeriodEnd: ISODate | null; cancelAtPeriodEnd: boolean; hasAccess: boolean } | null;
+  courseId: string;
+  slug: string;
+  titleEn: string;
+  titleAr: string | null;
+}
+
+export interface LessonCompletion {
+  lessonId: string;
+  completed: boolean;
+}
+
+/** `GET /lessons/:id/preview`: the lesson plus enough of its course to link back. */
+export interface PreviewLesson extends Lesson {
+  course?: { id: string; slug: string; titleEn: string; titleAr: string | null };
+}
+
 export interface CourseLessons {
-  course: { id: string; slug: string; titleEn: string; titleAr: string | null; status: string };
+  course: { id: string; slug: string; titleEn: string; titleAr: string | null; status: string; type?: 'LIVE' | 'RECORDED'; previewLessonId?: string | null };
   modules: Array<{
     id: string;
     order: number;
@@ -43,6 +87,7 @@ export interface CourseLessons {
     descriptionAr: string | null;
     lessons: Lesson[];
   }>;
+  progress: LessonProgress;
 }
 
 // ───────── Quizzes ─────────
@@ -66,7 +111,12 @@ export interface QuizQuestion {
 
 interface QuizBase {
   id: string;
-  batchId: string;
+  /** Batch quizzes; null on a recorded course's quizzes. */
+  batchId: string | null;
+  /** Recorded course quizzes only. */
+  courseId?: string | null;
+  /** Percent of the points needed to pass (0–100, default 70). */
+  passPercent?: number;
   moduleId: string | null;
   title: string;
   description: string;
@@ -162,22 +212,48 @@ export interface QuizResults {
 }
 
 const lessonPath = (courseId: string, moduleId: string) => `/api/v1/courses/${courseId}/modules/${moduleId}/lessons`;
-const quizPath = (batchId: string, quizId?: string) => `/api/v1/batches/${batchId}/quizzes${quizId ? `/${quizId}` : ''}`;
+/** A quiz belongs to a batch (live) or straight to a course (recorded: unlimited attempts, no due date). */
+export type QuizScope = { batchId: string } | { courseId: string };
+export const quizScopeKey = (s: QuizScope) => ('batchId' in s ? s.batchId : `course:${s.courseId}`);
+const quizPath = (s: QuizScope, quizId?: string) => `/api/v1/${'batchId' in s ? `batches/${s.batchId}` : `courses/${s.courseId}`}/quizzes${quizId ? `/${quizId}` : ''}`;
 
 export const learningApi = {
+  /** Public: the course's preview lesson (404 for any other lesson). */
+  previewLesson: (lessonId: string) => http.get<PreviewLesson>(`/api/v1/lessons/${lessonId}/preview`),
+  /** One lesson with the caller's saved video position. */
+  lesson: (lessonId: string) => http.get<Lesson>(`/api/v1/lessons/${lessonId}`),
+  saveVideoPosition: (lessonId: string, positionSec: number) => http.put<unknown>(`/api/v1/lessons/${lessonId}/video-position`, { positionSec: Math.max(0, Math.floor(positionSec)) }),
+  /** Same save for `pagehide`: `keepalive` lets it finish after the page is gone. Failures are ignored. */
+  saveVideoPositionOnExit: (lessonId: string, positionSec: number) => {
+    try {
+      void fetch(`${API_URL}/api/v1/lessons/${lessonId}/video-position`, {
+        method: 'PUT',
+        credentials: 'include',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ positionSec: Math.max(0, Math.floor(positionSec)) }),
+      }).catch(() => undefined);
+    } catch {
+      /* best effort */
+    }
+  },
   lessons: (courseIdOrSlug: string) => http.get<CourseLessons>(`/api/v1/courses/${courseIdOrSlug}/lessons`),
   createLesson: (courseId: string, moduleId: string, input: LessonInput) => http.post<Lesson>(lessonPath(courseId, moduleId), input),
   updateLesson: (courseId: string, moduleId: string, lessonId: string, input: UpdateLessonInput) =>
     http.patch<Lesson>(`${lessonPath(courseId, moduleId)}/${lessonId}`, input),
   deleteLesson: (courseId: string, moduleId: string, lessonId: string) => http.del<{ ok: true }>(`${lessonPath(courseId, moduleId)}/${lessonId}`),
   reorderLessons: (courseId: string, moduleId: string, ids: string[]) => http.put<{ items: Lesson[] }>(`${lessonPath(courseId, moduleId)}/order`, { ids }),
+  /** Idempotent: PUT marks the lesson done for the caller, DELETE clears it. */
+  setLessonComplete: (lessonId: string, completed: boolean) =>
+    completed ? http.put<LessonCompletion>(`/api/v1/lessons/${lessonId}/complete`, {}) : http.del<LessonCompletion>(`/api/v1/lessons/${lessonId}/complete`),
+  myLearningProgress: () => http.get<{ items: CourseLearningProgress[] }>('/api/v1/me/learning-progress').then((r) => r.items),
 
-  batchQuizzes: (batchId: string) => http.get<{ items: QuizSummary[] }>(quizPath(batchId)).then((r) => r.items),
-  createQuiz: (batchId: string, input: QuizInput) => http.post<StaffQuiz>(quizPath(batchId), input),
-  updateQuiz: (batchId: string, quizId: string, input: UpdateQuizInput) => http.patch<StaffQuiz>(quizPath(batchId, quizId), input),
-  deleteQuiz: (batchId: string, quizId: string) => http.del<{ ok: true }>(quizPath(batchId, quizId)),
-  publishQuiz: (batchId: string, quizId: string) => http.post<StaffQuiz>(`${quizPath(batchId, quizId)}/publish`),
-  unpublishQuiz: (batchId: string, quizId: string) => http.post<StaffQuiz>(`${quizPath(batchId, quizId)}/unpublish`),
+  scopeQuizzes: (scope: QuizScope) => http.get<{ items: QuizSummary[] }>(quizPath(scope)).then((r) => r.items),
+  createQuiz: (scope: QuizScope, input: QuizInput) => http.post<StaffQuiz>(quizPath(scope), input),
+  updateQuiz: (scope: QuizScope, quizId: string, input: UpdateQuizInput) => http.patch<StaffQuiz>(quizPath(scope, quizId), input),
+  deleteQuiz: (scope: QuizScope, quizId: string) => http.del<{ ok: true }>(quizPath(scope, quizId)),
+  publishQuiz: (scope: QuizScope, quizId: string) => http.post<StaffQuiz>(`${quizPath(scope, quizId)}/publish`),
+  unpublishQuiz: (scope: QuizScope, quizId: string) => http.post<StaffQuiz>(`${quizPath(scope, quizId)}/unpublish`),
   staffQuiz: (quizId: string) => http.get<StaffQuiz>(`/api/v1/quizzes/${quizId}`),
   quizResults: (quizId: string) => http.get<QuizResults>(`/api/v1/quizzes/${quizId}/results`),
 

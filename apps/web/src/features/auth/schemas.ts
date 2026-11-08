@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidPhone } from '@azza/shared';
 
 export const signInSchema = z.object({
   email: z.email(),
@@ -10,6 +11,7 @@ export type SignInValues = z.infer<typeof signInSchema>;
 export const signUpSchema = z.object({
   name: z.string().trim().min(2),
   email: z.email(),
+  phone: z.string().refine((v) => isValidPhone(v)),
   password: z.string().min(8),
 });
 export type SignUpValues = z.infer<typeof signUpSchema>;

@@ -57,7 +57,7 @@ Group live classes are one-to-many real-time services, so on iOS they must be so
 | `com.futuretech.azza.seat.aed880` | AED 880 | AED 924 |
 | `com.futuretech.azza.seat.aed1200` | AED 1,200 | AED 1,260 |
 
-Any new course/batch price needs its product before iOS can sell it.
+Any new course/batch price needs its product before iOS can sell it. With an App Store Connect API key (§2c) the API creates and prices these products for you; the table is then only a reference.
 
 **App Store Connect setup**
 1. **Agreements, Tax and Banking** → accept the **Paid Apps Agreement**, add bank account and tax forms (status must be *Active*, or StoreKit returns no products).
@@ -67,6 +67,62 @@ Any new course/batch price needs its product before iOS can sell it.
 5. **API env** (`apps/api/.env`): `APPLE_BUNDLE_ID=com.futuretech.azza`, `APPLE_APP_APPLE_ID=<numeric Apple ID from App Information>`, `APPLE_IAP_ENVIRONMENT=Production,Sandbox` in production (App Review and TestFlight purchase in Sandbox against the production server; sandbox purchases can only be made by your testers and are stored with `appleEnvironment = Sandbox`). Local/staging: `APPLE_IAP_ENVIRONMENT=Sandbox`.
 6. Xcode: the In-App Purchase capability is enabled by default on the App ID; nothing else to add. StoreKit purchases cannot run in the simulator against real products — test on a device with a sandbox tester.
 7. Review notes: mention that the reviewer account is already enrolled and that a new enrolment is bought with In-App Purchase on any open batch.
+
+## 2b. iOS auto-renewable subscriptions (recorded courses)
+
+Recorded courses are sold on iOS with **auto-renewable subscriptions**, one **subscription group per course** with a monthly and a yearly product, so a learner holds at most one plan per course and Apple handles upgrades, downgrades and cancellation.
+
+**Per recorded course** (after the course has a slug and prices; product ids come from `appleRecordedProductId`):
+1. **App → Monetization → Subscriptions → Create Subscription Group**, reference name e.g. `Logo design` (the name learners see in their App Store subscriptions; localise it en/ar).
+2. In the group add two subscriptions: **Monthly** (duration *1 Month*, Product ID `com.futuretech.azza.rec.<courseSlug>.monthly`) and **Yearly** (*1 Year*, `com.futuretech.azza.rec.<courseSlug>.yearly`). Put Yearly at the higher level (level 1) and Monthly at level 2 so moving to yearly is an upgrade (immediate) and back is a downgrade (next renewal).
+3. Set the UAE price of each to the App Store price point nearest the **VAT-inclusive** price (course price x 1.05); add the localised display name and description (en, ar) and a review screenshot.
+4. In the admin, set the course's Apple products (`PUT /admin/courses/:id/apple-products`, or the course screen) so iOS offers the plan. A plan without its product shows "not available in the app yet" (anti-steering: no link to the website).
+5. Submit the subscriptions with the next app version for review; the first ones must ship with a build.
+
+**Billing Grace Period (once, App Store Connect → App → Monetization → Subscriptions → Billing Grace Period):** turn it **on** for **all** subscriptions, duration **16 days**, for *All renewals*. It matches the API's access grace (`GRACE_DAYS` = 16): while Apple retries a failed renewal, the learner keeps access until `currentPeriodEnd + 16 days` (`DID_FAIL_TO_RENEW` with the grace subtype marks the plan PAST_DUE); if Apple gives up, `GRACE_PERIOD_EXPIRED` / `EXPIRED` ends it and the learner is told ("Your plan has ended. Your progress is saved.").
+
+**Server notifications:** the existing V2 URL (§2, step 3) also carries `SUBSCRIBED`, `DID_RENEW`, `DID_FAIL_TO_RENEW`, `DID_CHANGE_RENEWAL_STATUS`, `DID_CHANGE_RENEWAL_PREF`, `EXPIRED`, `REFUND` and `REVOKE`; nothing more to configure. Test with sandbox testers (sandbox renewals run every few minutes).
+
+**Reminders:** Apple sends its own renewal notices; the API additionally reminds yearly subscribers 7 days before `currentPeriodEnd`. Monthly plans get none. Cancelling is done in Settings → Apple ID → Subscriptions (the app links there; 422 `MANAGED_BY_APPLE` for API cancels).
+
+## 2c. Automatic App Store product setup (App Store Connect API)
+
+The API can create and price the Apple products itself: one consumable per open batch price (§2) and one subscription group with a monthly and a yearly product per published recorded course (§2b). It names them in English and Arabic and sets the UAE price to the App Store price point nearest the VAT-inclusive price. It never deletes anything, and a price change only replaces the price. Existing subscribers keep the price they have.
+
+**Create the key (once)**
+1. App Store Connect → **Users and Access → Integrations → App Store Connect API → Team Keys → +**.
+2. Name it (e.g. "Azza API"), access **App Manager**, then **Generate**.
+3. Copy the **Issuer ID** (top of the page) and the **Key ID**, and download the `.p8` file. Apple lets you download it **once**. Keep it outside the repo (a secrets manager, or a file on the server such as `/etc/azza/AuthKey_XXXXXXXXXX.p8`) and never commit it.
+
+**Configure** (`apps/api/.env`; see `.env.example`)
+```
+APPLE_APP_APPLE_ID=<numeric Apple ID, already set in §2>
+ASC_ISSUER_ID=<Issuer ID>
+ASC_KEY_ID=<Key ID>
+ASC_PRIVATE_KEY_PATH=/etc/azza/AuthKey_XXXXXXXXXX.p8
+# or, instead of the path, the key inline with literal \n for newlines: ASC_PRIVATE_KEY=
+```
+If any of these is missing or the file can't be read, the sync is off: the API still boots, and Admin → App Store shows "Add your App Store Connect API key to enable automatic product setup."
+
+**When it runs**
+- A recorded course's prices are saved, or a batch is created or its price changes: that course or price is synced in the background (the admin request never waits and never fails because of Apple).
+- Every night at about 03:00 UAE (never at API start, so a restart does not hit Apple): every open batch price and every published recorded course, one after the other to respect Apple's rate limits.
+- **Sync now** in the admin (`POST /admin/app-store/sync`) runs the same thing on demand. The result per price and per course is in `GET /admin/app-store/status` (SYNCED, SKIPPED or FAILED, with the reason). A price that is not a whole number of dirhams is SKIPPED, because there is no product for it.
+
+**Still manual (the API cannot do these)**
+- Accept the **Paid Apps Agreement** and add bank and tax details (§2, step 1).
+- **App Review**: attach the new products to the app version and submit; the first subscriptions must ship with a build.
+- A **review screenshot** for each product, and each subscription group's localisation if App Store Connect asks for it.
+- **Availability / territories** and the Billing Grace Period (§2b).
+New products appear as *Missing Metadata* until the screenshot is added.
+
+**Smoke check before trusting it** (`apps/api/scripts/appstore-smoke.ts`; not part of the tests). With the key in place:
+```
+cd apps/api
+bun scripts/appstore-smoke.ts --price-aed 450          # read-only: app, in-app purchases, subscription groups, UAE price points
+bun scripts/appstore-smoke.ts --price-aed 450 --apply  # really creates and prices that one seat product
+```
+Without `--apply` it creates nothing and prints what a sync would do. Run it first and confirm that every step prints `ok`; a `FAIL` line shows the exact Apple error for the request shape that needs adjusting.
 
 ## 3. Platform config
 

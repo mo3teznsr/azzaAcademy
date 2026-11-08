@@ -171,7 +171,7 @@ class _PendingCourseTileState extends ConsumerState<PendingCourseTile> {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(c.title(locale), style: t.titleSmall),
                 const SizedBox(height: 2),
-                MonoLabel([if (c.categoryName(locale).isNotEmpty) c.categoryName(locale), levelLabel(l, c.level), if (c.priceFils != null) l.fromPrice(f.aed(c.priceFils!))].join(' · ')),
+                Kicker([if (c.categoryName(locale).isNotEmpty) c.categoryName(locale), levelLabel(l, c.level), if (c.priceFils != null) l.fromPrice(f.aed(c.priceFils!))].join(' · ')),
               ]),
             ),
           ]),
@@ -396,7 +396,7 @@ class _PendingApplicationTileState extends ConsumerState<PendingApplicationTile>
             ]),
           ],
           const SizedBox(height: 10),
-          MonoLabel(l.applicantExperience),
+          Kicker(l.applicantExperience),
           const SizedBox(height: 2),
           Text(a.experience, style: t.bodySmall),
           if (a.phone != null) ...[const SizedBox(height: 6), Text(a.phone!, style: t.bodySmall, textDirection: TextDirection.ltr)],

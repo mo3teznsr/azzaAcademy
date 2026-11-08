@@ -9,6 +9,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
+import '../../../core/widgets/whatsapp_button.dart';
 import '../../../router/routes.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
@@ -53,7 +54,7 @@ class _BatchPickerScreenState extends ConsumerState<BatchPickerScreen> {
             children: [
               DisplayText(l.pickBatch, size: 38),
               const SizedBox(height: 6),
-              MonoLabel(l.timesShownIn(tz)),
+              Kicker(l.timesShownIn(tz)),
               const SizedBox(height: 12),
               Wrap(spacing: 8, children: [
                 for (final opt in [null, SessionLanguage.ar, SessionLanguage.en])
@@ -79,6 +80,8 @@ class _BatchPickerScreenState extends ConsumerState<BatchPickerScreen> {
                 ),
                 const SizedBox(height: 12),
               ],
+              if (course != null && list.where((b) => b.id == _selected).isNotEmpty)
+                WhatsAppButton(message: l.whatsappBatchMessage(course.title(locale), list.firstWhere((b) => b.id == _selected).code)),
             ],
           );
         },
@@ -155,7 +158,7 @@ class _BatchOption extends StatelessWidget {
               const SizedBox(height: 10),
               Row(children: [
                 Expanded(child: Text(b.teacher?.name ?? '', style: t.bodyMedium)),
-                if (b.seatsLeft > 0 && b.seatsLeft <= 5) ...[MonoLabel(l.seatsLeft(fmt.n(b.seatsLeft)), color: AzzaPalette.of(context).warning), const SizedBox(width: 10)],
+                if (b.seatsLeft > 0 && b.seatsLeft <= 5) ...[Kicker(fmt.n(l.seatsLeft(b.seatsLeft)), color: AzzaPalette.of(context).warning), const SizedBox(width: 10)],
                 Price(priceFils, style: t.titleSmall, showCharged: true, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end),
               ]),
             ]),

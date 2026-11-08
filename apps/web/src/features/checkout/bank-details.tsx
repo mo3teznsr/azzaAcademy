@@ -15,7 +15,7 @@ import { checkoutApi, type BankAccount, type Order } from '@/lib/api';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
 
-function CopyValue({ value, label }: { value: string; label: string }) {
+export function CopyValue({ value, label }: { value: string; label: string }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   return (
@@ -49,12 +49,18 @@ export function BankTransferDetails({
   reference,
   expiresAt,
   onUploaded,
+  uploadFile,
+  heldLabel,
 }: {
   order: Pick<Order, 'id' | 'totalFils'>;
   bankAccount: (Pick<BankAccount, 'bankName' | 'iban'> & Partial<BankAccount>) | null | undefined;
   reference: string;
   expiresAt: string | null;
   onUploaded: (o: Order) => void;
+  /** Plans: the receipt goes to another endpoint, as a file only (no link option). */
+  uploadFile?: (file: File) => Promise<unknown>;
+  /** Overrides "Place held until". */
+  heldLabel?: string;
 }) {
   const { t, f } = useI18n();
   const money = useMoney();
@@ -62,9 +68,9 @@ export function BankTransferDetails({
   const [useLink, setUseLink] = useState(false);
   const form = useForm<z.input<typeof uploadReceiptInput>>({ resolver: zodResolver(uploadReceiptInput), defaultValues: { receiptUrl: '' } });
   const upload = useMutation({
-    mutationFn: (v: { file: File } | { url: string }) =>
-      'file' in v ? checkoutApi.uploadReceiptFile(order.id, v.file) : checkoutApi.uploadReceipt(order.id, v.url),
-    onSuccess: onUploaded,
+    mutationFn: (v: { file: File } | { url: string }): Promise<unknown> =>
+      'file' in v ? (uploadFile ?? ((file: File) => checkoutApi.uploadReceiptFile(order.id, file)))(v.file) : checkoutApi.uploadReceipt(order.id, v.url),
+    onSuccess: (r) => onUploaded(r as Order),
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -91,7 +97,7 @@ export function BankTransferDetails({
       </div>
       {expiresAt && (
         <p className="text-sm">
-          <span className="text-muted-foreground">{t.checkout.heldUntil}: </span>
+          <span className="text-muted-foreground">{heldLabel ?? t.checkout.heldUntil}: </span>
           <b>{f.dateTime(expiresAt)}</b>
         </p>
       )}
@@ -118,9 +124,11 @@ export function BankTransferDetails({
         )}
         <span className="text-[13px] text-muted-foreground">
           {useLink ? t.checkout.receiptHint : t.checkout.receiptFileHint}{' '}
-          <button type="button" className="link-sun" onClick={() => setUseLink((v) => !v)}>
-            {useLink ? t.checkout.receiptUseFile : t.checkout.receiptUseLink}
-          </button>
+          {!uploadFile && (
+            <button type="button" className="link-sun" onClick={() => setUseLink((v) => !v)}>
+              {useLink ? t.checkout.receiptUseFile : t.checkout.receiptUseLink}
+            </button>
+          )}
         </span>
         <Button type="submit" disabled={upload.isPending}>
           {upload.isPending ? t.common.saving : t.checkout.madeTransfer}

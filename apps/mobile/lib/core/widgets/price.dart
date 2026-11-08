@@ -23,7 +23,7 @@ class PriceFormat {
   /// Null while the rates are still loading.
   final FxRates? fx;
 
-  /// The preferred currency has no rate (the FX endpoint failed or does not list it): amounts fall back to AED.
+  /// The preferred currency is no longer listed (removed, disabled, or the endpoint failed): amounts fall back to AED.
   bool get ratesMissing => fx != null && !currency.isBase && !fx!.has(currency);
 
   /// The currency amounts are actually shown in.
@@ -35,7 +35,7 @@ class PriceFormat {
   double get rate => fx?.rateFor(shown) ?? 1;
 
   /// `≈ SAR 899` or `AED 880.00`.
-  String display(int fils) => fmt.money(fils, shown, rate);
+  String display(int fils) => fmt.money(fils, shown, rate, decimals: fx?.decimalsFor(shown));
 
   /// The exact amount charged: `AED 880.00`.
   String aed(int fils) => fmt.aed(fils);

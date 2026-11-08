@@ -12,6 +12,7 @@ export const verifyUrl = (code: string) => `${typeof window === 'undefined' ? ''
 export function CertificateSheet({ cert, holderName }: { cert: Certificate; holderName: string }) {
   const { t, f, fill, pick } = useI18n();
   const course = pick(cert.course.titleEn, cert.course.titleAr).text || cert.courseTitle;
+  const recorded = cert.kind === 'RECORDED';
   return (
     <div className="print-sheet hidden bg-ivory text-ink print:flex" aria-hidden>
       <div className="m-[12mm] flex flex-1 flex-col justify-between rounded-[6mm] border-[1.5mm] border-ink p-[14mm]">
@@ -28,10 +29,20 @@ export function CertificateSheet({ cert, holderName }: { cert: Certificate; hold
           </b>
           <span className="text-lg">{t.certificates.sheetFor}</span>
           <b className="font-display text-[40px] leading-none font-extrabold">{course}</b>
-          <span className="text-lg">
-            <bdi dir="ltr">{cert.batchCode}</bdi> · {f.dayMonth(cert.startsOn)} – {f.dayMonth(cert.endsOn)} · {fill(t.certificates.sheetTaught, { name: cert.teacherName })}
-          </span>
-          <span>{fill(t.certificates.sheetAttended, { a: f.number(cert.attended), b: f.number(cert.total) })}</span>
+          {recorded ? (
+            <>
+              {cert.teacherName && <span className="text-lg">{fill(t.certificates.sheetTaught, { name: cert.teacherName })}</span>}
+              <span>{t.certificates.completedAll}</span>
+            </>
+          ) : (
+            <>
+              <span className="text-lg">
+                <bdi dir="ltr">{cert.batchCode}</bdi>
+                {cert.startsOn && cert.endsOn && ` · ${f.dayMonth(cert.startsOn)} – ${f.dayMonth(cert.endsOn)}`} · {fill(t.certificates.sheetTaught, { name: cert.teacherName ?? '' })}
+              </span>
+              <span>{fill(t.certificates.sheetAttended, { a: f.number(cert.attended), b: f.number(cert.total) })}</span>
+            </>
+          )}
         </div>
         <div className="flex items-end justify-between gap-6 border-t border-ink pt-5 text-sm">
           <span>

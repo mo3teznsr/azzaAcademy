@@ -17,3 +17,10 @@ export function receiptExtension(file: { type: string; size: number }): string {
   if (file.size > MAX_RECEIPT_BYTES) throw new BusinessRuleError('The file is larger than 10 MB', 'RECEIPT_FILE_INVALID', { reason: 'TOO_LARGE', maxBytes: MAX_RECEIPT_BYTES });
   return ext;
 }
+
+/** The multipart `file` field of a receipt upload, in the shape `ReceiptUploadService` takes. */
+export function receiptFromBody(body: Record<string, unknown>) {
+  const file = body.file;
+  if (!(file instanceof File)) throw new BusinessRuleError('Attach the receipt as a multipart `file` field', 'RECEIPT_FILE_INVALID', { reason: 'MISSING' });
+  return { type: file.type, size: file.size, bytes: async () => new Uint8Array(await file.arrayBuffer()) };
+}

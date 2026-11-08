@@ -53,7 +53,7 @@ describe('CourseMediaService.upload', () => {
 
   test('rejects a bad file before storing anything', async () => {
     let stored = false;
-    const storage: FileStorage = { save: async () => ((stored = true), { key: 'k', url: 'u' }), read: async () => null };
+    const storage: FileStorage = { save: async () => ((stored = true), { key: 'k', url: 'u' }), read: async () => null, keyFromUrl: () => null };
     await expect(new CourseMediaService(storage).upload('course-video', file('application/pdf'))).rejects.toThrow();
     expect(stored).toBe(false);
   });

@@ -1,6 +1,5 @@
 'use client';
 
-import { DISPLAY_CURRENCIES, type DisplayCurrency } from '@azza/shared';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useI18n } from '@/lib/i18n/provider';
@@ -32,15 +31,14 @@ export function CurrencySwitcher({ className }: { className?: string }) {
   const { t } = useI18n();
   const money = useMoney();
   return (
-    <Select value={money.chosen} onValueChange={(v) => money.setCurrency(v as DisplayCurrency)}>
+    <Select value={money.chosen} onValueChange={(v) => money.setCurrency(v)}>
       <SelectTrigger size="sm" aria-label={t.common.currency} className={cn('rounded-full font-mono text-xs', className)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {DISPLAY_CURRENCIES.map((c) => (
-          <SelectItem key={c} value={c}>
-            {c}
-            {c !== 'AED' && !money.rateOf(c) ? ` · ${t.money.ratesUnavailable}` : ''}
+        {money.currencies.map((c) => (
+          <SelectItem key={c.code} value={c.code}>
+            {c.code}
           </SelectItem>
         ))}
       </SelectContent>

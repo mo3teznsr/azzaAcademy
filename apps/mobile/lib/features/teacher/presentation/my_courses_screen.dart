@@ -75,7 +75,8 @@ class ProposedCourseCard extends ConsumerWidget {
     return RaisedCard(
       key: Key('course-${c.id}'),
       onTap: () async {
-        await context.push(Routes.teacherCourse(c.id));
+        // A recorded course has no classes: its hub holds the quizzes, preview lesson and numbers.
+        await context.push(c.type == CourseType.recorded ? Routes.teacherCourseHub(c.id) : Routes.teacherCourse(c.id));
         ref.invalidate(myCoursesProvider);
       },
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -93,7 +94,7 @@ class ProposedCourseCard extends ConsumerWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(c.title(locale), style: t.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 4),
-              MonoLabel([
+              Kicker([
                 if (c.categoryName(locale).isNotEmpty) c.categoryName(locale),
                 levelLabel(l, c.level),
                 if (c.priceFils != null) l.fromPrice(f.aed(c.priceFils!)),
@@ -101,7 +102,7 @@ class ProposedCourseCard extends ConsumerWidget {
             ]),
           ),
           const SizedBox(width: 8),
-          StatusChip.course(context, c.status),
+          Flexible(child: StatusChip.course(context, c.status)),
         ]),
         if (c.status == CourseStatus.draft && (c.reviewNote?.isNotEmpty ?? false)) ...[
           const SizedBox(height: 12),

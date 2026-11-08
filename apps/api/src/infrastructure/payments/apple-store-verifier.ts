@@ -66,12 +66,15 @@ export class AppStoreSignedDataVerifier implements AppleSignedDataVerifier {
     const n = await this.run(() => verifier.verifyAndDecodeNotification(signedPayload));
     const signedTx = n.data?.signedTransactionInfo;
     const tx = signedTx ? await this.run(() => verifier.verifyAndDecodeTransaction(signedTx)) : null;
+    const signedRenewal = n.data?.signedRenewalInfo;
+    const renewal = signedRenewal ? await this.run(() => verifier.verifyAndDecodeRenewalInfo(signedRenewal)) : null;
     return {
       notificationUUID: n.notificationUUID ?? '',
       notificationType: String(n.notificationType ?? ''),
       subtype: n.subtype ? String(n.subtype) : null,
       environment,
       transaction: tx ? toTransaction(tx, environment) : null,
+      renewalProductId: renewal?.autoRenewProductId ?? null,
     };
   }
 }
@@ -88,5 +91,7 @@ function toTransaction(tx: JWSTransactionDecodedPayload, environment: AppleEnvir
     priceMilliunits: typeof tx.price === 'number' ? tx.price : null,
     currency: tx.currency ?? null,
     revocationDate: tx.revocationDate ? new Date(tx.revocationDate) : null,
+    expiresDate: tx.expiresDate ? new Date(tx.expiresDate) : null,
+    type: tx.type ? String(tx.type) : null,
   };
 }

@@ -56,8 +56,13 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 /** Money only moves in AED. The others are display currencies. */
 export const BASE_CURRENCY = 'AED' as const;
+/**
+ * @deprecated Currencies are admin-managed data now: read `GET /currencies`. Kept only as the seed/migration defaults
+ * (and so older clients compile); it no longer limits which codes are valid.
+ */
 export const DISPLAY_CURRENCIES = ['AED', 'SAR', 'QAR', 'USD'] as const;
-export type DisplayCurrency = (typeof DISPLAY_CURRENCIES)[number];
+/** An uppercase ISO 4217 code of an enabled currency (validated against the `Currency` table by the API). */
+export type DisplayCurrency = string;
 
 export const EARNING_STATUSES = ['PENDING', 'AVAILABLE', 'PAID', 'REVERSED'] as const;
 export type EarningStatus = (typeof EARNING_STATUSES)[number];
@@ -77,3 +82,19 @@ export type AttendanceMark = (typeof ATTENDANCE_MARKS)[number];
 
 export const RESCHEDULE_REQUEST_STATUSES = ['PENDING', 'APPROVED', 'DECLINED'] as const;
 export type RescheduleRequestStatus = (typeof RESCHEDULE_REQUEST_STATUSES)[number];
+
+/** Fixed at creation, never converted. LIVE = batches of live sessions; RECORDED = self-paced lessons on a monthly or yearly plan. */
+export const COURSE_TYPES = ['LIVE', 'RECORDED'] as const;
+export type CourseType = (typeof COURSE_TYPES)[number];
+
+export const SUBSCRIPTION_PLANS = ['MONTHLY', 'YEARLY'] as const;
+export type SubscriptionPlan = (typeof SUBSCRIPTION_PLANS)[number];
+
+export const SUBSCRIPTION_PROVIDERS = ['STRIPE', 'APPLE', 'BANK_TRANSFER'] as const;
+export type SubscriptionProvider = (typeof SUBSCRIPTION_PROVIDERS)[number];
+
+export const SUBSCRIPTION_STATUSES = ['INCOMPLETE', 'ACTIVE', 'PAST_DUE', 'CANCELLING', 'EXPIRED'] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
+
+export const SUBSCRIPTION_PAYMENT_STATUSES = ['AWAITING_RECEIPT', 'AWAITING_REVIEW', 'PAID', 'REJECTED', 'EXPIRED', 'REFUNDED'] as const;
+export type SubscriptionPaymentStatus = (typeof SUBSCRIPTION_PAYMENT_STATUSES)[number];

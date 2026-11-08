@@ -7,7 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { assignmentInput, materialInput } from '@azza/shared';
 import type { z } from 'zod';
-import { ChevronRight, ExternalLink, Radio } from 'lucide-react';
+import { ChevronRight, Download, ExternalLink, Link2, Pencil, Radio, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,14 +15,25 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BatchStatusChip, SessionStatusChip } from '@/components/brand/status-chip';
 import { SessionSlate } from '@/components/brand/session-slate';
 import { Panel, StatTile } from '@/components/brand/section';
 import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { EmptyState, ErrorState, LoadingBlock, QueryView } from '@/components/brand/states';
-import { batchesApi, type BatchDetail } from '@/lib/api';
+import { ApiError, batchesApi, mediaUrl, type Assignment, type BatchDetail } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { gmtOffset, sessionCode } from '@/lib/i18n/format';
@@ -34,6 +45,7 @@ import { AnnouncementsPanel } from '../comms/announcements';
 import { BatchPrivateChats, ClassChat } from '../comms/chat';
 import { AddSessionButton, MoveSessionDialog, SeatsEditor, SessionRowActions } from '../admin/batch-sessions';
 import type { LiveSession } from '@/lib/api';
+import { AttachmentsField, fileErrorReason, useDescribeFileError, useFileUploads } from '../files/file-attachments';
 
 export function BatchWorkspace({ batchId, basePath = '/studio', initialTab }: { batchId: string; basePath?: string; initialTab?: string }) {
   const q = useQuery({ queryKey: qk.batch(batchId), queryFn: () => batchesApi.get(batchId) });
@@ -257,96 +269,26 @@ function Workspace({ b, basePath, initialTab }: { b: BatchDetail; basePath: stri
 }
 
 type MaterialValues = z.input<typeof materialInput>;
+type MaterialMode = 'file' | 'link';
+/** Outside URLs can't be FILE materials any more (the API answers FOREIGN_URL): files go through the upload. */
+const LINK_KINDS = ['LINK', 'SLIDES', 'VIDEO'] as const;
 
 export function Materials({ b, sessionId }: { b: BatchDetail; sessionId?: string }) {
   const { t } = useI18n();
-  const qc = useQueryClient();
   const q = useQuery({ queryKey: qk.materials(b.id), queryFn: () => batchesApi.materials(b.id) });
-  const [open, setOpen] = useState(false);
-  const form = useForm<MaterialValues>({ resolver: zodResolver(materialInput), defaultValues: { batchId: b.id, sessionId, title: '', url: '', kind: 'SLIDES' } });
-  const add = useMutation({
-    mutationFn: (v: MaterialValues) => batchesApi.addMaterial(b.id, { ...v, sessionId: v.sessionId || undefined }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: qk.materials(b.id) });
-      toast.success(t.common.saved);
-      form.reset({ batchId: b.id, sessionId, title: '', url: '', kind: 'SLIDES' });
-      setOpen(false);
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+  const [mode, setMode] = useState<MaterialMode | null>(null);
   const list = (q.data ?? []).filter((m) => !sessionId || m.sessionId === sessionId);
   return (
     <div className="flex flex-col gap-4">
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button className="self-start">{t.studio.batch.upload}</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t.studio.batch.upload}</DialogTitle>
-          </DialogHeader>
-          <form id="mat-form" className="flex flex-col gap-4" onSubmit={form.handleSubmit((v) => add.mutate(v))} noValidate>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="m-title">{t.studio.batch.materialTitle}</Label>
-              <Input id="m-title" {...form.register('title')} aria-invalid={!!form.formState.errors.title} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="m-url">{t.studio.batch.materialUrl}</Label>
-              <Input id="m-url" type="url" dir="ltr" placeholder="https://" {...form.register('url')} aria-invalid={!!form.formState.errors.url} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label>{t.studio.batch.kind}</Label>
-                <Controller
-                  control={form.control}
-                  name="kind"
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(['SLIDES', 'FILE', 'LINK', 'VIDEO'] as const).map((k) => (
-                          <SelectItem key={k} value={k}>
-                            {t.status.material[k]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label>{t.studio.batch.attachTo}</Label>
-                <Controller
-                  control={form.control}
-                  name="sessionId"
-                  render={({ field }) => (
-                    <Select value={field.value ?? 'all'} onValueChange={(v) => field.onChange(v === 'all' ? undefined : v)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t.studio.batch.wholeBatch}</SelectItem>
-                        {b.sessions.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {sessionCode(s.number)} · {s.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-            </div>
-          </form>
-          <DialogFooter>
-            <Button type="submit" form="mat-form" disabled={add.isPending}>
-              {add.isPending ? t.common.saving : t.common.add}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => setMode('file')}>
+          <Upload /> {t.studio.batch.uploadFile}
+        </Button>
+        <Button variant="outline" onClick={() => setMode('link')}>
+          <Link2 /> {t.studio.batch.addLink}
+        </Button>
+      </div>
+      {mode && <MaterialDialog key={mode} b={b} sessionId={sessionId} mode={mode} onClose={() => setMode(null)} />}
       {q.isPending ? (
         <LoadingBlock rows={3} height={48} />
       ) : q.isError ? (
@@ -362,8 +304,8 @@ export function Materials({ b, sessionId }: { b: BatchDetail; sessionId?: string
               <span className="font-mono text-xs text-muted-foreground" dir="ltr">
                 {m.sessionId ? sessionCode(b.sessions.find((s) => s.id === m.sessionId)?.number ?? 0) : b.code}
               </span>
-              <a href={m.url} target="_blank" rel="noreferrer" className="link-sun" aria-label={t.common.open}>
-                <ExternalLink className="size-4" />
+              <a href={mediaUrl(m.url)} target="_blank" rel="noreferrer" className="link-sun" aria-label={m.kind === 'FILE' ? t.studio.batch.download : t.common.open}>
+                {m.kind === 'FILE' ? <Download className="size-4" /> : <ExternalLink className="size-4" />}
               </a>
             </li>
           ))}
@@ -373,84 +315,350 @@ export function Materials({ b, sessionId }: { b: BatchDetail; sessionId?: string
   );
 }
 
+const stripExtension = (name: string) => (name.includes('.') ? name.slice(0, name.lastIndexOf('.')) : name);
+
+function MaterialDialog({ b, sessionId, mode, onClose }: { b: BatchDetail; sessionId?: string; mode: MaterialMode; onClose: () => void }) {
+  const { t } = useI18n();
+  const qc = useQueryClient();
+  const describeFile = useDescribeFileError('material');
+  const [formError, setFormError] = useState<string | null>(null);
+  const form = useForm<MaterialValues>({
+    resolver: zodResolver(materialInput),
+    defaultValues: { batchId: b.id, sessionId, title: '', url: '', kind: mode === 'file' ? 'FILE' : 'LINK' },
+  });
+  const uploads = useFileUploads({
+    kind: 'material',
+    max: 1,
+    uploader: async (file, opts) => {
+      if (!form.getValues('title').trim()) form.setValue('title', stripExtension(file.name).slice(0, 120));
+      const stored = await batchesApi.uploadMaterialFile(b.id, file, opts);
+      form.setValue('url', stored.url, { shouldValidate: true });
+      return stored;
+    },
+  });
+  const stored = uploads.uploaded[0];
+  const add = useMutation({
+    mutationFn: (v: MaterialValues) => batchesApi.addMaterial(b.id, { title: v.title, url: v.url, kind: v.kind, sessionId: v.sessionId || undefined }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.materials(b.id) });
+      toast.success(t.common.saved);
+      onClose();
+    },
+    onError: (e: Error) => {
+      if (e instanceof ApiError && e.code === 'MATERIAL_FILE_INVALID') return setFormError(describeFile(fileErrorReason(e), '', e.message));
+      toast.error(e.message);
+    },
+  });
+  const onSubmit = (v: MaterialValues) => {
+    setFormError(null);
+    if (mode === 'link') return add.mutate(v);
+    if (uploads.busy) return setFormError(t.files.waitForUploads);
+    if (!stored) return setFormError(t.files.missing);
+    add.mutate({ ...v, kind: 'FILE', url: stored.url });
+  };
+  const title = mode === 'file' ? t.studio.batch.uploadFile : t.studio.batch.addLink;
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <form
+          id="mat-form"
+          className="flex flex-col gap-4"
+          noValidate
+          onSubmit={(e) => {
+            // A file material's URL arrives with the upload, so don't let the URL rule block the "still uploading" hint.
+            if (mode === 'file' && !stored) {
+              e.preventDefault();
+              return onSubmit(form.getValues());
+            }
+            void form.handleSubmit(onSubmit)(e);
+          }}
+        >
+          {mode === 'file' && <AttachmentsField uploads={uploads} kind="material" max={1} label={t.studio.batch.file} disabled={add.isPending} />}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="m-title">{t.studio.batch.materialTitle}</Label>
+            <Input id="m-title" {...form.register('title')} aria-invalid={!!form.formState.errors.title} />
+            {form.formState.errors.title && <span className="text-[13px] text-destructive">{t.studio.batch.titleRequired}</span>}
+          </div>
+          {mode === 'link' && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="m-url">{t.studio.batch.materialUrl}</Label>
+              <InputGroup>
+                <InputGroupAddon>
+                  <Link2 aria-hidden />
+                </InputGroupAddon>
+                <InputGroupInput id="m-url" type="url" dir="ltr" placeholder="https://" {...form.register('url')} aria-invalid={!!form.formState.errors.url} />
+              </InputGroup>
+              {form.formState.errors.url && <span className="text-[13px] text-destructive">{t.studio.batch.urlInvalid}</span>}
+            </div>
+          )}
+          <div className={cn('grid gap-3', mode === 'link' && 'grid-cols-2')}>
+            {mode === 'link' && (
+              <div className="flex flex-col gap-1.5">
+                <Label>{t.studio.batch.kind}</Label>
+                <Controller
+                  control={form.control}
+                  name="kind"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LINK_KINDS.map((k) => (
+                          <SelectItem key={k} value={k}>
+                            {t.status.material[k]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <Label>{t.studio.batch.attachTo}</Label>
+              <Controller
+                control={form.control}
+                name="sessionId"
+                render={({ field }) => (
+                  <Select value={field.value ?? 'all'} onValueChange={(v) => field.onChange(v === 'all' ? undefined : v)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t.studio.batch.wholeBatch}</SelectItem>
+                      {b.sessions.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {sessionCode(s.number)} · {s.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          </div>
+          {formError && (
+            <span role="alert" className="text-[13px] text-destructive">
+              {formError}
+            </span>
+          )}
+        </form>
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            {t.common.cancel}
+          </Button>
+          <Button type="submit" form="mat-form" disabled={add.isPending || uploads.busy}>
+            {add.isPending ? t.common.saving : uploads.busy ? t.files.uploadingShort : t.common.add}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 type AssignmentValues = z.input<typeof assignmentInput>;
+
+/** ISO → the `YYYY-MM-DDTHH:mm` a datetime-local input shows, in the browser's zone. */
+function toLocalInput(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+}
 
 function Assignments({ b }: { b: BatchDetail }) {
   const { t, f, fill } = useI18n();
-  const qc = useQueryClient();
   const q = useQuery({ queryKey: qk.assignments(b.id), queryFn: () => batchesApi.assignments(b.id) });
-  const [open, setOpen] = useState(false);
-  const form = useForm<AssignmentValues>({
-    resolver: zodResolver(assignmentInput),
-    defaultValues: { batchId: b.id, title: '', description: '', dueAt: '', maxScore: 100 },
-  });
-  const add = useMutation({
-    mutationFn: (v: AssignmentValues) =>
-      batchesApi.addAssignment(b.id, { sessionId: v.sessionId || undefined, title: v.title, description: v.description ?? '', dueAt: v.dueAt, maxScore: v.maxScore ?? 100 }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: qk.assignments(b.id) });
-      setOpen(false);
-      form.reset();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+  /** `'new'` opens the dialog empty; an assignment opens it prefilled for editing. */
+  const [editing, setEditing] = useState<Assignment | 'new' | null>(null);
+  const [deleting, setDeleting] = useState<Assignment | null>(null);
   return (
     <div className="flex flex-col gap-4">
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button className="self-start">{t.studio.batch.newAssignment}</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t.studio.batch.newAssignment}</DialogTitle>
-          </DialogHeader>
-          <form id="asg-form" className="flex flex-col gap-4" onSubmit={form.handleSubmit((v) => add.mutate(v))} noValidate>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="a-title">{t.studio.batch.materialTitle}</Label>
-              <Input id="a-title" {...form.register('title')} aria-invalid={!!form.formState.errors.title} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="a-desc">{t.studio.batch.description}</Label>
-              <Textarea id="a-desc" rows={3} {...form.register('description')} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="a-due">{t.studio.batch.dueAt}</Label>
-                <Input
-                  id="a-due"
-                  type="datetime-local"
-                  {...form.register('dueAt', { setValueAs: (v: string) => (v ? new Date(v).toISOString() : '') })}
-                  aria-invalid={!!form.formState.errors.dueAt}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="a-max">{t.studio.batch.maxScore}</Label>
-                <Input id="a-max" type="number" min={1} {...form.register('maxScore', { valueAsNumber: true })} />
-              </div>
-            </div>
-          </form>
-          <DialogFooter>
-            <Button type="submit" form="asg-form" disabled={add.isPending}>
-              {t.common.create}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Button className="self-start" onClick={() => setEditing('new')}>
+        {t.studio.batch.newAssignment}
+      </Button>
+      {editing && <AssignmentDialog key={editing === 'new' ? 'new' : editing.id} b={b} assignment={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
+      {deleting && <DeleteAssignmentDialog key={deleting.id} b={b} assignment={deleting} onClose={() => setDeleting(null)} />}
       <QueryView query={q} loading={<LoadingBlock rows={2} />} empty={<p className="text-sm text-muted-foreground">{t.assignments.empty}</p>}>
         {(list) => (
           <ul className="flex flex-col gap-2">
             {list.map((a) => (
               <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-border bg-card p-4">
-                <div>
+                <div className="min-w-0">
                   <b className="block">{a.title}</b>
-                  <span className="text-sm text-muted-foreground">{fill(t.assignments.due, { d: f.dateTime(a.dueAt) })}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {fill(t.assignments.due, { d: f.dateTime(a.dueAt) })} · {fill(t.studio.batch.outOf, { m: f.number(a.maxScore) })}
+                  </span>
                 </div>
-                <span className="label-mono text-muted-foreground">{fill(t.studio.batch.submissions, { n: f.number(a.submissionCount ?? 0) })}</span>
+                <div className="flex items-center gap-2">
+                  <span className="label-mono text-muted-foreground">{fill(t.studio.batch.submissions, { n: f.number(a.submissionCount ?? 0) })}</span>
+                  <Button variant="ghost" size="icon-sm" aria-label={fill(t.studio.batch.editAssignmentNamed, { title: a.title })} onClick={() => setEditing(a)}>
+                    <Pencil />
+                  </Button>
+                  <Button variant="ghost" size="icon-sm" aria-label={fill(t.studio.batch.deleteAssignmentNamed, { title: a.title })} onClick={() => setDeleting(a)}>
+                    <Trash2 />
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </QueryView>
     </div>
+  );
+}
+
+function AssignmentDialog({ b, assignment, onClose }: { b: BatchDetail; assignment: Assignment | null; onClose: () => void }) {
+  const { t, f, fill } = useI18n();
+  const qc = useQueryClient();
+  const form = useForm<AssignmentValues>({
+    resolver: zodResolver(assignmentInput),
+    defaultValues: assignment
+      ? { batchId: b.id, title: assignment.title, description: assignment.description, dueAt: assignment.dueAt, maxScore: assignment.maxScore }
+      : { batchId: b.id, title: '', description: '', dueAt: '', maxScore: 100 },
+  });
+  const save = useMutation({
+    mutationFn: (v: AssignmentValues) => {
+      const input = { title: v.title, description: v.description ?? '', dueAt: v.dueAt, maxScore: v.maxScore ?? 100 };
+      return assignment ? batchesApi.updateAssignment(assignment.id, input) : batchesApi.addAssignment(b.id, { ...input, sessionId: v.sessionId || undefined });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.assignments(b.id) });
+      toast.success(assignment ? t.studio.batch.assignmentSaved : t.studio.batch.assignmentCreated);
+      onClose();
+    },
+    onError: (e: Error) => {
+      if (e instanceof ApiError && e.code === 'SCORE_TOO_HIGH') {
+        const top = (e.details as { highestScore?: number } | undefined)?.highestScore;
+        return form.setError('maxScore', { type: 'server', message: top === undefined ? t.studio.batch.scoreTooHighPlain : fill(t.studio.batch.scoreTooHigh, { s: f.number(top) }) }, { shouldFocus: true });
+      }
+      toast.error(e.message);
+    },
+  });
+  const errors = form.formState.errors;
+  const title = assignment ? t.studio.batch.editAssignment : t.studio.batch.newAssignment;
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <form id="asg-form" className="flex flex-col gap-4" onSubmit={form.handleSubmit((v) => save.mutate(v))} noValidate>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="a-title">{t.studio.batch.materialTitle}</Label>
+            <Input id="a-title" {...form.register('title')} aria-invalid={!!errors.title} />
+            {errors.title && <span className="text-[13px] text-destructive">{t.studio.batch.titleRequired}</span>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="a-desc">{t.studio.batch.description}</Label>
+            <Textarea id="a-desc" rows={3} {...form.register('description')} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="a-due">{t.studio.batch.dueAt}</Label>
+              <Controller
+                control={form.control}
+                name="dueAt"
+                render={({ field }) => (
+                  <Input
+                    id="a-due"
+                    type="datetime-local"
+                    name={field.name}
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    value={field.value ? toLocalInput(field.value) : ''}
+                    onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                    aria-invalid={!!errors.dueAt}
+                  />
+                )}
+              />
+              {errors.dueAt && <span className="text-[13px] text-destructive">{t.studio.batch.dueRequired}</span>}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="a-max">{t.studio.batch.maxScore}</Label>
+              <Input
+                id="a-max"
+                type="number"
+                min={1}
+                dir="ltr"
+                {...form.register('maxScore', { valueAsNumber: true })}
+                aria-invalid={!!errors.maxScore}
+                aria-describedby={errors.maxScore ? 'a-max-err' : undefined}
+              />
+            </div>
+          </div>
+          {errors.maxScore && (
+            <span id="a-max-err" role="alert" className="text-[13px] text-destructive">
+              {errors.maxScore.type === 'server' && errors.maxScore.message ? errors.maxScore.message : t.studio.batch.maxScoreInvalid}
+            </span>
+          )}
+        </form>
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            {t.common.cancel}
+          </Button>
+          <Button type="submit" form="asg-form" disabled={save.isPending}>
+            {save.isPending ? t.common.saving : assignment ? t.common.save : t.common.create}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Assignments are hard-deleted, so the API refuses (409) once anyone has submitted; say so before and after. */
+function DeleteAssignmentDialog({ b, assignment, onClose }: { b: BatchDetail; assignment: Assignment; onClose: () => void }) {
+  const { t, f, fill } = useI18n();
+  const qc = useQueryClient();
+  const [blocked, setBlocked] = useState((assignment.submissionCount ?? 0) > 0);
+  const remove = useMutation({
+    mutationFn: () => batchesApi.deleteAssignment(assignment.id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.assignments(b.id) });
+      toast.success(t.studio.batch.assignmentDeleted);
+      onClose();
+    },
+    onError: (e: Error) => {
+      if (e instanceof ApiError && e.code === 'ASSIGNMENT_HAS_SUBMISSIONS') {
+        setBlocked(true);
+        void qc.invalidateQueries({ queryKey: qk.assignments(b.id) });
+        return;
+      }
+      toast.error(e.message);
+    },
+  });
+  return (
+    <AlertDialog open onOpenChange={(o) => !o && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{blocked ? t.studio.batch.cantDeleteTitle : fill(t.studio.batch.deleteTitle, { title: assignment.title })}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {blocked
+              ? fill(t.studio.batch.cantDeleteBody, { n: f.number(Math.max(1, assignment.submissionCount ?? 0)) })
+              : t.studio.batch.deleteBody}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{blocked ? t.common.close : t.common.cancel}</AlertDialogCancel>
+          {!blocked && (
+            <AlertDialogAction
+              variant="destructive"
+              disabled={remove.isPending}
+              onClick={(e) => {
+                // Stay open until the API answers, so a 409 can be explained here.
+                e.preventDefault();
+                remove.mutate();
+              }}
+            >
+              {remove.isPending ? t.studio.batch.deleting : t.studio.batch.deleteAssignment}
+            </AlertDialogAction>
+          )}
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

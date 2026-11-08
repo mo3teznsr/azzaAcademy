@@ -85,6 +85,8 @@ class QuizSummary {
     this.mine,
     this.attemptCount,
     this.studentsAttempted,
+    this.moduleId,
+    this.passPercent = 70,
   });
 
   factory QuizSummary.fromJson(Json j) {
@@ -108,6 +110,8 @@ class QuizSummary {
       mine: mine == null ? null : QuizProgress.fromJson(mine),
       attemptCount: intOrNull(j, 'attemptCount'),
       studentsAttempted: intOrNull(j, 'studentsAttempted'),
+      moduleId: strOrNull(j, 'moduleId'),
+      passPercent: integer(j, 'passPercent', 70),
     );
   }
 
@@ -116,6 +120,12 @@ class QuizSummary {
   final String title;
   final String description;
   final bool draft;
+
+  /// The course module this quiz practises, when the teacher linked one.
+  final String? moduleId;
+
+  /// Percent of the points a learner needs for the quiz to count as passed (70 unless the teacher changed it).
+  final int passPercent;
   final DateTime? dueAt;
   final int? timeLimitMin;
   final int maxAttempts;

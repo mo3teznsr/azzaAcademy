@@ -20,6 +20,7 @@ function fakeRepo() {
   const certs: { id: string; code: string; userId: string; batchId: string; attended: number; total: number; issuedAt: Date }[] = [];
   const joins = [...b06.sessions.slice(0, 10), ...b07.sessions.slice(0, 3)].map((s) => ({ userId: 'sara', sessionId: s.id }));
   const repo = {
+    recordedCourseIds: async () => [],
     activeEnrollments: async () => [b06, b07].map((b) => ({ status: 'ACTIVE' as const, batch: b })),
     attendance: async () => ({ joins, marks: [] }),
     codesInUse: async (codes: string[]) => certs.filter((c) => codes.includes(c.code)).map((c) => ({ code: c.code })),

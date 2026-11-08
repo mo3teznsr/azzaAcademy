@@ -140,6 +140,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
   /// No description provided for @noOpenBatchesShort.
   ///
   /// In en, this message translates to:
@@ -401,8 +407,8 @@ abstract class AppLocalizations {
   /// No description provided for @editSeatsLead.
   ///
   /// In en, this message translates to:
-  /// **'{count} students are enrolled. Seats can\'t go below that.'**
-  String editSeatsLead(String count);
+  /// **'{count, plural, one{{count} student is enrolled.} other{{count} students are enrolled.}} Seats can\'t go below that.'**
+  String editSeatsLead(int count);
 
   /// No description provided for @couldNotSaveSeats.
   ///
@@ -607,6 +613,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Starts in {minutes}m'**
   String statusStartsIn(String minutes);
+
+  /// No description provided for @fmtInMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'in {minutes} min'**
+  String fmtInMinutes(String minutes);
+
+  /// No description provided for @fmtInHours.
+  ///
+  /// In en, this message translates to:
+  /// **'in {hours} h'**
+  String fmtInHours(String hours);
 
   /// No description provided for @statusLive.
   ///
@@ -1097,8 +1115,8 @@ abstract class AppLocalizations {
   /// No description provided for @coursesCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} courses'**
-  String coursesCount(String count);
+  /// **'{count, plural, one{{count} course} other{{count} courses}}'**
+  String coursesCount(int count);
 
   /// No description provided for @noCoursesFound.
   ///
@@ -1115,8 +1133,8 @@ abstract class AppLocalizations {
   /// No description provided for @liveSessionsN.
   ///
   /// In en, this message translates to:
-  /// **'{n} live sessions'**
-  String liveSessionsN(String n);
+  /// **'{n, plural, one{{n} live session} other{{n} live sessions}}'**
+  String liveSessionsN(int n);
 
   /// No description provided for @recordings.
   ///
@@ -1145,8 +1163,8 @@ abstract class AppLocalizations {
   /// No description provided for @syllabusN.
   ///
   /// In en, this message translates to:
-  /// **'Syllabus · {n} modules'**
-  String syllabusN(String n);
+  /// **'Syllabus · {n, plural, one{{n} module} other{{n} modules}}'**
+  String syllabusN(int n);
 
   /// No description provided for @fromPrice.
   ///
@@ -1187,8 +1205,8 @@ abstract class AppLocalizations {
   /// No description provided for @seatsLeft.
   ///
   /// In en, this message translates to:
-  /// **'{n} places left'**
-  String seatsLeft(String n);
+  /// **'{n, plural, one{{n} place left} other{{n} places left}}'**
+  String seatsLeft(int n);
 
   /// No description provided for @seatsOf.
   ///
@@ -1205,8 +1223,8 @@ abstract class AppLocalizations {
   /// No description provided for @joiningLate.
   ///
   /// In en, this message translates to:
-  /// **'Joining late? {ran} sessions already ran — catch up on their recordings in your library. {left} live sessions left.'**
-  String joiningLate(String ran, String left);
+  /// **'Joining late? {ran, plural, one{{ran} session already ran} other{{ran} sessions already ran}} — catch up on the recordings in your library. {left, plural, one{{left} live session left.} other{{left} live sessions left.}}'**
+  String joiningLate(int ran, int left);
 
   /// No description provided for @addToCalendar.
   ///
@@ -1541,8 +1559,8 @@ abstract class AppLocalizations {
   /// No description provided for @enrolledBody.
   ///
   /// In en, this message translates to:
-  /// **'Your place in {course} · {code} is confirmed. Start with the lessons; your {n} live sessions are in your schedule.'**
-  String enrolledBody(String course, String code, String n);
+  /// **'Your place in {course} · {code} is confirmed. Start with the lessons; {count, plural, =0{your live sessions will appear in your schedule.} one{your {n} live session is in your schedule.} other{your {n} live sessions are in your schedule.}}'**
+  String enrolledBody(String course, String code, int count, String n);
 
   /// No description provided for @nextTake.
   ///
@@ -1577,8 +1595,8 @@ abstract class AppLocalizations {
   /// No description provided for @syncCalendar.
   ///
   /// In en, this message translates to:
-  /// **'Sync {n} sessions to calendar'**
-  String syncCalendar(String n);
+  /// **'{n, plural, one{Sync {n} session to calendar} other{Sync {n} sessions to calendar}}'**
+  String syncCalendar(int n);
 
   /// No description provided for @watchRecordings.
   ///
@@ -1685,8 +1703,8 @@ abstract class AppLocalizations {
   /// No description provided for @waitingN.
   ///
   /// In en, this message translates to:
-  /// **'{n} waiting'**
-  String waitingN(String n);
+  /// **'{n, plural, other{{n} waiting}}'**
+  String waitingN(int n);
 
   /// No description provided for @networkCheck.
   ///
@@ -2021,8 +2039,8 @@ abstract class AppLocalizations {
   /// No description provided for @endedStayed.
   ///
   /// In en, this message translates to:
-  /// **'Ended {time} · you stayed {min} min'**
-  String endedStayed(String time, String min);
+  /// **'Ended {time} · you stayed {min, plural, other{{min} min}}'**
+  String endedStayed(String time, int min);
 
   /// No description provided for @howWas.
   ///
@@ -2261,8 +2279,8 @@ abstract class AppLocalizations {
   /// No description provided for @batchesN.
   ///
   /// In en, this message translates to:
-  /// **'{n} classes'**
-  String batchesN(String n);
+  /// **'{n, plural, one{{n} class} other{{n} classes}}'**
+  String batchesN(int n);
 
   /// No description provided for @languageRegion.
   ///
@@ -2333,8 +2351,8 @@ abstract class AppLocalizations {
   /// No description provided for @studentsN.
   ///
   /// In en, this message translates to:
-  /// **'{n} students'**
-  String studentsN(String n);
+  /// **'{n, plural, one{{n} student} other{{n} students}}'**
+  String studentsN(int n);
 
   /// No description provided for @todayStat.
   ///
@@ -2365,6 +2383,1026 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Later today'**
   String get laterToday;
+
+  /// No description provided for @teacherHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{course} · {code}'**
+  String teacherHubTitle(String course, String code);
+
+  /// No description provided for @teacherHubSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get teacherHubSessions;
+
+  /// No description provided for @teacherHubStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get teacherHubStudents;
+
+  /// No description provided for @teacherHubPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get teacherHubPractice;
+
+  /// No description provided for @teacherNewAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'New assignment'**
+  String get teacherNewAssignment;
+
+  /// No description provided for @teacherNoAssignments.
+  ///
+  /// In en, this message translates to:
+  /// **'No assignments yet. Add one so students can practise after a session.'**
+  String get teacherNoAssignments;
+
+  /// No description provided for @teacherSubmittedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} handed in'**
+  String teacherSubmittedCount(String count);
+
+  /// No description provided for @teacherNewQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'New quiz'**
+  String get teacherNewQuiz;
+
+  /// No description provided for @teacherEditQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit quiz'**
+  String get teacherEditQuiz;
+
+  /// No description provided for @teacherQuizResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get teacherQuizResults;
+
+  /// No description provided for @teacherNoQuizzesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a short quiz to check what your students learned.'**
+  String get teacherNoQuizzesBody;
+
+  /// No description provided for @teacherMaterialSlides.
+  ///
+  /// In en, this message translates to:
+  /// **'Slides'**
+  String get teacherMaterialSlides;
+
+  /// No description provided for @teacherMaterialFile.
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get teacherMaterialFile;
+
+  /// No description provided for @teacherMaterialVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get teacherMaterialVideo;
+
+  /// No description provided for @teacherAddMaterial.
+  ///
+  /// In en, this message translates to:
+  /// **'Add material'**
+  String get teacherAddMaterial;
+
+  /// No description provided for @teacherAddMaterialLede.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a file or a video from your phone, or share a link to slides, a web page or a video. Students open it from their library.'**
+  String get teacherAddMaterialLede;
+
+  /// No description provided for @teacherMaterialAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Material added. Your students can open it now.'**
+  String get teacherMaterialAdded;
+
+  /// No description provided for @teacherNoMaterials.
+  ///
+  /// In en, this message translates to:
+  /// **'No materials yet. Add slides, files or links for this class.'**
+  String get teacherNoMaterials;
+
+  /// No description provided for @teacherNoClassRecordings.
+  ///
+  /// In en, this message translates to:
+  /// **'No recordings yet. Each session is recorded when you start it.'**
+  String get teacherNoClassRecordings;
+
+  /// No description provided for @teacherMinutesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String teacherMinutesShort(String count);
+
+  /// No description provided for @teacherVideoTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'That video is over 200 MB. Share it as a link instead.'**
+  String get teacherVideoTooLarge;
+
+  /// No description provided for @teacherUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get teacherUploading;
+
+  /// No description provided for @teacherUploadVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a video'**
+  String get teacherUploadVideo;
+
+  /// No description provided for @teacherUploadedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded: {name}'**
+  String teacherUploadedFile(String name);
+
+  /// No description provided for @teacherUploadVideoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'MP4, MOV or WEBM, up to 200 MB.'**
+  String get teacherUploadVideoHint;
+
+  /// No description provided for @teacherMaterialTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Week 2 slides'**
+  String get teacherMaterialTitleHint;
+
+  /// No description provided for @teacherTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a title of at least 2 characters.'**
+  String get teacherTitleRequired;
+
+  /// No description provided for @teacherMaterialUrlHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'A link students can open, starting with https://'**
+  String get teacherMaterialUrlHelper;
+
+  /// No description provided for @filesAttach.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach files'**
+  String get filesAttach;
+
+  /// No description provided for @filesAttachHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count, plural, one{{n} file} other{{n} files}} · {types} · {mb} MB each'**
+  String filesAttachHint(int count, String n, String types, String mb);
+
+  /// No description provided for @filesUploadingPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading {percent}%'**
+  String filesUploadingPercent(String percent);
+
+  /// No description provided for @filesRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}'**
+  String filesRemove(String name);
+
+  /// No description provided for @filesOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {name}'**
+  String filesOpen(String name);
+
+  /// No description provided for @filesYourFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Your files'**
+  String get filesYourFiles;
+
+  /// No description provided for @filesSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get filesSubmitted;
+
+  /// No description provided for @filesTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{You can attach up to {count} file.} other{You can attach up to {count} files.}}'**
+  String filesTooMany(int count);
+
+  /// No description provided for @filesWaitForUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for your files to finish uploading.'**
+  String get filesWaitForUpload;
+
+  /// No description provided for @filesTypeRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} can\'t be attached. Use {types}.'**
+  String filesTypeRefused(String name, String types);
+
+  /// No description provided for @filesTooLargeRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is larger than {mb} MB.'**
+  String filesTooLargeRefused(String name, String mb);
+
+  /// No description provided for @filesEmptyRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is empty.'**
+  String filesEmptyRefused(String name);
+
+  /// No description provided for @filesErrType.
+  ///
+  /// In en, this message translates to:
+  /// **'This file type isn\'t supported. Try PDF, Word, PowerPoint, Excel, an image, ZIP or text.'**
+  String get filesErrType;
+
+  /// No description provided for @filesErrEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is empty. Choose another one.'**
+  String get filesErrEmpty;
+
+  /// No description provided for @filesErrTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is too large to upload.'**
+  String get filesErrTooLarge;
+
+  /// No description provided for @filesErrMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a file to upload.'**
+  String get filesErrMissing;
+
+  /// No description provided for @filesErrForeignUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload the file here first, then add it.'**
+  String get filesErrForeignUrl;
+
+  /// No description provided for @filesErrEmptySubmission.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a link, some text or a file.'**
+  String get filesErrEmptySubmission;
+
+  /// No description provided for @filesUploadMaterial.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload file'**
+  String get filesUploadMaterial;
+
+  /// No description provided for @filesUploadMaterialHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{types}, up to {mb} MB. Students open it from their library.'**
+  String filesUploadMaterialHint(String types, String mb);
+
+  /// No description provided for @filesLinkKindsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'To share a document, upload it. Links are for slides, web pages and videos.'**
+  String get filesLinkKindsNote;
+
+  /// No description provided for @filesEditAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit assignment'**
+  String get filesEditAssignment;
+
+  /// No description provided for @filesSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get filesSaveChanges;
+
+  /// No description provided for @filesAssignmentSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment updated.'**
+  String get filesAssignmentSaved;
+
+  /// No description provided for @filesAssignmentActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment options'**
+  String get filesAssignmentActions;
+
+  /// No description provided for @filesDeleteAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete assignment'**
+  String get filesDeleteAssignment;
+
+  /// No description provided for @filesDeleteAssignmentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{title}”?'**
+  String filesDeleteAssignmentTitle(String title);
+
+  /// No description provided for @filesDeleteAssignmentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This can\'t be undone. Once a student has submitted, the assignment can\'t be deleted, but you can still edit it.'**
+  String get filesDeleteAssignmentBody;
+
+  /// No description provided for @filesDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get filesDelete;
+
+  /// No description provided for @filesAssignmentDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment deleted.'**
+  String get filesAssignmentDeleted;
+
+  /// No description provided for @filesErrHasSubmissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Students have already submitted this assignment, so it can\'t be deleted. You can still edit it.'**
+  String get filesErrHasSubmissions;
+
+  /// No description provided for @filesErrScoreTooHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'A submission is already graded {score}, so the max score can\'t go below that.'**
+  String filesErrScoreTooHigh(String score);
+
+  /// No description provided for @teacherUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a full link, like https://example.com'**
+  String get teacherUrlInvalid;
+
+  /// No description provided for @teacherLinkSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Session'**
+  String get teacherLinkSession;
+
+  /// No description provided for @teacherOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get teacherOptional;
+
+  /// No description provided for @teacherNoSessionLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Not linked to a session'**
+  String get teacherNoSessionLink;
+
+  /// No description provided for @teacherAssignmentCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment created. Students can see it now.'**
+  String get teacherAssignmentCreated;
+
+  /// No description provided for @teacherAssignmentLede.
+  ///
+  /// In en, this message translates to:
+  /// **'Students hand in text or a link before the due time. Late work is still accepted and marked late.'**
+  String get teacherAssignmentLede;
+
+  /// No description provided for @teacherAssignmentTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Build a budget spreadsheet'**
+  String get teacherAssignmentTitleHint;
+
+  /// No description provided for @teacherInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructions'**
+  String get teacherInstructions;
+
+  /// No description provided for @teacherInstructionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What should students do, and what does good work look like?'**
+  String get teacherInstructionsHint;
+
+  /// No description provided for @teacherDueHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to choose the date and time.'**
+  String get teacherDueHelper;
+
+  /// No description provided for @teacherChangeDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose due date'**
+  String get teacherChangeDue;
+
+  /// No description provided for @teacherDueInPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a time in the future.'**
+  String get teacherDueInPast;
+
+  /// No description provided for @teacherMaxScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Max score'**
+  String get teacherMaxScore;
+
+  /// No description provided for @teacherMaxScoreHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'The top score for this assignment.'**
+  String get teacherMaxScoreHelper;
+
+  /// No description provided for @teacherMaxScoreInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from 1 to 1000.'**
+  String get teacherMaxScoreInvalid;
+
+  /// No description provided for @teacherCreateAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Create assignment'**
+  String get teacherCreateAssignment;
+
+  /// No description provided for @teacherGradedScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Graded {score}/{max}'**
+  String teacherGradedScore(String score, String max);
+
+  /// No description provided for @teacherToGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'To grade'**
+  String get teacherToGrade;
+
+  /// No description provided for @teacherSubmissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submissions'**
+  String get teacherSubmissionsTitle;
+
+  /// No description provided for @teacherOutOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of {max}'**
+  String teacherOutOf(String max);
+
+  /// No description provided for @teacherNoSubmissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing handed in yet.'**
+  String get teacherNoSubmissions;
+
+  /// No description provided for @teacherHandedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed in {when}'**
+  String teacherHandedIn(String when);
+
+  /// No description provided for @teacherGradeSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade saved. The student has been told.'**
+  String get teacherGradeSaved;
+
+  /// No description provided for @teacherTheirWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Their work'**
+  String get teacherTheirWork;
+
+  /// No description provided for @teacherScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get teacherScore;
+
+  /// No description provided for @teacherScoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0 to {max}'**
+  String teacherScoreHint(String max);
+
+  /// No description provided for @teacherScoreInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from 0 to {max}.'**
+  String teacherScoreInvalid(String max);
+
+  /// No description provided for @teacherFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get teacherFeedback;
+
+  /// No description provided for @teacherFeedbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What went well, and one thing to improve.'**
+  String get teacherFeedbackHint;
+
+  /// No description provided for @teacherSaveGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Save grade'**
+  String get teacherSaveGrade;
+
+  /// No description provided for @teacherGradingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Grading'**
+  String get teacherGradingTitle;
+
+  /// No description provided for @teacherGradingLede.
+  ///
+  /// In en, this message translates to:
+  /// **'Work handed in across your classes, oldest first.'**
+  String get teacherGradingLede;
+
+  /// No description provided for @teacherAllGraded.
+  ///
+  /// In en, this message translates to:
+  /// **'All caught up. Nothing to grade.'**
+  String get teacherAllGraded;
+
+  /// No description provided for @teacherQuizSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz saved.'**
+  String get teacherQuizSaved;
+
+  /// No description provided for @teacherQuizNeedsQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one question before publishing.'**
+  String get teacherQuizNeedsQuestion;
+
+  /// No description provided for @teacherPublishQuizTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish this quiz?'**
+  String get teacherPublishQuizTitle;
+
+  /// No description provided for @teacherPublishQuizBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your students will be notified and can start it. Once someone starts, the questions can\'t change.'**
+  String get teacherPublishQuizBody;
+
+  /// No description provided for @teacherPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get teacherPublish;
+
+  /// No description provided for @teacherQuizPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz published. Students have been notified.'**
+  String get teacherQuizPublished;
+
+  /// No description provided for @teacherQuizUnpublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz moved back to draft.'**
+  String get teacherQuizUnpublished;
+
+  /// No description provided for @teacherDeleteQuizTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this quiz?'**
+  String get teacherDeleteQuizTitle;
+
+  /// No description provided for @teacherDeleteQuizBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The quiz and its questions will be removed. This can\'t be undone.'**
+  String get teacherDeleteQuizBody;
+
+  /// No description provided for @teacherDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get teacherDelete;
+
+  /// No description provided for @teacherQuizDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz deleted.'**
+  String get teacherQuizDeleted;
+
+  /// No description provided for @teacherTrue.
+  ///
+  /// In en, this message translates to:
+  /// **'True'**
+  String get teacherTrue;
+
+  /// No description provided for @teacherFalse.
+  ///
+  /// In en, this message translates to:
+  /// **'False'**
+  String get teacherFalse;
+
+  /// No description provided for @teacherSingleChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Single choice'**
+  String get teacherSingleChoice;
+
+  /// No description provided for @teacherChooseAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose all'**
+  String get teacherChooseAll;
+
+  /// No description provided for @teacherTrueFalse.
+  ///
+  /// In en, this message translates to:
+  /// **'True / false'**
+  String get teacherTrueFalse;
+
+  /// No description provided for @teacherQuizTotals.
+  ///
+  /// In en, this message translates to:
+  /// **'{questions, plural, one{{questions} question} other{{questions} questions}} · {points, plural, one{{points} pt} other{{points} pts}}'**
+  String teacherQuizTotals(int questions, int points);
+
+  /// No description provided for @teacherQuizLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Students have started this quiz, so its questions are locked. You can still change the details.'**
+  String get teacherQuizLocked;
+
+  /// No description provided for @teacherQuizDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get teacherQuizDetails;
+
+  /// No description provided for @teacherQuizTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Module 1 check'**
+  String get teacherQuizTitleHint;
+
+  /// No description provided for @teacherQuizInstructionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything students should know before they start.'**
+  String get teacherQuizInstructionsHint;
+
+  /// No description provided for @teacherQuizModule.
+  ///
+  /// In en, this message translates to:
+  /// **'Module'**
+  String get teacherQuizModule;
+
+  /// No description provided for @teacherQuizModuleHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Students see the quiz with this module\'s lessons.'**
+  String get teacherQuizModuleHelper;
+
+  /// No description provided for @teacherNoModule.
+  ///
+  /// In en, this message translates to:
+  /// **'No module'**
+  String get teacherNoModule;
+
+  /// No description provided for @teacherNoDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No due date'**
+  String get teacherNoDueDate;
+
+  /// No description provided for @teacherTimeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Time limit (minutes)'**
+  String get teacherTimeLimit;
+
+  /// No description provided for @teacherUntimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Untimed'**
+  String get teacherUntimed;
+
+  /// No description provided for @teacherTimeLimitHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for no time limit.'**
+  String get teacherTimeLimitHelper;
+
+  /// No description provided for @teacherTimeLimitInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 1 to 600 minutes, or leave it empty.'**
+  String get teacherTimeLimitInvalid;
+
+  /// No description provided for @teacherAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempts'**
+  String get teacherAttempts;
+
+  /// No description provided for @teacherAttemptsHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'How many times each student can take it.'**
+  String get teacherAttemptsHelper;
+
+  /// No description provided for @teacherAddQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add question'**
+  String get teacherAddQuestion;
+
+  /// No description provided for @teacherSaveDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save draft'**
+  String get teacherSaveDraft;
+
+  /// No description provided for @teacherUnpublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpublish'**
+  String get teacherUnpublish;
+
+  /// No description provided for @teacherQuestionN.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n}'**
+  String teacherQuestionN(String n);
+
+  /// No description provided for @teacherRemoveQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove question'**
+  String get teacherRemoveQuestion;
+
+  /// No description provided for @teacherQuestionPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get teacherQuestionPrompt;
+
+  /// No description provided for @teacherQuestionPromptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the question students will answer.'**
+  String get teacherQuestionPromptHint;
+
+  /// No description provided for @teacherQuestionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the question.'**
+  String get teacherQuestionRequired;
+
+  /// No description provided for @teacherMarkAllCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark every correct answer.'**
+  String get teacherMarkAllCorrect;
+
+  /// No description provided for @teacherMarkOneCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark the one correct answer.'**
+  String get teacherMarkOneCorrect;
+
+  /// No description provided for @teacherCorrectAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer'**
+  String get teacherCorrectAnswer;
+
+  /// No description provided for @teacherMarkCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as correct'**
+  String get teacherMarkCorrect;
+
+  /// No description provided for @teacherOptionN.
+  ///
+  /// In en, this message translates to:
+  /// **'Option {n}'**
+  String teacherOptionN(String n);
+
+  /// No description provided for @teacherOptionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in this option or remove it.'**
+  String get teacherOptionRequired;
+
+  /// No description provided for @teacherRemoveOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove option'**
+  String get teacherRemoveOption;
+
+  /// No description provided for @teacherAddOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Add option'**
+  String get teacherAddOption;
+
+  /// No description provided for @teacherPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get teacherPoints;
+
+  /// No description provided for @teacherAttendanceBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakdown'**
+  String get teacherAttendanceBreakdown;
+
+  /// No description provided for @teacherAttendanceRate.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate} attended'**
+  String teacherAttendanceRate(String rate);
+
+  /// No description provided for @teacherAttendanceFiltered.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing {mark} only. Tap again to show everyone.'**
+  String teacherAttendanceFiltered(String mark);
+
+  /// No description provided for @teacherTodayAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Today {time}'**
+  String teacherTodayAt(String time);
+
+  /// No description provided for @teacherTomorrowAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow {time}'**
+  String teacherTomorrowAt(String time);
+
+  /// No description provided for @teacherNoUpcomingSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions coming up this week. Add one from your class.'**
+  String get teacherNoUpcomingSessions;
+
+  /// No description provided for @teacherNextSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Next session'**
+  String get teacherNextSession;
+
+  /// No description provided for @teacherReschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Move'**
+  String get teacherReschedule;
+
+  /// No description provided for @teacherNeedsAtRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Students falling behind'**
+  String get teacherNeedsAtRisk;
+
+  /// No description provided for @teacherNeedsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs you'**
+  String get teacherNeedsYou;
+
+  /// No description provided for @teacherNeedsGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Work to grade'**
+  String get teacherNeedsGrade;
+
+  /// No description provided for @teacherNeedsReschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Replies to your move requests'**
+  String get teacherNeedsReschedule;
+
+  /// No description provided for @teacherNeedsProposals.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposals with review notes'**
+  String get teacherNeedsProposals;
+
+  /// No description provided for @teacherNeedClassFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a class first.'**
+  String get teacherNeedClassFirst;
+
+  /// No description provided for @teacherProposeCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Propose a course'**
+  String get teacherProposeCourse;
+
+  /// No description provided for @teacherPostAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'Post an announcement'**
+  String get teacherPostAnnouncement;
+
+  /// No description provided for @teacherUploadMaterial.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload material'**
+  String get teacherUploadMaterial;
+
+  /// No description provided for @teacherQuickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick actions'**
+  String get teacherQuickActions;
+
+  /// No description provided for @teacherMyClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'My classes'**
+  String get teacherMyClasses;
+
+  /// No description provided for @teacherSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get teacherSeeAll;
+
+  /// No description provided for @teacherStudentsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} student} other{{count} students}}'**
+  String teacherStudentsCount(int count);
+
+  /// No description provided for @teacherEarningsSnapshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings'**
+  String get teacherEarningsSnapshot;
+
+  /// No description provided for @teacherEarningsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings couldn\'t load. Pull to refresh.'**
+  String get teacherEarningsUnavailable;
+
+  /// No description provided for @teacherThisPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get teacherThisPeriod;
+
+  /// No description provided for @teacherNextPayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Next payout'**
+  String get teacherNextPayout;
+
+  /// No description provided for @teacherPayoutMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a payout method so we can pay you.'**
+  String get teacherPayoutMissing;
+
+  /// No description provided for @teacherAddPayoutMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get teacherAddPayoutMethod;
+
+  /// No description provided for @teacherFirstClassBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a course, set the schedule and send it for review.'**
+  String get teacherFirstClassBody;
+
+  /// No description provided for @teacherCreateFirstClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first class'**
+  String get teacherCreateFirstClass;
 
   /// No description provided for @noSessionsToday.
   ///
@@ -2441,8 +3479,8 @@ abstract class AppLocalizations {
   /// No description provided for @runOfShow.
   ///
   /// In en, this message translates to:
-  /// **'Run of show · {min} min'**
-  String runOfShow(String min);
+  /// **'Run of show · {min, plural, other{{min} min}}'**
+  String runOfShow(int min);
 
   /// No description provided for @addBlock.
   ///
@@ -2741,8 +3779,8 @@ abstract class AppLocalizations {
   /// No description provided for @sessionsDelivered.
   ///
   /// In en, this message translates to:
-  /// **'{n} sessions delivered'**
-  String sessionsDelivered(String n);
+  /// **'{n, plural, one{{n} session delivered} other{{n} sessions delivered}}'**
+  String sessionsDelivered(int n);
 
   /// No description provided for @opsGreeting.
   ///
@@ -2759,8 +3797,8 @@ abstract class AppLocalizations {
   /// No description provided for @roomsPeople.
   ///
   /// In en, this message translates to:
-  /// **'{rooms} rooms · {people} people'**
-  String roomsPeople(String rooms, String people);
+  /// **'{rooms, plural, one{{rooms} room} other{{rooms} rooms}} · {people, plural, one{{people} person} other{{people} people}}'**
+  String roomsPeople(int rooms, int people);
 
   /// No description provided for @sessionsToday.
   ///
@@ -2831,8 +3869,8 @@ abstract class AppLocalizations {
   /// No description provided for @participantsN.
   ///
   /// In en, this message translates to:
-  /// **'{n} people'**
-  String participantsN(String n);
+  /// **'{n, plural, one{{n} person} other{{n} people}}'**
+  String participantsN(int n);
 
   /// No description provided for @recordingOn.
   ///
@@ -2867,8 +3905,8 @@ abstract class AppLocalizations {
   /// No description provided for @sessionsRun.
   ///
   /// In en, this message translates to:
-  /// **'{done} of {total} sessions run'**
-  String sessionsRun(String done, String total);
+  /// **'{done} of {total, plural, one{{total} session run} other{{total} sessions run}}'**
+  String sessionsRun(int done, int total);
 
   /// No description provided for @transfersToVerify.
   ///
@@ -3023,8 +4061,8 @@ abstract class AppLocalizations {
   /// No description provided for @totalTeachers.
   ///
   /// In en, this message translates to:
-  /// **'Total · {n} teachers'**
-  String totalTeachers(String n);
+  /// **'Total · {n, plural, one{{n} teacher} other{{n} teachers}}'**
+  String totalTeachers(int n);
 
   /// No description provided for @heldNote.
   ///
@@ -3035,8 +4073,8 @@ abstract class AppLocalizations {
   /// No description provided for @approvePayouts.
   ///
   /// In en, this message translates to:
-  /// **'Approve {n} payouts · {amount}'**
-  String approvePayouts(String n, String amount);
+  /// **'{n, plural, one{Approve {n} payout · {amount}} other{Approve {n} payouts · {amount}}}'**
+  String approvePayouts(int n, String amount);
 
   /// No description provided for @downloadFile.
   ///
@@ -3077,26 +4115,26 @@ abstract class AppLocalizations {
   /// No description provided for @alertTransfersToVerify.
   ///
   /// In en, this message translates to:
-  /// **'{n} bank transfers to verify'**
-  String alertTransfersToVerify(String n);
+  /// **'{n, plural, one{{n} bank transfer to verify} other{{n} bank transfers to verify}}'**
+  String alertTransfersToVerify(int n);
 
   /// No description provided for @alertSeatHoldsExpiring.
   ///
   /// In en, this message translates to:
-  /// **'{n} seat holds expire within 24 h'**
-  String alertSeatHoldsExpiring(String n);
+  /// **'{n, plural, one{{n} seat hold expires within 24 h} other{{n} seat holds expire within 24 h}}'**
+  String alertSeatHoldsExpiring(int n);
 
   /// No description provided for @alertTeacherBankUnverified.
   ///
   /// In en, this message translates to:
-  /// **'{n} teacher bank details to verify'**
-  String alertTeacherBankUnverified(String n);
+  /// **'{n, plural, one{{n} teacher\'s bank details to verify} other{{n} teachers\' bank details to verify}}'**
+  String alertTeacherBankUnverified(int n);
 
   /// No description provided for @alertPayoutsHeld.
   ///
   /// In en, this message translates to:
-  /// **'{n} payouts on hold'**
-  String alertPayoutsHeld(String n);
+  /// **'{n, plural, one{{n} payout on hold} other{{n} payouts on hold}}'**
+  String alertPayoutsHeld(int n);
 
   /// No description provided for @rescheduleRequestTitle.
   ///
@@ -3185,8 +4223,8 @@ abstract class AppLocalizations {
   /// No description provided for @certificateSessionsNeeded.
   ///
   /// In en, this message translates to:
-  /// **'{n} more sessions needed'**
-  String certificateSessionsNeeded(String n);
+  /// **'{n, plural, one{{n} more session needed} other{{n} more sessions needed}}'**
+  String certificateSessionsNeeded(int n);
 
   /// No description provided for @certificateOneSessionNeeded.
   ///
@@ -3209,8 +4247,8 @@ abstract class AppLocalizations {
   /// No description provided for @certificateAttendedOfRequired.
   ///
   /// In en, this message translates to:
-  /// **'{attended} of {required} sessions to earn it'**
-  String certificateAttendedOfRequired(String attended, String required);
+  /// **'{attended} of {required, plural, one{{required} session to earn it} other{{required} sessions to earn it}}'**
+  String certificateAttendedOfRequired(int attended, int required);
 
   /// No description provided for @certificateNew.
   ///
@@ -3287,8 +4325,8 @@ abstract class AppLocalizations {
   /// No description provided for @certificateCompleteBody.
   ///
   /// In en, this message translates to:
-  /// **'You attended {attended} of {total} live sessions.'**
-  String certificateCompleteBody(String attended, String total);
+  /// **'You attended {attended} of {total, plural, one{{total} live session.} other{{total} live sessions.}}'**
+  String certificateCompleteBody(int attended, int total);
 
   /// No description provided for @certificateVerifyHint.
   ///
@@ -4571,8 +5609,8 @@ abstract class AppLocalizations {
   /// No description provided for @ratingSemantics.
   ///
   /// In en, this message translates to:
-  /// **'Rated {avg} out of 5 from {count} reviews'**
-  String ratingSemantics(String avg, String count);
+  /// **'Rated {avg} out of 5 from {count, plural, one{{count} review} other{{count} reviews}}'**
+  String ratingSemantics(String avg, int count);
 
   /// No description provided for @reviewsTitle.
   ///
@@ -4583,8 +5621,8 @@ abstract class AppLocalizations {
   /// No description provided for @reviewsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} reviews'**
-  String reviewsCount(String count);
+  /// **'{count, plural, one{{count} review} other{{count} reviews}}'**
+  String reviewsCount(int count);
 
   /// No description provided for @noReviewsYet.
   ///
@@ -4661,8 +5699,8 @@ abstract class AppLocalizations {
   /// No description provided for @starsN.
   ///
   /// In en, this message translates to:
-  /// **'{n} stars'**
-  String starsN(String n);
+  /// **'{n, plural, one{{n} star} other{{n} stars}}'**
+  String starsN(int n);
 
   /// No description provided for @replyAction.
   ///
@@ -5021,14 +6059,14 @@ abstract class AppLocalizations {
   /// No description provided for @instructorCoursesN.
   ///
   /// In en, this message translates to:
-  /// **'{count} courses'**
-  String instructorCoursesN(String count);
+  /// **'{count, plural, one{{count} course} other{{count} courses}}'**
+  String instructorCoursesN(int count);
 
   /// No description provided for @instructorOpenBatchesN.
   ///
   /// In en, this message translates to:
-  /// **'{count} open classes'**
-  String instructorOpenBatchesN(String count);
+  /// **'{count, plural, one{{count} open class} other{{count} open classes}}'**
+  String instructorOpenBatchesN(int count);
 
   /// No description provided for @teachOnAzza.
   ///
@@ -5375,8 +6413,8 @@ abstract class AppLocalizations {
   /// No description provided for @lessonsCountN.
   ///
   /// In en, this message translates to:
-  /// **'{n} lessons'**
-  String lessonsCountN(String n);
+  /// **'{n, plural, one{{n} lesson} other{{n} lessons}}'**
+  String lessonsCountN(int n);
 
   /// No description provided for @lessonNofM.
   ///
@@ -5393,8 +6431,8 @@ abstract class AppLocalizations {
   /// No description provided for @lessonAttachmentsN.
   ///
   /// In en, this message translates to:
-  /// **'{n} attachments'**
-  String lessonAttachmentsN(String n);
+  /// **'{n, plural, one{{n} attachment} other{{n} attachments}}'**
+  String lessonAttachmentsN(int n);
 
   /// No description provided for @lessonAttachments.
   ///
@@ -5531,14 +6569,14 @@ abstract class AppLocalizations {
   /// No description provided for @quizQuestionsN.
   ///
   /// In en, this message translates to:
-  /// **'{n} questions'**
-  String quizQuestionsN(String n);
+  /// **'{n, plural, one{{n} question} other{{n} questions}}'**
+  String quizQuestionsN(int n);
 
   /// No description provided for @quizMinutesN.
   ///
   /// In en, this message translates to:
-  /// **'{n} min'**
-  String quizMinutesN(String n);
+  /// **'{n, plural, other{{n} min}}'**
+  String quizMinutesN(int n);
 
   /// No description provided for @quizPointsN.
   ///
@@ -5657,8 +6695,8 @@ abstract class AppLocalizations {
   /// No description provided for @quizStartTimedBody.
   ///
   /// In en, this message translates to:
-  /// **'You\'ll have {minutes} minutes once you start. When time runs out, your answers are submitted automatically.'**
-  String quizStartTimedBody(String minutes);
+  /// **'You\'ll have {minutes, plural, one{{minutes} minute} other{{minutes} minutes}} once you start. When time runs out, your answers are submitted automatically.'**
+  String quizStartTimedBody(int minutes);
 
   /// No description provided for @quizQuestionNofM.
   ///
@@ -5717,8 +6755,8 @@ abstract class AppLocalizations {
   /// No description provided for @quizAnsweredOf.
   ///
   /// In en, this message translates to:
-  /// **'You answered {answered} of {total} questions.'**
-  String quizAnsweredOf(String answered, String total);
+  /// **'You answered {answered} of {total, plural, one{{total} question.} other{{total} questions.}}'**
+  String quizAnsweredOf(int answered, int total);
 
   /// No description provided for @quizUnansweredWarning.
   ///
@@ -5843,8 +6881,8 @@ abstract class AppLocalizations {
   /// No description provided for @quizStudentsAttempted.
   ///
   /// In en, this message translates to:
-  /// **'{students} students tried · {attempts} attempts'**
-  String quizStudentsAttempted(String students, String attempts);
+  /// **'{students, plural, one{{students} student tried} other{{students} students tried}} · {attempts, plural, one{{attempts} attempt} other{{attempts} attempts}}'**
+  String quizStudentsAttempted(int students, int attempts);
 
   /// No description provided for @studentsLabel.
   ///
@@ -5867,8 +6905,8 @@ abstract class AppLocalizations {
   /// No description provided for @quizAttemptsN.
   ///
   /// In en, this message translates to:
-  /// **'{n} attempts'**
-  String quizAttemptsN(String n);
+  /// **'{n, plural, one{{n} attempt} other{{n} attempts}}'**
+  String quizAttemptsN(int n);
 
   /// No description provided for @quizPerQuestion.
   ///
@@ -5993,8 +7031,8 @@ abstract class AppLocalizations {
   /// No description provided for @chatUnreadN.
   ///
   /// In en, this message translates to:
-  /// **'{n} unread'**
-  String chatUnreadN(String n);
+  /// **'{n, plural, other{{n} unread}}'**
+  String chatUnreadN(int n);
 
   /// No description provided for @announcementsTitle.
   ///
@@ -6445,6 +7483,3618 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That person can\'t take this request.'**
   String get errInvalidAssignee;
+
+  /// No description provided for @studentContinueLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue learning'**
+  String get studentContinueLearning;
+
+  /// No description provided for @studentModulesN.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, one{{n} module} other{{n} modules}}'**
+  String studentModulesN(int n);
+
+  /// No description provided for @studentOpenLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Open lessons'**
+  String get studentOpenLessons;
+
+  /// No description provided for @studentPracticeQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get studentPracticeQuiz;
+
+  /// No description provided for @studentPracticeAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment'**
+  String get studentPracticeAssignment;
+
+  /// No description provided for @studentOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get studentOverdue;
+
+  /// No description provided for @studentWasDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Was due {when}'**
+  String studentWasDue(String when);
+
+  /// No description provided for @studentNoDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No due date'**
+  String get studentNoDueDate;
+
+  /// No description provided for @studentSessionN.
+  ///
+  /// In en, this message translates to:
+  /// **'Session {n}'**
+  String studentSessionN(String n);
+
+  /// No description provided for @studentCertificateReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your certificate is ready'**
+  String get studentCertificateReadyTitle;
+
+  /// No description provided for @studentCertificateReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{course}: proof you learned it. Open it to view and share.'**
+  String studentCertificateReadyBody(String course);
+
+  /// No description provided for @studentHowWasToday.
+  ///
+  /// In en, this message translates to:
+  /// **'How was today\'s session?'**
+  String get studentHowWasToday;
+
+  /// No description provided for @studentSessionPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise what you covered'**
+  String get studentSessionPractice;
+
+  /// No description provided for @studentPractiseNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise now'**
+  String get studentPractiseNow;
+
+  /// No description provided for @studentNextModule.
+  ///
+  /// In en, this message translates to:
+  /// **'Next module'**
+  String get studentNextModule;
+
+  /// No description provided for @studentModuleDone.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the end of {module}.'**
+  String studentModuleDone(String module);
+
+  /// No description provided for @studentModuleQuizHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check what you learned with “{quiz}”.'**
+  String studentModuleQuizHint(String quiz);
+
+  /// No description provided for @studentModuleNextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going with the next module.'**
+  String get studentModuleNextHint;
+
+  /// No description provided for @studentClassLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get studentClassLabel;
+
+  /// No description provided for @studentAddToCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to my calendar'**
+  String get studentAddToCalendar;
+
+  /// No description provided for @studentCalendarCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar link copied. Paste it into your calendar app to subscribe.'**
+  String get studentCalendarCopied;
+
+  /// No description provided for @studentSubmittedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted {when}'**
+  String studentSubmittedOn(String when);
+
+  /// No description provided for @studentSubmittedLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted late'**
+  String get studentSubmittedLate;
+
+  /// No description provided for @studentOverdueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can still hand it in. It will be marked late.'**
+  String get studentOverdueHint;
+
+  /// No description provided for @adminNavManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get adminNavManage;
+
+  /// No description provided for @adminManageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get adminManageTitle;
+
+  /// No description provided for @adminHubPeopleSection.
+  ///
+  /// In en, this message translates to:
+  /// **'People and support'**
+  String get adminHubPeopleSection;
+
+  /// No description provided for @adminHubMoneySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Money'**
+  String get adminHubMoneySection;
+
+  /// No description provided for @adminHubCatalogSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Catalog'**
+  String get adminHubCatalogSection;
+
+  /// No description provided for @adminHubInsightSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Insight and platform'**
+  String get adminHubInsightSection;
+
+  /// No description provided for @adminHubSupportSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets from students and teachers'**
+  String get adminHubSupportSub;
+
+  /// No description provided for @adminHubPeopleSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts, roles, bans and teacher profiles'**
+  String get adminHubPeopleSub;
+
+  /// No description provided for @adminHubPaymentsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Every order, with refunds'**
+  String get adminHubPaymentsSub;
+
+  /// No description provided for @adminHubPayoutsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly payouts to teachers'**
+  String get adminHubPayoutsSub;
+
+  /// No description provided for @adminHubCouponsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount codes and who used them'**
+  String get adminHubCouponsSub;
+
+  /// No description provided for @adminHubBankSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Where students send bank transfers'**
+  String get adminHubBankSub;
+
+  /// No description provided for @adminHubCurrenciesSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Add, edit and order display currencies'**
+  String get adminHubCurrenciesSub;
+
+  /// No description provided for @adminHubCoursesSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Create, edit, publish and feature'**
+  String get adminHubCoursesSub;
+
+  /// No description provided for @adminHubBatchesSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes, schedules and enrolments'**
+  String get adminHubBatchesSub;
+
+  /// No description provided for @adminHubCategoriesSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Order, names and visibility'**
+  String get adminHubCategoriesSub;
+
+  /// No description provided for @adminHubReportsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue, fill, attendance, completion'**
+  String get adminHubReportsSub;
+
+  /// No description provided for @adminHubLiveSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Every room on air right now'**
+  String get adminHubLiveSub;
+
+  /// No description provided for @adminHubSettingsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Business rules, contact and integrations'**
+  String get adminHubSettingsSub;
+
+  /// No description provided for @adminHubNoSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic course text is edited inside each course; there is no separate translations area.'**
+  String get adminHubNoSettings;
+
+  /// No description provided for @adminSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get adminSettingsTitle;
+
+  /// No description provided for @adminSettingsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Business rules and contact details are editable here. Keys and secrets stay in the server environment.'**
+  String get adminSettingsBody;
+
+  /// No description provided for @adminRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Business rules'**
+  String get adminRules;
+
+  /// No description provided for @adminIntegrations.
+  ///
+  /// In en, this message translates to:
+  /// **'Integrations'**
+  String get adminIntegrations;
+
+  /// No description provided for @adminConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Configured'**
+  String get adminConfigured;
+
+  /// No description provided for @adminNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured'**
+  String get adminNotConfigured;
+
+  /// No description provided for @adminRuleTeacherShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher share'**
+  String get adminRuleTeacherShare;
+
+  /// No description provided for @adminRuleEarningHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings hold'**
+  String get adminRuleEarningHold;
+
+  /// No description provided for @adminRuleMinPayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum payout'**
+  String get adminRuleMinPayout;
+
+  /// No description provided for @adminRuleTransferHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank transfer hold'**
+  String get adminRuleTransferHold;
+
+  /// No description provided for @adminRuleVat.
+  ///
+  /// In en, this message translates to:
+  /// **'VAT'**
+  String get adminRuleVat;
+
+  /// No description provided for @adminDaysValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, one{{n} day} other{{n} days}}'**
+  String adminDaysValue(int n);
+
+  /// No description provided for @adminHoursValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, one{{n} hour} other{{n} hours}}'**
+  String adminHoursValue(int n);
+
+  /// No description provided for @adminRoleStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Student'**
+  String get adminRoleStudent;
+
+  /// No description provided for @adminRoleTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get adminRoleTeacher;
+
+  /// No description provided for @adminRoleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get adminRoleAdmin;
+
+  /// No description provided for @adminNeedsYouCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs you · {n}'**
+  String adminNeedsYouCount(String n);
+
+  /// No description provided for @adminAllClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is waiting on you. Nice.'**
+  String get adminAllClear;
+
+  /// No description provided for @adminQueueProposals.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposals to review'**
+  String get adminQueueProposals;
+
+  /// No description provided for @adminQueueProposalsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses and classes from teachers'**
+  String get adminQueueProposalsSub;
+
+  /// No description provided for @adminQueueTransfers.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfers to verify'**
+  String get adminQueueTransfers;
+
+  /// No description provided for @adminQueueTransfersSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipts waiting; seats are on hold'**
+  String get adminQueueTransfersSub;
+
+  /// No description provided for @adminQueuePayouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout runs'**
+  String get adminQueuePayouts;
+
+  /// No description provided for @adminQueuePayoutsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'To approve or mark paid'**
+  String get adminQueuePayoutsSub;
+
+  /// No description provided for @adminQueueReschedules.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule requests'**
+  String get adminQueueReschedules;
+
+  /// No description provided for @adminQueueReschedulesSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers asking to move a session'**
+  String get adminQueueReschedulesSub;
+
+  /// No description provided for @adminQueueTickets.
+  ///
+  /// In en, this message translates to:
+  /// **'Open support tickets'**
+  String get adminQueueTickets;
+
+  /// No description provided for @adminQueueTicketsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'People waiting for an answer'**
+  String get adminQueueTicketsSub;
+
+  /// No description provided for @adminQueueApplications.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor applications'**
+  String get adminQueueApplications;
+
+  /// No description provided for @adminQueueApplicationsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'People who want to teach'**
+  String get adminQueueApplicationsSub;
+
+  /// No description provided for @adminQueueAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Other alerts'**
+  String get adminQueueAlerts;
+
+  /// No description provided for @adminQueueAlertsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Held payouts, bank checks, expiring holds'**
+  String get adminQueueAlertsSub;
+
+  /// No description provided for @adminLiveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Live now'**
+  String get adminLiveNow;
+
+  /// No description provided for @adminRoomIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} with issues'**
+  String adminRoomIssues(String n);
+
+  /// No description provided for @adminPeopleInRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} in the room'**
+  String adminPeopleInRoom(String n);
+
+  /// No description provided for @adminQualityIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'quality: {quality}'**
+  String adminQualityIssue(String quality);
+
+  /// No description provided for @adminHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get adminHealth;
+
+  /// No description provided for @adminPaymentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments'**
+  String get adminPaymentsTitle;
+
+  /// No description provided for @adminSearchOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Search orders'**
+  String get adminSearchOrders;
+
+  /// No description provided for @adminSearchOrdersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference, student name or email'**
+  String get adminSearchOrdersHint;
+
+  /// No description provided for @adminAnyMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Any method'**
+  String get adminAnyMethod;
+
+  /// No description provided for @adminNoOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders here'**
+  String get adminNoOrders;
+
+  /// No description provided for @adminNoOrdersBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another status or method, or clear the search.'**
+  String get adminNoOrdersBody;
+
+  /// No description provided for @adminOrderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get adminOrderTitle;
+
+  /// No description provided for @adminRefundedSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} refunded so far'**
+  String adminRefundedSoFar(String amount);
+
+  /// No description provided for @adminOrderAmounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Amounts'**
+  String get adminOrderAmounts;
+
+  /// No description provided for @adminSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get adminSubtotal;
+
+  /// No description provided for @adminDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get adminDiscount;
+
+  /// No description provided for @adminVat.
+  ///
+  /// In en, this message translates to:
+  /// **'VAT'**
+  String get adminVat;
+
+  /// No description provided for @adminProcessorFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Card fee'**
+  String get adminProcessorFee;
+
+  /// No description provided for @adminReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get adminReceived;
+
+  /// No description provided for @adminTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get adminTotal;
+
+  /// No description provided for @adminOrderPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Student and class'**
+  String get adminOrderPeople;
+
+  /// No description provided for @adminClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get adminClass;
+
+  /// No description provided for @adminOrderTrail.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get adminOrderTrail;
+
+  /// No description provided for @adminMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get adminMethod;
+
+  /// No description provided for @adminCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get adminCreated;
+
+  /// No description provided for @adminPaidAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get adminPaidAt;
+
+  /// No description provided for @adminVerifiedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified by'**
+  String get adminVerifiedBy;
+
+  /// No description provided for @adminAppleRefundNote.
+  ///
+  /// In en, this message translates to:
+  /// **'App Store purchases are refunded by Apple. The refund is recorded here when Apple tells us.'**
+  String get adminAppleRefundNote;
+
+  /// No description provided for @adminRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund'**
+  String get adminRefund;
+
+  /// No description provided for @adminRefundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund this order'**
+  String get adminRefundTitle;
+
+  /// No description provided for @adminRefundSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{reference} · up to {amount}'**
+  String adminRefundSubtitle(String reference, String amount);
+
+  /// No description provided for @adminRefundAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to refund'**
+  String get adminRefundAmount;
+
+  /// No description provided for @adminRefundAmountHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'A partial refund keeps the student enrolled.'**
+  String get adminRefundAmountHelper;
+
+  /// No description provided for @adminRefundReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Student asked to cancel before the class started'**
+  String get adminRefundReasonHint;
+
+  /// No description provided for @adminRefundBankNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This was a bank transfer: finance sends the money back by hand after you confirm.'**
+  String get adminRefundBankNote;
+
+  /// No description provided for @adminAmountInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount above zero.'**
+  String get adminAmountInvalid;
+
+  /// No description provided for @adminRefundTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'You can refund up to {amount}.'**
+  String adminRefundTooLarge(String amount);
+
+  /// No description provided for @adminReasonRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a short reason (3 characters or more).'**
+  String get adminReasonRequired;
+
+  /// No description provided for @adminRefundConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund {amount}?'**
+  String adminRefundConfirmTitle(String amount);
+
+  /// No description provided for @adminRefundConfirmFull.
+  ///
+  /// In en, this message translates to:
+  /// **'This refunds the whole order. The student loses their seat and the teacher\'s earnings are adjusted. This can\'t be undone.'**
+  String get adminRefundConfirmFull;
+
+  /// No description provided for @adminRefundConfirmPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'The student keeps their seat. The teacher\'s earnings are adjusted. This can\'t be undone.'**
+  String get adminRefundConfirmPartial;
+
+  /// No description provided for @adminRefundDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded {amount}.'**
+  String adminRefundDone(String amount);
+
+  /// No description provided for @adminRefundManualDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund of {amount} recorded. Finance will send the transfer.'**
+  String adminRefundManualDone(String amount);
+
+  /// No description provided for @adminPeopleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'People'**
+  String get adminPeopleTitle;
+
+  /// No description provided for @adminSearchPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Search people'**
+  String get adminSearchPeople;
+
+  /// No description provided for @adminSearchPeopleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name or email'**
+  String get adminSearchPeopleHint;
+
+  /// No description provided for @adminNoPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'No one matches'**
+  String get adminNoPeople;
+
+  /// No description provided for @adminPeopleCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} shown'**
+  String adminPeopleCount(String n);
+
+  /// No description provided for @adminBanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Banned'**
+  String get adminBanned;
+
+  /// No description provided for @adminInviteUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite someone'**
+  String get adminInviteUser;
+
+  /// No description provided for @adminInviteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They get an email with a link to set their password.'**
+  String get adminInviteBody;
+
+  /// No description provided for @adminInviteSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite sent to {email}.'**
+  String adminInviteSent(String email);
+
+  /// No description provided for @adminSendInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Send invite'**
+  String get adminSendInvite;
+
+  /// No description provided for @adminNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Lina Haddad'**
+  String get adminNameHint;
+
+  /// No description provided for @adminNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a name (2 characters or more).'**
+  String get adminNameRequired;
+
+  /// No description provided for @adminEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get adminEmailInvalid;
+
+  /// No description provided for @adminRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get adminRole;
+
+  /// No description provided for @adminEmailLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Email language'**
+  String get adminEmailLanguage;
+
+  /// No description provided for @adminLanguageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get adminLanguageEnglish;
+
+  /// No description provided for @adminLanguageArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get adminLanguageArabic;
+
+  /// No description provided for @adminAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get adminAccount;
+
+  /// No description provided for @adminEmailVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified'**
+  String get adminEmailVerified;
+
+  /// No description provided for @adminYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get adminYes;
+
+  /// No description provided for @adminNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get adminNo;
+
+  /// No description provided for @adminJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined'**
+  String get adminJoined;
+
+  /// No description provided for @adminActiveEnrollments.
+  ///
+  /// In en, this message translates to:
+  /// **'Active enrolments'**
+  String get adminActiveEnrollments;
+
+  /// No description provided for @adminTeachingBatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes taught'**
+  String get adminTeachingBatches;
+
+  /// No description provided for @adminCannotEditSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t change your own role or ban yourself.'**
+  String get adminCannotEditSelf;
+
+  /// No description provided for @adminChangeRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Change role'**
+  String get adminChangeRole;
+
+  /// No description provided for @adminChangeRoleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make {name} a {role}?'**
+  String adminChangeRoleTitle(String name, String role);
+
+  /// No description provided for @adminChangeRoleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Their tabs and permissions change the next time they open the app.'**
+  String get adminChangeRoleBody;
+
+  /// No description provided for @adminChangeRoleAdminBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Admins can see every payment and account and change them. Only give this to people who run Azza.'**
+  String get adminChangeRoleAdminBody;
+
+  /// No description provided for @adminRoleChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Role changed to {role}.'**
+  String adminRoleChanged(String role);
+
+  /// No description provided for @adminBan.
+  ///
+  /// In en, this message translates to:
+  /// **'Ban account'**
+  String get adminBan;
+
+  /// No description provided for @adminUnban.
+  ///
+  /// In en, this message translates to:
+  /// **'Lift ban'**
+  String get adminUnban;
+
+  /// No description provided for @adminBanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ban {name}?'**
+  String adminBanTitle(String name);
+
+  /// No description provided for @adminUnbanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lift the ban on {name}?'**
+  String adminUnbanTitle(String name);
+
+  /// No description provided for @adminBanBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They are signed out everywhere and can\'t sign in until you lift the ban.'**
+  String get adminBanBody;
+
+  /// No description provided for @adminUnbanBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They can sign in again straight away.'**
+  String get adminUnbanBody;
+
+  /// No description provided for @adminBannedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Account banned.'**
+  String get adminBannedDone;
+
+  /// No description provided for @adminUnbannedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Ban lifted.'**
+  String get adminUnbannedDone;
+
+  /// No description provided for @adminPublicProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Public teacher profile'**
+  String get adminPublicProfile;
+
+  /// No description provided for @adminHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Headline'**
+  String get adminHeadline;
+
+  /// No description provided for @adminHeadlineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Data analyst teaching Excel and SQL'**
+  String get adminHeadlineHint;
+
+  /// No description provided for @adminBio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get adminBio;
+
+  /// No description provided for @adminBioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What they do, who they help, and how they teach'**
+  String get adminBioHint;
+
+  /// No description provided for @adminProfileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved.'**
+  String get adminProfileSaved;
+
+  /// No description provided for @adminMarkPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as paid'**
+  String get adminMarkPaid;
+
+  /// No description provided for @adminMarkPaidBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} teacher} other{{count} teachers}} · {total}. Add the bank\'s reference for the transfer.'**
+  String adminMarkPaidBody(int count, String total);
+
+  /// No description provided for @adminTransferRef.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer reference'**
+  String get adminTransferRef;
+
+  /// No description provided for @adminTransferRefHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. ENBD-2026-11-05'**
+  String get adminTransferRefHint;
+
+  /// No description provided for @adminTransferRefRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the transfer reference (3 characters or more).'**
+  String get adminTransferRefRequired;
+
+  /// No description provided for @adminMarkPaidConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark {total} as paid?'**
+  String adminMarkPaidConfirmTitle(String total);
+
+  /// No description provided for @adminMarkPaidConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers are emailed that their payout is on the way. Held and carried-over amounts roll into next month.'**
+  String get adminMarkPaidConfirmBody;
+
+  /// No description provided for @adminRunMarkedPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout run marked as paid.'**
+  String get adminRunMarkedPaid;
+
+  /// No description provided for @adminAdjustHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a teacher to add a bonus or a deduction before you approve.'**
+  String get adminAdjustHint;
+
+  /// No description provided for @adminAdjustTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust {name}'**
+  String adminAdjustTitle(String name);
+
+  /// No description provided for @adminAdjustSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Currently {amount}'**
+  String adminAdjustSubtitle(String amount);
+
+  /// No description provided for @adminBonus.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus'**
+  String get adminBonus;
+
+  /// No description provided for @adminDeduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduction'**
+  String get adminDeduction;
+
+  /// No description provided for @adminAdjustAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get adminAdjustAmount;
+
+  /// No description provided for @adminAdjustReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Extra catch-up session on 12 Nov'**
+  String get adminAdjustReasonHint;
+
+  /// No description provided for @adminSaveAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Save adjustment'**
+  String get adminSaveAdjustment;
+
+  /// No description provided for @adminAdjustmentSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjustment saved.'**
+  String get adminAdjustmentSaved;
+
+  /// No description provided for @adminVerifyBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify bank details'**
+  String get adminVerifyBank;
+
+  /// No description provided for @adminVerifyBankTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify {name}\'s bank details?'**
+  String adminVerifyBankTitle(String name);
+
+  /// No description provided for @adminVerifyBankBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{bank}\n{holder}\n{iban}\n\nCheck these match the teacher\'s documents. Their held payouts are released.'**
+  String adminVerifyBankBody(String bank, String holder, String iban);
+
+  /// No description provided for @adminBankVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s bank details are verified.'**
+  String adminBankVerified(String name);
+
+  /// No description provided for @adminCoursesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get adminCoursesTitle;
+
+  /// No description provided for @adminNoCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses here'**
+  String get adminNoCourses;
+
+  /// No description provided for @adminFromPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'from {price}'**
+  String adminFromPrice(String price);
+
+  /// No description provided for @adminFeaturedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'featured #{rank}'**
+  String adminFeaturedAt(String rank);
+
+  /// No description provided for @adminCourseVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Status and visibility'**
+  String get adminCourseVisibility;
+
+  /// No description provided for @adminCourseStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get adminCourseStatus;
+
+  /// No description provided for @adminCourseStatusHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Published courses show in the catalog. Archived ones are hidden.'**
+  String get adminCourseStatusHelper;
+
+  /// No description provided for @adminFeaturedRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured rank'**
+  String get adminFeaturedRank;
+
+  /// No description provided for @adminFeaturedRankHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty to keep it off the rail'**
+  String get adminFeaturedRankHint;
+
+  /// No description provided for @adminFeaturedRankHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'0–999. Lower numbers come first on the home rail.'**
+  String get adminFeaturedRankHelper;
+
+  /// No description provided for @adminFeaturedRankInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured rank must be a whole number from 0 to 999.'**
+  String get adminFeaturedRankInvalid;
+
+  /// No description provided for @adminLastReviewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Last review note: {note}'**
+  String adminLastReviewNote(String note);
+
+  /// No description provided for @adminPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get adminPublish;
+
+  /// No description provided for @adminCoursePublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Course published. It\'s in the catalog now.'**
+  String get adminCoursePublished;
+
+  /// No description provided for @adminCourseSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Course saved.'**
+  String get adminCourseSaved;
+
+  /// No description provided for @adminPickTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the teacher'**
+  String get adminPickTeacher;
+
+  /// No description provided for @adminBatchDraftBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as a draft. Open enrolment when it\'s ready for students.'**
+  String get adminBatchDraftBody;
+
+  /// No description provided for @adminBatchOpenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolment is open. Students can book a seat.'**
+  String get adminBatchOpenBody;
+
+  /// No description provided for @adminOpenEnrolment.
+  ///
+  /// In en, this message translates to:
+  /// **'Open enrolment'**
+  String get adminOpenEnrolment;
+
+  /// No description provided for @adminEnrolmentOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolment is open.'**
+  String get adminEnrolmentOpened;
+
+  /// No description provided for @adminBatchTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin tools'**
+  String get adminBatchTools;
+
+  /// No description provided for @adminShiftSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift schedule'**
+  String get adminShiftSchedule;
+
+  /// No description provided for @adminShiftBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves every scheduled session from the one you pick, keeping the same time of day. Students are told.'**
+  String get adminShiftBody;
+
+  /// No description provided for @adminShiftFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From session'**
+  String get adminShiftFrom;
+
+  /// No description provided for @adminShiftDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days to move'**
+  String get adminShiftDays;
+
+  /// No description provided for @adminShiftDaysHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Negative moves earlier, positive moves later (−60 to 60).'**
+  String get adminShiftDaysHelper;
+
+  /// No description provided for @adminShiftZero.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a number of days other than 0.'**
+  String get adminShiftZero;
+
+  /// No description provided for @adminShiftConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift {code}\'s schedule?'**
+  String adminShiftConfirmTitle(String code);
+
+  /// No description provided for @adminShiftConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{sessions, plural, one{{sessions} session moves by {days} days.} other{{sessions} sessions move by {days} days.}} Students get a notification.'**
+  String adminShiftConfirmBody(int sessions, String days);
+
+  /// No description provided for @adminScheduleShifted.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule shifted. Students have been told.'**
+  String get adminScheduleShifted;
+
+  /// No description provided for @adminAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get adminAttendance;
+
+  /// No description provided for @adminEnrollments.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolments'**
+  String get adminEnrollments;
+
+  /// No description provided for @adminNoEnrollments.
+  ///
+  /// In en, this message translates to:
+  /// **'No one has enrolled yet.'**
+  String get adminNoEnrollments;
+
+  /// No description provided for @adminEnrollmentSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{active} active of {total}'**
+  String adminEnrollmentSummary(String active, String total);
+
+  /// No description provided for @adminEnrolPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting payment'**
+  String get adminEnrolPending;
+
+  /// No description provided for @adminEnrolAwaitingTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting transfer'**
+  String get adminEnrolAwaitingTransfer;
+
+  /// No description provided for @adminEnrolActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get adminEnrolActive;
+
+  /// No description provided for @adminEnrolCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get adminEnrolCancelled;
+
+  /// No description provided for @adminCouponsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coupons'**
+  String get adminCouponsTitle;
+
+  /// No description provided for @adminNewCoupon.
+  ///
+  /// In en, this message translates to:
+  /// **'New coupon'**
+  String get adminNewCoupon;
+
+  /// No description provided for @adminNoCoupons.
+  ///
+  /// In en, this message translates to:
+  /// **'No coupons yet'**
+  String get adminNoCoupons;
+
+  /// No description provided for @adminNoCouponsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a code for a launch, a partner or a season.'**
+  String get adminNoCouponsBody;
+
+  /// No description provided for @adminCouponActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get adminCouponActive;
+
+  /// No description provided for @adminCouponScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get adminCouponScheduled;
+
+  /// No description provided for @adminCouponExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get adminCouponExpired;
+
+  /// No description provided for @adminCouponPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get adminCouponPaused;
+
+  /// No description provided for @adminCouponExhausted.
+  ///
+  /// In en, this message translates to:
+  /// **'Used up'**
+  String get adminCouponExhausted;
+
+  /// No description provided for @adminPercentOff.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}% off'**
+  String adminPercentOff(String n);
+
+  /// No description provided for @adminAmountOff.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} off'**
+  String adminAmountOff(String amount);
+
+  /// No description provided for @adminAllCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'All courses'**
+  String get adminAllCourses;
+
+  /// No description provided for @adminUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'until {date}'**
+  String adminUntil(String date);
+
+  /// No description provided for @adminUsedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{Not used yet} one{Used once} other{Used {n} times}}'**
+  String adminUsedCount(int n);
+
+  /// No description provided for @adminUsedOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Used {n} of {max}'**
+  String adminUsedOf(String n, String max);
+
+  /// No description provided for @adminUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get adminUsage;
+
+  /// No description provided for @adminCouponCodeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Code and discount'**
+  String get adminCouponCodeSection;
+
+  /// No description provided for @adminCouponCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get adminCouponCode;
+
+  /// No description provided for @adminCouponCodeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'3–20 capital letters, numbers or dashes. It can\'t change later.'**
+  String get adminCouponCodeHelper;
+
+  /// No description provided for @adminCouponCodeFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'The code can\'t change once created.'**
+  String get adminCouponCodeFixed;
+
+  /// No description provided for @adminCouponCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 3–20 capital letters, numbers or dashes.'**
+  String get adminCouponCodeInvalid;
+
+  /// No description provided for @adminPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Percent'**
+  String get adminPercent;
+
+  /// No description provided for @adminFixedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed amount'**
+  String get adminFixedAmount;
+
+  /// No description provided for @adminPercentOffLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Percent off'**
+  String get adminPercentOffLabel;
+
+  /// No description provided for @adminAmountOffLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount off'**
+  String get adminAmountOffLabel;
+
+  /// No description provided for @adminPercentInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a percent from 1 to 100.'**
+  String get adminPercentInvalid;
+
+  /// No description provided for @adminCouponLimits.
+  ///
+  /// In en, this message translates to:
+  /// **'Limits'**
+  String get adminCouponLimits;
+
+  /// No description provided for @adminMaxRedemptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Total uses'**
+  String get adminMaxRedemptions;
+
+  /// No description provided for @adminPerUserLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses per student'**
+  String get adminPerUserLimit;
+
+  /// No description provided for @adminMinOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum order'**
+  String get adminMinOrder;
+
+  /// No description provided for @adminUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited'**
+  String get adminUnlimited;
+
+  /// No description provided for @adminNoMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'No minimum'**
+  String get adminNoMinimum;
+
+  /// No description provided for @adminCouponWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'When and where'**
+  String get adminCouponWhen;
+
+  /// No description provided for @adminStartsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid from'**
+  String get adminStartsOn;
+
+  /// No description provided for @adminExpiresOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid through'**
+  String get adminExpiresOn;
+
+  /// No description provided for @adminNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get adminNoDate;
+
+  /// No description provided for @adminDatesInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The end date must be on or after the start date.'**
+  String get adminDatesInvalid;
+
+  /// No description provided for @adminCouponScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to'**
+  String get adminCouponScope;
+
+  /// No description provided for @adminCouponScopeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'One course, or every course.'**
+  String get adminCouponScopeHelper;
+
+  /// No description provided for @adminCouponActiveSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get adminCouponActiveSwitch;
+
+  /// No description provided for @adminCouponActiveHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off to pause the code at checkout.'**
+  String get adminCouponActiveHelper;
+
+  /// No description provided for @adminCreateCoupon.
+  ///
+  /// In en, this message translates to:
+  /// **'Create coupon'**
+  String get adminCreateCoupon;
+
+  /// No description provided for @adminCouponCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} is ready to use.'**
+  String adminCouponCreated(String code);
+
+  /// No description provided for @adminCouponSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Coupon saved.'**
+  String get adminCouponSaved;
+
+  /// No description provided for @adminTotalDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Total discount given'**
+  String get adminTotalDiscount;
+
+  /// No description provided for @adminNoRedemptions.
+  ///
+  /// In en, this message translates to:
+  /// **'No one has used this code yet.'**
+  String get adminNoRedemptions;
+
+  /// No description provided for @adminCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get adminCategoriesTitle;
+
+  /// No description provided for @adminNewCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'New category'**
+  String get adminNewCategory;
+
+  /// No description provided for @adminEditCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit category'**
+  String get adminEditCategory;
+
+  /// No description provided for @adminNoCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories yet'**
+  String get adminNoCategories;
+
+  /// No description provided for @adminCourseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, one{{n} course} other{{n} courses}}'**
+  String adminCourseCount(int n);
+
+  /// No description provided for @adminHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'hidden'**
+  String get adminHidden;
+
+  /// No description provided for @adminHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide from the catalog'**
+  String get adminHide;
+
+  /// No description provided for @adminShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show in the catalog'**
+  String get adminShow;
+
+  /// No description provided for @adminDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get adminDelete;
+
+  /// No description provided for @adminDeleteCategoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}?'**
+  String adminDeleteCategoryTitle(String name);
+
+  /// No description provided for @adminDeleteCategoryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the category for good. It can\'t be undone.'**
+  String get adminDeleteCategoryBody;
+
+  /// No description provided for @adminCategoryDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} deleted.'**
+  String adminCategoryDeleted(String name);
+
+  /// No description provided for @adminCategoryInUseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This category still has courses'**
+  String get adminCategoryInUseTitle;
+
+  /// No description provided for @adminCategoryInUseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the courses in {name} to another category first, or hide it so students stop seeing it.'**
+  String adminCategoryInUseBody(String name);
+
+  /// No description provided for @adminHideInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide it instead'**
+  String get adminHideInstead;
+
+  /// No description provided for @adminCategoryHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Category hidden.'**
+  String get adminCategoryHidden;
+
+  /// No description provided for @adminCategoryShown.
+  ///
+  /// In en, this message translates to:
+  /// **'Category is visible again.'**
+  String get adminCategoryShown;
+
+  /// No description provided for @adminCategorySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Category saved.'**
+  String get adminCategorySaved;
+
+  /// No description provided for @adminSlug.
+  ///
+  /// In en, this message translates to:
+  /// **'Slug'**
+  String get adminSlug;
+
+  /// No description provided for @adminSlugHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowercase letters, numbers and dashes. Used in links; it can\'t change later.'**
+  String get adminSlugHelper;
+
+  /// No description provided for @adminSlugFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'The slug can\'t change once created.'**
+  String get adminSlugFixed;
+
+  /// No description provided for @adminSlugInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 2–40 lowercase letters, numbers or dashes.'**
+  String get adminSlugInvalid;
+
+  /// No description provided for @adminNameEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Name in English'**
+  String get adminNameEn;
+
+  /// No description provided for @adminNameAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Name in Arabic'**
+  String get adminNameAr;
+
+  /// No description provided for @adminOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get adminOrder;
+
+  /// No description provided for @adminOrderHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower numbers come first.'**
+  String get adminOrderHelper;
+
+  /// No description provided for @adminVisibleInCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Visible in the catalog'**
+  String get adminVisibleInCatalog;
+
+  /// No description provided for @adminReportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get adminReportsTitle;
+
+  /// No description provided for @adminLastDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Last {n, plural, one{{n} day} other{{n} days}}'**
+  String adminLastDays(int n);
+
+  /// No description provided for @adminVsPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'vs the period before'**
+  String get adminVsPrevious;
+
+  /// No description provided for @adminRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get adminRevenue;
+
+  /// No description provided for @adminNewEnrollments.
+  ///
+  /// In en, this message translates to:
+  /// **'New enrolments'**
+  String get adminNewEnrollments;
+
+  /// No description provided for @adminCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get adminCompletion;
+
+  /// No description provided for @adminRefunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunds'**
+  String get adminRefunds;
+
+  /// No description provided for @adminRevenueByCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue by course'**
+  String get adminRevenueByCourse;
+
+  /// No description provided for @adminTeachersReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers'**
+  String get adminTeachersReport;
+
+  /// No description provided for @adminTeacherStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{sessions, plural, one{{sessions} session} other{{sessions} sessions}} · {attendance} attendance · {onTime} on time'**
+  String adminTeacherStats(int sessions, String attendance, String onTime);
+
+  /// No description provided for @adminBankAccountsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank accounts'**
+  String get adminBankAccountsTitle;
+
+  /// No description provided for @adminNewBankAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'New bank account'**
+  String get adminNewBankAccount;
+
+  /// No description provided for @adminEditBankAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit bank account'**
+  String get adminEditBankAccount;
+
+  /// No description provided for @adminNoBankAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'No bank accounts yet'**
+  String get adminNoBankAccounts;
+
+  /// No description provided for @adminBankAccountSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank account saved.'**
+  String get adminBankAccountSaved;
+
+  /// No description provided for @adminActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get adminActive;
+
+  /// No description provided for @adminInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get adminInactive;
+
+  /// No description provided for @adminBankName.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get adminBankName;
+
+  /// No description provided for @adminAccountName.
+  ///
+  /// In en, this message translates to:
+  /// **'Account name'**
+  String get adminAccountName;
+
+  /// No description provided for @adminBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch'**
+  String get adminBranch;
+
+  /// No description provided for @adminOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get adminOptional;
+
+  /// No description provided for @adminInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructions for students'**
+  String get adminInstructions;
+
+  /// No description provided for @adminInstructionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Put the order reference in the transfer note'**
+  String get adminInstructionsHint;
+
+  /// No description provided for @adminShowAtCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Show at checkout'**
+  String get adminShowAtCheckout;
+
+  /// No description provided for @adminIbanInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'A UAE IBAN is AE followed by 21 digits.'**
+  String get adminIbanInvalid;
+
+  /// No description provided for @adminSwiftInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'SWIFT is 8 or 11 letters and numbers.'**
+  String get adminSwiftInvalid;
+
+  /// No description provided for @adminCurrenciesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Currencies'**
+  String get adminCurrenciesTitle;
+
+  /// No description provided for @adminCurrenciesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Money always moves in AED. Other currencies only change the approximate prices students see.'**
+  String get adminCurrenciesBody;
+
+  /// No description provided for @adminRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{currency} per AED'**
+  String adminRateLabel(String currency);
+
+  /// No description provided for @adminRateInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a rate above zero.'**
+  String get adminRateInvalid;
+
+  /// No description provided for @adminRateSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'{currency} rate saved.'**
+  String adminRateSaved(String currency);
+
+  /// No description provided for @progressMarkComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as complete'**
+  String get progressMarkComplete;
+
+  /// No description provided for @progressCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get progressCompleted;
+
+  /// No description provided for @progressUndoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to mark it as not done'**
+  String get progressUndoHint;
+
+  /// No description provided for @progressLessonsOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total, plural, one{{total} lesson} other{{total} lessons}}'**
+  String progressLessonsOf(int done, int total);
+
+  /// No description provided for @progressResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume: {lesson}'**
+  String progressResume(String lesson);
+
+  /// No description provided for @progressStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start: {lesson}'**
+  String progressStart(String lesson);
+
+  /// No description provided for @progressAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All lessons done'**
+  String get progressAllDone;
+
+  /// No description provided for @progressAllDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Revisit any lesson, or practise what you learned.'**
+  String get progressAllDoneBody;
+
+  /// No description provided for @progressSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress wasn\'t saved. Try again.'**
+  String get progressSaveFailed;
+
+  /// No description provided for @guestBrowseCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse courses'**
+  String get guestBrowseCourses;
+
+  /// No description provided for @guestResumeNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in and we\'ll bring you right back.'**
+  String get guestResumeNotice;
+
+  /// No description provided for @guestPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to continue'**
+  String get guestPromptTitle;
+
+  /// No description provided for @guestPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in or create an account to do this.'**
+  String get guestPromptBody;
+
+  /// No description provided for @guestHomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your learning, in one place'**
+  String get guestHomeTitle;
+
+  /// No description provided for @guestHomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see your next lesson, the practice that\'s due and your live sessions.'**
+  String get guestHomeBody;
+
+  /// No description provided for @guestScheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week of learning'**
+  String get guestScheduleTitle;
+
+  /// No description provided for @guestScheduleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see your live sessions and add them to your calendar.'**
+  String get guestScheduleBody;
+
+  /// No description provided for @guestLibraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your lessons and recordings'**
+  String get guestLibraryTitle;
+
+  /// No description provided for @guestLibraryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to open your lessons, session recordings and class materials.'**
+  String get guestLibraryBody;
+
+  /// No description provided for @guestMeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it yours'**
+  String get guestMeTitle;
+
+  /// No description provided for @guestMeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account to save courses, join a class and earn a certificate.'**
+  String get guestMeBody;
+
+  /// No description provided for @guestReviewCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to write a review'**
+  String get guestReviewCta;
+
+  /// No description provided for @guestTeachCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account to apply'**
+  String get guestTeachCta;
+
+  /// No description provided for @guestTeachBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Applications are tied to your account, so we can reach you and set up your teaching tools once you\'re approved.'**
+  String get guestTeachBody;
+
+  /// No description provided for @guestVerifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify a certificate'**
+  String get guestVerifyTitle;
+
+  /// No description provided for @guestVerifyValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate verified'**
+  String get guestVerifyValid;
+
+  /// No description provided for @guestVerifyValidBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Azza issued this certificate to {name} for completing {course}.'**
+  String guestVerifyValidBody(String name, String course);
+
+  /// No description provided for @guestVerifyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t verify this certificate'**
+  String get guestVerifyInvalid;
+
+  /// No description provided for @guestVerifyInvalidBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the code and try again. Codes look like AZ-CERT-7Q4K.'**
+  String get guestVerifyInvalidBody;
+
+  /// No description provided for @guestVerifyLearnCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn with Azza'**
+  String get guestVerifyLearnCta;
+
+  /// No description provided for @courseTypeRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded'**
+  String get courseTypeRecorded;
+
+  /// No description provided for @filterFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get filterFormat;
+
+  /// No description provided for @formatLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live classes'**
+  String get formatLive;
+
+  /// No description provided for @formatRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded lessons'**
+  String get formatRecorded;
+
+  /// No description provided for @pricePerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} / month'**
+  String pricePerMonth(String price);
+
+  /// No description provided for @pricePerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} / year'**
+  String pricePerYear(String price);
+
+  /// No description provided for @fromPricePerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'From {price} / month'**
+  String fromPricePerMonth(String price);
+
+  /// No description provided for @planTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your plan'**
+  String get planTitle;
+
+  /// No description provided for @planIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Start any time. Learn at your pace.'**
+  String get planIntro;
+
+  /// No description provided for @planMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get planMonthly;
+
+  /// No description provided for @planYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get planYearly;
+
+  /// No description provided for @planYearlyDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} / month, billed yearly'**
+  String planYearlyDetail(String price);
+
+  /// No description provided for @planSaveMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {n, plural, one{{n} month} other{{n} months}}'**
+  String planSaveMonths(int n);
+
+  /// No description provided for @planYouGet.
+  ///
+  /// In en, this message translates to:
+  /// **'What you get'**
+  String get planYouGet;
+
+  /// No description provided for @planGetLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'All lessons and quizzes'**
+  String get planGetLessons;
+
+  /// No description provided for @planGetCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'A certificate when you finish'**
+  String get planGetCertificate;
+
+  /// No description provided for @planGetCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel any time'**
+  String get planGetCancel;
+
+  /// No description provided for @planCancelLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel any time. You keep access until the end of the period you paid for.'**
+  String get planCancelLine;
+
+  /// No description provided for @planNextCharge.
+  ///
+  /// In en, this message translates to:
+  /// **'Next charge on {date}'**
+  String planNextCharge(String date);
+
+  /// No description provided for @planPaidUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re covered until {date}. This plan doesn\'t renew by itself.'**
+  String planPaidUntil(String date);
+
+  /// No description provided for @planPaidUntilShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid until {date}'**
+  String planPaidUntilShort(String date);
+
+  /// No description provided for @planRenews.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews {date}'**
+  String planRenews(String date);
+
+  /// No description provided for @planEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends {date}'**
+  String planEnds(String date);
+
+  /// No description provided for @planYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan'**
+  String get planYourPlan;
+
+  /// No description provided for @planEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan has ended. Your progress is saved.'**
+  String get planEnded;
+
+  /// No description provided for @planTransferNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay by bank transfer. Your access starts once we confirm it, usually within 1 working day.'**
+  String get planTransferNote;
+
+  /// No description provided for @planStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start learning'**
+  String get planStart;
+
+  /// No description provided for @planWebsiteOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Available on our website for now'**
+  String get planWebsiteOnly;
+
+  /// No description provided for @planWebsiteOnlyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open our website in your browser to start this plan.'**
+  String get planWebsiteOnlyBody;
+
+  /// No description provided for @planAppleNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment is handled by Apple. Manage or cancel in your App Store subscriptions.'**
+  String get planAppleNote;
+
+  /// No description provided for @planWatchFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch the free lesson'**
+  String get planWatchFree;
+
+  /// No description provided for @planVatNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Prices are before VAT. Any VAT is added at checkout.'**
+  String get planVatNote;
+
+  /// No description provided for @planFreeLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Free lesson'**
+  String get planFreeLesson;
+
+  /// No description provided for @planTransferBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Send it before {date}.'**
+  String planTransferBefore(String date);
+
+  /// No description provided for @planReceiptSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve got your receipt'**
+  String get planReceiptSent;
+
+  /// No description provided for @planReceiptSentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll confirm your transfer, usually within 1 working day. Your plan starts then.'**
+  String get planReceiptSentBody;
+
+  /// No description provided for @planBackToCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the course'**
+  String get planBackToCourse;
+
+  /// No description provided for @returnSettingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Setting up your access…'**
+  String get returnSettingUp;
+
+  /// No description provided for @returnSettingUpBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This usually takes a few seconds.'**
+  String get returnSettingUpBody;
+
+  /// No description provided for @returnSlowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This is taking longer than usual'**
+  String get returnSlowTitle;
+
+  /// No description provided for @returnSlowBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment is safe. Your access will appear as soon as it\'s confirmed.'**
+  String get returnSlowBody;
+
+  /// No description provided for @returnCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get returnCheckAgain;
+
+  /// No description provided for @returnHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to home'**
+  String get returnHome;
+
+  /// No description provided for @lessonLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get lessonLocked;
+
+  /// No description provided for @lessonLockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson is part of the plan.'**
+  String get lessonLockedBody;
+
+  /// No description provided for @lessonsLockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a plan to unlock every lesson'**
+  String get lessonsLockedTitle;
+
+  /// No description provided for @lessonsSeePlans.
+  ///
+  /// In en, this message translates to:
+  /// **'See plans'**
+  String get lessonsSeePlans;
+
+  /// No description provided for @errAlreadySubscribed.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a plan for this course.'**
+  String get errAlreadySubscribed;
+
+  /// No description provided for @errPlanRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'You need a plan to open this.'**
+  String get errPlanRequired;
+
+  /// No description provided for @errAppleProductMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This plan isn\'t available in the app yet.'**
+  String get errAppleProductMissing;
+
+  /// No description provided for @plansTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plans'**
+  String get plansTitle;
+
+  /// No description provided for @plansRowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew, cancel or change a plan'**
+  String get plansRowHint;
+
+  /// No description provided for @plansEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans yet'**
+  String get plansEmptyTitle;
+
+  /// No description provided for @plansEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a recorded course and start any time.'**
+  String get plansEmptyBody;
+
+  /// No description provided for @plansFind.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a course'**
+  String get plansFind;
+
+  /// No description provided for @plansOpenCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Open course'**
+  String get plansOpenCourse;
+
+  /// No description provided for @planProviderCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get planProviderCard;
+
+  /// No description provided for @planProviderApple.
+  ///
+  /// In en, this message translates to:
+  /// **'App Store'**
+  String get planProviderApple;
+
+  /// No description provided for @planCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel plan'**
+  String get planCancel;
+
+  /// No description provided for @planCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this plan?'**
+  String get planCancelTitle;
+
+  /// No description provided for @planCancelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can keep learning until {date}. Your progress and certificate stay yours.'**
+  String planCancelBody(String date);
+
+  /// No description provided for @planCancelStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure?'**
+  String get planCancelStep2Title;
+
+  /// No description provided for @planCancelStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan will end on {date} and won\'t renew.'**
+  String planCancelStep2Body(String date);
+
+  /// No description provided for @planCancelConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, cancel my plan'**
+  String get planCancelConfirm;
+
+  /// No description provided for @planKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my plan'**
+  String get planKeep;
+
+  /// No description provided for @planCancelledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Done. You can keep learning until {date}.'**
+  String planCancelledToast(String date);
+
+  /// No description provided for @planResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume plan'**
+  String get planResume;
+
+  /// No description provided for @planResumedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan will renew as before.'**
+  String get planResumedToast;
+
+  /// No description provided for @planSwitchToYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to yearly'**
+  String get planSwitchToYearly;
+
+  /// No description provided for @planSwitchToMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to monthly'**
+  String get planSwitchToMonthly;
+
+  /// No description provided for @planSwitchNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Stripe credits the unused time on your current plan.'**
+  String get planSwitchNote;
+
+  /// No description provided for @planSwitchedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan changed.'**
+  String get planSwitchedToast;
+
+  /// No description provided for @planUpdateCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Update card'**
+  String get planUpdateCard;
+
+  /// No description provided for @planManageAppStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage it in the App Store'**
+  String get planManageAppStore;
+
+  /// No description provided for @planRenewTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew by transfer'**
+  String get planRenewTransfer;
+
+  /// No description provided for @planSwitchToCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to card'**
+  String get planSwitchToCard;
+
+  /// No description provided for @planUploadReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload receipt'**
+  String get planUploadReceipt;
+
+  /// No description provided for @planPendingReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your receipt'**
+  String get planPendingReceipt;
+
+  /// No description provided for @planPendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re checking your transfer. This usually takes 1 working day.'**
+  String get planPendingReview;
+
+  /// No description provided for @planPendingRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t confirm your transfer: {note}'**
+  String planPendingRejected(String note);
+
+  /// No description provided for @planPendingRejectedPlain.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t confirm your transfer. You can try again.'**
+  String get planPendingRejectedPlain;
+
+  /// No description provided for @planPastDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last payment didn\'t go through. Update your card to keep learning.'**
+  String get planPastDue;
+
+  /// No description provided for @planCancellingBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan ends on {date}. Your progress and certificate stay yours.'**
+  String planCancellingBanner(String date);
+
+  /// No description provided for @returnSeePlans.
+  ///
+  /// In en, this message translates to:
+  /// **'See your plans'**
+  String get returnSeePlans;
+
+  /// No description provided for @recordedRenew.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew to continue'**
+  String get recordedRenew;
+
+  /// No description provided for @recordedCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded courses'**
+  String get recordedCourses;
+
+  /// No description provided for @recordedNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {title}'**
+  String recordedNext(String title);
+
+  /// No description provided for @courseTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What kind of course?'**
+  String get courseTypeTitle;
+
+  /// No description provided for @courseTypeLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get courseTypeLive;
+
+  /// No description provided for @courseTypeLiveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes with set dates and a teacher in the room. Learners join a class.'**
+  String get courseTypeLiveBody;
+
+  /// No description provided for @courseTypeRecordedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons learners watch any time, on a monthly or yearly plan. No classes to schedule.'**
+  String get courseTypeRecordedBody;
+
+  /// No description provided for @courseTypeFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'The type can\'t be changed once the course is created.'**
+  String get courseTypeFixed;
+
+  /// No description provided for @hubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded course'**
+  String get hubTitle;
+
+  /// No description provided for @hubSubscribers.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribers'**
+  String get hubSubscribers;
+
+  /// No description provided for @hubEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Your earnings'**
+  String get hubEarnings;
+
+  /// No description provided for @hubEarningsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your share of plan payments for this course.'**
+  String get hubEarningsNote;
+
+  /// No description provided for @hubEarningsUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings from plans appear here once payments arrive.'**
+  String get hubEarningsUnknown;
+
+  /// No description provided for @hubQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Course quizzes'**
+  String get hubQuizzes;
+
+  /// No description provided for @hubNoQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'No quizzes yet. Learners must pass every published quiz to earn the certificate.'**
+  String get hubNoQuizzes;
+
+  /// No description provided for @hubAddQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a quiz'**
+  String get hubAddQuiz;
+
+  /// No description provided for @hubPassMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass mark {percent}%'**
+  String hubPassMark(String percent);
+
+  /// No description provided for @hubPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Free preview lesson'**
+  String get hubPreview;
+
+  /// No description provided for @hubPreviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone can watch this lesson, even without an account.'**
+  String get hubPreviewBody;
+
+  /// No description provided for @hubPreviewNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No preview lesson'**
+  String get hubPreviewNone;
+
+  /// No description provided for @hubPreviewSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview lesson saved.'**
+  String get hubPreviewSaved;
+
+  /// No description provided for @hubNoLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Add lessons on the web to choose a preview.'**
+  String get hubNoLessons;
+
+  /// No description provided for @hubEditDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit course details'**
+  String get hubEditDetails;
+
+  /// No description provided for @quizPassPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass mark (%)'**
+  String get quizPassPercent;
+
+  /// No description provided for @quizPassHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'The share of the points needed to pass.'**
+  String get quizPassHelper;
+
+  /// No description provided for @quizPassInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number from 0 to 100.'**
+  String get quizPassInvalid;
+
+  /// No description provided for @quizCourseNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Learners can retake this quiz as many times as they like.'**
+  String get quizCourseNote;
+
+  /// No description provided for @adminCutsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher cuts'**
+  String get adminCutsTitle;
+
+  /// No description provided for @adminCutsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The share of each payment, after VAT and fees, that goes to the teacher. It is read when the payment is made and never changed afterwards.'**
+  String get adminCutsBody;
+
+  /// No description provided for @adminCutLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live courses (%)'**
+  String get adminCutLive;
+
+  /// No description provided for @adminCutRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded courses (%)'**
+  String get adminCutRecorded;
+
+  /// No description provided for @adminCutsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save cuts'**
+  String get adminCutsSave;
+
+  /// No description provided for @adminCutsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Cuts saved.'**
+  String get adminCutsSaved;
+
+  /// No description provided for @adminCutInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from 0 to 100.'**
+  String get adminCutInvalid;
+
+  /// No description provided for @adminCourseCut.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher cut for this course (%)'**
+  String get adminCourseCut;
+
+  /// No description provided for @adminCourseCutHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'For rare cases. Leave empty to use the default, {percent}%.'**
+  String adminCourseCutHelp(String percent);
+
+  /// No description provided for @adminCourseCutSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Course cut saved.'**
+  String get adminCourseCutSaved;
+
+  /// No description provided for @adminRecordedPrices.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded prices'**
+  String get adminRecordedPrices;
+
+  /// No description provided for @adminMonthlyPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly price (AED, before VAT)'**
+  String get adminMonthlyPrice;
+
+  /// No description provided for @adminYearlyPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly price (AED, before VAT)'**
+  String get adminYearlyPrice;
+
+  /// No description provided for @adminPricesInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The yearly price must be lower than 12 monthly payments.'**
+  String get adminPricesInvalid;
+
+  /// No description provided for @adminPricesSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Prices saved.'**
+  String get adminPricesSaved;
+
+  /// No description provided for @adminAppleIds.
+  ///
+  /// In en, this message translates to:
+  /// **'App Store product ids'**
+  String get adminAppleIds;
+
+  /// No description provided for @adminAppleMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly product id'**
+  String get adminAppleMonthly;
+
+  /// No description provided for @adminAppleYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly product id'**
+  String get adminAppleYearly;
+
+  /// No description provided for @adminAppleSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Product ids saved.'**
+  String get adminAppleSaved;
+
+  /// No description provided for @adminSubsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions'**
+  String get adminSubsTitle;
+
+  /// No description provided for @adminHubSubsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans on recorded courses'**
+  String get adminHubSubsSub;
+
+  /// No description provided for @adminSubsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No subscriptions match.'**
+  String get adminSubsEmpty;
+
+  /// No description provided for @adminSubsAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get adminSubsAll;
+
+  /// No description provided for @adminSubCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel plan'**
+  String get adminSubCancel;
+
+  /// No description provided for @adminSubCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this plan now?'**
+  String get adminSubCancelTitle;
+
+  /// No description provided for @adminSubCancelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The learner loses access straight away. Their progress and certificate stay.'**
+  String get adminSubCancelBody;
+
+  /// No description provided for @adminRefundNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel only'**
+  String get adminRefundNone;
+
+  /// No description provided for @adminRefundFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel and refund the last payment'**
+  String get adminRefundFull;
+
+  /// No description provided for @adminSubCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan cancelled.'**
+  String get adminSubCancelled;
+
+  /// No description provided for @adminSubApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Managed by Apple'**
+  String get adminSubApple;
+
+  /// No description provided for @adminSubLastPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Last payment {amount}'**
+  String adminSubLastPayment(String amount);
+
+  /// No description provided for @adminTransferPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get adminTransferPlan;
+
+  /// No description provided for @adminTransferCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get adminTransferCourse;
+
+  /// No description provided for @adminTransferPlanChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan transfer'**
+  String get adminTransferPlanChip;
+
+  /// No description provided for @planPastDueChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed'**
+  String get planPastDueChip;
+
+  /// No description provided for @planCancellingChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Ending'**
+  String get planCancellingChip;
+
+  /// No description provided for @planExpiredChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended'**
+  String get planExpiredChip;
+
+  /// No description provided for @planSettingUpChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Setting up'**
+  String get planSettingUpChip;
+
+  /// No description provided for @planActiveChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get planActiveChip;
+
+  /// No description provided for @certificateRecordedCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed every lesson and passed every quiz'**
+  String get certificateRecordedCompletion;
+
+  /// No description provided for @certificateCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get certificateCompletion;
+
+  /// No description provided for @earningsRecordedCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded courses'**
+  String get earningsRecordedCourses;
+
+  /// No description provided for @hubSubscribersUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriber numbers aren\'t available right now.'**
+  String get hubSubscribersUnavailable;
+
+  /// No description provided for @adminSubReceiptReturnByHand.
+  ///
+  /// In en, this message translates to:
+  /// **'A transfer receipt was under review; return that money by hand.'**
+  String get adminSubReceiptReturnByHand;
+
+  /// No description provided for @appStoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App Store'**
+  String get appStoreTitle;
+
+  /// No description provided for @appStoreSyncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get appStoreSyncNow;
+
+  /// No description provided for @appStoreSyncStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync started. The list updates in a few seconds.'**
+  String get appStoreSyncStarted;
+
+  /// No description provided for @appStoreNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your App Store Connect API key to enable automatic product setup.'**
+  String get appStoreNotConfigured;
+
+  /// No description provided for @appStoreNothingYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No products yet. Sync to create them.'**
+  String get appStoreNothingYet;
+
+  /// No description provided for @appStoreSeats.
+  ///
+  /// In en, this message translates to:
+  /// **'Seat prices'**
+  String get appStoreSeats;
+
+  /// No description provided for @appStoreCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded courses'**
+  String get appStoreCourses;
+
+  /// No description provided for @appleSyncSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get appleSyncSynced;
+
+  /// No description provided for @appleSyncSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get appleSyncSkipped;
+
+  /// No description provided for @appleSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get appleSyncFailed;
+
+  /// No description provided for @appleSyncNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Not synced yet'**
+  String get appleSyncNever;
+
+  /// No description provided for @adminPricesRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a monthly and a yearly price.'**
+  String get adminPricesRequired;
+
+  /// No description provided for @planTransferNotOnIos.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank transfer isn\'t available on iPhone. Manage your plan in the App Store.'**
+  String get planTransferNotOnIos;
+
+  /// No description provided for @reportsRecordedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded courses'**
+  String get reportsRecordedTitle;
+
+  /// No description provided for @reportsRecordedNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No recorded-course payments in this range.'**
+  String get reportsRecordedNone;
+
+  /// No description provided for @reportsGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross'**
+  String get reportsGross;
+
+  /// No description provided for @reportsFees.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees'**
+  String get reportsFees;
+
+  /// No description provided for @reportsVat.
+  ///
+  /// In en, this message translates to:
+  /// **'VAT'**
+  String get reportsVat;
+
+  /// No description provided for @reportsNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net'**
+  String get reportsNet;
+
+  /// No description provided for @transferNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find this transfer. It may already be reviewed.'**
+  String get transferNotFound;
+
+  /// No description provided for @transferBackToQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to transfers'**
+  String get transferBackToQueue;
+
+  /// No description provided for @whatsappChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat on WhatsApp'**
+  String get whatsappChat;
+
+  /// No description provided for @whatsappOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open WhatsApp.'**
+  String get whatsappOpenFailed;
+
+  /// No description provided for @whatsappCourseMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi Azza, I have a question about {course}.'**
+  String whatsappCourseMessage(String course);
+
+  /// No description provided for @whatsappBatchMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi Azza, I have a question about {course} ({batchCode}).'**
+  String whatsappBatchMessage(String course, String batchCode);
+
+  /// No description provided for @whatsappGeneralMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi Azza, I need some help.'**
+  String get whatsappGeneralMessage;
+
+  /// No description provided for @contactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get contactUs;
+
+  /// No description provided for @contactEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get contactEmail;
+
+  /// No description provided for @contactPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get contactPhone;
+
+  /// No description provided for @contactAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get contactAddress;
+
+  /// No description provided for @followUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow us'**
+  String get followUs;
+
+  /// No description provided for @adminRulesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'These apply platform-wide. Leave a rule at its default to follow the server setting.'**
+  String get adminRulesBody;
+
+  /// No description provided for @adminRuleRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from {min} to {max}.'**
+  String adminRuleRange(int min, int max);
+
+  /// No description provided for @adminRulesSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules saved.'**
+  String get adminRulesSaved;
+
+  /// No description provided for @adminRulesSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save rules'**
+  String get adminRulesSave;
+
+  /// No description provided for @adminRuleResetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{rule} reset to its default.'**
+  String adminRuleResetDone(String rule);
+
+  /// No description provided for @adminRuleDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default: {value}'**
+  String adminRuleDefault(String value);
+
+  /// No description provided for @adminRuleReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get adminRuleReset;
+
+  /// No description provided for @adminIntegrationsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Set in the server environment.'**
+  String get adminIntegrationsNote;
+
+  /// No description provided for @adminContactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact & social'**
+  String get adminContactTitle;
+
+  /// No description provided for @adminContactBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown in Help & support and used by the WhatsApp buttons. Leave a field empty to hide it.'**
+  String get adminContactBody;
+
+  /// No description provided for @adminContactSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save contact details'**
+  String get adminContactSave;
+
+  /// No description provided for @adminContactSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact details saved.'**
+  String get adminContactSaved;
+
+  /// No description provided for @adminWhatsappInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 8 to 15 digits with the country code, no + or spaces.'**
+  String get adminWhatsappInvalid;
+
+  /// No description provided for @adminWhatsappHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Digits with country code, e.g. 971501234567'**
+  String get adminWhatsappHelper;
+
+  /// No description provided for @adminAddressEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Address (English)'**
+  String get adminAddressEn;
+
+  /// No description provided for @adminAddressAr.
+  ///
+  /// In en, this message translates to:
+  /// **'Address (Arabic)'**
+  String get adminAddressAr;
+
+  /// No description provided for @adminAddressTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the address under 300 characters.'**
+  String get adminAddressTooLong;
+
+  /// No description provided for @adminSocialInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a full link that starts with https://'**
+  String get adminSocialInvalid;
+
+  /// No description provided for @adminCurrencySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency saved.'**
+  String get adminCurrencySaved;
+
+  /// No description provided for @adminCurrencyDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {code}?'**
+  String adminCurrencyDeleteTitle(String code);
+
+  /// No description provided for @adminCurrencyDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone who chose {code} will see prices in AED instead. Past orders keep the currency and rate they were placed with.'**
+  String adminCurrencyDeleteBody(String code);
+
+  /// No description provided for @adminCurrencyDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} removed.'**
+  String adminCurrencyDeleted(String code);
+
+  /// No description provided for @adminNewCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Add currency'**
+  String get adminNewCurrency;
+
+  /// No description provided for @adminEditCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {code}'**
+  String adminEditCurrency(String code);
+
+  /// No description provided for @adminNoCurrencies.
+  ///
+  /// In en, this message translates to:
+  /// **'No currencies yet.'**
+  String get adminNoCurrencies;
+
+  /// No description provided for @adminCurrencyBase.
+  ///
+  /// In en, this message translates to:
+  /// **'Base'**
+  String get adminCurrencyBase;
+
+  /// No description provided for @adminCurrencyBaseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Charges and payouts are always in AED. Its rate is always 1.'**
+  String get adminCurrencyBaseHint;
+
+  /// No description provided for @adminCurrencyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Always on'**
+  String get adminCurrencyLocked;
+
+  /// No description provided for @adminMoveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get adminMoveUp;
+
+  /// No description provided for @adminMoveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get adminMoveDown;
+
+  /// No description provided for @adminCurrencyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get adminCurrencyCode;
+
+  /// No description provided for @adminCurrencyCodeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Three letters, e.g. EUR. It can\'t be changed later.'**
+  String get adminCurrencyCodeHelper;
+
+  /// No description provided for @adminCurrencyCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a three-letter currency code.'**
+  String get adminCurrencyCodeInvalid;
+
+  /// No description provided for @adminCurrencyDecimalsInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Decimals must be 0 to 3.'**
+  String get adminCurrencyDecimalsInvalid;
+
+  /// No description provided for @adminCurrencySymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbol (optional)'**
+  String get adminCurrencySymbol;
+
+  /// No description provided for @adminCurrencyDecimals.
+  ///
+  /// In en, this message translates to:
+  /// **'Decimals'**
+  String get adminCurrencyDecimals;
+
+  /// No description provided for @adminCurrencyDecimalsHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'How many decimals prices show, 0 to 3'**
+  String get adminCurrencyDecimalsHelper;
+
+  /// No description provided for @adminRatePerAed.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate per 1 AED'**
+  String get adminRatePerAed;
+
+  /// No description provided for @adminRatePerAedHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'How many units one dirham buys'**
+  String get adminRatePerAedHelper;
+
+  /// No description provided for @adminCurrencyEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Show to students'**
+  String get adminCurrencyEnabled;
+
+  /// No description provided for @adminCategoryImageAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add image'**
+  String get adminCategoryImageAdd;
+
+  /// No description provided for @adminCategoryImageChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change image'**
+  String get adminCategoryImageChange;
+
+  /// No description provided for @adminCategoryImageSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Category image saved.'**
+  String get adminCategoryImageSaved;
+
+  /// No description provided for @adminCategoryImageRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Category image removed.'**
+  String get adminCategoryImageRemoved;
+
+  /// No description provided for @adminCategoryImageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'JPG, PNG or WebP. Students see it instead of the icon.'**
+  String get adminCategoryImageHint;
+
+  /// No description provided for @adminCategoryImageAfterSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the category first, then add an image.'**
+  String get adminCategoryImageAfterSave;
+
+  /// No description provided for @phoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get phoneLabel;
+
+  /// No description provided for @phoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your mobile number'**
+  String get phoneRequired;
+
+  /// No description provided for @phoneInvalidFor.
+  ///
+  /// In en, this message translates to:
+  /// **'That number doesn\'t look right for {country}'**
+  String phoneInvalidFor(String country);
+
+  /// No description provided for @phoneSearchCountries.
+  ///
+  /// In en, this message translates to:
+  /// **'Search country or dial code'**
+  String get phoneSearchCountries;
+
+  /// No description provided for @phoneCountryPicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose country'**
+  String get phoneCountryPicker;
+
+  /// No description provided for @phoneNoCountries.
+  ///
+  /// In en, this message translates to:
+  /// **'No country matches that search.'**
+  String get phoneNoCountries;
+
+  /// No description provided for @adminCurrencyRateLine.
+  ///
+  /// In en, this message translates to:
+  /// **'1 AED = {rate} {code}'**
+  String adminCurrencyRateLine(String rate, String code);
+
+  /// No description provided for @adminCurrencyDecimalsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{decimals, plural, =0{no decimals} one{{decimals} decimal} other{{decimals} decimals}}'**
+  String adminCurrencyDecimalsCount(int decimals);
+
+  /// No description provided for @adminCurrencyNameArRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the Arabic name.'**
+  String get adminCurrencyNameArRequired;
+
+  /// No description provided for @adminCurrencyNameTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Names can be up to 60 characters.'**
+  String get adminCurrencyNameTooLong;
+
+  /// No description provided for @adminCurrencySymbolTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The symbol can be up to 8 characters.'**
+  String get adminCurrencySymbolTooLong;
+
+  /// No description provided for @errPhoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That phone number doesn\'t look right.'**
+  String get errPhoneInvalid;
+
+  /// No description provided for @errCurrencyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'That currency isn\'t available any more.'**
+  String get errCurrencyUnavailable;
+
+  /// No description provided for @errBaseCurrencyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'The dirham is the base currency and can\'t be changed that way.'**
+  String get errBaseCurrencyLocked;
 }
 
 class _AppLocalizationsDelegate

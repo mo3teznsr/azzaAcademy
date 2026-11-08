@@ -60,7 +60,7 @@ export function CertificatesPage() {
               <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,340px),1fr))] gap-4">
                 {q.data.items.map((c, i) => (
                   <li key={c.id} className="rise" style={{ '--i': i } as React.CSSProperties}>
-                    <CertificateCard cert={c} coverStyle={styles.get(c.batchId)} onPrint={() => print(c)} />
+                    <CertificateCard cert={c} coverStyle={(c.batchId ? styles.get(c.batchId) : undefined)} onPrint={() => print(c)} />
                   </li>
                 ))}
               </ul>
@@ -91,6 +91,7 @@ function CertificateCard({ cert, coverStyle, onPrint }: { cert: Certificate; cov
   const { t, f, fill, pick } = useI18n();
   const [copied, setCopied] = useState(false);
   const course = pick(cert.course.titleEn, cert.course.titleAr).text || cert.courseTitle;
+  const recorded = cert.kind === 'RECORDED';
   const copy = async () => {
     const url = verifyUrl(cert.code);
     try {
@@ -112,18 +113,25 @@ function CertificateCard({ cert, coverStyle, onPrint }: { cert: Certificate; cov
               {course}
             </Link>
             <span className="text-[13px] text-muted-foreground">
-              <bdi dir="ltr">{cert.batchCode}</bdi> · <bdi>{cert.teacherName}</bdi>
+              {!recorded && cert.batchCode && (
+                <>
+                  <bdi dir="ltr">{cert.batchCode}</bdi> ·{' '}
+                </>
+              )}
+              <bdi>{cert.teacherName}</bdi>
             </span>
           </div>
-          <Chip tone="sage">{fill(t.certificates.attended, { a: f.number(cert.attended), b: f.number(cert.total) })}</Chip>
+          <Chip tone="sage">{recorded ? t.certificates.completedAll : fill(t.certificates.attended, { a: f.number(cert.attended), b: f.number(cert.total) })}</Chip>
         </div>
-        <dl className="grid grid-cols-2 gap-3 border-y border-border py-3 text-sm">
-          <div>
-            <dt className="label-mono text-muted-foreground">{t.certificates.dates}</dt>
-            <dd className="mt-1">
-              {f.dayMonth(cert.startsOn)} – {f.dayMonth(cert.endsOn)}
-            </dd>
-          </div>
+        <dl className={recorded ? 'grid gap-3 border-y border-border py-3 text-sm' : 'grid grid-cols-2 gap-3 border-y border-border py-3 text-sm'}>
+          {!recorded && cert.startsOn && cert.endsOn && (
+            <div>
+              <dt className="label-mono text-muted-foreground">{t.certificates.dates}</dt>
+              <dd className="mt-1">
+                {f.dayMonth(cert.startsOn)} – {f.dayMonth(cert.endsOn)}
+              </dd>
+            </div>
+          )}
           <div>
             <dt className="label-mono text-muted-foreground">{t.certificates.code}</dt>
             <dd className="mt-1 font-mono tracking-[0.08em]" dir="ltr">

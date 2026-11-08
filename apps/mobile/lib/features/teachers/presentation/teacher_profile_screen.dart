@@ -60,7 +60,7 @@ class TeacherProfileScreen extends ConsumerWidget {
                 runSpacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  MonoLabel(l.teacherTeachesIn),
+                  Kicker(l.teacherTeachesIn),
                   for (final lang in tp.languages) StatusChip(label: _languageName(lang), look: ChipLook.outline, color: p.text),
                 ],
               ),
@@ -69,7 +69,7 @@ class TeacherProfileScreen extends ConsumerWidget {
             if (tp.courses.isNotEmpty) ...[
               SectionHeader(l.teacherCourses),
               SizedBox(
-                height: 214,
+                height: context.scaled(64, fixed: 150),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: tp.courses.length,
@@ -154,7 +154,7 @@ class _UpcomingBatchCard extends ConsumerWidget {
               const SizedBox(width: 8),
               b.isFull
                   ? StatusChip(label: l.teacherBatchFull, color: AzzaPalette.of(context).warningBg, textColor: AzzaPalette.of(context).warning)
-                  : StatusChip(label: l.seatsLeft(f.n(b.seatsLeft)), color: AzzaPalette.of(context).successBg, textColor: AzzaPalette.of(context).success),
+                  : StatusChip(label: f.n(l.seatsLeft(b.seatsLeft)), color: AzzaPalette.of(context).successBg, textColor: AzzaPalette.of(context).success),
             ],
           ),
           const SizedBox(height: 12),

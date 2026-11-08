@@ -29,6 +29,7 @@ describe('MeService.uploadAvatar', () => {
         return { key: `${f.folder}/x.${f.extension}`, url: `/media/${f.folder}/x.${f.extension}` };
       },
       read: async () => null,
+      keyFromUrl: () => null,
     };
     let image: string | undefined;
     const repo = { setImage: async (_id: string, url: string) => ({ id: 'u1', image: (image = url) }) } as unknown as MeRepository;
@@ -42,7 +43,7 @@ describe('MeService.uploadAvatar', () => {
 
   test('rejects a bad file before storing anything', async () => {
     let stored = false;
-    const storage: FileStorage = { save: async () => ((stored = true), { key: 'k', url: 'u' }), read: async () => null };
+    const storage: FileStorage = { save: async () => ((stored = true), { key: 'k', url: 'u' }), read: async () => null, keyFromUrl: () => null };
     const me = new MeService({} as MeRepository, { now: () => new Date() }, { release: async () => {} }, storage);
     await expect(me.uploadAvatar('u1', photo('application/pdf'))).rejects.toThrow();
     expect(stored).toBe(false);

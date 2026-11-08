@@ -58,7 +58,7 @@ class AnnouncementCard extends ConsumerWidget {
             IconButton(
               key: Key('announcement-delete-${a.id}'),
               tooltip: l.announcementDelete,
-              visualDensity: VisualDensity.compact,
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
               onPressed: onDelete,
               icon: Icon(Icons.delete_outline_rounded, size: 20, color: p.muted),
             ),
@@ -146,7 +146,7 @@ class LatestAnnouncementsStrip extends ConsumerWidget {
       children: [
         SectionHeader(l.latestFromClasses, action: l.seeAll, onAction: () => context.push(Routes.announcements)),
         SizedBox(
-          height: 132,
+          height: context.scaled(132),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: items.length.clamp(0, 5),

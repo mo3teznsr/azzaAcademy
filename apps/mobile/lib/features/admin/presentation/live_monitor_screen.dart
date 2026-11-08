@@ -47,7 +47,10 @@ class _LiveMonitorScreenState extends ConsumerState<LiveMonitorScreen> {
     final t = Theme.of(context).textTheme;
 
     return Scaffold(
+      // Pushed from the overview / Manage hub (no longer a tab): a bare app bar gives the back button.
+      appBar: AppBar(toolbarHeight: 44),
       body: SafeArea(
+        top: false,
         child: Builder(
           builder: (context) {
             final now = DateTime.now();
@@ -59,7 +62,7 @@ class _LiveMonitorScreenState extends ConsumerState<LiveMonitorScreen> {
                 return RefreshList(
                   onRefresh: () async => ref.invalidate(liveRoomsProvider),
                   children: [
-                    MonoLabel('${f.time(now)} · ${l.autoRefresh('5')}'),
+                    Kicker('${f.time(now)} · ${l.autoRefresh('5')}'),
                     Row(children: [
                       Expanded(child: DisplayText(l.liveMonitorTitle, size: 32)),
                       StatusChip(label: l.liveN(f.n(all.length)), color: AzzaPalette.of(context).live, textColor: AzzaPalette.of(context).onLive, live: all.isNotEmpty),
@@ -89,19 +92,19 @@ class _LiveMonitorScreenState extends ConsumerState<LiveMonitorScreen> {
                           Row(children: [
                             Slate(Fmt.slate(r.batchCode, r.sessionNumber)),
                             const SizedBox(width: 8),
-                            if (r.quality != null) MonoLabel(r.quality!, color: r.hasIssue ? AzzaPalette.of(context).warning : null),
+                            if (r.quality != null) Kicker(r.quality!, color: r.hasIssue ? AzzaPalette.of(context).warning : null),
                             const Spacer(),
                             if (r.recording) ...[
                               const PulsingDot(size: 7),
                               const SizedBox(width: 2),
-                              MonoLabel(l.recordingOn, color: AzzaPalette.of(context).danger),
+                              Kicker(l.recordingOn, color: AzzaPalette.of(context).danger),
                             ],
                           ]),
                           const SizedBox(height: 8),
                           Text(r.courseTitle.isEmpty ? r.title : r.courseTitle, style: t.titleSmall),
                           Text(
                             [
-                              l.participantsN(f.n(r.participants)),
+                              f.n(l.participantsN(r.participants)),
                               ?r.teacherName,
                               ?r.region,
                               if (r.startedAt != null) Fmt.timecode(now.difference(r.startedAt!)),

@@ -90,7 +90,7 @@ class InstructorCardTile extends ConsumerWidget {
                   ],
                   if (i.languages.isNotEmpty) ...[
                     const SizedBox(height: 6),
-                    MonoLabel(i.languages.map((lang) => languageLabel(l, lang)).join(' · ')),
+                    Kicker(i.languages.map((lang) => languageLabel(l, lang)).join(' · ')),
                   ],
                 ]),
               ),
@@ -105,7 +105,7 @@ class InstructorCardTile extends ConsumerWidget {
             ],
             const SizedBox(height: 12),
             Text(
-              [l.instructorCoursesN(f.n(i.courses.length)), l.instructorOpenBatchesN(f.n(i.openBatches))].join(' · '),
+              [f.n(l.instructorCoursesN(i.courses.length)), f.n(l.instructorOpenBatchesN(i.openBatches))].join(' · '),
               key: Key('instructor-counts-${i.id}'),
               style: t.bodySmall,
             ),

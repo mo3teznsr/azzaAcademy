@@ -1,3 +1,4 @@
+import { passed } from '../quizzes/quiz-grader';
 import type { BatchStatus, EnrollmentStatus, SessionStatus } from '@azza/shared';
 
 /** Percent of the non-cancelled sessions a student must attend, rounded up (10 of 12). */
@@ -41,4 +42,17 @@ export function certificateProgress(args: {
   const finished = args.batchStatus === 'COMPLETED' || (total > 0 && remaining === 0);
   const eligible = args.enrollmentStatus === 'ACTIVE' && finished && total > 0 && needed === 0;
   return { total, attended, required, needed, finished, reachable: needed <= (finished ? 0 : remaining), eligible };
+}
+
+/**
+ * Pure rule for a recorded-course certificate: the course has lessons, every one of them is completed, and every
+ * published quiz's best attempt reaches its pass mark. Only lessons and quizzes that exist today are passed in, so a lesson
+ * deleted before the learner finished it no longer blocks them. A course without lessons is never eligible.
+ */
+export function recordedEligible(args: {
+  lessonIds: string[];
+  completedIds: Set<string>;
+  quizzes: Array<{ passPercent: number; bestPercent: number | null }>;
+}): boolean {
+  return args.lessonIds.length > 0 && args.lessonIds.every((id) => args.completedIds.has(id)) && args.quizzes.every((q) => passed(q.bestPercent, q.passPercent));
 }

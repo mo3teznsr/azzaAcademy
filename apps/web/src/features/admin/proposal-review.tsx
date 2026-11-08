@@ -72,11 +72,14 @@ export function ReviewActions({
   onApprove,
   onSendBack,
   pending,
+  approveDisabled,
   onInk,
 }: {
   onApprove: () => void;
   onSendBack: (note: string) => Promise<unknown>;
   pending?: boolean;
+  /** Approve is blocked (e.g. a recorded course missing prices); sending back still works. */
+  approveDisabled?: boolean;
   /** Sits on the ink action bar (course editor) rather than the page background. */
   onInk?: boolean;
 }) {
@@ -87,7 +90,7 @@ export function ReviewActions({
       <Button type="button" variant={onInk ? 'secondary' : 'outline'} className={onInk ? 'bg-ink-2 text-ivory' : undefined} disabled={pending} onClick={() => setOpen(true)}>
         <Undo2 /> {t.proposals.sendBack}
       </Button>
-      <Button type="button" variant={onInk ? 'sun' : 'ink'} disabled={pending} onClick={onApprove}>
+      <Button type="button" variant={onInk ? 'sun' : 'ink'} disabled={pending || approveDisabled} onClick={onApprove}>
         <Check /> {t.proposals.approve}
       </Button>
       <SendBackDialog open={open} onOpenChange={setOpen} onConfirm={onSendBack} pending={pending} />

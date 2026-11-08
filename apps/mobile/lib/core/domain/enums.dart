@@ -63,6 +63,28 @@ enum CourseStatus implements WireEnum {
   bool get teacherEditable => this == CourseStatus.draft || this == CourseStatus.pendingReview;
 }
 
+/// Fixed when the course is created: LIVE = batches of live sessions, RECORDED = lessons on a monthly or yearly plan.
+enum CourseType implements WireEnum {
+  live('LIVE'),
+  recorded('RECORDED');
+
+  const CourseType(this.wire);
+  @override
+  final String wire;
+  static CourseType parse(Object? raw) => _parse(values, raw, CourseType.live);
+}
+
+/// A recorded course's two plans (`SUBSCRIPTION_PLANS` in packages/shared).
+enum SubscriptionPlan implements WireEnum {
+  monthly('MONTHLY'),
+  yearly('YEARLY');
+
+  const SubscriptionPlan(this.wire);
+  @override
+  final String wire;
+  static SubscriptionPlan parse(Object? raw) => _parse(values, raw, SubscriptionPlan.monthly);
+}
+
 enum CourseLevel implements WireEnum {
   beginner('BEGINNER'),
   intermediate('INTERMEDIATE'),
@@ -156,18 +178,18 @@ enum OrderStatus implements WireEnum {
   bool get isFinal => this == OrderStatus.paid || this == OrderStatus.expired || this == OrderStatus.refunded;
 }
 
-/// Money only moves in AED; the others are display currencies.
-enum DisplayCurrency implements WireEnum {
-  aed('AED'),
-  sar('SAR'),
-  qar('QAR'),
-  usd('USD');
+/// Money only moves in AED; every other currency is display-only and comes from `GET /currencies`
+/// (an uppercase ISO 4217 code). There is no hard-coded list: see `FxRates`.
+extension type const DisplayCurrency(String wire) {
+  static const aed = DisplayCurrency('AED');
 
-  const DisplayCurrency(this.wire);
-  @override
-  final String wire;
-  static DisplayCurrency parse(Object? raw) => _parse(values, raw, DisplayCurrency.aed);
-  bool get isBase => this == DisplayCurrency.aed;
+  /// Unknown or malformed codes become AED.
+  static DisplayCurrency parse(Object? raw) {
+    final code = '$raw'.trim().toUpperCase();
+    return RegExp(r'^[A-Z]{3}$').hasMatch(code) ? DisplayCurrency(code) : aed;
+  }
+
+  bool get isBase => wire == 'AED';
 }
 
 enum EarningStatus implements WireEnum {

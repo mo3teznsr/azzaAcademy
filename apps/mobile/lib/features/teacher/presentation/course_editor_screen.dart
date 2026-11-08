@@ -13,9 +13,12 @@ import '../../../core/widgets/ui.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
+import '../../admin/data/back_office_repository.dart' show backOfficeRepositoryProvider, adminCoursesProvider;
 import '../../me/presentation/avatar_picker.dart' show imagePickerProvider;
 import '../data/proposals_repository.dart';
 import '../domain/proposal_models.dart';
+import '../../admin/presentation/admin_course_money.dart';
+import 'course_type_chooser.dart';
 import 'proposal_widgets.dart';
 
 const _coverStyles = ['sun', 'sky', 'sage', 'peach'];
@@ -62,10 +65,14 @@ enum _ListKind { outcomes, requirements, audience }
 /// Teacher: propose a new course or edit their own draft. Saving keeps it a DRAFT; "Submit for review"
 /// saves first, then hands it to the admins. Read-only once published.
 class CourseEditorScreen extends ConsumerStatefulWidget {
-  const CourseEditorScreen({super.key, this.courseId});
+  const CourseEditorScreen({super.key, this.courseId, this.adminMode = false});
 
   /// Null = propose a new course.
   final String? courseId;
+
+  /// Admin back office: always editable, saves through the admin endpoints, and adds the status /
+  /// publish controls and the featured rank. Teachers never see these.
+  final bool adminMode;
 
   @override
   ConsumerState<CourseEditorScreen> createState() => _CourseEditorScreenState();
@@ -85,6 +92,10 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
   String? _coverUrl;
   String? _introVideoUrl;
 
+  /// Null until a new course's type is chosen; then fixed for good.
+  CourseType? _type;
+  Course? _course;
+
   late String? _id = widget.courseId;
   CourseStatus _status = CourseStatus.draft;
   String? _reviewNote;
@@ -93,7 +104,11 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
   bool _submitting = false;
   bool _uploading = false;
 
-  bool get _editable => _status.teacherEditable;
+  bool get _editable => widget.adminMode || _status.teacherEditable;
+
+  // Admin mode only.
+  final _featuredRank = TextEditingController();
+  bool _publishing = false;
 
   @override
   void initState() {
@@ -106,7 +121,7 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
 
   @override
   void dispose() {
-    for (final c in [_titleEn, _titleAr, _category, _descEn, _descAr]) {
+    for (final c in [_titleEn, _titleAr, _category, _descEn, _descAr, _featuredRank]) {
       c.dispose();
     }
     for (final m in _modules) {
@@ -136,7 +151,10 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
     _coverUrl = c.coverImageUrl;
     _introVideoUrl = c.introVideoUrl;
     _status = c.status;
+    _type = c.type;
+    _course = c;
     _reviewNote = c.reviewNote;
+    _featuredRank.text = c.featuredRank == null ? '' : '${c.featuredRank}';
     for (final m in _modules) {
       m.dispose();
     }
@@ -167,6 +185,7 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
   }
 
   CourseDraft _draft() => CourseDraft(
+        type: _id == null ? _type : null,
         titleEn: _titleEn.text,
         titleAr: _titleAr.text,
         descriptionEn: _descEn.text,
@@ -199,6 +218,7 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
       showToast(context, problem);
       return false;
     }
+    if (widget.adminMode) return _persistAsAdmin();
     final repo = ref.read(proposalsRepositoryProvider);
     try {
       final saved = _id == null ? await repo.createCourse(_draft()) : await repo.updateCourse(_id!, _draft());
@@ -215,12 +235,56 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
     }
   }
 
+  /// Admin save: the teacher body plus `status` and `featuredRank` (a new course is created first, then given its status).
+  Future<bool> _persistAsAdmin({CourseStatus? status}) async {
+    final l = context.l10n;
+    final rankText = _featuredRank.text.trim();
+    final rank = rankText.isEmpty ? null : int.tryParse(rankText);
+    if (rankText.isNotEmpty && (rank == null || rank < 0 || rank > 999)) {
+      showToast(context, l.adminFeaturedRankInvalid);
+      return false;
+    }
+    final target = status ?? _status;
+    final repo = ref.read(backOfficeRepositoryProvider);
+    try {
+      var saved = await repo.saveCourse(_id, {
+        ..._draft().toJson(),
+        'featuredRank': rank,
+        if (_id != null) 'status': target.wire,
+      });
+      if (_id == null && target != saved.status && saved.id.isNotEmpty) {
+        saved = await repo.saveCourse(saved.id, {'status': target.wire});
+      }
+      if (!mounted) return false;
+      setState(() {
+        _id = saved.id.isEmpty ? _id : saved.id;
+        _status = saved.id.isEmpty ? target : saved.status;
+      });
+      ref
+        ..invalidate(adminCoursesProvider)
+        ..invalidate(myCoursesProvider);
+      if (_id != null) ref.invalidate(courseProvider(_id!));
+      return true;
+    } catch (e) {
+      if (mounted) showToast(context, errorText(context, e));
+      return false;
+    }
+  }
+
+  Future<void> _publish() async {
+    setState(() => _publishing = true);
+    final ok = _problem(forSubmit: true) == null ? await _persistAsAdmin(status: CourseStatus.published) : await _persist(forSubmit: true);
+    if (!mounted) return;
+    setState(() => _publishing = false);
+    if (ok && _status == CourseStatus.published) showToast(context, context.l10n.adminCoursePublished);
+  }
+
   Future<void> _saveDraft() async {
     setState(() => _saving = true);
     final ok = await _persist(forSubmit: false);
     if (!mounted) return;
     setState(() => _saving = false);
-    if (ok) showToast(context, context.l10n.draftSaved);
+    if (ok) showToast(context, widget.adminMode ? context.l10n.adminCourseSaved : context.l10n.draftSaved);
   }
 
   Future<void> _submit() async {
@@ -315,9 +379,36 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
       );
     }
 
+    if (_id == null && _type == null) return CourseTypeChooser(onPick: (t) => setState(() => _type = t));
+
     final title = _titleEn.text.trim().isEmpty ? (_id == null ? l.newCourse : l.editCourse) : _titleEn.text.trim();
     final form = _form(context);
-    final bottom = _editable
+    final bottom = widget.adminMode
+        ? BottomActionBar(children: [
+            Row(children: [
+              Expanded(
+                child: BusyButton(
+                  key: const Key('admin-save-course'),
+                  label: l.saveChanges,
+                  filled: _status == CourseStatus.published,
+                  busy: _saving,
+                  onPressed: _publishing ? null : _saveDraft,
+                ),
+              ),
+              if (_status != CourseStatus.published) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: BusyButton(
+                    key: const Key('admin-publish-course'),
+                    label: l.adminPublish,
+                    busy: _publishing,
+                    onPressed: _saving ? null : _publish,
+                  ),
+                ),
+              ],
+            ]),
+          ])
+        : _editable
         ? BottomActionBar(children: [
             Row(children: [
               Expanded(
@@ -411,19 +502,21 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
         );
 
     return [
-      if (_status == CourseStatus.draft && (_reviewNote?.isNotEmpty ?? false)) ...[
+      if (widget.adminMode) ..._adminSection(context),
+      if (widget.adminMode && _course != null) AdminCourseMoney(key: ValueKey(_course!.id), course: _course!),
+      if (!widget.adminMode && _status == CourseStatus.draft && (_reviewNote?.isNotEmpty ?? false)) ...[
         ProposalNotice.changes(context, _reviewNote!),
         const SizedBox(height: 12),
       ],
-      if (_status == CourseStatus.pendingReview) ...[
+      if (!widget.adminMode && _status == CourseStatus.pendingReview) ...[
         ProposalNotice.pending(context, l.waitingForReviewBody),
         const SizedBox(height: 12),
       ],
-      if (_status == CourseStatus.published || _status == CourseStatus.archived) ...[
+      if (!widget.adminMode && (_status == CourseStatus.published || _status == CourseStatus.archived)) ...[
         ProposalNotice.published(context),
         const SizedBox(height: 12),
       ],
-      if (_id != null) Align(alignment: AlignmentDirectional.centerStart, child: StatusChip.course(context, _status)),
+      if (_id != null && !widget.adminMode) Align(alignment: AlignmentDirectional.centerStart, child: StatusChip.course(context, _status)),
 
       section(l.courseBasics, top: 16, [
         field(_titleEn, l.courseTitleEn, Icons.title_rounded, key: const Key('course-title-en'), direction: TextDirection.ltr),
@@ -451,6 +544,7 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
           onChanged: ro ? null : (v) => setState(() => _level = v ?? _level),
         ),
         const SizedBox(height: 12),
+        if (_type != CourseType.recorded)
         Row(key: const Key('course-price-note'), crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(Icons.sell_outlined, size: 18, color: p.muted),
           const SizedBox(width: 8),
@@ -490,7 +584,7 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
           ]),
         ],
         const SizedBox(height: 14),
-        MonoLabel(l.coverColour),
+        Kicker(l.coverColour),
         const SizedBox(height: 8),
         Wrap(spacing: 10, children: [
           for (final (style, name) in [('sun', l.coverSun), ('sky', l.coverSky), ('sage', l.coverSage), ('peach', l.coverPeach)])
@@ -657,6 +751,55 @@ class _CourseEditorScreenState extends ConsumerState<CourseEditorScreen> {
             ),
           ),
       ]),
+    ];
+  }
+
+  /// Admin mode: status (any lifecycle state) and the featured-rail position.
+  List<Widget> _adminSection(BuildContext context) {
+    final l = context.l10n;
+    final t = Theme.of(context).textTheme;
+    String label(CourseStatus s) => switch (s) {
+          CourseStatus.draft => l.batchDraft,
+          CourseStatus.pendingReview => l.statusPendingReview,
+          CourseStatus.published => l.statusPublished,
+          CourseStatus.archived => l.statusArchived,
+        };
+    return [
+      SectionCard(
+        key: const Key('admin-course-section'),
+        title: l.adminCourseVisibility,
+        trailing: _id == null ? null : StatusChip.course(context, _status),
+        margin: const EdgeInsets.only(top: 4),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          DropdownButtonFormField<CourseStatus>(
+            key: const Key('admin-course-status'),
+            initialValue: _status,
+            isExpanded: true,
+            decoration: fieldDecoration(label: l.adminCourseStatus, icon: Icons.flag_outlined, helper: l.adminCourseStatusHelper),
+            items: [for (final s in CourseStatus.values) DropdownMenuItem(value: s, child: Text(label(s)))],
+            onChanged: (v) => setState(() => _status = v ?? _status),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            key: const Key('admin-featured-rank'),
+            controller: _featuredRank,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
+            textDirection: TextDirection.ltr,
+            decoration: fieldDecoration(
+              label: l.adminFeaturedRank,
+              icon: Icons.star_outline_rounded,
+              hint: l.adminFeaturedRankHint,
+              helper: l.adminFeaturedRankHelper,
+              action: ClearFieldButton(controller: _featuredRank),
+            ),
+          ),
+          if (_reviewNote?.isNotEmpty ?? false) ...[
+            const SizedBox(height: 10),
+            Text(l.adminLastReviewNote(_reviewNote!), style: t.bodySmall),
+          ],
+        ]),
+      ),
     ];
   }
 

@@ -63,6 +63,9 @@ export function gradeQuiz(questions: readonly StoredQuestion[], answers: Answers
 
 export const percentOf = (score: number | null, maxScore: number) => (score === null || maxScore <= 0 ? 0 : Math.round((score / maxScore) * 100));
 
+/** Does the best attempt reach the pass mark? No attempt yet is not a pass. */
+export const passed = (bestPercent: number | null, passPercent: number) => bestPercent !== null && bestPercent >= passPercent;
+
 const shortId = () => randomUUID().replace(/-/g, '').slice(0, 10);
 
 /** Input → stored questions: keeps valid unique ids (so edits keep their identity) and assigns the rest. */

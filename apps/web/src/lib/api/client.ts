@@ -127,7 +127,12 @@ function defaultCode(status: number): string {
  * Multipart POST with upload progress (fetch can't report it). Same credentials and error envelope as `request`.
  * `onProgress` gets 0–1; abort with `signal`.
  */
-export function uploadWithProgress<T>(path: string, form: FormData, opts: { onProgress?: (fraction: number) => void; signal?: AbortSignal } = {}): Promise<T> {
+export interface UploadOptions {
+  onProgress?: (fraction: number) => void;
+  signal?: AbortSignal;
+}
+
+export function uploadWithProgress<T>(path: string, form: FormData, opts: UploadOptions = {}): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_URL}${path}`);

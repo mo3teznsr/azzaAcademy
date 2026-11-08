@@ -97,7 +97,7 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
       builder: (ctx) => AlertDialog(
         title: Text(l.quizSubmitTitle),
         content: Text([
-          l.quizAnsweredOf(f.n(answered), f.n(total)),
+          f.n(l.quizAnsweredOf(answered, total)),
           if (answered < total) l.quizUnansweredWarning,
         ].join('\n\n')),
         actions: [
@@ -207,8 +207,8 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
         padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 4, AzzaSpace.gutter, 0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(children: [
-            Expanded(child: MonoLabel(l.quizQuestionNofM(f.n(_index + 1), f.n(questions.length)))),
-            MonoLabel(l.quizAnsweredN(f.n(_answers.length)), color: p.muted),
+            Expanded(child: Kicker(l.quizQuestionNofM(f.n(_index + 1), f.n(questions.length)))),
+            Kicker(l.quizAnsweredN(f.n(_answers.length)), color: p.muted),
           ]),
           const SizedBox(height: 8),
           LinearProgressIndicator(
@@ -219,7 +219,7 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 36,
+            height: context.scaled(36),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: questions.length,
@@ -257,7 +257,7 @@ class _QuizTakeScreenState extends ConsumerState<QuizTakeScreen> {
             SectionCard(
               key: Key('question-${q.id}'),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                MonoLabel([
+                Kicker([
                   q.multiple ? l.quizChooseAll : l.quizChooseOne,
                   l.quizPointsN(fmtPoints(f, q.points)),
                 ].join(' · ')),

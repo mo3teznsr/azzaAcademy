@@ -32,11 +32,13 @@ export class CheckoutService {
     private readonly repo: PaymentsRepository,
     private readonly strategies: CheckoutStrategyRegistry,
     private readonly prices: PriceCalculator,
-    private readonly fx: Pick<FxService, 'rateFor'>,
+    private readonly fx: Pick<FxService, 'rateFor'> & Partial<Pick<FxService, 'displayFor'>>,
     private readonly machine: EnrollmentStateMachine,
     private readonly lifecycle: EnrollmentLifecycle,
     private readonly references: ReferenceGenerator,
     private readonly notifier: Notifier,
+    /** The VAT in effect, awaited at every quote (the admin-editable rule, 30 s cache). Omitted: `prices` as built. */
+    private readonly vatPercent?: () => Promise<number>,
   ) {}
 
   private async sellableBatch(batchId: string): Promise<SaleBatch> {
@@ -70,8 +72,11 @@ export class CheckoutService {
         });
       }
     }
-    const displayCurrency = input.displayCurrency ?? 'AED';
-    return this.prices.quote({ priceFils, coupon, displayCurrency, fxRate: await this.fx.rateFor(displayCurrency) });
+    // Display only: an unknown or disabled display currency falls back to AED instead of failing the sale.
+    const requested = input.displayCurrency ?? 'AED';
+    const display = this.fx.displayFor ? await this.fx.displayFor(requested) : { currency: requested, rate: await this.fx.rateFor(requested), decimals: undefined };
+    const prices = this.vatPercent ? new PriceCalculator(await this.vatPercent()) : this.prices;
+    return prices.quote({ priceFils, coupon, displayCurrency: display.currency, fxRate: display.rate, displayDecimals: display.decimals });
   }
 
   async checkout(userId: string, input: CheckoutInput) {

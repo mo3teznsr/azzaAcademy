@@ -24,7 +24,7 @@ class QuizScreen extends ConsumerWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           title: Text(l.quizStartTimedTitle),
-          content: Text(l.quizStartTimedBody(f.n(v.quiz.timeLimitMin!))),
+          content: Text(f.n(l.quizStartTimedBody(v.quiz.timeLimitMin!))),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
             FilledButton(key: const Key('quiz-start-confirm'), onPressed: () => Navigator.pop(ctx, true), child: Text(l.quizStart)),
@@ -62,7 +62,7 @@ class QuizScreen extends ConsumerWidget {
                 onRefresh: () async => ref.invalidate(quizViewProvider(quizId)),
                 children: [
                   Row(children: [
-                    Expanded(child: MonoLabel(l.quizLabel)),
+                    Expanded(child: Kicker(l.quizLabel)),
                     QuizStatusChip(progress: pr),
                   ]),
                   const SizedBox(height: 6),
@@ -77,7 +77,7 @@ class QuizScreen extends ConsumerWidget {
                     child: Column(children: [
                       KeyValueRow(l.quizQuestionsLabel, f.n(q.questionCount)),
                       KeyValueRow(l.quizPointsLabel, fmtPoints(f, q.totalPoints)),
-                      KeyValueRow(l.quizTimeLimitLabel, q.timed ? l.quizMinutesN(f.n(q.timeLimitMin!)) : l.quizNoTimeLimit),
+                      KeyValueRow(l.quizTimeLimitLabel, q.timed ? f.n(l.quizMinutesN(q.timeLimitMin!)) : l.quizNoTimeLimit),
                       KeyValueRow(l.quizAttemptsLabel, l.scoreOf(f.n(pr.attemptsUsed), f.n(q.maxAttempts))),
                       if (q.dueAt != null) KeyValueRow(l.quizDueLabel, f.dayTime(q.dueAt!), valueColor: closed ? p.danger : null),
                     ]),

@@ -21,6 +21,8 @@ export class MeService {
     private readonly seats: { release(batchId: string): Promise<unknown> },
     /** Where profile photos go (local disk in dev, S3 in production). */
     private readonly storage?: FileStorage,
+    /** Validates the preferred display currency and falls a removed/disabled one back to AED (omitted in unit tests). */
+    private readonly currencies?: { assertSelectable(code: string): Promise<{ code: string }>; effective(code: string | null | undefined): Promise<string> },
   ) {}
 
   /** Profile photo: validate → store under `avatars/` → set `User.image`. Teachers see it on rosters and in the room. */
@@ -35,13 +37,17 @@ export class MeService {
     const user = await this.repo.profile(userId);
     if (!user) throw new NotFoundError('User', userId);
     const now = this.clock.now();
+    if (this.currencies) user.displayCurrency = await this.currencies.effective(user.displayCurrency);
     return { ...user, counts: await this.repo.counts(userId, now, addHours(now, 24 * 7)) };
   }
 
   /** `headline`/`bio` feed the public teacher profile, so only teachers (and admins) may set them. */
-  updateProfile(user: { id: string; role: Role }, input: UpdateProfileInput) {
+  async updateProfile(user: { id: string; role: Role }, input: UpdateProfileInput) {
     if (user.role === 'STUDENT' && (input.headline !== undefined || input.bio !== undefined)) {
       throw new ForbiddenError('Only teachers have a public profile');
+    }
+    if (input.displayCurrency !== undefined && this.currencies) {
+      input = { ...input, displayCurrency: (await this.currencies.assertSelectable(input.displayCurrency)).code };
     }
     return this.repo.updateProfile(user.id, input);
   }

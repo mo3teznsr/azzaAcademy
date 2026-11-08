@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import {
+  aedToFils,
   appleVerifyInput,
   bankAccountInput,
   checkoutInput,
@@ -14,7 +15,6 @@ import {
   uploadReceiptInput,
   type OrderStatus,
 } from '@azza/shared';
-import { BusinessRuleError } from '../../core/errors';
 import { currentUser, requireAuth, requireRole } from '../../http/middleware';
 import { paged } from '../../http/pagination';
 import type { AppEnv } from '../../http/types';
@@ -25,7 +25,10 @@ import type { CheckoutService } from './checkout.service';
 import type { FinanceAdminService } from './finance-admin.service';
 import type { FxService } from './fx.service';
 import type { OrderQueries } from './order.queries';
+import { receiptFromBody } from './receipt-file';
 import type { ReceiptUploadService } from './receipt-upload.service';
+import type { SubscriptionService } from '../subscriptions/subscription.service';
+import type { SubscriptionTransferQueries } from '../subscriptions/transfer-queries';
 import type { WaitlistQueries } from './waitlist.queries';
 
 export interface PaymentServices {
@@ -38,6 +41,8 @@ export interface PaymentServices {
   waitlist: WaitlistQueries;
   receipts: ReceiptUploadService;
   appleIap: AppleIapService;
+  subscriptions: SubscriptionService;
+  subscriptionTransfers: SubscriptionTransferQueries;
 }
 
 /** Mounted at /api/v1 */
@@ -63,14 +68,7 @@ export function paymentRoutes(s: PaymentServices) {
       c.json(await s.checkout.uploadReceipt(c.req.param('id'), currentUser(c).id, c.req.valid('json').receiptUrl)),
     )
     .post('/orders/:id/receipt/file', requireAuth, async (c) => {
-      const body = await c.req.parseBody();
-      const file = body.file;
-      if (!(file instanceof File)) throw new BusinessRuleError('Attach the receipt as a multipart `file` field', 'RECEIPT_FILE_INVALID', { reason: 'MISSING' });
-      const order = await s.receipts.upload(c.req.param('id'), currentUser(c).id, {
-        type: file.type,
-        size: file.size,
-        bytes: async () => new Uint8Array(await file.arrayBuffer()),
-      });
+      const order = await s.receipts.upload(c.req.param('id'), currentUser(c).id, receiptFromBody(await c.req.parseBody()));
       return c.json(order);
     })
     .get('/me/orders', requireAuth, async (c) => c.json({ items: await s.orders.mine(currentUser(c).id) }))
@@ -79,29 +77,55 @@ export function paymentRoutes(s: PaymentServices) {
 
 const REVIEW_QUEUE: OrderStatus[] = ['VERIFYING', 'AMOUNT_MISMATCH'];
 
+type InboxEntry = { receiptUploadedAt: Date | null; createdAt: Date };
+/** Oldest receipt first, items without one last (newest first), as the seat list is ordered. */
+function mergeInbox<A extends InboxEntry, B extends InboxEntry>(a: A[], b: B[]): Array<A | B> {
+  return [...a, ...b].sort((x, y) => {
+    const ux = x.receiptUploadedAt?.getTime() ?? Infinity;
+    const uy = y.receiptUploadedAt?.getTime() ?? Infinity;
+    return ux - uy || y.createdAt.getTime() - x.createdAt.getTime();
+  });
+}
+
 /** Mounted at /api/v1/admin */
 export function adminFinanceRoutes(s: PaymentServices) {
   return new Hono<AppEnv>()
     .use('*', requireRole('ADMIN'))
     .get('/transfers', validate('query', transferListQuery), async (c) => {
       const { page, pageSize, status, q } = c.req.valid('query');
-      const result = await s.orders.list({
-        statuses: status ? [status] : REVIEW_QUEUE,
-        method: 'BANK_TRANSFER',
-        q,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
-      return c.json(paged(result, page, pageSize));
+      const statuses = status ? [status] : REVIEW_QUEUE;
+      // Seats and plans share one queue: take enough of each to fill the page, then merge by upload time.
+      const take = (page - 1) * pageSize + pageSize;
+      const [seats, plans] = await Promise.all([
+        s.orders.list({ statuses, method: 'BANK_TRANSFER', q, skip: 0, take }),
+        s.subscriptionTransfers.list({ statuses, q, skip: 0, take }),
+      ]);
+      const items = mergeInbox(
+        seats.items.map((o) => ({ ...o, kind: 'SEAT' as const })),
+        plans.items,
+      ).slice((page - 1) * pageSize, take);
+      return c.json(paged({ items, total: seats.total + plans.total }, page, pageSize));
     })
     .get('/orders', validate('query', orderListQuery), async (c) => {
       const { page, pageSize, status, method, q } = c.req.valid('query');
       const result = await s.orders.list({ statuses: status ? [status] : undefined, method, q, skip: (page - 1) * pageSize, take: pageSize });
       return c.json(paged(result, page, pageSize));
     })
-    .post('/orders/:id/review', validate('json', reviewTransferInput), async (c) =>
-      c.json(await s.finance.review(c.req.param('id'), c.req.valid('json'), currentUser(c).id)),
-    )
+    .post('/orders/:id/review', validate('json', reviewTransferInput), async (c) => {
+      const id = c.req.param('id');
+      const input = c.req.valid('json');
+      // The inbox sends the item id for both kinds; a plan payment is reviewed by the subscription service.
+      if (await s.subscriptions.isTransferPayment(id)) {
+        const review =
+          input.decision === 'APPROVE'
+            ? { approve: true, receivedFils: aedToFils(input.receivedAed) }
+            : input.decision === 'REJECT'
+              ? { approve: false, note: input.reason }
+              : { approve: false, newReceipt: true, note: input.reason };
+        return c.json(await s.subscriptions.reviewTransfer(id, review, currentUser(c).id));
+      }
+      return c.json(await s.finance.review(id, input, currentUser(c).id));
+    })
     .post('/orders/:id/refund', validate('json', refundInput), async (c) => c.json(await s.finance.refund(c.req.param('id'), c.req.valid('json'))))
     .get('/bank-accounts', async (c) => c.json(await s.bankAccounts.list('ADMIN')))
     .post('/bank-accounts', validate('json', bankAccountInput), async (c) => c.json(await s.bankAccounts.create(c.req.valid('json')), 201))

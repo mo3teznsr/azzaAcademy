@@ -54,3 +54,8 @@ class SeenCertificates {
 }
 
 final seenCertificatesProvider = Provider<SeenCertificates>((ref) => SeenCertificates(ref.watch(sharedPreferencesProvider)));
+
+/// The public check behind `/verify/:code` (no account needed).
+final verifyCertificateProvider = FutureProvider.autoDispose.family<Certificate, String>(
+  (ref, code) => ref.watch(certificatesRepositoryProvider).verify(code),
+);

@@ -8,7 +8,8 @@ Status: ✅ implemented · ⏳ to implement.
 ## Auth (better-auth) ✅
 | | |
 |---|---|
-| `POST /api/auth/sign-up/email` | `{ name, email, password }` → `{ token, user }` (role defaults to STUDENT) |
+| `POST /api/auth/sign-up/email` | `{ name, email, password, phone }` → `{ token, user }` (role defaults to STUDENT). `phone` is required over HTTP and stored in E.164 (`+971501234567`; a non-E.164 input is read as a UAE national number). 400 `PHONE_REQUIRED` (missing) / `PHONE_INVALID` (fails `isValidPhone`: `^\+[1-9]\d{6,14}$`, a known calling code, and that country's national length from `COUNTRIES`). Server-side sign-ups (seed) are not checked. An unavailable `displayCurrency` becomes AED |
+| `POST /api/auth/update-user` | better-auth's own update: `phone`, when sent, must pass `isValidPhone` (stored E.164; `null`/`''` clears; 400 `PHONE_INVALID`); `displayCurrency`, when sent, must be enabled (400 `CURRENCY_UNAVAILABLE`) |
 | `POST /api/auth/sign-in/email` | `{ email, password }` → `{ token, user }`; web gets a cookie, mobile stores `token` |
 | `POST /api/auth/sign-out` | |
 | `GET  /api/auth/get-session` | → `{ session, user }` or `null` |
@@ -20,7 +21,7 @@ User fields: `id, name, email, role, locale ('en'|'ar'), timezone, displayCurren
 | | |
 |---|---|
 | `GET /api/v1/me` | profile + `counts: { activeEnrollments, unreadNotifications, teachingBatches, upcomingSessions }` (next 7 days) |
-| `PATCH /api/v1/me` | `updateProfileInput` → profile. `headline` (≤ 120) / `bio` (≤ 2000, `null` clears) are TEACHER/ADMIN only (403 for students) |
+| `PATCH /api/v1/me` | `updateProfileInput` → profile. `phone?`: E.164 (`isValidPhone`), `''`/`null` clears. `displayCurrency?`: an enabled currency code (422 `CURRENCY_UNAVAILABLE` otherwise); `GET /me` shows AED when the stored one was removed or disabled. `headline` (≤ 120) / `bio` (≤ 2000, `null` clears) are TEACHER/ADMIN only (403 for students) |
 | `DELETE /api/v1/me` | `deleteAccountInput` `{ confirm: "DELETE" }` (anything else → 400 `VALIDATION`) → `{ ok: true, deleted: true }`. Permanently erases the signed-in account (App Store 5.1.1(v) / Google Play): login sessions, linked accounts, verification rows, device tokens, notifications, teacher bank details, chat messages, session feedback, submissions, certificates and reschedule requests are deleted; seat-holding/waitlisted enrollments → CANCELLED (seats released to the waitlist), unpaid holds (`AWAITING_PAYMENT`/`AWAITING_RECEIPT`) → EXPIRED. The `user` row is kept as an anonymous tombstone (`name: "Deleted user"`, `email: deleted-<id>@deleted.invalid`, image/phone/headline/bio null, role STUDENT, banned) so paid/refunded orders, earnings and payouts survive for accounting; attendance rows stay linked to the tombstone. 409 refusals (nothing is changed): `ADMIN_ACCOUNT` · `HAS_ACTIVE_TEACHING` (taught batch not COMPLETED/CANCELLED, or an upcoming hosted session) · `HAS_UNPAID_EARNINGS` (PENDING/AVAILABLE earnings or READY/HELD payouts) · `ORDER_IN_PROGRESS` (bank transfer VERIFYING / AMOUNT_MISMATCH). Uploaded files (avatar, receipts, submission files) are not removed from storage |
 | `POST /api/v1/me/devices` | `registerDeviceInput` (FCM token; re-registering a token moves it to this user) → 201 |
 | `DELETE /api/v1/me/devices/:token` | |
@@ -92,7 +93,8 @@ Classroom roles: `host` (batch teacher or `session.hostId`), `student` (ACTIVE e
 ## Checkout & payments ✅ (AED only)
 | | |
 |---|---|
-| `GET /api/v1/fx-rates` | `{ base: 'AED', rates: { SAR, QAR, USD }, updatedAt }` (defaults SAR 1.0211 · QAR 0.9912 · USD 0.2723 until set) |
+| `GET /api/v1/currencies` | public, `Cache-Control: public, max-age=60` → `{ base: 'AED', items: [{ code, nameEn, nameAr, symbol, decimals, ratePerAed, sortOrder }] }` — enabled currencies, by `sortOrder` then code. Display only: charges are always AED |
+| `GET /api/v1/fx-rates` | legacy (older clients) → `{ base: 'AED', rates: { [code]: ratePerAed }, updatedAt }` for every enabled non-AED currency (from `Currency`) |
 | `POST /api/v1/checkout/quote` | `checkoutInput` (no auth needed; with a session the per-student limit is checked too) → `{ subtotalFils, discountFils, vatFils, totalFils, couponCode, display: { currency, amount, rate } }`. 422 `COUPON_INVALID`, `details.reason` (first broken rule, in this order): `NOT_FOUND`, `PAUSED`, `NOT_STARTED` (+`startsOn`), `EXPIRED`, `EXHAUSTED`, `WRONG_BATCH`, `WRONG_COURSE`, `BELOW_MINIMUM` (+`minOrderFils`, `subtotalFils`), `PER_USER_LIMIT` (+`perUserLimit`; counts the student's paid redemptions + open orders with the code). `POST /checkout` applies the same rules |
 | `POST /api/v1/checkout` | `checkoutInput` → **201** `{ waitlisted: false, order, enrollment, quote, ... }` with STRIPE: `clientSecret` (order `AWAITING_PAYMENT`, enrollment `PENDING_PAYMENT`, hold 60 min); BANK_TRANSFER: `bankAccount` (full IBAN), `reference` (e.g. `AZ-B07-48213`), `expiresAt` (= now + `BANK_TRANSFER_HOLD_HOURS`; order `AWAITING_RECEIPT`, enrollment `AWAITING_TRANSFER`, instructions emailed); APPLE_IAP (iOS app only): `appleProductId` (consumable for the batch's list price, `com.futuretech.azza.seat.aed<whole AED>`) + `appAccountToken` (UUID to pass to StoreKit; order `AWAITING_PAYMENT`, enrollment `PENDING_PAYMENT`, hold 60 min), 422 `APPLE_PRODUCT_UNAVAILABLE` (price not whole dirhams) / `COUPON_NOT_SUPPORTED` (App Store prices are fixed). Batch full + waitlist on → **202** `{ waitlisted: true, enrollment }`. 409 with `details.code`: `ALREADY_ENROLLED`, `ALREADY_WAITLISTED`, `ORDER_IN_PROGRESS` (+`orderId`), `BATCH_FULL`. 422 `BATCH_NOT_OPEN` |
 | `POST /api/v1/batches/:id/waitlist` | STUDENT joins the waitlist of a genuinely full batch (waitlist on) → **201** `{ enrollment }` (WAITLISTED, `WAITLISTED` notification + email). 409 `details.code`: `SEATS_AVAILABLE` (go to checkout), `ALREADY_ENROLLED`, `ALREADY_WAITLISTED`, `ORDER_IN_PROGRESS` (+`orderId`), `WAITLIST_DISABLED` · `DELETE …/waitlist` → `{ enrollment }` (CANCELLED), 404 if not waitlisted |
@@ -112,7 +114,7 @@ Job (every 5 min, started by `src/index.ts`): expired holds → order/enrollment
 `GET /api/v1/admin/transfers?status=&q=` (default queue: VERIFYING + AMOUNT_MISMATCH, bank transfers only) ·
 `POST /api/v1/admin/orders/:id/review` (`reviewTransferInput`): APPROVE needs `receivedAed × 100 == totalFils` → PAID + ACTIVE + enrolled email; otherwise the order is saved as `AMOUNT_MISMATCH` (with `receivedFils`) and the call returns **422 `AMOUNT_MISMATCH`** `details: { orderId, expectedFils, receivedFils, differenceFils }`; REJECT → REJECTED + enrollment CANCELLED + email + waitlist promotion; REQUEST_NEW_RECEIPT → AWAITING_RECEIPT with a fresh hold + email ·
 `POST /api/v1/admin/orders/:id/refund` (`refundInput`, PAID only, partial allowed) → `{ order, refundFils, manual }` (Stripe refund, or `manual: true` for bank transfers to be paid by finance; APPLE_IAP → 422 `APPLE_REFUND_VIA_APPLE`, only Apple refunds them and the webhook records it); full refund → REFUNDED + enrollment REFUNDED; always books a negative `REFUND_ADJUSTMENT` earning for the teacher ·
-`GET/POST /api/v1/admin/bank-accounts`, `PATCH /api/v1/admin/bank-accounts/:id` (`bankAccountInput` / `updateBankAccountInput`) · `PUT /api/v1/admin/fx-rates` (`fxRateInput`) · `GET/POST /api/v1/admin/coupons` (`couponInput`: exactly one of `percentOff` / `amountOffAed`; optional `maxRedemptions`, `perUserLimit`, `minOrderAed`, `startsOn`/`expiresOn` (YYYY-MM-DD, valid through the expiry day), scope `courseId` **or** `batchId` (neither = all courses), `stackable` (stored only — one coupon per order), `active`; 422 `COUPON_TERMS` `details.field`: discount/scope/dates/perUserLimit; 404 unknown course/batch; 409 duplicate code). Items include `course`/`batch` (scope, with titles) and a derived `status`: `ACTIVE`/`SCHEDULED`/`EXPIRED`/`PAUSED`/`EXHAUSTED` ·
+`GET/POST /api/v1/admin/bank-accounts`, `PATCH /api/v1/admin/bank-accounts/:id` (`bankAccountInput` / `updateBankAccountInput`) · `PUT /api/v1/admin/fx-rates` (`fxRateInput` `{ currency, ratePerAed }`; legacy, same as `PATCH /admin/currencies/:code { ratePerAed }`, returns the `GET /fx-rates` shape) · `GET/POST /api/v1/admin/coupons` (`couponInput`: exactly one of `percentOff` / `amountOffAed`; optional `maxRedemptions`, `perUserLimit`, `minOrderAed`, `startsOn`/`expiresOn` (YYYY-MM-DD, valid through the expiry day), scope `courseId` **or** `batchId` (neither = all courses), `stackable` (stored only — one coupon per order), `active`; 422 `COUPON_TERMS` `details.field`: discount/scope/dates/perUserLimit; 404 unknown course/batch; 409 duplicate code). Items include `course`/`batch` (scope, with titles) and a derived `status`: `ACTIVE`/`SCHEDULED`/`EXPIRED`/`PAUSED`/`EXHAUSTED` ·
 `PATCH /api/v1/admin/coupons/:id` (`updateCouponInput`, partial; `null` clears; setting one discount kind or scope clears the other; `{ active: false }` pauses) ·
 `GET /api/v1/admin/coupons/:id/usage` → `{ coupon: { id, code, redemptions, maxRedemptions }, totalDiscountFils, items: [{ id, createdAt, discountFils, student: { id, name, email }, order: { id, reference, totalFils }, batch: { id, code, courseTitleEn, courseTitleAr } }] }` newest first · `GET /api/v1/admin/orders` (`orderListQuery`).
 
@@ -133,7 +135,12 @@ Rule: per delivered session the teacher (session host, else batch teacher) earns
 `GET /api/v1/stats/live` (no auth, cached 15 s) → `{ liveSessions, participants }` (LIVE sessions and people in their LiveKit rooms).
 
 ## Admin ✅
-`GET /api/v1/admin/settings` → `{ rules: { TEACHER_SHARE_PERCENT, EARNING_HOLD_DAYS, MIN_PAYOUT_AED, BANK_TRANSFER_HOLD_HOURS, VAT_PERCENT }, integrations: { stripe, livekit, smtp, push } }` (booleans only, never secrets) ·
+`GET /api/v1/admin/settings` → `AdminSettings` `{ rules: { VAT_PERCENT, EARNING_HOLD_DAYS, MIN_PAYOUT_AED, BANK_TRANSFER_HOLD_HOURS, TEACHER_SHARE_PERCENT }` (effective values), `ruleDefaults: { VAT_PERCENT, EARNING_HOLD_DAYS, MIN_PAYOUT_AED, BANK_TRANSFER_HOLD_HOURS }` (env fallbacks), `integrations: { stripe, appleIap, livekit, smtp, push, appStoreConnect }` (booleans only, never secrets; set in the server environment), `contact: { contactEmail, contactPhone, whatsappNumber, addressEn, addressAr }` (nulls allowed), `socials: { instagram?, x?, facebook?, linkedin?, youtube?, tiktok?, snapchat? }` (set links only) } ·
+`PUT /api/v1/admin/settings/rules` (`ruleSettingsInput` `{ vatPercent?: 0–30 | null, earningHoldDays?: 0–90 | null, minPayoutAed?: 0–100000 | null, bankTransferHoldHours?: 1–168 | null }`; `null` resets to the env default, absent = unchanged) → `AdminSettings`. Rules are read at use time through a 30 s in-memory cache that the update replaces: checkout quotes, transfer holds and reviews (seats and plans), earnings accrual and payout runs await it and reload it first once older than 30 s, so no restart is needed and no instance uses a value older than ~30 s there; Stripe plan prices and the App Store sync read a snapshot kept fresh by a 10 s job (≤ ~40 s). A change of the effective VAT re-syncs the Stripe Prices of published RECORDED courses in the background (logged; new VAT-inclusive Prices, old ones archived, subscribers keep theirs) ·
+`PUT /api/v1/admin/settings/contact` (`contactSettingsInput` `{ contactEmail?: email, contactPhone?: E.164, whatsappNumber?: /^\d{8,15}$/ (digits with country code, no +), addressEn?: ≤ 300, addressAr?: ≤ 300, socials?: { <network>?: https URL } }`; `null` or `''` clears, absent = unchanged; a social set to `null` is removed, the others are kept) → `AdminSettings` ·
+`GET /api/v1/site-settings` (public, `Cache-Control: public, max-age=60`) → `SiteSettings` `{ contactEmail, contactPhone, whatsappNumber, addressEn, addressAr, socials: { …only set links } }` ·
+`GET /api/v1/admin/currencies` → `{ base: 'AED', items: [{ code, nameEn, nameAr, symbol, decimals, ratePerAed, sortOrder, enabled, updatedAt }] }` (all) · `POST /api/v1/admin/currencies` (`currencyInput` `{ code: ISO 4217, nameEn, nameAr, symbol?, decimals 0–3 (default 2), ratePerAed > 0, enabled? (true), sortOrder? (0) }`) → **201**; 409 `CONFLICT` for an existing code · `PATCH /api/v1/admin/currencies/:code` (`updateCurrencyInput`, any of those fields but `code`) · `DELETE /api/v1/admin/currencies/:code` → `{ ok: true }`. AED is the base: 422 `BASE_CURRENCY_LOCKED` to delete or disable it or set a rate ≠ 1. Deleting or disabling a currency moves the users who prefer it to AED (past orders keep their own `displayCurrency`/`fxRate`). Profile `displayCurrency` (`PATCH /me`, better-auth `POST /api/auth/update-user`) must be an enabled code (422 `CURRENCY_UNAVAILABLE`; 400 on update-user); at sign-up an unavailable one becomes AED. Checkout and quote `displayCurrency` is display only: an unknown or disabled code falls back to AED in `quote.display`, and `display.amount` is rounded to the currency's `decimals` ·
+`POST /api/v1/admin/categories/:slug/image` (multipart `file`; the course-cover rules: JPG/PNG/WEBP ≤ 8 MB, 422 `COURSE_MEDIA_INVALID`) → the category with `imageUrl` (stored under `category-images/`; a replaced image of ours is deleted) · `DELETE /api/v1/admin/categories/:slug/image` → the category with `imageUrl: null` (our stored file is deleted). 404 unknown slug ·
 `GET /api/v1/admin/dashboard` → `{ date, liveRooms, sessionsToday: { count, items (with `movedFrom`) }, activeBatches, seats: { held, capacity, filledPercent }, revenueMonth: { grossFils, refundedFils, vatFils, netFils, orders }, alerts: [{ type: TRANSFERS_TO_VERIFY|SEAT_HOLDS_EXPIRING|TEACHER_BANK_UNVERIFIED|PAYOUTS_HELD, severity, count }] }` (days/months in Asia/Dubai) ·
 `GET /api/v1/admin/users?role=&q=` (paged) · `POST /api/v1/admin/users` (`adminCreateUserInput`; account is email-verified, the user gets an **invite** email with a set-password link) · `PATCH /api/v1/admin/users/:id` (`adminUpdateUserInput`: `name?, role?, banned?, headline?, bio?`; banning revokes logins; you cannot ban/demote yourself) ·
 `GET /api/v1/admin/live-rooms` → `{ items: [{ session, roomName, participants, recording, roomOpen, roomCreatedAt }], orphanRooms }` (LiveKit rooms joined with LIVE sessions). ·
@@ -162,7 +169,7 @@ Server → client: `session:status` (session room + admins), `notification:new` 
 
 ## Seed (`bun run db:seed`, idempotent)
 All passwords `password123`: admin `admin@azza.test` (Nour Adel) · teachers `lina@azza.test` (Lina Haddad), `omar@`, `maya@`, `tomas@azza.test` · student `sara@azza.test` (Sara Kamal) + 23 more (`firstname.lastname@azza.test`).
-Product Design Foundations B06 (Lina, Sep–Oct, COMPLETED: 8 students, all 12 sessions ENDED with attendance; Sara 11/12 → certificate on `GET /me/certificates`, Mariam Saeed 7/12 → none), B07 (Lina, Tue/Thu 19:00 Dubai, AR, 23/24 ACTIVE + Nadia Shams' transfer `AZ-B07-48213` VERIFYING, S01–S04 ENDED with attendance, recordings, chat and accrued earnings), B08 (ENROLLING, Sara not enrolled), B09 (weekend); one ENROLLING batch for each other course; Spoken Arabic B02 (Omar, capacity 4, FULL, waitlist: Lara Mikhail then Sara → position 2 of 2); teachers have a `headline` and `bio`; 3 bank accounts; FX rates; coupons `WELCOME10`, `RAMADAN100`, `EARLYBIRD` (−10 %, Product Design Foundations only, 1 per student, Oct 1 – Dec 31).
+Product Design Foundations B06 (Lina, Sep–Oct, COMPLETED: 8 students, all 12 sessions ENDED with attendance; Sara 11/12 → certificate on `GET /me/certificates`, Mariam Saeed 7/12 → none), B07 (Lina, Tue/Thu 19:00 Dubai, AR, 23/24 ACTIVE + Nadia Shams' transfer `AZ-B07-48213` VERIFYING, S01–S04 ENDED with attendance, recordings, chat and accrued earnings), B08 (ENROLLING, Sara not enrolled), B09 (weekend); one ENROLLING batch for each other course; Spoken Arabic B02 (Omar, capacity 4, FULL, waitlist: Lara Mikhail then Sara → position 2 of 2); teachers have a `headline` and `bio`; 3 bank accounts; currencies AED/SAR/QAR/USD (inserted when missing, never overwritten); coupons `WELCOME10`, `RAMADAN100`, `EARLYBIRD` (−10 %, Product Design Foundations only, 1 per student, Oct 1 – Dec 31).
 
 ## Teacher proposals (courses & batches)
 
@@ -182,7 +189,7 @@ Teachers draft courses and batches; admins approve them.
 
 ## Catalog depth
 
-- `GET /api/v1/categories` (public) → `{ items: [{ slug, nameEn, nameAr, icon, order, active, courseCount }] }` (published courses). `?all=true` (admin) includes hidden ones. ADMIN: `POST /categories`, `PATCH /categories/:slug`, `DELETE /categories/:slug` (409 while courses use it — hide with `active: false` instead).
+- `GET /api/v1/categories` (public) → `{ items: [{ slug, nameEn, nameAr, icon, imageUrl, order, active, courseCount }] }` (`imageUrl`: uploaded tile image, null = show the icon; also on a course's `categoryRef`) (published courses). `?all=true` (admin) includes hidden ones. ADMIN: `POST /categories`, `PATCH /categories/:slug`, `DELETE /categories/:slug` (409 while courses use it — hide with `active: false` instead).
 - Course now carries `categoryRef { slug, nameEn, nameAr, icon }`, `outcomesEn/Ar`, `requirementsEn/Ar`, `audienceEn/Ar` (string arrays), `faq [{ qEn, aEn, qAr?, aAr? }]`, `featuredRank`, `ratingAvg`, `ratingCount`; modules gain `descriptionEn/Ar`.
 - `GET /api/v1/courses` adds `language` (has an ENROLLING batch in it), `minPriceAed`, `maxPriceAed`, `minRating`, `featured=true` (ordered by `featuredRank`) and `sort` = `newest | rating | price_asc | price_desc | popular`.
 - `GET /api/v1/courses/:idOrSlug/related` → `{ items }` (≤ 4: same category, then same level).
@@ -193,7 +200,7 @@ Teachers draft courses and batches; admins approve them.
 
 - `GET /api/v1/teachers` (public) → `{ items: [{ id, name, image, headline, languages: ('AR'|'EN')[], categories: string[] (slugs), courses: [{ id, slug, titleEn, titleAr }], openBatches }] }` — non-banned teachers, those with open batches first.
 - `GET /api/v1/instructor-applications/mine` (signed in) → `{ application: null | { id, status: PENDING|APPROVED|REJECTED, reviewNote, headline, bio, categories, languages, experience, sampleUrl, phone, createdAt, decidedAt } }`.
-- `POST /api/v1/instructor-applications` (signed-in STUDENT) body `instructorApplicationInput` `{ headline 4–120, bio 40–2000, categories: slug[] 1–5, languages: ('AR'|'EN')[] ≥1, experience 20–1500, sampleUrl?: https URL, phone? }` → 201. 422 `ALREADY_INSTRUCTOR` for teachers/admins, 409 `CONFLICT` while one is PENDING. Admins get `INSTRUCTOR_APPLIED`.
+- `POST /api/v1/instructor-applications` (signed-in STUDENT) body `instructorApplicationInput` `{ headline 4–120, bio 40–2000, categories: slug[] 1–5, languages: ('AR'|'EN')[] ≥1, experience 20–1500, sampleUrl?: https URL, phone?: E.164 }` → 201. 422 `ALREADY_INSTRUCTOR` for teachers/admins, 409 `CONFLICT` while one is PENDING. Admins get `INSTRUCTOR_APPLIED`.
 - ADMIN: `GET /api/v1/instructor-applications?status=PENDING|APPROVED|REJECTED`, `POST /api/v1/instructor-applications/:id/review` `{ approve, note? }` (note ≥ 3 to decline). Approve → the user's role becomes TEACHER (empty headline/bio filled from the application) and they get `INSTRUCTOR_APPROVED`; decline → `INSTRUCTOR_DECLINED` with the note, and they may apply again. 422 `APPLICATION_DECIDED` if already decided.
 
 ## Pricing lives on the batch
@@ -208,6 +215,13 @@ Teachers draft courses and batches; admins approve them.
 - Stripe's hosted page charges AED. Payment is confirmed **only** by the webhook (`POST /api/webhooks/stripe`): `checkout.session.completed` (paid) / `checkout.session.async_payment_succeeded` → order PAID + enrollment ACTIVE; `checkout.session.async_payment_failed` / `checkout.session.expired` → order FAILED (the seat hold stays until it expires, so the student can retry). Subscribe these events in the Stripe dashboard.
 - Return URLs: `${WEB_URL}/checkout/return?ref=<order reference>` (and `&cancelled=1` on cancel). `GET /api/v1/orders/by-reference/:ref` (owner/admin) returns the order so the page can show "confirming…" until the webhook lands.
 - Dev without Stripe keys: the fake gateway returns the success URL directly; confirm with a fake webhook body `{ "type": "payment.succeeded", "checkoutSessionId": "cs_dev_<ref>" }`.
+
+
+### Stripe setup for recorded-course plans
+- **Webhook events** (`POST /api/webhooks/stripe`): `checkout.session.completed`, `customer.subscription.created|updated|deleted`, `invoice.paid`, `invoice.payment_failed`, `charge.refunded`.
+- **Dunning (Billing → Revenue recovery → Retries):** turn on **Smart Retries** and make the retry window end **within 16 days** of the first failed payment, then set the final action to **Cancel the subscription**. 16 days is the access grace (`GRACE_DAYS`): a PAST_DUE learner keeps access until `currentPeriodEnd + 16 days`, and Stripe's cancel arrives as `customer.subscription.deleted` and ends the plan (`SUBSCRIPTION_ENDED`). A longer retry window would leave a learner locked out yet still billed.
+- **Customer Portal (Settings → Billing → Customer portal):** turn on **Cancel subscriptions → at the end of the billing period** (not immediately) and **Update subscriptions → Customers can switch plans**, allowing each recorded course's monthly and yearly Price (the API creates them under the course's Product); keep payment-method updates and invoice history on. Learners reach it through `POST /subscriptions/:id/portal`.
+- **Refunds made in the Dashboard** on a plan invoice are picked up from `charge.refunded` (see *Recorded courses → Refunds*).
 
 ## Batch sessions
 
@@ -297,3 +311,94 @@ New announcements notify their recipients, except the author, with `ANNOUNCEMENT
 | `PATCH /api/v1/support/tickets/:id` | `updateSupportTicketInput` `{ status?, assigneeId? (an admin, or null) }`. ADMIN may change anything; the owner may only send `{ status: 'RESOLVED' }` (otherwise 403) → ticket detail |
 
 **Account deletion** (`DELETE /me`) also erases the user's chat messages, their private chats, their read markers, their support tickets and any support messages they wrote.
+
+## Lesson progress
+
+- `PUT /api/v1/lessons/:lessonId/complete` / `DELETE …/complete` (anyone who can read the course's lessons) → `{ lessonId, completed }`. Marks the lesson done for the caller (idempotent).
+- `GET /api/v1/courses/:courseId/lessons` now also returns `progress: { completed, total, nextLesson: { id, titleEn, titleAr, moduleId, moduleTitleEn, moduleTitleAr } | null }`, and each lesson has `completed: boolean` for the caller. Order is module order, then lesson order; `nextLesson` is the first not done.
+- `GET /api/v1/me/learning-progress` → `{ items: [{ courseId, slug, titleEn, titleAr, type: 'LIVE'|'RECORDED', completed, total, nextLesson, subscription? }] }` for every course with an ACTIVE enrollment, plus every RECORDED course with a live plan or any lesson progress (progress outlives a plan, so a lapsed course stays listed). RECORDED items carry `subscription: { status, currentPeriodEnd, cancelAtPeriodEnd, hasAccess } | null` (the plan that decides access, else the newest ended one; `null` = never had a plan; `hasAccess` follows the access rule, and is always true for an admin or the course's author). LIVE items have no `subscription`. Powers "Continue learning".
+
+## Assignment & material files
+
+Files are uploaded first, then referenced by URL. Uploads go to the `FileStorage` port (local disk under `/uploads/...` in dev, S3 + CloudFront in prod) with unguessable 128-bit keys. Nothing is stored for a rejected file.
+
+| | |
+|---|---|
+| `POST /api/v1/assignments/:id/submission/file` | a STUDENT with an ACTIVE enrollment in the assignment's batch (403 otherwise, 404 for an unknown assignment), multipart `file` → 201 `{ url, name, size, type }`, stored under `submissions/` |
+| `POST /api/v1/batches/:id/materials/file` | the batch teacher or ADMIN, multipart `file` → 201 `{ url, name, size, type }`, stored under `materials/` |
+| `PATCH /api/v1/assignments/:id` | the batch teacher or ADMIN, `updateAssignmentInput` `{ sessionId? (null detaches), title?, description?, dueAt?, maxScore? }` → the assignment. `maxScore` cannot go below an existing grade (422 `SCORE_TOO_HIGH`). |
+| `DELETE /api/v1/assignments/:id` | the batch teacher or ADMIN → `{ ok: true }`. Assignments are hard-deleted, so this is refused with 409 `ASSIGNMENT_HAS_SUBMISSIONS` once anyone has submitted. |
+
+- **Submission files:** pdf, docx, pptx, xlsx, png, jpg, webp, zip, txt, md; at most 20 MB. Errors are 422 `SUBMISSION_FILE_INVALID` with `details.reason` = `TYPE` | `EMPTY` | `TOO_LARGE` | `MISSING` (no `file` field).
+- **Material files:** the same types plus mp3 and m4a; at most 50 MB. Errors are 422 `MATERIAL_FILE_INVALID` with the same reasons.
+- **Type detection:** by the part's content type (common aliases such as `application/x-zip-compressed` are accepted). When the browser sends no type or `application/octet-stream`, the file extension decides. `type` in the response is the canonical content type.
+- **Size:** oversized bodies are refused while streaming (`bodyLimit`), before the file is buffered.
+- **Submitting:** `POST /api/v1/assignments/:id/submissions` now also takes `files: [{ url, name, size, type }]` (at most 5), alongside `url` and `text`; at least one of the three is required (`EMPTY_SUBMISSION`). Each `url` must be a `submissions/` file on our storage origin, otherwise 422 `SUBMISSION_FILE_INVALID` with `reason: 'FOREIGN_URL'`. The stored `type` comes from the stored key, not the client. Omitting `files` on a re-submit keeps the previous list; `files: []` clears it.
+- **Reading:** submissions carry `files` (default `[]`) in the teacher's `GET /api/v1/assignments/:id/submissions` and in the student's `mySubmission` on `GET /api/v1/batches/:id/assignments`.
+- **Materials:** after uploading, create the material with `POST /api/v1/batches/:id/materials` using the returned `url`. A `FILE` material must use a `materials/` URL from our storage (422 `MATERIAL_FILE_INVALID`, `reason: 'FOREIGN_URL'`); `SLIDES`, `LINK` and `VIDEO` accept any URL as before.
+- **Notifications:** none. Assignment creation does not notify students, so edits (including due date changes) don't either.
+
+## Recorded courses ✅
+
+A `Course` has `type` `LIVE` (cohorts, sold per batch) or `RECORDED` (self-paced, sold as a monthly or yearly plan per course). The type is fixed at creation. **Access** to a recorded course's lessons and quizzes: an admin, the author, or a subscription that is ACTIVE or CANCELLING with `now < currentPeriodEnd`, or PAST_DUE with `now < currentPeriodEnd + 16 days`. Progress, quiz attempts and certificates survive a lapsed plan. Bank-transfer plans are prepaid with no auto-renew and no grace (a renewal receipt uploaded before the end keeps access until it is reviewed).
+
+### Catalog and course DTO
+- `GET /api/v1/courses?type=LIVE|RECORDED` — optional filter (omitted = both); `courseListQuery` otherwise unchanged.
+- `teacherCutPercent` is in a course payload only for **admins and the course's author**; public responses omit the field. Stripe ids are never returned; Apple ids come as `appleProducts: { monthly, yearly } | null`.
+- `POST /courses` (`type` RECORDED), `PATCH /courses/:id` and `POST /courses/:id/submit|review` as for live courses. Publishing a RECORDED course needs both prices and a lesson: 422 `RECORDED_NOT_READY` with `details.missing: ('PRICES'|'LESSONS')[]`. Editing a published course as its teacher: 422 `COURSE_LOCKED`.
+
+### Course setup (ADMIN unless noted)
+| | |
+|---|---|
+| `PUT /api/v1/admin/courses/:id/recorded-pricing` | `{ monthlyPriceFils, yearlyPriceFils }` (before VAT; yearly must be below 12 monthly) → course; syncs the Stripe Product and Prices. 422 `NOT_RECORDED` |
+| `PUT /api/v1/admin/courses/:id/apple-products` | `{ monthly?, yearly? }` (null clears) — each must equal `com.futuretech.azza.rec.<slug>.monthly\|yearly`, else 422 `APPLE_PRODUCT_MISMATCH` |
+| `PUT /api/v1/courses/:id/preview-lesson` | TEACHER (author, under the editing rule) or ADMIN, `{ lessonId \| null }` — the one lesson anyone can watch; 404 when it is not in the course. `null` (or a lesson that was later deleted) means the first lesson in curriculum order (module order, then lesson order); the course DTO's `previewLessonId` is always this effective id on RECORDED courses |
+| `GET /api/v1/admin/settings/cuts` · `PUT` | `{ liveCutPercent, recordedCutPercent }` — default teacher cuts (percent, 0–100) |
+| `PUT /api/v1/admin/courses/:id/cut` | `{ teacherCutPercent \| null }` — per-course override (wins when set). A cut is read at payment time and never recalculated |
+
+### Lessons (recorded)
+- `GET /courses/:id/lessons` — for a RECORDED course anyone signed in gets the structure: lessons they cannot open come as `{ id, moduleId, order, titleEn, titleAr, completed, locked: true }` (no body, video or links); the preview lesson and everything for staff/subscribers has `locked: false`. Unpublished recorded courses are 404 to non-staff.
+- `GET /lessons/:id/preview` — public (no sign-in): only the preview lesson (the teacher's choice, else the first lesson in curriculum order) of a PUBLISHED recorded course, else 404.
+- `GET /lessons/:id` — 403 `PLAN_REQUIRED` with `details: { courseSlug, lapsed }` when the viewer has no access (`lapsed` = once had a paid period; an abandoned, never-paid checkout is `false`). The same applies to `PUT /lessons/:id/video-position`, `PUT|DELETE /lessons/:id/complete` and course quizzes.
+- `PUT /lessons/:id/video-position` `{ positionSec }` → `{ lessonId, positionSec }`; `GET /lessons/:id` returns `videoPositionSec`.
+
+### Course quizzes (recorded)
+`GET|POST /courses/:id/quizzes`, `PATCH|DELETE /courses/:id/quizzes/:quizId`, `POST …/publish|unpublish` — authored by course editors (same shapes as batch quizzes; `moduleId` optional; `passPercent` default 70). Subscribers take them through `GET /quizzes/:id`, `POST /quizzes/:id/start`, `POST /quizzes/:id/attempts`: **unlimited attempts, no due date**. Errors: 422 `NOT_RECORDED_COURSE` (course quizzes on a live course), 403 `PLAN_REQUIRED`, plus the batch-quiz codes (`QUIZ_EMPTY`, `ALREADY_PUBLISHED`, `QUIZ_HAS_ATTEMPTS`, `MODULE_NOT_IN_COURSE`, `ATTEMPT_NOT_STARTED`, `QUIZ_TIME_UP`).
+
+### Certificates (recorded)
+`GET /me/certificates` also issues a course certificate once every lesson is completed and every published quiz's best attempt is at or above its `passPercent`; no active plan is needed and it is never revoked. Recorded items have `kind: 'RECORDED'`, `batchId: null`, `batchCode: null`, `attended: 0`, `total: 0`, `startsOn/endsOn: null`. `GET /certificates/:code` verifies as before.
+
+### Subscriptions (learner)
+| | |
+|---|---|
+| `POST /api/v1/courses/:id/subscribe` | `{ plan: 'MONTHLY'\|'YEARLY', method: 'STRIPE'\|'APPLE_IAP'\|'BANK_TRANSFER', bankAccountId? }`. STRIPE → 201 `{ checkoutUrl, reference }`; APPLE_IAP → `{ productId, appAccountToken, reference }`; BANK_TRANSFER → `{ plan, bankAccount, reference, amountFils, expiresAt, paymentId }`. Coupons never apply. Errors: 404 (course not published), 422 `NOT_RECORDED`, `PRICE_NOT_READY`, `APPLE_PRODUCT_MISSING`, `METHOD_UNAVAILABLE`, `NO_BANK_ACCOUNT`; 409 `ALREADY_SUBSCRIBED` |
+| `POST /api/v1/subscriptions/apple/verify` | `{ signedTransaction }` → the plan; 422 `APPLE_UNAVAILABLE`, `PRODUCT_MISMATCH`, `APPLE_ACCOUNT_CONFLICT`, `FOREIGN_SUBSCRIPTION` |
+| `GET /api/v1/subscriptions/by-reference/:ref` | the return page's poll → `{ status, courseSlug, nextLessonId }` (owner only) |
+| `GET /api/v1/me/subscriptions` | `{ items: [{ id, course{id,slug,titleEn,titleAr,coverImageUrl}, plan, provider, status, currentPeriodEnd, cancelAtPeriodEnd, priceFils, hasAccess, pendingPayment: { id, reference, amountFils, status, expiresAt, reviewNote, bankAccount } \| null }] }` (an envelope, like the other /me lists) |
+| `POST /api/v1/subscriptions/:id/cancel` · `/resume` | card plans: cancel at period end (access stays to the end) / undo. 422 `NOT_ACTIVE` |
+| `POST /api/v1/subscriptions/:id/switch` | `{ plan }` — the other plan, prorated by Stripe. 422 `SAME_PLAN`, `PRICE_NOT_READY` |
+| `POST /api/v1/subscriptions/:id/switch-to-card` | a transfer plan → a card plan whose first charge is the day the paid period ends |
+| `POST /api/v1/subscriptions/:id/portal` | → `{ url }` (Stripe Customer Portal). 422 `NOT_CARD_PLAN` |
+| `POST /api/v1/subscription-payments/:id/receipt` | multipart receipt for a transfer payment (see *Checkout*); 422 `METHOD_UNAVAILABLE`, `PAYMENT_NOT_AWAITING_RECEIPT`, `PAYMENT_EXPIRED` |
+
+Apple plans cannot be cancelled, resumed, switched or opened in the portal here: 422 `MANAGED_BY_APPLE` (the learner uses their App Store subscriptions). Transfer plans: 422 `NOT_CARD_PLAN` on those card-only actions. Transfers appear in `GET /admin/transfers` next to seat orders (`kind: 'SUBSCRIPTION'`) and are reviewed there; review errors: 422 `PAYMENT_NOT_REVIEWABLE`, `NOTE_REQUIRED`, `AMOUNT_MISMATCH`.
+
+### Subscriptions (admin and author)
+| | |
+|---|---|
+| `GET /api/v1/admin/subscriptions?courseId&status&provider&page&pageSize` | ADMIN → paged `{ items: [{ id, user{id,name,email}, course{id,slug,titleEn,titleAr}, plan, provider: 'STRIPE'\|'APPLE'\|'BANK_TRANSFER', status, currentPeriodEnd, cancelAtPeriodEnd, priceFils, lastPayment: { id, totalFils, status, paidAt } \| null, createdAt }], total, page, pageSize, pageCount }`, newest first |
+| `POST /api/v1/admin/subscriptions/:id/cancel` | ADMIN, `{ refund: 'NONE'\|'FULL' }` → `{ id, plan, status: 'EXPIRED', currentPeriodEnd, cancelAtPeriodEnd, priceFils, closedPayments: [{ id, reference, status, totalFils, receiptUploaded }], refundedFils }`. Ends the plan now and sends `SUBSCRIPTION_ENDED`. STRIPE: an unfinished checkout (INCOMPLETE) has its Checkout Session expired first; if it was already paid the answer is 409 `CHECKOUT_COMPLETED` and nothing changes. FULL refunds the last paid invoice first, then cancels, records the refund and reverses the teacher's earning; if Stripe refuses the refund nothing changes (502 `REFUND_FAILED`, retry or cancel with `NONE`); if the cancel fails after a refund the response is 200 with `cancelPending: true` (refund kept, plan still running; cancel again with `NONE`). The response also has `cancelPending: false` normally. BANK_TRANSFER: ends it; FULL records a manual refund (finance returns the money) and `closedPayments` lists open payments that were closed (`receiptUploaded: true` = money may need returning). Errors: 422 `MANAGED_BY_APPLE`, `NOT_ACTIVE` (already ended), 404, 409 `CHECKOUT_COMPLETED`, 502 `REFUND_FAILED` |
+| `GET /api/v1/teacher/courses/:id/subscribers` | the course's author or an ADMIN (others 403) → `{ active, cancelling, pastDue, total }` |
+
+### Refunds
+- A refund made in the **Stripe Dashboard** on a plan invoice arrives as `charge.refunded`. The charge's invoice id and cumulative `amount_refunded` are matched to the `SubscriptionPayment`; `refundedFils` is set to the cumulative amount (status `REFUNDED` once fully refunded, otherwise it stays `PAID`) and the teacher's earning is reversed pro rata. Idempotent: the same or a smaller cumulative amount changes nothing. Refunds of seat orders carry no invoice and behave as before. The learner's access is not changed by a refund (use admin cancel for that).
+- Apple `REFUND` / `REVOKE` notifications are handled as for seats (payment `REFUNDED`, earning reversed; the plan ends when it is the current period).
+- Admin cancel with FULL goes through the same record-and-reverse step.
+
+### Notifications and jobs
+Types (each with `data: { courseSlug, subscriptionId }`): `SUBSCRIPTION_ACTIVE`, `SUBSCRIPTION_PAYMENT_FAILED`, `SUBSCRIPTION_RENEWS_SOON`, `SUBSCRIPTION_ENDED`, plus `SUBSCRIPTION_RECEIPT` for every charge. Copy is localised by the user's language.
+- `remind-renewals` (daily; `YEARLY_REMINDER_DAYS` = 7): `SUBSCRIPTION_RENEWS_SOON` by in-app, email and push, once per period (remembered in `Subscription.reminderSentForPeriodEnd`). STRIPE/APPLE: YEARLY plans that are ACTIVE (not CANCELLING) and end within 7 days (a late run still sends it, once); monthly card plans get none. BANK_TRANSFER, monthly and yearly: within 7 days and again on the end day, i.e. ends today or ended within the last 24 h (`reminderEndDaySentFor`), unless a renewal receipt is already waiting for review; the message points to "Renew by transfer".
+- `expire-transfer-subscriptions` (daily) ends transfer plans past their end with no grace; `expire-transfer-payments` (every 5 minutes) closes unpaid holds.
+
+### Error codes (recorded courses)
+`NOT_RECORDED`, `NOT_RECORDED_COURSE`, `RECORDED_NOT_READY` (`details.missing`), `COURSE_LOCKED`, `PLAN_REQUIRED` (403, `details: { courseSlug, lapsed }`), `PRICE_NOT_READY`, `APPLE_PRODUCT_MISSING`, `APPLE_PRODUCT_MISMATCH`, `APPLE_UNAVAILABLE`, `PRODUCT_MISMATCH`, `APPLE_ACCOUNT_CONFLICT`, `FOREIGN_SUBSCRIPTION`, `MANAGED_BY_APPLE`, `ALREADY_SUBSCRIBED` (409), `SAME_PLAN`, `NOT_ACTIVE`, `NOT_CARD_PLAN`, `NOT_TRANSFER_PLAN`, `METHOD_UNAVAILABLE`, `NO_BANK_ACCOUNT`, `PAYMENT_NOT_AWAITING_RECEIPT`, `PAYMENT_EXPIRED`, `PAYMENT_NOT_REVIEWABLE`, `NOTE_REQUIRED`, `REFUND_FAILED`, `CHECKOUT_COMPLETED` (409), `LESSON_ORDER_MISMATCH`, `QUIZ_*`.

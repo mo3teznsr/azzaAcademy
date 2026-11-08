@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { isCourseCoverUrl, parseCourseVideoUrl } from './course-media';
+import { isValidPhone } from './phone';
 import {
   ATTENDANCE_MARKS,
   BATCH_STATUSES,
   COURSE_LEVELS,
   COURSE_SORTS,
   COURSE_STATUSES,
-  DISPLAY_CURRENCIES,
+  COURSE_TYPES,
   LOCALES,
   ORDER_STATUSES,
   PAYMENT_METHODS,
@@ -14,11 +15,23 @@ import {
   RESCHEDULE_REQUEST_STATUSES,
   ROLES,
   SESSION_LANGUAGES,
+  SUBSCRIPTION_PLANS,
+  SUBSCRIPTION_PROVIDERS,
+  SUBSCRIPTION_STATUSES,
 } from './enums';
 
 // Request contracts shared by the API (validation) and the web client (forms).
 
 const id = z.string().min(1);
+
+/** An ISO 4217 code (3 letters, normalised to uppercase). Whether it exists and is enabled is checked by the API. */
+export const CURRENCY_CODE_PATTERN = /^[A-Z]{3}$/;
+/** A phone number in E.164 (`+971501234567`) whose calling code and length fit a known country. */
+export const phoneE164 = z.string().trim().refine(isValidPhone, 'Enter a valid phone number in international format, e.g. +971501234567');
+/** Optional phone; `''` or `null` clears it. */
+const optionalPhone = z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? null : v), phoneE164.nullable()).optional();
+
+export const currencyCode = z.string().trim().toUpperCase().regex(CURRENCY_CODE_PATTERN, 'Use a 3-letter ISO 4217 code');
 const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use HH:mm');
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
 const ianaTimezone = z.string().min(3);
@@ -40,8 +53,8 @@ export const updateProfileInput = z.object({
   name: z.string().min(2).max(80).optional(),
   locale: z.enum(LOCALES).optional(),
   timezone: ianaTimezone.optional(),
-  displayCurrency: z.enum(DISPLAY_CURRENCIES).optional(),
-  phone: z.string().max(32).optional(),
+  displayCurrency: currencyCode.optional(),
+  phone: optionalPhone,
   /** Public teacher profile (`GET /teachers/:id`) — TEACHER/ADMIN only; `null` clears. */
   ...publicProfileFields,
 });
@@ -97,6 +110,8 @@ export const createCourseInput = z.object({
   /** A `Category.slug` (see `GET /categories`). */
   category: z.string().min(2),
   level: z.enum(COURSE_LEVELS),
+  /** Fixed at creation. */
+  type: z.enum(COURSE_TYPES).default('LIVE'),
   coverStyle: z.enum(['sun', 'sky', 'sage', 'peach']).default('sun'),
   /** Photo cover: bundled art under `/media/`, a file from `POST /admin/media`, or an https URL. Null = typographic cover. */
   coverImageUrl: z.string().max(500).refine(isCourseCoverUrl, 'Must be a /media/ path, an uploaded file or an https URL').nullable().optional(),
@@ -119,12 +134,14 @@ export const createCourseInput = z.object({
   featuredRank: z.number().int().min(0).max(999).nullable().optional(),
 });
 export type CreateCourseInput = z.infer<typeof createCourseInput>;
-export const updateCourseInput = createCourseInput.partial().extend({ status: z.enum(COURSE_STATUSES).optional() });
+export const updateCourseInput = createCourseInput.omit({ type: true }).partial().extend({ status: z.enum(COURSE_STATUSES).optional() });
 export type UpdateCourseInput = z.infer<typeof updateCourseInput>;
 
 export const courseListQuery = paginationQuery.extend({
   category: z.string().optional(),
   level: z.enum(COURSE_LEVELS).optional(),
+  /** LIVE (cohorts) or RECORDED (self-paced plans); omitted = both. */
+  type: z.enum(COURSE_TYPES).optional(),
   status: z.enum(COURSE_STATUSES).optional(),
   /** TEACHER: only the courses they proposed (any status). */
   mine: z.stringbool().optional(),
@@ -267,7 +284,7 @@ export const checkoutInput = z.object({
   batchId: id,
   method: z.enum(PAYMENT_METHODS),
   couponCode: z.string().trim().optional(),
-  displayCurrency: z.enum(DISPLAY_CURRENCIES).default('AED'),
+  displayCurrency: currencyCode.default('AED'),
   bankAccountId: id.optional(),
 });
 export type CheckoutInput = z.infer<typeof checkoutInput>;
@@ -303,8 +320,9 @@ export const bankAccountInput = z.object({
 });
 export type BankAccountInput = z.infer<typeof bankAccountInput>;
 
+/** `PUT /admin/fx-rates` (kept for older clients; prefer `PATCH /admin/currencies/:code`). */
 export const fxRateInput = z.object({
-  currency: z.enum(['SAR', 'QAR', 'USD']),
+  currency: currencyCode,
   ratePerAed: z.number().positive(),
 });
 
@@ -378,7 +396,34 @@ export const assignmentInput = z.object({
   dueAt: z.iso.datetime(),
   maxScore: z.number().int().min(1).default(100),
 });
-export const submissionInput = z.object({ url: z.url().optional(), text: z.string().max(10000).optional() });
+/** Largest assignment submission file (`POST /assignments/:id/submission/file`). */
+export const MAX_SUBMISSION_FILE_BYTES = 20 * 1024 * 1024;
+/** Largest class material file (`POST /batches/:id/materials/file`). */
+export const MAX_MATERIAL_FILE_BYTES = 50 * 1024 * 1024;
+export const MAX_SUBMISSION_FILES = 5;
+/** A file returned by `POST /assignments/:id/submission/file`; the API only accepts its own `submissions/` URLs. */
+export const submissionFileInput = z.object({
+  url: z.url().max(500),
+  name: z.string().trim().min(1).max(255),
+  size: z.number().int().min(1).max(MAX_SUBMISSION_FILE_BYTES),
+  type: z.string().max(150),
+});
+export const submissionInput = z.object({
+  url: z.url().optional(),
+  text: z.string().max(10000).optional(),
+  files: z.array(submissionFileInput).max(MAX_SUBMISSION_FILES).optional(),
+});
+/** `PATCH /assignments/:id` — the create fields, all optional; `sessionId: null` detaches the session. */
+export const updateAssignmentInput = z.object({
+  sessionId: id.nullable().optional(),
+  title: z.string().min(2).optional(),
+  description: z.string().optional(),
+  dueAt: z.iso.datetime().optional(),
+  maxScore: z.number().int().min(1).optional(),
+});
+export type SubmissionFileInput = z.infer<typeof submissionFileInput>;
+export type SubmissionInput = z.infer<typeof submissionInput>;
+export type UpdateAssignmentInput = z.infer<typeof updateAssignmentInput>;
 export const gradeInput = z.object({ score: z.number().int().min(0), feedback: z.string().max(5000).optional() });
 
 export const sessionFeedbackInput = z.object({
@@ -410,6 +455,18 @@ export const transferListQuery = paginationQuery.extend({
   status: z.enum(ORDER_STATUSES).optional(),
 });
 
+/** `GET /admin/subscriptions` */
+export const adminSubscriptionListQuery = paginationQuery.extend({
+  courseId: z.string().min(1).optional(),
+  status: z.enum(SUBSCRIPTION_STATUSES).optional(),
+  provider: z.enum(SUBSCRIPTION_PROVIDERS).optional(),
+});
+export type AdminSubscriptionListQuery = z.infer<typeof adminSubscriptionListQuery>;
+
+/** `POST /admin/subscriptions/:id/cancel`: FULL also refunds the last payment. */
+export const adminCancelSubscriptionInput = z.object({ refund: z.enum(['NONE', 'FULL']) });
+export type AdminCancelSubscriptionInput = z.infer<typeof adminCancelSubscriptionInput>;
+
 export const adminUserListQuery = paginationQuery.extend({
   role: z.enum(ROLES).optional(),
 });
@@ -440,7 +497,7 @@ export const instructorApplicationInput = z.object({
   languages: z.array(z.enum(SESSION_LANGUAGES)).min(1),
   experience: z.string().trim().min(20).max(1500),
   sampleUrl: z.url({ protocol: /^https$/ }).max(500).optional(),
-  phone: z.string().trim().max(30).optional(),
+  phone: optionalPhone,
 });
 export type InstructorApplicationInput = z.infer<typeof instructorApplicationInput>;
 
@@ -509,19 +566,28 @@ export const quizQuestionInput = z
   });
 export type QuizQuestionInput = z.infer<typeof quizQuestionInput>;
 
-export const quizInput = z.object({
+/** Quiz fields without defaults: a PATCH parses only the keys it sends, so it never resets a field it left out. */
+const quizFields = z.object({
   title: z.string().trim().min(2).max(160),
-  description: z.string().max(5000).default(''),
+  description: z.string().max(5000),
   /** Optional link to a module of the batch's course. */
   moduleId: id.nullable().optional(),
   dueAt: z.iso.datetime().nullable().optional(),
   /** Minutes; null = untimed. */
   timeLimitMin: z.number().int().min(1).max(600).nullable().optional(),
-  maxAttempts: z.number().int().min(1).max(20).default(1),
-  questions: z.array(quizQuestionInput).max(100).default([]),
+  maxAttempts: z.number().int().min(1).max(20),
+  /** Percent of the points needed to pass (recorded-course certificates). */
+  passPercent: z.number().int().min(0).max(100),
+  questions: z.array(quizQuestionInput).max(100),
+});
+export const quizInput = quizFields.extend({
+  description: quizFields.shape.description.default(''),
+  maxAttempts: quizFields.shape.maxAttempts.default(1),
+  passPercent: quizFields.shape.passPercent.default(70),
+  questions: quizFields.shape.questions.default([]),
 });
 export type QuizInput = z.infer<typeof quizInput>;
-export const updateQuizInput = quizInput.partial();
+export const updateQuizInput = quizFields.partial();
 export type UpdateQuizInput = z.infer<typeof updateQuizInput>;
 
 /** POST /quizzes/:id/attempts — selected option ids per question id (one id for single choice and true/false). */
@@ -610,3 +676,186 @@ export const supportTicketsQuery = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
 export type SupportTicketsQuery = z.infer<typeof supportTicketsQuery>;
+
+// ---------- Recorded courses: plans, cuts, video position ----------
+
+/** PUT /courses/:id/recorded-pricing — prices before VAT; the yearly plan must beat twelve monthly payments. */
+export const recordedPricingInput = z
+  .object({
+    monthlyPriceFils: z.number().int().min(100),
+    yearlyPriceFils: z.number().int().min(100),
+  })
+  .refine((v) => v.yearlyPriceFils < v.monthlyPriceFils * 12, {
+    message: 'Yearly price must be lower than twelve monthly payments',
+    path: ['yearlyPriceFils'],
+  });
+export type RecordedPricingInput = z.infer<typeof recordedPricingInput>;
+
+/** PUT /courses/:id/preview-lesson — the one lesson anyone can watch; null clears it. */
+export const previewLessonInput = z.object({ lessonId: z.string().min(1).nullable() });
+export type PreviewLessonInput = z.infer<typeof previewLessonInput>;
+
+/** PUT /admin/courses/:id/apple-products — each id must be `appleRecordedProductId(slug, plan)`; null clears it. */
+export const appleProductsInput = z.object({
+  monthly: z.string().min(1).max(200).nullable().optional(),
+  yearly: z.string().min(1).max(200).nullable().optional(),
+});
+export type AppleProductsInput = z.infer<typeof appleProductsInput>;
+
+/** Platform default teacher cuts, in percent. */
+export const cutSettingsInput = z.object({
+  liveCutPercent: z.number().int().min(0).max(100),
+  recordedCutPercent: z.number().int().min(0).max(100),
+});
+export type CutSettingsInput = z.infer<typeof cutSettingsInput>;
+
+/** Per-course override of the teacher cut; null clears it. */
+export const courseCutInput = z.object({
+  teacherCutPercent: z.number().int().min(0).max(100).nullable(),
+});
+export type CourseCutInput = z.infer<typeof courseCutInput>;
+
+/** POST /courses/:id/subscribe */
+export const subscribeInput = z.object({
+  plan: z.enum(SUBSCRIPTION_PLANS),
+  method: z.enum(['STRIPE', 'APPLE_IAP', 'BANK_TRANSFER']),
+  bankAccountId: id.optional(),
+  displayCurrency: currencyCode.optional(),
+});
+export type SubscribeInput = z.infer<typeof subscribeInput>;
+
+/** PUT /lessons/:id/position */
+export const videoPositionInput = z.object({ positionSec: z.number().int().min(0) });
+export type VideoPositionInput = z.infer<typeof videoPositionInput>;
+
+// ---------- Currencies (display only; AED is the base) ----------
+const currencyFields = {
+  nameEn: z.string().trim().min(1).max(60),
+  nameAr: z.string().trim().min(1).max(60),
+  symbol: z.string().trim().min(1).max(8).nullable().optional(),
+  decimals: z.number().int().min(0).max(3),
+  ratePerAed: z.number().positive().max(1_000_000),
+  enabled: z.boolean(),
+  sortOrder: z.number().int().min(0).max(10_000),
+};
+
+/** `POST /admin/currencies` */
+export const currencyInput = z.object({
+  code: currencyCode,
+  ...currencyFields,
+  decimals: currencyFields.decimals.default(2),
+  enabled: currencyFields.enabled.default(true),
+  sortOrder: currencyFields.sortOrder.default(0),
+});
+export type CurrencyInput = z.infer<typeof currencyInput>;
+
+/** `PATCH /admin/currencies/:code` — only the fields sent change. */
+export const updateCurrencyInput = z
+  .object({
+    nameEn: currencyFields.nameEn.optional(),
+    nameAr: currencyFields.nameAr.optional(),
+    symbol: currencyFields.symbol,
+    decimals: currencyFields.decimals.optional(),
+    ratePerAed: currencyFields.ratePerAed.optional(),
+    enabled: currencyFields.enabled.optional(),
+    sortOrder: currencyFields.sortOrder.optional(),
+  })
+  .refine((v) => Object.values(v).some((x) => x !== undefined), 'Nothing to update');
+export type UpdateCurrencyInput = z.infer<typeof updateCurrencyInput>;
+
+/** An enabled currency as `GET /currencies` lists it. */
+export interface CurrencyItem {
+  code: string;
+  nameEn: string;
+  nameAr: string;
+  symbol: string | null;
+  decimals: number;
+  ratePerAed: number;
+  sortOrder: number;
+}
+/** `GET /admin/currencies` adds the disabled ones and their state. */
+export interface AdminCurrencyItem extends CurrencyItem {
+  enabled: boolean;
+  updatedAt: string;
+}
+export interface CurrencyList {
+  base: 'AED';
+  items: CurrencyItem[];
+}
+
+// ---------- Site settings ----------
+/** `PUT /admin/settings/rules` — `null` resets a rule to its env default; absent leaves it unchanged. */
+export const ruleSettingsInput = z.object({
+  vatPercent: z.number().int().min(0).max(30).nullable().optional(),
+  earningHoldDays: z.number().int().min(0).max(90).nullable().optional(),
+  minPayoutAed: z.number().int().min(0).max(100_000).nullable().optional(),
+  bankTransferHoldHours: z.number().int().min(1).max(168).nullable().optional(),
+});
+export type RuleSettingsInput = z.infer<typeof ruleSettingsInput>;
+
+export const SOCIAL_NETWORKS = ['instagram', 'x', 'facebook', 'linkedin', 'youtube', 'tiktok', 'snapchat'] as const;
+export type SocialNetwork = (typeof SOCIAL_NETWORKS)[number];
+export type SocialLinks = Partial<Record<SocialNetwork, string>>;
+
+const httpsUrl = z
+  .url()
+  .max(500)
+  .refine((u) => u.startsWith('https://'), 'Use an https:// link');
+/** Empty strings clear a field, like `null`. */
+const blankToNull = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? null : v);
+const clearable = <T extends z.ZodType>(schema: T) => z.preprocess(blankToNull, schema.nullable()).optional();
+
+/** WhatsApp number: digits only, with the country code, no `+` or spaces (e.g. 971501234567). */
+export const WHATSAPP_NUMBER_PATTERN = /^\d{8,15}$/;
+
+/** `PUT /admin/settings/contact` — absent leaves a field unchanged, `null` clears it. */
+export const contactSettingsInput = z.object({
+  contactEmail: clearable(z.email().max(200)),
+  contactPhone: clearable(phoneE164),
+  whatsappNumber: clearable(z.string().trim().regex(WHATSAPP_NUMBER_PATTERN, 'Digits only, with the country code (8–15 digits)')),
+  addressEn: clearable(z.string().trim().max(300)),
+  addressAr: clearable(z.string().trim().max(300)),
+  socials: z
+    .object({
+      instagram: clearable(httpsUrl),
+      x: clearable(httpsUrl),
+      facebook: clearable(httpsUrl),
+      linkedin: clearable(httpsUrl),
+      youtube: clearable(httpsUrl),
+      tiktok: clearable(httpsUrl),
+      snapchat: clearable(httpsUrl),
+    })
+    .strict()
+    .optional(),
+});
+export type ContactSettingsInput = z.infer<typeof contactSettingsInput>;
+
+export interface ContactSettings {
+  contactEmail: string | null;
+  contactPhone: string | null;
+  whatsappNumber: string | null;
+  addressEn: string | null;
+  addressAr: string | null;
+}
+
+/** `GET /site-settings` (public): contact details and only the social links that are set. */
+export interface SiteSettings extends ContactSettings {
+  socials: SocialLinks;
+}
+
+/** Effective business rules (DB override, else env). Keys match the env names. */
+export interface RuleSettings {
+  VAT_PERCENT: number;
+  EARNING_HOLD_DAYS: number;
+  MIN_PAYOUT_AED: number;
+  BANK_TRANSFER_HOLD_HOURS: number;
+}
+
+/** `GET /admin/settings`, and the response of `PUT /admin/settings/rules` and `/contact`. */
+export interface AdminSettings {
+  rules: RuleSettings & { TEACHER_SHARE_PERCENT: number };
+  ruleDefaults: RuleSettings;
+  integrations: { stripe: boolean; appleIap: boolean; livekit: boolean; smtp: boolean; push: boolean; appStoreConnect: boolean };
+  contact: ContactSettings;
+  socials: SocialLinks;
+}

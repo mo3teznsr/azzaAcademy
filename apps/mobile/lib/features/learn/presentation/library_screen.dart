@@ -9,9 +9,14 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/utils/links.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../auth/presentation/guest_gate.dart';
 import '../../me/data/me_repository.dart';
 import '../../me/domain/me_models.dart';
 import '../data/learn_repository.dart';
+import '../data/lesson_progress_repository.dart' show learningProgressProvider;
+import '../domain/lesson_models.dart' show CourseProgress;
+import 'recorded_course_card.dart';
 
 /// Library: every take per batch with watch progress, plus materials.
 class LibraryScreen extends ConsumerStatefulWidget {
@@ -27,9 +32,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    if (ref.watch(isGuestProvider)) {
+      return GuestTab(heading: l.libraryTitle, title: l.guestLibraryTitle, body: l.guestLibraryBody, icon: Icons.video_library_outlined);
+    }
     final enrollments = ref.watch(enrollmentsProvider);
     final locale = ref.watch(localeProvider);
     final p = AzzaPalette.of(context);
+    final recorded = ref.watch(recordedCoursesProvider);
+    final progressLoading = ref.watch(learningProgressProvider).isLoading;
 
     return Scaffold(
       appBar: AppBar(
@@ -45,14 +55,25 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       body: AsyncView<List<Enrollment>>(
         value: enrollments,
         onRetry: () => ref.invalidate(enrollmentsProvider),
-        isEmpty: (list) => list.where((e) => e.isActive).isEmpty,
+        isEmpty: (list) => list.where((e) => e.isActive).isEmpty && recorded.isEmpty && !progressLoading,
         empty: EmptyState(title: l.libraryEmptyTitle, body: l.enrollFirst, action: l.exploreCta, onAction: () => context.go(Routes.studentExplore)),
         data: (list) {
           final active = list.where((e) => e.isActive).toList();
+          if (active.isEmpty && recorded.isEmpty && progressLoading) return const LoadingState(key: Key('library-progress-loading'));
+          // Recorded courses only: no classes, no recordings, just the courses to keep learning.
+          if (active.isEmpty) {
+            return RefreshList(
+              onRefresh: () async => ref.invalidate(learningProgressProvider),
+              children: [
+                SectionHeader(l.recordedCourses),
+                for (final c in recorded) ...[RecordedCourseCard(item: c), const SizedBox(height: 10)],
+              ],
+            );
+          }
           final batchId = _batchId ?? active.first.batch.id;
           return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             SizedBox(
-              height: 44,
+              height: context.scaled(44),
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: AzzaSpace.gutter),
                 scrollDirection: Axis.horizontal,
@@ -71,7 +92,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ],
               ),
             ),
-            Expanded(child: _BatchLibrary(batchId: batchId, courseId: active.where((e) => e.batch.id == batchId).firstOrNull?.batch.courseId ?? active.first.batch.courseId)),
+            Expanded(child: _BatchLibrary(recorded: recorded, batchId: batchId, courseId: active.where((e) => e.batch.id == batchId).firstOrNull?.batch.courseId ?? active.first.batch.courseId)),
           ]);
         },
       ),
@@ -80,7 +101,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 }
 
 class _BatchLibrary extends ConsumerWidget {
-  const _BatchLibrary({required this.batchId, required this.courseId});
+  const _BatchLibrary({required this.recorded, required this.batchId, required this.courseId});
+  final List<CourseProgress> recorded;
   final String batchId;
   final String courseId;
 
@@ -99,6 +121,10 @@ class _BatchLibrary extends ConsumerWidget {
         ref.invalidate(materialsProvider(batchId));
       },
       children: [
+        if (recorded.isNotEmpty) ...[
+          SectionHeader(l.recordedCourses),
+          for (final c in recorded) ...[RecordedCourseCard(item: c), const SizedBox(height: 10)],
+        ],
         Row(children: [
           Expanded(
             child: _StudyTile(
@@ -133,7 +159,7 @@ class _BatchLibrary extends ConsumerWidget {
                 RaisedCard(
                   onTap: () => openExternal(context, resume.url),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    MonoLabel(
+                    Kicker(
                       'S${resume.number.toString().padLeft(2, '0')} · ${l.continueAt('${Fmt.timecode(Duration(seconds: resume.progressSec ?? 0))} / ${Fmt.timecode(Duration(seconds: resume.durationSec ?? 0))}')}',
                       color: p.accent,
                     ),

@@ -26,6 +26,13 @@ export function StudentSettings() {
         <ThemeSegmented labelledBy="appearance-title" className="self-start" />
         <p className="text-sm text-muted-foreground">{t.settings.appearanceNote}</p>
       </Panel>
+      <Panel aria-labelledby="plans-title">
+        <SectionHeader title={<span id="plans-title">{t.recorded.plansTitle}</span>} />
+        <p className="text-sm text-muted-foreground">{t.recorded.plansIntro}</p>
+        <Link href="/plans" className="link-sun self-start text-sm">
+          {t.recorded.plansTitle}
+        </Link>
+      </Panel>
       <Panel aria-labelledby="orders-title" id="orders">
         <SectionHeader title={<span id="orders-title">{t.settings.orders}</span>} />
         <QueryView query={orders} loading={<LoadingBlock rows={2} />} empty={<p className="text-sm text-muted-foreground">{t.settings.noOrders}</p>}>

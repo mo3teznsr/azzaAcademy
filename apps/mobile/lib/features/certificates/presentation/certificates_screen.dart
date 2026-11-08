@@ -102,7 +102,7 @@ class _EarnedCard extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Slate(cert.batchCode),
+                    if (!cert.isRecorded && cert.batchCode.isNotEmpty) Slate(cert.batchCode) else Kicker(l.courseTypeRecorded),
                     const Spacer(),
                     if (isNew) StatusChip(label: l.certificateNew, color: AzzaColors.green, textColor: AzzaColors.inkDeep),
                   ],
@@ -113,14 +113,14 @@ class _EarnedCard extends ConsumerWidget {
                 Text(
                   [
                     if (cert.teacherName.isNotEmpty) l.certificateWithTeacher(cert.teacherName),
-                    batchDates(f, cert.startsOn, cert.endsOn),
+                    if (!cert.isRecorded) batchDates(f, cert.startsOn, cert.endsOn),
                   ].where((e) => e.isNotEmpty).join(' · '),
                   style: t.bodySmall,
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: MonoLabel(l.certificateAttended(f.n(cert.attended), f.n(cert.total)))),
+                    Expanded(child: cert.isRecorded ? Text(l.certificateRecordedCompletion, style: t.bodySmall) : Kicker(l.certificateAttended(f.n(cert.attended), f.n(cert.total)))),
                     Text(
                       cert.code,
                       textDirection: TextDirection.ltr,
@@ -153,9 +153,7 @@ class _ProgressCard extends ConsumerWidget {
         ? l.certificateUnreachable
         : pr.needed <= 0
         ? l.certificateRequirementMet
-        : pr.needed == 1
-        ? l.certificateOneSessionNeeded
-        : l.certificateSessionsNeeded(f.n(pr.needed));
+        : f.n(l.certificateSessionsNeeded(pr.needed));
     return RaisedCard(
       onTap: pr.batchId.isEmpty ? null : () => context.push(Routes.batchSchedule(pr.batchId)),
       child: Column(
@@ -172,7 +170,7 @@ class _ProgressCard extends ConsumerWidget {
           ),
           const SizedBox(height: 14),
           Semantics(
-            label: l.certificateAttendedOfRequired(f.n(pr.attended), f.n(pr.required)),
+            label: f.n(l.certificateAttendedOfRequired(pr.attended, pr.required)),
             child: ExcludeSemantics(
               child: LinearProgressIndicator(
                 value: pr.fraction,

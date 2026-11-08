@@ -18,6 +18,7 @@ import 'package:azza/features/auth/domain/app_user.dart';
 import 'package:azza/features/catalog/data/catalog_repository.dart';
 import 'package:azza/features/catalog/data/reviews_repository.dart';
 import 'package:azza/features/catalog/domain/catalog_models.dart';
+import 'package:azza/features/learn/data/file_uploads.dart';
 import 'package:azza/features/catalog/domain/course_filters.dart';
 import 'package:azza/features/catalog/domain/review_models.dart';
 import 'package:azza/features/checkout/data/app_store_gateway.dart';
@@ -28,6 +29,8 @@ import 'package:azza/features/checkout/domain/checkout_models.dart';
 import 'package:azza/features/instructors/data/instructors_repository.dart';
 import 'package:azza/features/instructors/domain/instructor_models.dart';
 import 'package:azza/features/learn/data/learn_repository.dart';
+import 'package:azza/features/learn/data/lesson_progress_repository.dart';
+import 'package:azza/features/learn/domain/lesson_models.dart';
 import 'package:azza/features/me/data/me_repository.dart';
 import 'package:azza/features/me/domain/me_models.dart';
 import 'package:azza/features/certificates/data/certificates_repository.dart';
@@ -53,8 +56,13 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<AppUser> signIn({required String email, required String password}) async => user!;
 
+  final List<String> signUpPhones = [];
+
   @override
-  Future<AppUser> signUp({required String name, required String email, required String password}) async => user!;
+  Future<AppUser> signUp({required String name, required String email, required String password, required String phone}) async {
+    signUpPhones.add(phone);
+    return user!;
+  }
 
   @override
   Future<void> signOut() async => user = null;
@@ -117,7 +125,7 @@ class FakeMeRepository implements MeRepository {
   Future<void> unregisterDevice(String token) async {}
 
   @override
-  Future<AppUser> updateProfile({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency}) async => student;
+  Future<AppUser> updateProfile({String? name, AppLocale? locale, String? timezone, DisplayCurrency? displayCurrency, String? phone}) async => student;
 }
 
 class FakeLearnRepository implements LearnRepository {
@@ -128,7 +136,10 @@ class FakeLearnRepository implements LearnRepository {
   @override
   Future<List<Assignment>> assignments(String batchId) async => const [];
   @override
-  Future<void> submit(String assignmentId, {String? url, String? text}) async {}
+  Future<void> submit(String assignmentId, {String? url, String? text, List<AttachedFile>? files}) async {}
+  @override
+  Future<AttachedFile> uploadSubmissionFile(String assignmentId, PickedFile file, {void Function(double progress)? onProgress}) async =>
+      AttachedFile(url: 'http://files.test/submissions/${file.name}', name: file.name, size: file.size);
 }
 
 class FakeCatalogRepository implements CatalogRepository {
@@ -253,7 +264,7 @@ class FakeCheckoutRepository implements CheckoutRepository {
   @override
   Future<CheckoutResult> checkout(CheckoutRequest request) async => CheckoutResult(order: current);
   @override
-  Future<FxRates> fxRates() async => const FxRates(rates: {DisplayCurrency.aed: 1, DisplayCurrency.sar: 1.0211});
+  Future<FxRates> fxRates() async => const FxRates(rates: {DisplayCurrency.aed: 1, DisplayCurrency('SAR'): 1.0211});
   @override
   Future<List<Order>> myOrders() async => [current];
   @override
@@ -292,6 +303,8 @@ class FakeAppStoreGateway implements AppStoreGateway {
   Future<StoreProduct?> product(String productId) async => products[productId];
   @override
   Future<void> buy(String productId, {required String appAccountToken}) async => bought.add((productId, appAccountToken));
+  @override
+  Future<void> buySubscription(String productId, {required String appAccountToken}) async => bought.add((productId, appAccountToken));
   @override
   Stream<List<StorePurchase>> get purchases => _purchases.stream;
   @override
@@ -720,5 +733,39 @@ class FakeSupportRepository implements SupportRepository {
   Future<TicketDetail> setStatus(String id, SupportStatus status) async {
     statusChanges.add((id, status));
     return details[id] = _with(details[id]!, status: status);
+  }
+}
+
+/// Lesson completion: answers [items] for learning progress, records every toggle; [error] makes toggles fail.
+class FakeLessonProgressRepository implements LessonProgressRepository {
+  FakeLessonProgressRepository({this.items = const [], this.error});
+  List<CourseProgress> items;
+  Object? error;
+  final List<(String, bool)> toggles = [];
+  int progressCalls = 0;
+
+  /// Lesson id → saved video position; every save is also recorded in order.
+  final Map<String, int> positions = {};
+  final List<(String, int)> savedPositions = [];
+
+  @override
+  Future<int> videoPosition(String lessonId) async => positions[lessonId] ?? 0;
+
+  @override
+  Future<void> saveVideoPosition(String lessonId, int positionSec) async {
+    savedPositions.add((lessonId, positionSec));
+    positions[lessonId] = positionSec;
+  }
+
+  @override
+  Future<void> setCompleted(String lessonId, bool completed) async {
+    toggles.add((lessonId, completed));
+    if (error != null) throw error!;
+  }
+
+  @override
+  Future<List<CourseProgress>> learningProgress() async {
+    progressCalls++;
+    return items;
   }
 }

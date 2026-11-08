@@ -107,7 +107,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final l = context.l10n;
     final f = ref.watch(fmtProvider);
     final price = ref.watch(priceFormatProvider);
-    final currency = ref.watch(displayCurrencyProvider);
     final fx = ref.watch(fxRatesProvider).value ?? FxRates.fallback;
     final key = (batchId: widget.batchId, coupon: _appliedCoupon, currency: price.shown);
     final quote = ref.watch(quoteProvider(key));
@@ -118,7 +117,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.checkoutTitle),
-        actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 16), child: Center(child: MonoLabel(l.stepOf('2', '3'))))],
+        actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 16), child: Center(child: Kicker(l.stepOf('2', '3'))))],
       ),
       body: AsyncView<Batch>(
         value: batch,
@@ -128,15 +127,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           children: [
             _BatchSummary(batch: b),
             SectionHeader(l.showPricesIn),
-            Row(children: [
-              for (final c in DisplayCurrency.values)
-                Expanded(
+            Wrap(spacing: 6, runSpacing: 6, children: [
+              for (final c in fx.currencies)
+                SizedBox(
+                  width: 84,
                   child: Padding(
-                    padding: const EdgeInsetsDirectional.only(end: 6),
+                    padding: EdgeInsets.zero,
                     child: _CurrencyChip(
                       code: c.wire,
                       sub: c.isBase ? '× 1' : (fx.has(c) ? '× ${f.n(fx.rateFor(c).toStringAsFixed(2))}' : '—'),
-                      selected: c == currency,
+                      selected: c == price.shown,
                       onTap: fx.has(c) ? () => ref.read(displayCurrencyProvider.notifier).set(c) : null,
                     ),
                   ),
@@ -236,7 +236,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.checkoutTitle),
-        actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 16), child: Center(child: MonoLabel(l.stepOf('2', '3'))))],
+        actions: [Padding(padding: const EdgeInsetsDirectional.only(end: 16), child: Center(child: Kicker(l.stepOf('2', '3'))))],
       ),
       body: AsyncView<Batch>(
         value: batch,
@@ -299,7 +299,7 @@ class _BatchSummary extends ConsumerWidget {
                 Row(children: [
                   Slate(b.code),
                   const SizedBox(width: 8),
-                  MonoLabel('${f.n(b.seatsTaken)}/${f.n(b.capacity)} ${l.seatsLabel}'),
+                  Kicker('${f.n(b.seatsTaken)}/${f.n(b.capacity)} ${l.seatsLabel}'),
                 ]),
                 const SizedBox(height: 10),
                 Text(b.course?.title(locale) ?? '', style: t.titleMedium),
@@ -308,7 +308,7 @@ class _BatchSummary extends ConsumerWidget {
                   [
                     scheduleLabel(f, b.schedule),
                     if (b.startsOn != null && b.endsOn != null) '${f.shortDate(b.startsOn!)} → ${f.shortDate(b.endsOn!)}',
-                    l.liveSessionsN(f.n(b.sessionCount)),
+                    f.n(l.liveSessionsN(b.sessionCount)),
                     ?b.teacher?.name,
                   ].join(' · '),
                   style: t.bodySmall,
@@ -342,7 +342,7 @@ class _CurrencyChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Column(children: [
               Text(code, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: selected ? p.onAccent : p.text)),
-              MonoLabel(sub, size: 9, color: selected ? p.onAccent : p.muted),
+              Kicker(sub, color: selected ? p.onAccent : p.textSecondary, textAlign: TextAlign.center),
             ]),
           ),
         ),

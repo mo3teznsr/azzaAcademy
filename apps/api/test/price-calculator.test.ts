@@ -41,3 +41,14 @@ describe('PriceCalculator', () => {
     expect(q.vatFils).toBe(617);
   });
 });
+
+describe('inclusive / splitInclusive', () => {
+  test('splitInclusive inverts quote for every price', () => {
+    const calc = new PriceCalculator(5);
+    for (let p = 0; p < 3000; p++) {
+      const total = calc.inclusive(p);
+      expect(calc.splitInclusive(total)).toEqual({ subtotalFils: p, vatFils: total - p });
+    }
+    expect(calc.inclusive(4900)).toBe(5145);
+  });
+});

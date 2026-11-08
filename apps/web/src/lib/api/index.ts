@@ -12,3 +12,5 @@ export { teacherApi } from './teacher';
 export { adminApi } from './admin';
 export { instructorsApi, type InstructorApplication, type InstructorApplicationStatus, type DirectoryTeacher } from './instructors';
 export * from './comms';
+export { subscriptionsApi, isCardResult, isAppleProvider, type SubscribeResult, type SubscribeCard, type SubscribeTransfer, type SubscriptionByReference } from './subscriptions';
+export { siteApi } from './site';

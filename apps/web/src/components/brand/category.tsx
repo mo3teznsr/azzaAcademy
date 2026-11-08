@@ -23,7 +23,9 @@ import {
   Sprout,
   type LucideIcon,
 } from 'lucide-react';
-import { categoriesApi, type CategoryRef } from '@/lib/api';
+import Image from 'next/image';
+import { categoriesApi, mediaUrl, type CategoryRef } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 
@@ -76,4 +78,14 @@ const ICONS: Record<string, LucideIcon> = {
 export function CategoryIcon({ name, className }: { name: string | null | undefined; className?: string }) {
   const Icon = name ? ICONS[name] : undefined;
   return Icon ? <Icon className={className ?? 'size-4'} aria-hidden /> : null;
+}
+
+/** A category's picture, or its icon on a tinted square when no image is set. */
+export function CategoryThumb({ category, className }: { category: Pick<CategoryRef, 'icon' | 'imageUrl'>; className?: string }) {
+  const src = mediaUrl(category.imageUrl);
+  return (
+    <span className={cn('relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted', className)}>
+      {src ? <Image src={src} alt="" fill sizes="64px" className="object-cover" /> : <CategoryIcon name={category.icon} />}
+    </span>
+  );
 }

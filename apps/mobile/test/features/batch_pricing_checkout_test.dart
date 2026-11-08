@@ -27,7 +27,7 @@ import 'package:go_router/go_router.dart';
 import '../helpers/fakes.dart';
 import '../helpers/harness.dart';
 
-const _sarRates = FxRates(rates: {DisplayCurrency.aed: 1, DisplayCurrency.sar: 1.0211});
+const _sarRates = FxRates(rates: {DisplayCurrency.aed: 1, DisplayCurrency('SAR'): 1.0211});
 
 /// Card checkout: `POST /checkout` answers `{ order, checkoutUrl }`; the order turns PAID after [paidAfter] reads.
 class _CardCheckoutRepository extends FakeCheckoutRepository {
@@ -92,7 +92,7 @@ void main() {
       expect(find.byKey(const Key('price-charged')), findsNothing, reason: 'AED is the charged amount already');
 
       final container = ProviderScope.containerOf(tester.element(find.byType(Price)));
-      await container.read(displayCurrencyProvider.notifier).set(DisplayCurrency.sar);
+      await container.read(displayCurrencyProvider.notifier).set(DisplayCurrency('SAR'));
       await settle(tester);
       expect(find.text('≈ SAR 899'), findsOneWidget);
       expect(find.text('Charged as AED 880.00'), findsOneWidget);
@@ -102,7 +102,7 @@ void main() {
     testWidgets('falls back to AED with a hint when rates are unavailable', (tester) async {
       await pumpPrice(tester, const Price(88000), fx: FxRates.fallback);
       final container = ProviderScope.containerOf(tester.element(find.byType(Price)));
-      await container.read(displayCurrencyProvider.notifier).set(DisplayCurrency.usd);
+      await container.read(displayCurrencyProvider.notifier).set(DisplayCurrency('USD'));
       await settle(tester);
       expect(find.text('AED 880.00'), findsOneWidget);
       expect(find.byKey(const Key('price-rates-missing')), findsOneWidget);
@@ -318,6 +318,8 @@ void main() {
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(teacher)),
         proposalsRepositoryProvider.overrideWithValue(repo),
       ]);
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('course-type-live')));
       await settle(tester);
       expect(find.byKey(const Key('course-price')), findsNothing);
       expect(find.byKey(const Key('course-price-note')), findsOneWidget);

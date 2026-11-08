@@ -1,6 +1,6 @@
 import type { UpdateProfileInput } from '@azza/shared';
-import { http, items } from './client';
-import type { CalendarFeed, Enrollment, Items, Me, MyCertificates, MyWaitlist, NotificationPage, Order, Paged, Recording, ScheduleItem, ScheduleResponse, Submission } from './types';
+import { http, items, uploadWithProgress, type UploadOptions } from './client';
+import type { CalendarFeed, Enrollment, Items, Me, MyCertificates, MyWaitlist, NotificationPage, Order, Paged, Recording, ScheduleItem, ScheduleResponse, Submission, UploadedFile } from './types';
 
 export const meApi = {
   get: () => http.get<Me>('/api/v1/me'),
@@ -21,9 +21,19 @@ export const meApi = {
   certificates: () => http.get<MyCertificates>('/api/v1/me/certificates'),
   /** My WAITLISTED batches with place in line, plus seats offered to me from a waitlist. */
   waitlist: () => http.get<MyWaitlist>('/api/v1/me/waitlist'),
-  submit: (assignmentId: string, input: { url?: string; text?: string }) =>
+  /** `files` omitted keeps the previous list on a re-submit; `[]` clears it. */
+  submit: (assignmentId: string, input: { url?: string; text?: string; files?: UploadedFile[] }) =>
     http.post<Submission>(`/api/v1/assignments/${assignmentId}/submissions`, input),
+  /** STUDENT: one file for a submission (≤ 20 MB), stored under `submissions/`. */
+  uploadSubmissionFile: (assignmentId: string, file: File, opts?: UploadOptions) =>
+    uploadWithProgress<UploadedFile>(`/api/v1/assignments/${assignmentId}/submission/file`, fileForm(file), opts),
 };
+
+function fileForm(file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  return form;
+}
 
 /** Normalise an array or a paged envelope to an array. */
 export function itemsOf<T>(data: T[] | Paged<T> | { items: T[] } | undefined): T[] {

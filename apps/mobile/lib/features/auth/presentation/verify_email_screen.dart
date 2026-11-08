@@ -13,8 +13,11 @@ import 'auth_controller.dart';
 
 /// "Check your inbox" — verification link sent by better-auth, resend timer.
 class VerifyEmailScreen extends ConsumerStatefulWidget {
-  const VerifyEmailScreen({super.key, required this.email});
+  const VerifyEmailScreen({super.key, required this.email, this.from});
   final String email;
+
+  /// Where the new account was headed before signing up (a guest's way back).
+  final String? from;
 
   @override
   ConsumerState<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -39,7 +42,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     final user = ref.read(currentUserProvider);
-    context.go(user == null ? Routes.signIn : Routes.homeFor(user.role));
+    context.go(user == null ? Routes.signInFrom(widget.from) : (widget.from ?? Routes.homeFor(user.role)));
   }
 
   @override
@@ -66,7 +69,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                   if (left.isNegative)
                     TextButton(onPressed: _resend, child: Text(l.resend))
                   else
-                    MonoLabel(l.resendIn(Fmt.timecode(left).substring(3))),
+                    Kicker(l.resendIn(Fmt.timecode(left).substring(3))),
                   const Spacer(),
                   TextButton(
                     // Signed in already: sign out first, or the router bounces sign-up straight back home.

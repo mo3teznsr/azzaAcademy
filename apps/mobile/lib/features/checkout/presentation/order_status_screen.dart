@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/providers.dart';
 import '../../../core/realtime/socket_events.dart';
+import '../../../core/site/site_settings.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/links.dart';
@@ -94,7 +94,7 @@ class _OrderStatusScreenState extends ConsumerState<OrderStatusScreen> with Widg
     final l = context.l10n;
     final order = ref.watch(orderProvider(widget.orderId));
     return Scaffold(
-      appBar: AppBar(title: order.hasValue ? MonoLabel(l.orderRef(order.requireValue.reference)) : null),
+      appBar: AppBar(title: order.hasValue ? Kicker(l.orderRef(order.requireValue.reference)) : null),
       body: AsyncView<Order>(
         value: order,
         onRetry: () => ref.invalidate(orderProvider(widget.orderId)),
@@ -114,6 +114,7 @@ class _OrderBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final supportEmail = ref.watch(supportEmailProvider);
     final l = context.l10n;
     final f = ref.watch(fmtProvider);
     final t = Theme.of(context).textTheme;
@@ -209,7 +210,7 @@ class _OrderBody extends ConsumerWidget {
         if (!usesAppStorePayments) FilledButton(onPressed: () => context.push(Routes.bankTransfer(o.id)), child: Text(l.reupload)),
         const SizedBox(height: 8),
         OutlinedButton(
-            onPressed: () => openExternal(context, 'mailto:${AppConfig.supportEmail}?subject=${Uri.encodeComponent('Order ${o.id}')}'),
+            onPressed: () => openExternal(context, 'mailto:$supportEmail?subject=${Uri.encodeComponent('Order ${o.id}')}'),
             child: Text(l.contactSupport)),
       ],
       if (usesAppStorePayments && o.awaitsAppStorePurchase) ...[

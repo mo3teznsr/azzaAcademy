@@ -10,8 +10,12 @@ import '../../../core/theme/typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../auth/presentation/guest_gate.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
+import '../../../core/network/error_text.dart';
+import '../data/calendar_repository.dart';
 import '../data/me_repository.dart';
 
 /// Week strip + agenda across every batch. Student "Schedule" and teacher "Calendar".
@@ -26,6 +30,20 @@ class ScheduleScreen extends ConsumerStatefulWidget {
 class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
   late DateTime _week = startOfWeek(DateTime.now());
   DateTime? _day;
+  bool _subscribing = false;
+
+  /// "Add to my calendar": opens the signed feed in the system calendar, or copies the link when nothing can.
+  Future<void> _subscribe() async {
+    setState(() => _subscribing = true);
+    try {
+      final result = await ref.read(calendarSubscribeProvider)();
+      if (result == CalendarSubscribeResult.copied && mounted) showToast(context, context.l10n.studentCalendarCopied);
+    } catch (e) {
+      if (mounted) showToast(context, errorText(context, e));
+    } finally {
+      if (mounted) setState(() => _subscribing = false);
+    }
+  }
 
   String _routeFor(SessionSummary s) {
     if (widget.role == Role.teacher) {
@@ -37,6 +55,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    if (widget.role == Role.student && ref.watch(isGuestProvider)) {
+      return GuestTab(heading: l.navSchedule, title: l.guestScheduleTitle, body: l.guestScheduleBody, icon: Icons.calendar_today_outlined);
+    }
     final f = ref.watch(fmtProvider);
     final locale = ref.watch(localeProvider);
     final sessions = ref.watch(weekScheduleProvider(_week));
@@ -53,8 +74,14 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   DisplayText(widget.role == Role.teacher ? l.navCalendar : l.thisWeek, size: 34),
-                  MonoLabel('${f.shortDate(days.first)}–${f.shortDate(days.last)}'),
+                  Kicker(f.dateRange(days.first, days.last)),
                 ]),
+              ),
+              IconButton(
+                key: const Key('calendar-subscribe'),
+                tooltip: l.studentAddToCalendar,
+                onPressed: _subscribing ? null : _subscribe,
+                icon: const Icon(Icons.event_available_rounded),
               ),
               IconButton(
                 tooltip: l.prevWeek,
@@ -110,7 +137,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     for (final e in byDay.entries) ...[
                       Padding(
                         padding: const EdgeInsetsDirectional.only(start: 4, top: 12, bottom: 8),
-                        child: MonoLabel(e.key == today ? '${l.today} · ${f.dayLabel(e.key)}' : f.dayLabel(e.key), color: e.key == today ? p.accent : null),
+                        child: Kicker(e.key == today ? '${l.today} · ${f.dayLabel(e.key)}' : f.dayLabel(e.key), color: e.key == today ? p.accent : null),
                       ),
                       CardGroup(
                         children: [
@@ -155,7 +182,7 @@ class _DayCell extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(color: selected ? p.accent : null, borderRadius: BorderRadius.circular(14)),
           child: Column(children: [
-            MonoLabel(dow, size: 9, color: selected ? p.onAccent : p.muted),
+            FittedBox(fit: BoxFit.scaleDown, child: Kicker(dow, color: selected ? p.onAccent : p.textSecondary)),
             const SizedBox(height: 4),
             Text(n, style: AzzaFonts.mono(size: 17, color: fg, tracking: 0)),
             const SizedBox(height: 4),

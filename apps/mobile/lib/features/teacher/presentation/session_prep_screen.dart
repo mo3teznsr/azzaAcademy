@@ -109,10 +109,10 @@ class _SessionPrepScreenState extends ConsumerState<SessionPrepScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
             children: [
-              MonoLabel('${d.slate} · ${f.dayTime(d.session.startsAt)}'),
+              Kicker('${d.slate} · ${f.dayTime(d.session.startsAt)}'),
               DisplayText(d.session.title, size: 30),
               SectionCard(
-                title: l.runOfShow(f.n(total)),
+                title: f.n(l.runOfShow(total)),
                 margin: const EdgeInsets.only(top: 24),
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -131,7 +131,7 @@ class _SessionPrepScreenState extends ConsumerState<SessionPrepScreen> {
                         child: Row(children: [
                           SizedBox(width: 64, child: Text(Fmt.timecode(Duration(minutes: b.minute)).substring(0, 5), style: AzzaFonts.mono(size: 14, color: p.accent, tracking: 0))),
                           Expanded(child: Text(b.label, style: t.titleSmall)),
-                          MonoLabel('${f.n((i + 1 < agenda.length ? agenda[i + 1].minute : total) - b.minute)} min'),
+                          Kicker('${f.n((i + 1 < agenda.length ? agenda[i + 1].minute : total) - b.minute)} min'),
                         ]),
                       ),
                     ),

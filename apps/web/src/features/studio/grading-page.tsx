@@ -20,6 +20,7 @@ import { qk } from '@/lib/query-keys';
 import { useAuth } from '@/lib/auth/use-auth';
 import { useI18n } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
+import { FileList } from '../files/file-attachments';
 
 type StatusFilter = 'all' | 'ungraded' | 'graded' | 'late';
 
@@ -231,6 +232,7 @@ function ReviewPane({ item, onReturned }: { item: QueueItem; onReturned: () => v
   const { t, f, fill } = useI18n();
   const qc = useQueryClient();
   const { submission: s, assignment: a } = item;
+  const files = s.files ?? [];
   const max = a.maxScore;
   const form = useForm<GradeValues>({ defaultValues: { score: s.score ?? (undefined as unknown as number), feedback: s.feedback ?? '' } });
   const grade = useMutation({
@@ -275,7 +277,13 @@ function ReviewPane({ item, onReturned }: { item: QueueItem; onReturned: () => v
           </a>
         )}
         {s.text && <p className="whitespace-pre-line">{s.text}</p>}
-        {!s.url && !s.text && <p className="text-sm text-muted-foreground">{t.grading.noContent}</p>}
+        {files.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <h4 className="text-sm font-medium">{f.plural(files.length, t.grading.files)}</h4>
+            <FileList files={files} />
+          </div>
+        )}
+        {!s.url && !s.text && files.length === 0 && <p className="text-sm text-muted-foreground">{t.grading.noContent}</p>}
       </section>
       <form className="flex flex-col gap-4" noValidate onSubmit={form.handleSubmit((v) => grade.mutate(v))}>
         <div className="flex flex-col gap-1.5">

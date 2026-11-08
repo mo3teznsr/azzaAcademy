@@ -27,6 +27,7 @@ class AttendanceSummaryScreen extends ConsumerStatefulWidget {
 
 class _AttendanceSummaryScreenState extends ConsumerState<AttendanceSummaryScreen> {
   final Map<String, AttendanceMark> _edits = {};
+  AttendanceMark? _only;
   bool _saving = false;
 
   Future<void> _save() async {
@@ -87,25 +88,56 @@ class _AttendanceSummaryScreenState extends ConsumerState<AttendanceSummaryScree
             return ListView(
               padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
               children: [
-                MonoLabel('${l.statusEnded} · ${Fmt.timecode(ran)}'),
+                Kicker('${l.statusEnded} · ${Fmt.timecode(ran)}'),
                 MonoLabel(d.slate),
                 const SizedBox(height: 6),
                 DisplayText(l.attendanceSummary, size: 34),
                 Text(d.session.title, style: t.bodySmall),
                 SectionCard(
+                  key: const Key('attendance-breakdown'),
                   margin: const EdgeInsets.only(top: 16),
+                  title: l.teacherAttendanceBreakdown,
+                  trailing: Kicker(l.teacherAttendanceRate(f.percent(marked.isEmpty ? 0 : (count(AttendanceMark.present) + count(AttendanceMark.late) + count(AttendanceMark.leftEarly)) * 100 / marked.length)), size: 12),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    Row(children: [
-                      for (final m in AttendanceMark.values)
-                        Expanded(
-                          child: Column(children: [
-                            DisplayText(f.n(count(m)), size: 30, color: m == AttendanceMark.absent ? p.muted : _color(m)),
-                            MonoLabel(_label(l, m), size: 9),
+                    if (marked.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(AzzaSpace.radiusPill),
+                        child: SizedBox(
+                          height: 10,
+                          child: Row(children: [
+                            for (final m in AttendanceMark.values)
+                              if (count(m) > 0) Expanded(flex: count(m), child: ColoredBox(color: _color(m))),
                           ]),
                         ),
-                    ]),
-                    const SizedBox(height: 12),
-                    Text(l.attendanceRule, style: t.bodySmall),
+                      ),
+                    const SizedBox(height: 8),
+                    for (final m in AttendanceMark.values)
+                      InkWell(
+                        key: Key('attendance-row-${m.name}'),
+                        onTap: () => setState(() => _only = _only == m ? null : m),
+                        child: Container(
+                          constraints: const BoxConstraints(minHeight: 44),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          color: _only == m ? _color(m).withValues(alpha: 0.12) : null,
+                          child: Row(children: [
+                            Container(width: 10, height: 10, decoration: BoxDecoration(color: _color(m), shape: BoxShape.circle)),
+                            const SizedBox(width: 10),
+                            Expanded(child: Text(_label(l, m), style: t.bodyMedium)),
+                            Text(f.n(count(m)), key: Key('attendance-count-${m.name}'), style: t.titleSmall),
+                            const SizedBox(width: 12),
+                            SizedBox(
+                              width: 48,
+                              child: Text(
+                                marked.isEmpty ? '—' : f.percent(count(m) * 100 / marked.length),
+                                textAlign: TextAlign.end,
+                                style: t.bodySmall?.copyWith(color: p.muted),
+                              ),
+                            ),
+                          ]),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Text(_only == null ? l.attendanceRule : l.teacherAttendanceFiltered(_label(l, _only!)), style: t.bodySmall),
                   ]),
                 ),
                 const SizedBox(height: 12),
@@ -113,14 +145,14 @@ class _AttendanceSummaryScreenState extends ConsumerState<AttendanceSummaryScree
                   EmptyState(title: l.noStudents)
                 else
                   CardGroup(children: [
-                    for (final r in marked)
+                    for (final r in marked.where((r) => _only == null || r.mark == _only))
                       ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         leading: InitialsAvatar(r.name, size: 36),
                         title: Text(r.name),
-                        subtitle: MonoLabel(
+                        subtitle: Kicker(
                           [
-                            if (r.joinedAt != null) '${f.time(r.joinedAt!)}–${r.leftAt == null ? '' : f.time(r.leftAt!)}',
+                            if (r.joinedAt != null) f.timeRange(r.joinedAt!, r.leftAt),
                             '${f.n((r.seconds / 60).round())} min',
                           ].join(' · '),
                         ),

@@ -1,5 +1,5 @@
 import type { CategoryInput, UpdateCategoryInput } from '@azza/shared';
-import { http, items } from './client';
+import { http, items, request } from './client';
 import type { Category, Items } from './types';
 
 export const categoriesApi = {
@@ -9,4 +9,11 @@ export const categoriesApi = {
   update: (slug: string, input: UpdateCategoryInput) => http.patch<Category>(`/api/v1/categories/${encodeURIComponent(slug)}`, input),
   /** 409 while courses still use it — hide it with `active: false` instead. */
   remove: (slug: string) => http.del<unknown>(`/api/v1/categories/${encodeURIComponent(slug)}`),
+  /** Admin: multipart field `file` (JPG/PNG/WEBP); stores `imageUrl` and returns the category. */
+  uploadImage: (slug: string, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request<Category>(`/api/v1/admin/categories/${encodeURIComponent(slug)}/image`, { method: 'POST', form });
+  },
+  removeImage: (slug: string) => http.del<Category>(`/api/v1/admin/categories/${encodeURIComponent(slug)}/image`),
 };

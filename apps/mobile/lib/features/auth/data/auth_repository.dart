@@ -10,7 +10,9 @@ import '../domain/app_user.dart';
 /// better-auth endpoints under `/api/auth/*` with the bearer plugin.
 abstract class AuthRepository {
   Future<AppUser> signIn({required String email, required String password});
-  Future<AppUser> signUp({required String name, required String email, required String password});
+  
+  /// [phone] is E.164 (`+971501234567`) and required.
+  Future<AppUser> signUp({required String name, required String email, required String password, required String phone});
 
   /// Restores the session from the stored token; `null` when signed out/expired.
   Future<AppUser?> restore();
@@ -48,8 +50,8 @@ class DioAuthRepository extends DioRepository implements AuthRepository {
       _authenticate('/api/auth/sign-in/email', {'email': email.trim(), 'password': password});
 
   @override
-  Future<AppUser> signUp({required String name, required String email, required String password}) =>
-      _authenticate('/api/auth/sign-up/email', {'name': name.trim(), 'email': email.trim(), 'password': password});
+  Future<AppUser> signUp({required String name, required String email, required String password, required String phone}) =>
+      _authenticate('/api/auth/sign-up/email', {'name': name.trim(), 'email': email.trim(), 'password': password, 'phone': phone});
 
   @override
   Future<AppUser?> restore() async {

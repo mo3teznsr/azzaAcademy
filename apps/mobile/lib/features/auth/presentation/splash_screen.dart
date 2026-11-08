@@ -47,7 +47,7 @@ class SplashScreen extends ConsumerWidget {
                   Row(children: [
                     const SignalMark(size: 14, color: AzzaColors.green),
                     const SizedBox(width: 8),
-                    Flexible(child: MonoLabel(l.splashTagline, color: AzzaColors.muted)),
+                    Flexible(child: Kicker(l.splashTagline, color: AzzaColors.muted)),
                   ]),
                   const SizedBox(height: 28),
                   if (auth.hasError)

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useQueries, useQuery } from '@tanstack/react-query';
-import { batchesApi, meApi, type Assignment, type Enrollment, type Material } from '@/lib/api';
+import { batchesApi, learningApi, meApi, type Assignment, type Enrollment, type Material } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 
 export function useEnrollments() {
@@ -25,6 +25,11 @@ export function useMySchedule(from: Date, to: Date) {
     queryFn: () => meApi.schedule(f, t),
     select: (items) => [...items].sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
   });
+}
+
+/** Lesson progress for every course I'm actively enrolled in ("Continue learning"). */
+export function useLearningProgress() {
+  return useQuery({ queryKey: qk.learningProgress, queryFn: learningApi.myLearningProgress });
 }
 
 export function useRecordings() {

@@ -17,6 +17,9 @@ abstract class AppStoreGateway {
 
   /// Starts the App Store sheet; the outcome arrives on [purchases].
   Future<void> buy(String productId, {required String appAccountToken});
+
+  /// Same, for an auto-renewable subscription product.
+  Future<void> buySubscription(String productId, {required String appAccountToken});
   Stream<List<StorePurchase>> get purchases;
 
   /// Transactions bought but never finished (app killed before the server confirmed).
@@ -46,6 +49,14 @@ class InAppPurchaseGateway implements AppStoreGateway {
     if (d == null) throw const AppException('APPLE_PRODUCT_UNAVAILABLE', 'This product is not available in the App Store.');
     // StoreKit 2 stores `applicationUserName` as the transaction's appAccountToken (must be a UUID).
     await _iap.buyConsumable(purchaseParam: PurchaseParam(productDetails: d, applicationUserName: appAccountToken));
+  }
+
+  @override
+  Future<void> buySubscription(String productId, {required String appAccountToken}) async {
+    final d = _details[productId];
+    if (d == null) throw const AppException('APPLE_PRODUCT_UNAVAILABLE', 'This product is not available in the App Store.');
+    // Subscriptions are bought like non-consumables: `appAccountToken` rides along the same way.
+    await _iap.buyNonConsumable(purchaseParam: PurchaseParam(productDetails: d, applicationUserName: appAccountToken));
   }
 
   @override
