@@ -14,7 +14,7 @@ export class PrismaPayoutRepository {
         endsAt: true,
         hostId: true,
         batchId: true,
-        batch: { select: { teacherId: true, schedule: { select: { sessionCount: true } }, _count: { select: { sessions: true } } } },
+        batch: { select: { teacherId: true, course: { select: { type: true, teacherCutPercent: true } }, schedule: { select: { sessionCount: true } }, _count: { select: { sessions: true } } } },
       },
     });
   }
@@ -34,12 +34,93 @@ export class PrismaPayoutRepository {
     });
   }
 
-  createEarning(data: { teacherId: string; batchId: string; kind: string; amountFils: number; status: EarningStatus; availableAt: Date; note?: string; payoutId?: string }) {
+  createEarning(data: {
+    teacherId: string;
+    batchId?: string;
+    courseId?: string;
+    subscriptionPaymentId?: string;
+    kind: string;
+    amountFils: number;
+    status: EarningStatus;
+    availableAt: Date;
+    note?: string;
+    payoutId?: string;
+  }) {
     return this.db.earning.create({ data });
+  }
+
+  updateEarning(id: string, data: { amountFils?: number; status?: EarningStatus; availableAt?: Date }) {
+    return this.db.earning.update({ where: { id }, data });
+  }
+
+  // ── recorded (subscription) earnings ──
+  subscriptionPaymentForAccrual(paymentId: string) {
+    return this.db.subscriptionPayment.findUnique({
+      where: { id: paymentId },
+      select: {
+        id: true,
+        status: true,
+        reviewNote: true,
+        totalFils: true,
+        vatFils: true,
+        feeFils: true,
+        refundedFils: true,
+        paidAt: true,
+        subscription: { select: { course: { select: { id: true, type: true, teacherCutPercent: true, createdById: true } } } },
+      },
+    });
+  }
+
+  /** Idempotent through the unique (subscriptionPaymentId, kind) key: an existing row is returned untouched. */
+  upsertSubscriptionEarning(data: { teacherId: string; courseId: string; subscriptionPaymentId: string; amountFils: number; availableAt: Date; status: EarningStatus }) {
+    return this.db.earning.upsert({
+      where: { subscriptionPaymentId_kind: { subscriptionPaymentId: data.subscriptionPaymentId, kind: 'SUBSCRIPTION' } },
+      create: { ...data, kind: 'SUBSCRIPTION' },
+      update: {},
+    });
+  }
+
+  subscriptionEarningFor(paymentId: string) {
+    return this.db.earning.findUnique({ where: { subscriptionPaymentId_kind: { subscriptionPaymentId: paymentId, kind: 'SUBSCRIPTION' } } });
+  }
+
+  /** Negative adjustments of one payment: the keyed row plus any later ones (marked in the note, as the key allows one). */
+  adjustmentsForPayment(paymentId: string) {
+    return this.db.earning.findMany({
+      where: { kind: 'REFUND_ADJUSTMENT', OR: [{ subscriptionPaymentId: paymentId }, { note: `Subscription refund ${paymentId}` }] },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async earnedByCourse(teacherId: string) {
+    const rows = await this.db.earning.groupBy({ by: ['courseId'], where: { teacherId, courseId: { not: null }, status: { not: 'REVERSED' } }, _sum: { amountFils: true } });
+    const ids = rows.map((r) => r.courseId!).filter(Boolean);
+    const courses = ids.length ? await this.db.course.findMany({ where: { id: { in: ids } }, select: { id: true, titleEn: true, titleAr: true } }) : [];
+    const byId = new Map(courses.map((c) => [c.id, c]));
+    return rows.map((r) => ({ courseId: r.courseId!, titleEn: byId.get(r.courseId!)?.titleEn ?? '', titleAr: byId.get(r.courseId!)?.titleAr ?? '', earnedFils: r._sum.amountFils ?? 0 }));
+  }
+
+  /** Per payout, what each course contributed (course earnings only), for the run screens. */
+  async runEarningsByCourse(payoutIds: string[]) {
+    if (!payoutIds.length) return [];
+    const rows = await this.db.earning.groupBy({ by: ['payoutId', 'courseId'], where: { payoutId: { in: payoutIds }, courseId: { not: null } }, _sum: { amountFils: true } });
+    const ids = [...new Set(rows.map((r) => r.courseId!))];
+    const courses = await this.db.course.findMany({ where: { id: { in: ids } }, select: { id: true, titleEn: true, titleAr: true } });
+    const byId = new Map(courses.map((c) => [c.id, c]));
+    return rows.map((r) => ({ payoutId: r.payoutId!, courseId: r.courseId!, titleEn: byId.get(r.courseId!)?.titleEn ?? '', titleAr: byId.get(r.courseId!)?.titleAr ?? '', amountFils: r._sum.amountFils ?? 0 }));
   }
 
   async releaseMatured(now: Date) {
     return (await this.db.earning.updateMany({ where: { status: 'PENDING', availableAt: { lte: now } }, data: { status: 'AVAILABLE' } })).count;
+  }
+
+  /** What the teacher still holds from the batch's sessions: SESSION earnings plus earlier (negative) refund adjustments, reversed rows excluded. */
+  async netAccruedForBatch(batchId: string, teacherId: string) {
+    const r = await this.db.earning.aggregate({
+      where: { batchId, teacherId, kind: { in: ['SESSION', 'REFUND_ADJUSTMENT'] }, status: { not: 'REVERSED' } },
+      _sum: { amountFils: true },
+    });
+    return r._sum.amountFils ?? 0;
   }
 
   batchForRefund(batchId: string) {
@@ -48,6 +129,7 @@ export class PrismaPayoutRepository {
       select: {
         id: true,
         teacherId: true,
+        course: { select: { type: true, teacherCutPercent: true } },
         schedule: { select: { sessionCount: true } },
         _count: { select: { sessions: { where: { status: 'ENDED' } } } },
       },
@@ -73,7 +155,7 @@ export class PrismaPayoutRepository {
         status: true,
         startsOn: true,
         endsOn: true,
-        course: { select: { id: true, titleEn: true, titleAr: true } },
+        course: { select: { id: true, titleEn: true, titleAr: true, type: true, teacherCutPercent: true } },
         schedule: { select: { sessionCount: true } },
         _count: { select: { sessions: { where: { status: 'ENDED' } }, enrollments: { where: { status: 'ACTIVE' } } } },
       },
@@ -81,8 +163,8 @@ export class PrismaPayoutRepository {
   }
 
   async earnedByBatch(teacherId: string) {
-    const rows = await this.db.earning.groupBy({ by: ['batchId'], where: { teacherId, status: { not: 'REVERSED' } }, _sum: { amountFils: true } });
-    return new Map(rows.map((r) => [r.batchId, r._sum.amountFils ?? 0]));
+    const rows = await this.db.earning.groupBy({ by: ['batchId'], where: { teacherId, batchId: { not: null }, status: { not: 'REVERSED' } }, _sum: { amountFils: true } });
+    return new Map(rows.map((r) => [r.batchId!, r._sum.amountFils ?? 0]));
   }
 
   scheduledSessions(teacherId: string, from: Date, to: Date) {
@@ -107,6 +189,7 @@ export class PrismaPayoutRepository {
         note: true,
         payoutId: true,
         batch: { select: { id: true, code: true, course: { select: { titleEn: true, titleAr: true } } } },
+        course: { select: { id: true, titleEn: true, titleAr: true } },
         session: { select: { id: true, number: true, title: true, endedAt: true } },
       },
     });
@@ -144,7 +227,7 @@ export class PrismaPayoutRepository {
   eligibleEarnings(before: Date) {
     return this.db.earning.findMany({
       where: { status: 'AVAILABLE', payoutId: null, availableAt: { lt: before } },
-      select: { id: true, teacherId: true, amountFils: true, batchId: true },
+      select: { id: true, teacherId: true, amountFils: true, batchId: true, courseId: true },
     });
   }
 
@@ -203,7 +286,7 @@ export class PrismaPayoutRepository {
   findPayout(id: string) {
     return this.db.payout.findUnique({
       where: { id },
-      include: { run: true, earnings: { select: { batchId: true }, take: 1 }, teacher: { select: { bankDetails: true } } },
+      include: { run: true, earnings: { select: { batchId: true, courseId: true }, take: 1 }, teacher: { select: { bankDetails: true } } },
     });
   }
 

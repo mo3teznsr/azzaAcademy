@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Radio } from 'lucide-react';
+import { ArrowRight, CircleCheck, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Chip, EnrollmentStatusChip, SessionStatusChip } from '@/components/brand/status-chip';
 import { CourseCover } from '@/components/brand/course-cover';
 import { SessionSlate } from '@/components/brand/session-slate';
@@ -12,11 +13,16 @@ import { EmptyState, ErrorState, LoadingBlock, QueryView } from '@/components/br
 import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { SignalMark } from '@/components/brand/signal-mark';
 import type { Enrollment, ScheduleItem } from '@/lib/api/types';
+import { subscriptionsApi, type CourseLearningProgress, type MySubscription } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
+import { useQuery } from '@tanstack/react-query';
+import { RenewButton } from '../subscriptions/manage-plan';
 import { useI18n } from '@/lib/i18n/provider';
 import { sessionCode, timecode } from '@/lib/i18n/format';
 import { describeRule, minutesUntil, sessionState } from '@/lib/schedule';
 import { useNow } from '@/lib/use-now';
-import { useEnrollments, useMyAssignments, useMySchedule, useRecordings } from './hooks';
+import { cn } from '@/lib/utils';
+import { useEnrollments, useLearningProgress, useMyAssignments, useMySchedule, useRecordings } from './hooks';
 import { WaitlistPanel } from '../waitlist/waitlist-panel';
 import { QuizzesDuePanel } from '../quizzes/my-quizzes';
 import { useCategoryLabel } from '@/components/brand/category';
@@ -49,6 +55,8 @@ export function LearnDashboard() {
       ) : (
         <EmptyState title={t.learn.emptyTitle} body={t.learn.emptyBody} action={{ label: t.learn.browse, href: '/#catalog' }} />
       )}
+
+      <ContinueLearning />
 
       <WaitlistPanel />
 
@@ -92,6 +100,99 @@ export function LearnDashboard() {
         <RecentRecordings />
       </div>
     </>
+  );
+}
+
+/** Lessons first: where each course stands and the one lesson to open next. Hidden when there's nothing to continue. */
+function ContinueLearning() {
+  const { t } = useI18n();
+  const q = useLearningProgress();
+  // Recorded courses show their plan; the rows also know the previous plan for "Renew to continue".
+  const hasRecorded = !!q.data?.some((c) => c.type === 'RECORDED');
+  const subs = useQuery({ queryKey: qk.mySubscriptions, queryFn: subscriptionsApi.mine, enabled: hasRecorded, retry: false });
+  if (q.isPending) return <LoadingBlock rows={1} height={140} />;
+  if (q.isError) return <ErrorState compact error={q.error} onRetry={() => void q.refetch()} />;
+  if (q.data.length === 0) return null;
+  return (
+    <section aria-labelledby="continue" className="flex flex-col gap-4">
+      <SectionHeader title={<span id="continue">{t.learn.continueTitle}</span>} />
+      <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-4">
+        {q.data.map((c) => (
+          <li key={c.courseId} className="flex min-w-0">
+            <ContinueCard course={c} plan={subs.data?.find((s) => s.course.id === c.courseId && s.status !== 'INCOMPLETE')} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Recorded courses: the status line under the progress, or null when the API hasn't sent the plan. */
+function planLine(c: CourseLearningProgress, t: ReturnType<typeof useI18n>['t'], f: ReturnType<typeof useI18n>['f'], fill: ReturnType<typeof useI18n>['fill']): string | null {
+  const sub = c.subscription;
+  if (c.type !== 'RECORDED' || !sub) return null;
+  if (!sub.hasAccess) return t.recorded.ended;
+  if (sub.status === 'PAST_DUE') return t.recorded.pastDue;
+  if (!sub.currentPeriodEnd) return null;
+  const date = f.dayMonth(sub.currentPeriodEnd);
+  return fill(sub.status === 'CANCELLING' || sub.cancelAtPeriodEnd ? t.recorded.ends : t.recorded.renews, { date });
+}
+
+function ContinueCard({ course: c, plan }: { course: CourseLearningProgress; plan?: MySubscription }) {
+  const { t, f, fill, pick } = useI18n();
+  const recorded = c.type === 'RECORDED';
+  const lapsed = recorded && !!c.subscription && !c.subscription.hasAccess;
+  const status = planLine(c, t, f, fill);
+  const pct = c.total ? Math.round((c.completed / c.total) * 100) : 0;
+  const done = c.total > 0 && c.completed >= c.total;
+  const title = pick(c.titleEn, c.titleAr).text;
+  const progressText = fill(t.learn.lessonsProgress, { a: f.number(c.completed), b: f.number(c.total) });
+  const next = c.nextLesson;
+  return (
+    <article className="flex min-w-0 flex-1 flex-col gap-4 rounded-xl border border-border bg-card p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col items-start gap-1.5">
+          {recorded && <Chip tone="ivory">{t.recorded.recordedChip}</Chip>}
+          <b className="min-w-0 text-base">{title}</b>
+        </div>
+        {done ? <CircleCheck className="size-5 shrink-0 text-sun-fg" aria-hidden /> : <span className="timecode text-xs text-muted-foreground">{f.percent(pct)}</span>}
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Progress value={pct} aria-label={fill(t.learn.progressFor, { course: title })} aria-valuetext={progressText} className="h-1.5 rtl:-scale-x-100 [&_[data-slot=progress-indicator]]:bg-green" />
+        <span className="text-[13px] text-muted-foreground">{c.total ? progressText : t.learn.noLessonsYet}</span>
+      </div>
+      {status && (
+        <p className={cn('text-[13px] font-semibold', c.subscription?.status === 'PAST_DUE' || lapsed ? 'rounded-xl bg-peach px-3 py-2 text-ink' : 'text-muted-foreground')}>{status}</p>
+      )}
+      <div className="mt-auto">
+        {lapsed ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <RenewButton subscription={plan} slug={c.slug} />
+            <Link href={`/learn/courses/${c.courseId}`} className="link-sun text-sm">
+              {t.learning.lessons.open}
+            </Link>
+          </div>
+        ) : done ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <b className="text-sm">{t.learn.allDone}</b>
+            <Link href="/quizzes" className="link-sun text-sm">
+              {t.learn.practice}
+            </Link>
+          </div>
+        ) : next ? (
+          <Link
+            href={`/learn/courses/${c.courseId}?lesson=${next.id}`}
+            className="group flex items-center justify-between gap-3 rounded-[14px] border border-border bg-background p-3 no-underline transition-colors hover:border-green-deep"
+          >
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-bold text-foreground">{fill(t.learn.resume, { title: pick(next.titleEn, next.titleAr).text })}</span>
+              <span className="truncate text-[13px] text-muted-foreground">{pick(next.moduleTitleEn, next.moduleTitleAr).text}</span>
+            </span>
+            <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
+          </Link>
+        ) : null}
+      </div>
+    </article>
   );
 }
 

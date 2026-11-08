@@ -1,4 +1,4 @@
-import type { CourseLevel, CourseReviewInput, CourseSort, CourseStatus, CreateCourseInput, ReviewDecisionInput, SessionLanguage, UpdateCourseInput } from '@azza/shared';
+import type { CourseLevel, CourseType, CourseReviewInput, CourseSort, CourseStatus, CreateCourseInput, ReviewDecisionInput, SessionLanguage, UpdateCourseInput } from '@azza/shared';
 import { http, items, uploadWithProgress } from './client';
 import type { CertificateVerification, Course, CourseReview, CourseReviewPage, Items, LiveNow, Paged, SavedCourse, TeacherProfile } from './types';
 
@@ -9,6 +9,8 @@ export interface CourseListParams {
   category?: string;
   level?: CourseLevel;
   status?: CourseStatus;
+  /** Asked of the API; callers also filter client-side. */
+  type?: CourseType;
   /** TEACHER: only the courses they proposed, any status. */
   mine?: boolean;
   /** Has an ENROLLING batch taught in this language. */
@@ -43,6 +45,8 @@ export const coursesApi = {
   update: (id: string, input: UpdateCourseInput) => http.patch<Course>(`/api/v1/courses/${id}`, input),
   /** TEACHER: send their own DRAFT to the admins → PENDING_REVIEW. */
   submit: (id: string) => http.post<Course>(`/api/v1/courses/${id}/submit`),
+  /** Course editors: the one lesson anyone can watch without a plan; null clears it. */
+  setPreviewLesson: (id: string, lessonId: string | null) => http.put<Course>(`/api/v1/courses/${id}/preview-lesson`, { lessonId }),
   /** ADMIN: approve (→ PUBLISHED) or send back with a note (→ DRAFT). */
   review: (id: string, input: ReviewDecisionInput) => http.post<Course>(`/api/v1/courses/${id}/review`, input),
   /** Cover photo / intro video upload that teachers may call too. */

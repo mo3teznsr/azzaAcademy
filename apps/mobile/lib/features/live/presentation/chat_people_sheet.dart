@@ -82,7 +82,7 @@ class _ChatPeopleSheetState extends ConsumerState<ChatPeopleSheet> with SingleTi
                                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                   Row(children: [
                                     Text(m.userName, style: t.titleSmall?.copyWith(color: m.fromHost ? p.accent : p.text)),
-                                    if (m.fromHost) ...[const SizedBox(width: 6), MonoLabel(l.hostLabel, color: p.accent)],
+                                    if (m.fromHost) ...[const SizedBox(width: 6), Kicker(l.hostLabel, color: p.accent)],
                                     const SizedBox(width: 8),
                                     MonoLabel(f.time(m.createdAt)),
                                   ]),
@@ -109,7 +109,7 @@ class _ChatPeopleSheetState extends ConsumerState<ChatPeopleSheet> with SingleTi
                 ]),
                 // ── People
                 ListView(padding: const EdgeInsets.all(16), children: [
-                  MonoLabel(l.handsN('${c.hands.length}')),
+                  Kicker(l.handsN('${c.hands.length}')),
                   const SizedBox(height: 8),
                   if (c.hands.isEmpty) Text(l.noHands, style: t.bodySmall),
                   for (final (i, h) in c.hands.indexed)
@@ -127,7 +127,7 @@ class _ChatPeopleSheetState extends ConsumerState<ChatPeopleSheet> with SingleTi
                           : null,
                     ),
                   const SizedBox(height: 16),
-                  MonoLabel(l.inRoom('${people.length}')),
+                  Kicker(l.inRoom('${people.length}')),
                   for (final person in people)
                     ListTile(
                       contentPadding: EdgeInsets.zero,

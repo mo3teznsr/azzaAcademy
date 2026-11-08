@@ -42,13 +42,13 @@ class EarningsScreen extends ConsumerWidget {
           return RefreshList(
             onRefresh: () async => ref.invalidate(earningsProvider),
             children: [
-              MonoLabel(f.monthYear(now)),
+              Kicker(f.monthYear(now)),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(color: AzzaColors.sun, borderRadius: BorderRadius.circular(AzzaSpace.radius)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  MonoLabel(
+                  Kicker(
                     [l.earnedSoFar, if (e.nextPayout != null) l.nextPayoutOn(f.shortDate(e.nextPayout!))].join(' · '),
                     color: AzzaColors.ink,
                   ),
@@ -84,7 +84,7 @@ class EarningsScreen extends ConsumerWidget {
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text('${b.code} · ${b.title(ref.watch(localeProvider))}', style: t.titleSmall),
                             Text(
-                              [l.sessionsDelivered(f.n(b.sessionsDelivered)), if (b.perSessionFils != null) '${f.aed(b.perSessionFils!)} / S'].join(' · '),
+                              [f.n(l.sessionsDelivered(b.sessionsDelivered)), if (b.perSessionFils != null) '${f.aed(b.perSessionFils!)} / S'].join(' · '),
                               style: t.bodySmall,
                             ),
                           ]),
@@ -94,6 +94,25 @@ class EarningsScreen extends ConsumerWidget {
                     ),
                 ]),
               ),
+              if (e.courses.isNotEmpty)
+                SectionCard(
+                  key: const Key('earnings-courses'),
+                  title: l.earningsRecordedCourses,
+                  margin: const EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    for (final (i, c) in e.courses.indexed)
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(border: i == 0 ? null : Border(top: BorderSide(color: p.line))),
+                        child: Row(children: [
+                          Expanded(child: Text(c.title(ref.watch(localeProvider)), style: t.titleSmall)),
+                          const SizedBox(width: 12),
+                          Text(f.aed(c.amountFils), style: t.titleSmall),
+                        ]),
+                      ),
+                  ]),
+                ),
               const SizedBox(height: 16),
               Text(l.netRevenueNote, style: t.bodySmall),
             ],
@@ -114,7 +133,7 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) => Expanded(
         child: RaisedCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            MonoLabel(label),
+            Kicker(label),
             const SizedBox(height: 4),
             Text(value, style: Theme.of(context).textTheme.titleMedium),
             Text(sub, style: Theme.of(context).textTheme.bodySmall),

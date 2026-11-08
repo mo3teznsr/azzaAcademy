@@ -1,4 +1,4 @@
-import type { CourseFaqItem, CourseLevel, CourseSort, CourseStatus, SessionLanguage } from '@azza/shared';
+import type { CourseFaqItem, CourseLevel, CourseType, CourseSort, CourseStatus, SessionLanguage } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
 
 export interface CourseModuleRecord {
@@ -28,11 +28,26 @@ export interface CourseRecord {
   descriptionAr: string | null;
   category: string;
   level: CourseLevel;
+  /** Fixed at creation. */
+  type: CourseType;
   coverStyle: string;
   coverImageUrl: string | null;
   introVideoUrl: string | null;
-  /** Lowest public batch price ("from"); null while no batch is public. */
+  /** The "from" price: the lowest public batch price (LIVE) or the monthly price (RECORDED); null while there is none. */
   priceFils: number | null;
+  /** RECORDED only, before VAT. */
+  monthlyPriceFils: number | null;
+  yearlyPriceFils: number | null;
+  teacherCutPercent: number | null;
+  previewLessonId: string | null;
+  stripeProductId: string | null;
+  stripeMonthlyPriceId: string | null;
+  stripeYearlyPriceId: string | null;
+  appleMonthlyProductId: string | null;
+  appleYearlyProductId: string | null;
+  appleSyncStatus: string | null;
+  appleSyncDetail: string | null;
+  appleSyncedAt: Date | null;
   outcomesEn: string[];
   outcomesAr: string[];
   requirementsEn: string[];
@@ -60,10 +75,22 @@ export interface CourseWriteData {
   descriptionAr?: string | null;
   category?: string;
   level?: CourseLevel;
+  type?: CourseType;
   coverStyle?: string;
   coverImageUrl?: string | null;
   introVideoUrl?: string | null;
-  priceFils?: number;
+  priceFils?: number | null;
+  monthlyPriceFils?: number | null;
+  yearlyPriceFils?: number | null;
+  previewLessonId?: string | null;
+  stripeProductId?: string | null;
+  stripeMonthlyPriceId?: string | null;
+  stripeYearlyPriceId?: string | null;
+  appleMonthlyProductId?: string | null;
+  appleYearlyProductId?: string | null;
+  appleSyncStatus?: string | null;
+  appleSyncDetail?: string | null;
+  appleSyncedAt?: Date | null;
   outcomesEn?: string[];
   outcomesAr?: string[];
   requirementsEn?: string[];
@@ -84,6 +111,7 @@ export interface CourseFilter {
   q?: string;
   category?: string;
   level?: CourseLevel;
+  type?: CourseType;
   status?: CourseStatus;
   createdById?: string;
   language?: SessionLanguage;
@@ -102,7 +130,7 @@ export interface CourseRepository {
   findById(id: string): Promise<CourseRecord | null>;
   findBySlug(slug: string): Promise<CourseRecord | null>;
   create(data: CourseWriteData & Required<Pick<CourseWriteData, 'slug' | 'titleEn' | 'category' | 'level'>>): Promise<CourseRecord>;
-  /** Recomputes the course's "from" price from its public batches. */
+  /** Recomputes the course's "from" price: from its public batches (LIVE), or the monthly price (RECORDED). */
   refreshFromPrice(courseId: string): Promise<void>;
   update(id: string, data: CourseWriteData): Promise<CourseRecord>;
   countActiveBatches(id: string): Promise<number>;
@@ -141,6 +169,7 @@ export class PrismaCourseRepository implements CourseRepository {
       ...(f.featured && { featuredRank: { not: null } }),
       ...(f.category && { category: f.category }),
       ...(f.level && { level: f.level }),
+      ...(f.type && { type: f.type }),
       ...(f.q && {
         OR: [
           { titleEn: { contains: f.q, mode: 'insensitive' as const } },
@@ -175,6 +204,11 @@ export class PrismaCourseRepository implements CourseRepository {
   }
 
   async refreshFromPrice(courseId: string) {
+    const course = await this.db.course.findUnique({ where: { id: courseId }, select: { type: true, monthlyPriceFils: true } });
+    if (course?.type === 'RECORDED') {
+      await this.db.course.update({ where: { id: courseId }, data: { priceFils: course.monthlyPriceFils } });
+      return;
+    }
     const agg = await this.db.batch.aggregate({
       where: { courseId, status: { in: ['ENROLLING', 'FULL', 'RUNNING'] } },
       _min: { priceFils: true },

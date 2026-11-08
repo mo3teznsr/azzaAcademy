@@ -10,6 +10,13 @@ String _courseName(Course course, String courseTitle, AppLocale l) {
   return course.title(l);
 }
 
+enum CertificateKind {
+  live,
+  recorded;
+
+  static CertificateKind parse(Object? raw) => '$raw'.toUpperCase() == 'RECORDED' ? recorded : live;
+}
+
 /// An earned certificate (`GET /me/certificates` item, or `GET /certificates/:code`).
 @immutable
 class Certificate {
@@ -27,9 +34,11 @@ class Certificate {
     this.startsOn,
     this.endsOn,
     this.holderName,
+    this.kind = CertificateKind.live,
   });
 
   factory Certificate.fromJson(Json j) => Certificate(
+        kind: CertificateKind.parse(j['kind']),
         id: str(j, 'id'),
         code: str(j, 'code'),
         issuedAt: date(j, 'issuedAt'),
@@ -62,6 +71,10 @@ class Certificate {
 
   /// Only on the public verify response.
   final String? holderName;
+
+  /// RECORDED certificates have a course but no class: no batch code, dates or attendance.
+  final CertificateKind kind;
+  bool get isRecorded => kind == CertificateKind.recorded;
 
   String courseName(AppLocale l) => _courseName(course, courseTitle, l);
 }

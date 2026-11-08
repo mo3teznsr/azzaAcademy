@@ -17,44 +17,89 @@ import '../data/proposals_repository.dart';
 import '../data/teacher_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../chat/presentation/messages_button.dart';
+import '../../learn/data/learn_repository.dart';
+import '../../learn/data/quizzes_repository.dart';
 import 'batch_sessions_editor.dart';
+import 'class_hub_sections.dart';
 import 'proposal_widgets.dart';
 import 'teacher_batches_screen.dart';
 
 enum _RosterFilter { all, atRisk, waitlist }
 
-/// Batch roster: who's in, who's slipping, who's on the waitlist.
+/// The class hub's sections, in segmented-control order.
+enum ClassHubSection {
+  sessions,
+  students,
+  practice,
+  materials,
+  recordings;
+
+  static ClassHubSection parse(String? raw) => values.firstWhere((s) => s.name == raw, orElse: () => ClassHubSection.sessions);
+}
+
+/// The class hub: sessions, students, practice, materials and recordings of one class, plus chat and announcements.
+/// (The route is still `/batches/:id/roster`; `?tab=` opens a section.)
 class RosterScreen extends ConsumerStatefulWidget {
-  const RosterScreen({super.key, required this.batchId});
+  const RosterScreen({super.key, required this.batchId, this.initialSection = ClassHubSection.sessions, this.initialAtRisk = false});
   final String batchId;
+  final ClassHubSection initialSection;
+
+  /// Opens Students already filtered to at-risk (from Today's "Needs you").
+  final bool initialAtRisk;
 
   @override
   ConsumerState<RosterScreen> createState() => _RosterScreenState();
 }
 
 class _RosterScreenState extends ConsumerState<RosterScreen> {
-  _RosterFilter _filter = _RosterFilter.all;
+  late ClassHubSection _section = widget.initialSection;
+  late _RosterFilter _filter = widget.initialAtRisk ? _RosterFilter.atRisk : _RosterFilter.all;
   String _q = '';
+
+  Future<void> _refresh() async {
+    ref
+      ..invalidate(batchProvider(widget.batchId))
+      ..invalidate(rosterProvider(widget.batchId));
+    switch (_section) {
+      case ClassHubSection.practice:
+        ref
+          ..invalidate(assignmentsProvider(widget.batchId))
+          ..invalidate(batchQuizzesProvider(widget.batchId));
+      case ClassHubSection.materials:
+        ref.invalidate(materialsProvider(widget.batchId));
+      case ClassHubSection.recordings:
+        ref.invalidate(recordingsProvider);
+      case ClassHubSection.sessions || ClassHubSection.students:
+        break;
+    }
+  }
+
+  String _sectionLabel(AppLocalizations l, ClassHubSection s) => switch (s) {
+        ClassHubSection.sessions => l.teacherHubSessions,
+        ClassHubSection.students => l.teacherHubStudents,
+        ClassHubSection.practice => l.teacherHubPractice,
+        ClassHubSection.materials => l.materials,
+        ClassHubSection.recordings => l.recordings,
+      };
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
     final f = ref.watch(fmtProvider);
     final locale = ref.watch(localeProvider);
-    final batch = ref.watch(batchProvider(widget.batchId)).value;
+    final batchAsync = ref.watch(batchProvider(widget.batchId));
+    final batch = batchAsync.value;
     final roster = ref.watch(rosterProvider(widget.batchId));
-    final t = Theme.of(context).textTheme;
-    final p = AzzaPalette.of(context);
 
-    // Not approved yet: no students can be enrolled, so show the proposal instead of the roster.
+    // Not approved yet: no students can be enrolled, so show the proposal instead of the hub.
     if (batch != null && batch.status.isProposal) {
       return Scaffold(
         appBar: AppBar(),
         body: RefreshList(
           onRefresh: () async => ref.invalidate(batchProvider(widget.batchId)),
           children: [
-            MonoLabel('${batch.course?.title(locale) ?? ''} · ${scheduleLabel(f, batch.schedule)}'),
-            DisplayText(l.rosterTitle(batch.code), size: 34),
+            Kicker('${batch.course?.title(locale) ?? ''} · ${scheduleLabel(f, batch.schedule)}'),
+            DisplayText(l.teacherHubTitle(batch.course?.title(locale) ?? '', batch.code), size: 30),
             const SizedBox(height: 16),
             BatchProposalPanel(batch: batch),
           ],
@@ -62,106 +107,149 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
       );
     }
 
+    if (batch == null && batchAsync.hasError) {
+      return Scaffold(appBar: AppBar(), body: ErrorState(error: batchAsync.error!, onRetry: () => ref.invalidate(batchProvider(widget.batchId))));
+    }
+
+    final all = roster.value ?? const <RosterStudent>[];
+    final enrolled = all.where((s) => !s.waitlisted).toList();
+    final pcts = enrolled.map((s) => s.attendancePct).whereType<double>().toList();
+    final avg = pcts.isEmpty ? null : pcts.reduce((a, b) => a + b) / pcts.length;
+
     return Scaffold(
-      appBar: AppBar(actions: [
-        IconButton(
-          key: const Key('roster-announcements'),
-          tooltip: l.announcementsTitle,
-          onPressed: () => context.push(Routes.batchAnnouncements(widget.batchId)),
-          icon: const Icon(Icons.campaign_outlined),
-        ),
-        IconButton(
-          key: const Key('roster-class-chat'),
-          tooltip: l.classChat,
-          onPressed: () => openClassChat(context, ref, widget.batchId),
-          icon: const Icon(Icons.forum_outlined),
-        ),
-        TextButton.icon(
-          key: const Key('batch-quizzes'),
-          style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
-          onPressed: () => context.push(Routes.batchQuizzes(widget.batchId)),
-          icon: const Icon(Icons.quiz_outlined, size: 20),
-          label: Text(l.quizzesTitle),
-        ),
-        const SizedBox(width: 8),
-      ]),
-      body: AsyncView<List<RosterStudent>>(
-        value: roster,
-        onRetry: () => ref.invalidate(rosterProvider(widget.batchId)),
-        data: (all) {
-          final enrolled = all.where((s) => !s.waitlisted).toList();
-          final atRisk = enrolled.where((s) => s.atRisk).toList();
-          final waitlist = all.where((s) => s.waitlisted).toList();
-          final pcts = enrolled.map((s) => s.attendancePct).whereType<double>().toList();
-          final avg = pcts.isEmpty ? null : pcts.reduce((a, b) => a + b) / pcts.length;
-          final shown = switch (_filter) {
-            _RosterFilter.all => enrolled,
-            _RosterFilter.atRisk => atRisk,
-            _RosterFilter.waitlist => waitlist,
-          }
-              .where((s) => _q.isEmpty || s.name.toLowerCase().contains(_q.toLowerCase()))
-              .toList();
-          return RefreshList(
-            onRefresh: () async => ref.invalidate(rosterProvider(widget.batchId)),
-            children: [
-              if (batch != null) ...[
-                MonoLabel('${batch.course?.title(locale) ?? ''} · ${scheduleLabel(f, batch.schedule)}'),
-                DisplayText(l.rosterTitle(batch.code), size: 34),
+      appBar: AppBar(),
+      body: RefreshList(
+        onRefresh: _refresh,
+        children: [
+          if (batch != null) ...[
+            Kicker(scheduleLabel(f, batch.schedule), size: 12),
+            const SizedBox(height: 4),
+            DisplayText(l.teacherHubTitle(batch.course?.title(locale) ?? '', batch.code), size: 30, key: const Key('class-hub-title')),
+          ] else
+            const LinearProgressIndicator(),
+          const SizedBox(height: 12),
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            ActionChip(
+              key: const Key('roster-class-chat'),
+              avatar: const Icon(Icons.forum_outlined, size: 18),
+              label: Text(l.classChat),
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onPressed: () => openClassChat(context, ref, widget.batchId),
+            ),
+            ActionChip(
+              key: const Key('roster-announcements'),
+              avatar: const Icon(Icons.campaign_outlined, size: 18),
+              label: Text(l.announcementsTitle),
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onPressed: () => context.push(Routes.batchAnnouncements(widget.batchId)),
+            ),
+          ]),
+          SectionCard(
+            margin: const EdgeInsets.only(top: 12),
+            child: Row(children: [
+              _Metric(
+                label: l.enrolledLabel,
+                value: roster.hasValue ? '${f.n(enrolled.length)}${batch == null ? '' : ' / ${f.n(batch.capacity)}'}' : '—',
+              ),
+              _Metric(label: l.avgAttendance, value: avg == null ? '—' : f.percent(avg)),
+              if (batch != null) _Metric(label: l.doneLabel, value: '${f.n(batch.sessionsDone(DateTime.now()))} / ${f.n(batch.sessionCount)}'),
+            ]),
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SegmentedButton<ClassHubSection>(
+              key: const Key('class-hub-sections'),
+              showSelectedIcon: false,
+              style: const ButtonStyle(
+                minimumSize: WidgetStatePropertyAll(Size(44, 44)),
+                tapTargetSize: MaterialTapTargetSize.padded,
+              ),
+              segments: [
+                for (final s in ClassHubSection.values)
+                  ButtonSegment(value: s, label: Text(_sectionLabel(l, s), key: Key('hub-tab-${s.name}'))),
               ],
-              const SizedBox(height: 16),
-              SectionCard(
-                margin: EdgeInsets.zero,
-                child: Row(children: [
-                  _Metric(label: l.enrolledLabel, value: '${f.n(enrolled.length)}${batch == null ? '' : ' / ${f.n(batch.capacity)}'}'),
-                  _Metric(label: l.avgAttendance, value: avg == null ? '—' : f.percent(avg)),
-                  if (batch != null) _Metric(label: l.doneLabel, value: '${f.n(batch.sessionsDone(DateTime.now()))} / ${f.n(batch.sessionCount)}'),
-                ]),
-              ),
-              if (batch != null) BatchSessionsPanel(batch: batch, isAdmin: ref.watch(currentUserProvider)?.role == Role.admin),
-              const SizedBox(height: 16),
-              TextField(
-                onChanged: (v) => setState(() => _q = v.trim()),
-                decoration: fieldDecoration(label: l.searchStudents, icon: Icons.search_rounded, labelIsHint: true),
-              ),
-              const SizedBox(height: 12),
-              Wrap(spacing: 8, children: [
-                for (final (flt, label, n) in [
-                  (_RosterFilter.all, l.allFilter, enrolled.length),
-                  (_RosterFilter.atRisk, l.atRisk, atRisk.length),
-                  (_RosterFilter.waitlist, l.waitlist, waitlist.length),
-                ])
-                  ChoiceChip(
-                    label: Text('$label ${f.n(n)}'),
-                    selected: _filter == flt,
-                    showCheckmark: false,
-                    labelStyle: TextStyle(color: _filter == flt ? p.onAccent : p.text),
-                    onSelected: (_) => setState(() => _filter = flt),
-                  ),
-              ]),
-              const SizedBox(height: 12),
-              if (shown.isEmpty)
-                EmptyState(title: l.noStudents)
-              else
-                CardGroup(children: [
-                  for (final s in shown)
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      leading: InitialsAvatar(s.name, size: 40),
-                      title: Text(s.name, style: t.titleSmall),
-                      subtitle: Text(s.note ?? s.email, style: t.bodySmall),
-                      trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
-                        if (s.attendancePct != null)
-                          Text(f.percent(s.attendancePct!), style: t.titleSmall?.copyWith(color: s.atRisk ? AzzaPalette.of(context).danger : null)),
-                        if (s.atRisk) MonoLabel(l.atRisk, color: AzzaPalette.of(context).danger),
-                        if (s.waitlisted) MonoLabel(l.waitlist),
-                      ]),
-                    ),
-                ]),
-            ],
-          );
-        },
+              selected: {_section},
+              onSelectionChanged: (v) => setState(() => _section = v.first),
+            ),
+          ),
+          const SizedBox(height: 4),
+          ...switch (_section) {
+            ClassHubSection.sessions => [
+                if (batch != null) BatchSessionsPanel(batch: batch, isAdmin: ref.watch(currentUserProvider)?.role == Role.admin),
+              ],
+            ClassHubSection.students => _students(context, roster),
+            ClassHubSection.practice => [if (batch != null) HubPracticeSection(batch: batch)],
+            ClassHubSection.materials => [if (batch != null) HubMaterialsSection(batch: batch)],
+            ClassHubSection.recordings => [HubRecordingsSection(batchId: widget.batchId)],
+          },
+        ],
       ),
     );
+  }
+
+  List<Widget> _students(BuildContext context, AsyncValue<List<RosterStudent>> roster) {
+    final l = context.l10n;
+    final f = ref.watch(fmtProvider);
+    final t = Theme.of(context).textTheme;
+    final p = AzzaPalette.of(context);
+    if (!roster.hasValue) {
+      return [
+        if (roster.hasError) ErrorState(error: roster.error!, onRetry: () => ref.invalidate(rosterProvider(widget.batchId))) else const LoadingState(compact: true),
+      ];
+    }
+    final all = roster.requireValue;
+    final enrolled = all.where((s) => !s.waitlisted).toList();
+    final atRisk = enrolled.where((s) => s.atRisk).toList();
+    final waitlist = all.where((s) => s.waitlisted).toList();
+    final shown = switch (_filter) {
+      _RosterFilter.all => enrolled,
+      _RosterFilter.atRisk => atRisk,
+      _RosterFilter.waitlist => waitlist,
+    }
+        .where((s) => _q.isEmpty || s.name.toLowerCase().contains(_q.toLowerCase()))
+        .toList();
+    return [
+      const SizedBox(height: 12),
+      TextField(
+        key: const Key('roster-search'),
+        onChanged: (v) => setState(() => _q = v.trim()),
+        decoration: fieldDecoration(label: l.searchStudents, icon: Icons.search_rounded, labelIsHint: true),
+      ),
+      const SizedBox(height: 12),
+      Wrap(spacing: 8, children: [
+        for (final (flt, label, n) in [
+          (_RosterFilter.all, l.allFilter, enrolled.length),
+          (_RosterFilter.atRisk, l.atRisk, atRisk.length),
+          (_RosterFilter.waitlist, l.waitlist, waitlist.length),
+        ])
+          ChoiceChip(
+            label: Text('$label ${f.n(n)}'),
+            selected: _filter == flt,
+            showCheckmark: false,
+            labelStyle: TextStyle(color: _filter == flt ? p.onAccent : p.text),
+            onSelected: (_) => setState(() => _filter = flt),
+          ),
+      ]),
+      const SizedBox(height: 12),
+      if (shown.isEmpty)
+        EmptyState(title: l.noStudents)
+      else
+        CardGroup(children: [
+          for (final s in shown)
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              leading: InitialsAvatar(s.name, size: 40),
+              title: Text(s.name, style: t.titleSmall),
+              subtitle: Text(s.note ?? s.email, style: t.bodySmall),
+              trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
+                if (s.attendancePct != null) Text(f.percent(s.attendancePct!), style: t.titleSmall?.copyWith(color: s.atRisk ? p.danger : null)),
+                if (s.atRisk) Kicker(l.atRisk, color: p.danger, size: 12),
+                if (s.waitlisted) Kicker(l.waitlist, size: 12),
+              ]),
+            ),
+        ]),
+    ];
   }
 }
 
@@ -173,7 +261,7 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          MonoLabel(label, size: 9),
+          Kicker(label, size: 12),
           const SizedBox(height: 2),
           DisplayText(value, size: 22),
         ]),
@@ -218,7 +306,7 @@ class _BatchProposalPanelState extends ConsumerState<BatchProposalPanel> {
       Row(children: [
         StatusChip.batch(context, b.status),
         const Spacer(),
-        if (b.startsOn != null) MonoLabel(f.shortDate(b.startsOn!.toLocal())),
+        if (b.startsOn != null) Kicker(f.shortDate(b.startsOn!.toLocal())),
       ]),
       const SizedBox(height: 12),
       if (draft && (b.reviewNote?.isNotEmpty ?? false)) ...[

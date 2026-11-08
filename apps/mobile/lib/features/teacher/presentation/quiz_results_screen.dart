@@ -35,7 +35,7 @@ class QuizResultsScreen extends ConsumerWidget {
           return RefreshList(
             onRefresh: () async => ref.invalidate(quizResultsProvider(quizId)),
             children: [
-              MonoLabel(quizMetaLine(context, f, questionCount: r.quiz.questionCount, timeLimitMin: r.quiz.timeLimitMin, dueAt: r.quiz.dueAt)),
+              Kicker(quizMetaLine(context, f, questionCount: r.quiz.questionCount, timeLimitMin: r.quiz.timeLimitMin, dueAt: r.quiz.dueAt)),
               const SizedBox(height: 4),
               DisplayText(r.quiz.title, size: 28),
               SectionCard(
@@ -59,14 +59,14 @@ class QuizResultsScreen extends ConsumerWidget {
                       title: Text(s.name, style: t.titleSmall),
                       subtitle: Text(
                         [
-                          s.attempts == 0 ? l.quizNoAttemptsYet : l.quizAttemptsN(f.n(s.attempts)),
+                          s.attempts == 0 ? l.quizNoAttemptsYet : f.n(l.quizAttemptsN(s.attempts)),
                           if (s.lastSubmittedAt != null) f.shortDate(s.lastSubmittedAt!),
                         ].join(' · '),
                         style: t.bodySmall,
                       ),
                       trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
                         Text(s.bestPercent == null ? '—' : f.percent(s.bestPercent!), style: t.titleSmall),
-                        if (s.bestScore != null) MonoLabel(l.scoreOf(fmtPoints(f, s.bestScore!), fmtPoints(f, r.quiz.totalPoints)), color: p.muted),
+                        if (s.bestScore != null) Kicker(l.scoreOf(fmtPoints(f, s.bestScore!), fmtPoints(f, r.quiz.totalPoints)), color: p.muted),
                       ]),
                     ),
               ]),
@@ -91,7 +91,7 @@ class QuizResultsScreen extends ConsumerWidget {
                           color: (q.rate ?? 1) < 0.5 ? p.danger : p.success,
                         ),
                         const SizedBox(height: 6),
-                        MonoLabel(l.quizCorrectOfAnswered(f.n(q.correct), f.n(q.answered)), color: p.muted),
+                        Kicker(l.quizCorrectOfAnswered(f.n(q.correct), f.n(q.answered)), color: p.muted),
                       ]),
                     ),
                 ]),
@@ -111,7 +111,7 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          MonoLabel(label, size: 9),
+          Kicker(label),
           const SizedBox(height: 2),
           DisplayText(value, size: 22),
         ]),

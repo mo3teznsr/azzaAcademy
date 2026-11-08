@@ -25,6 +25,7 @@ class SessionDetail {
     this.startedAt,
     this.endedAt,
     this.waitingCount,
+    this.assignments = const [],
   });
 
   factory SessionDetail.fromJson(Json j) {
@@ -59,6 +60,7 @@ class SessionDetail {
       startedAt: date(s, 'startedAt'),
       endedAt: date(s, 'endedAt'),
       waitingCount: intOrNull(j, 'waitingCount'),
+      assignments: [...list(s, 'assignments'), if (!identical(s, j)) ...list(j, 'assignments')].map(Assignment.fromJson).toList(),
     );
   }
 
@@ -71,6 +73,9 @@ class SessionDetail {
   final DateTime? startedAt;
   final DateTime? endedAt;
   final int? waitingCount;
+
+  /// Practice set for this session (`GET /sessions/:id` → `assignments`).
+  final List<Assignment> assignments;
 
   String get slate => '${session.batchCode} · S${session.number.toString().padLeft(2, '0')}';
 }

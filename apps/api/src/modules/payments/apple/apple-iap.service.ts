@@ -4,10 +4,12 @@ import type { AppleSignedDataVerifier, AppleTransaction } from '../../../core/po
 import type { CheckoutService } from '../checkout.service';
 import type { FinanceAdminService } from '../finance-admin.service';
 import type { PaymentsRepository } from '../payments.repository';
+import type { SubscriptionService } from '../../subscriptions/subscription.service';
 import {
   APPLE_REJECTION_IS_FINAL,
   APPLE_REJECTION_MESSAGES,
   appleNotificationAction,
+  isRecordedPlanProduct,
   decideApplePurchase,
   type AppleRejection,
 } from './apple-iap-policy';
@@ -33,6 +35,8 @@ export class AppleIapService {
     private readonly verifier: AppleSignedDataVerifier,
     private readonly checkout: Pick<CheckoutService, 'confirmPaid'>,
     private readonly finance: Pick<FinanceAdminService, 'recordRefund'>,
+    /** Recorded-course plans: notifications for their products go here. */
+    private readonly subscriptions?: Pick<SubscriptionService, 'handleAppleNotification'>,
   ) {}
 
   /** `POST /payments/apple/verify`. Idempotent on the Apple transaction id: a replay returns the paid order. */
@@ -74,6 +78,9 @@ export class AppleIapService {
   /** `POST /api/webhooks/apple` (App Store Server Notifications V2). REFUND / REVOKE cancel the seat. */
   async handleNotification(signedPayload: string) {
     const n = await this.verifier.verifyNotification(signedPayload);
+    if (n.transaction && isRecordedPlanProduct(n.transaction.productId)) {
+      return this.subscriptions ? this.subscriptions.handleAppleNotification(n) : { handled: false, type: n.notificationType };
+    }
     if (appleNotificationAction(n.notificationType) === 'ignore' || !n.transaction) return { handled: false, type: n.notificationType };
     const order = await this.repo.findOrderByAppleTransaction(n.transaction.transactionId);
     if (!order) return { handled: false, type: n.notificationType };

@@ -30,7 +30,7 @@ abstract final class AzzaFonts {
   }
 
   /// Mono labels are uppercase with tracking; timecodes/slates stay LTR.
-  static TextStyle mono({double size = 11, FontWeight weight = FontWeight.w500, Color? color, double tracking = 0.1}) {
+  static TextStyle mono({double size = 12, FontWeight weight = FontWeight.w500, Color? color, double tracking = 0.1}) {
     final base = TextStyle(fontSize: size, fontWeight: weight, color: color, letterSpacing: tracking * size, height: 1.3);
     if (!useGoogleFonts) return base.copyWith(fontFamily: 'JetBrains Mono');
     return GoogleFonts.jetBrainsMono(textStyle: base);
@@ -55,7 +55,8 @@ abstract final class AzzaFonts {
       bodySmall: b(13, FontWeight.w400, muted),
       labelLarge: b(15, FontWeight.w700),
       labelMedium: b(13, FontWeight.w400),
-      labelSmall: mono(color: muted),
+      // Captions and timestamps: Almarai at the caption size (12), never below.
+      labelSmall: b(12, FontWeight.w400, muted),
     );
   }
 }

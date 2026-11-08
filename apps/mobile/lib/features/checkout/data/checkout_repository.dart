@@ -53,14 +53,15 @@ class DioCheckoutRepository extends DioRepository implements CheckoutRepository 
   Future<Order> submitReceipt(String orderId, PickedFile file) => guard(() async {
         final form = FormData.fromMap({
           'file': file.path != null
-              ? await MultipartFile.fromFile(file.path!, filename: file.name, contentType: _mediaType(file.name))
-              : MultipartFile.fromBytes(file.bytes ?? const [], filename: file.name, contentType: _mediaType(file.name)),
+              ? await MultipartFile.fromFile(file.path!, filename: file.name, contentType: mediaTypeFor(file.name))
+              : MultipartFile.fromBytes(file.bytes ?? const [], filename: file.name, contentType: mediaTypeFor(file.name)),
         });
         final res = await dio.post<dynamic>('/api/v1/orders/$orderId/receipt/file', data: form);
         return Order.fromJson(asMap(res.data));
       });
 
-  static DioMediaType? _mediaType(String name) {
+  /// The receipt's content type from its file name (shared with the plan-transfer receipt upload).
+  static DioMediaType? mediaTypeFor(String name) {
     final ext = name.split('.').last.toLowerCase();
     return switch (ext) {
       'pdf' => DioMediaType('application', 'pdf'),

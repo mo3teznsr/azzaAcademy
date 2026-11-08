@@ -72,6 +72,37 @@ class CourseModule {
   }
 }
 
+/// `appleSyncStatus` on the admin course DTO and on the App Store status lists.
+enum AppleSyncStatus {
+  synced,
+  skipped,
+  failed;
+
+  static AppleSyncStatus? parse(Object? raw) => switch ('$raw'.toUpperCase()) {
+        'SYNCED' => synced,
+        'SKIPPED' => skipped,
+        'FAILED' => failed,
+        _ => null,
+      };
+}
+
+/// The App Store product ids for a recorded course's two plans (`appleProducts`); absent = not sold on iOS yet.
+@immutable
+class AppleProducts {
+  const AppleProducts({this.monthly, this.yearly});
+  static AppleProducts? fromJson(Json? j) {
+    if (j == null) return null;
+    final a = AppleProducts(monthly: strOrNull(j, 'monthly'), yearly: strOrNull(j, 'yearly'));
+    return a.monthly == null && a.yearly == null ? null : a;
+  }
+
+  final String? monthly;
+  final String? yearly;
+
+  /// The product for [plan] (`MONTHLY` / `YEARLY`), or null when it isn't set up.
+  String? forPlan(SubscriptionPlan plan) => plan == SubscriptionPlan.yearly ? yearly : monthly;
+}
+
 @immutable
 class Course {
   const Course({
@@ -104,6 +135,15 @@ class Course {
     this.ratingAvg = 0,
     this.ratingCount = 0,
     this.featuredRank,
+    this.type = CourseType.live,
+    this.monthlyPriceFils,
+    this.yearlyPriceFils,
+    this.previewLessonId,
+    this.appleProducts,
+    this.teacherCutPercent,
+    this.subscriberCount,
+    this.appleSyncStatus,
+    this.appleSyncedAt,
   });
 
   factory Course.fromJson(Json j) => Course(
@@ -136,6 +176,15 @@ class Course {
         ratingAvg: dbl(j, 'ratingAvg'),
         ratingCount: integer(j, 'ratingCount'),
         featuredRank: intOrNull(j, 'featuredRank'),
+        type: CourseType.parse(j['type']),
+        monthlyPriceFils: intOrNull(j, 'monthlyPriceFils'),
+        yearlyPriceFils: intOrNull(j, 'yearlyPriceFils'),
+        previewLessonId: strOrNull(j, 'previewLessonId'),
+        appleProducts: AppleProducts.fromJson(objOrNull(j, 'appleProducts')),
+        teacherCutPercent: intOrNull(j, 'teacherCutPercent'),
+        subscriberCount: intOrNull(j, 'subscriberCount') ?? intOrNull(obj(j, '_count'), 'subscriptions'),
+        appleSyncStatus: AppleSyncStatus.parse(j['appleSyncStatus']),
+        appleSyncedAt: date(j, 'appleSyncedAt'),
       );
 
   final String id;
@@ -182,6 +231,29 @@ class Course {
 
   /// Position on the featured rail (null = not featured).
   final int? featuredRank;
+
+  /// LIVE (batches) or RECORDED (lessons on a plan). For RECORDED, [priceFils] is the monthly price.
+  final CourseType type;
+  final int? monthlyPriceFils;
+  final int? yearlyPriceFils;
+
+  /// The one lesson anyone may watch without a plan.
+  final String? previewLessonId;
+
+  /// iOS products per plan; null = not sold in the App Store yet.
+  final AppleProducts? appleProducts;
+
+  /// Admin only: how the last App Store product sync went for this course; null = never synced.
+  final AppleSyncStatus? appleSyncStatus;
+  final DateTime? appleSyncedAt;
+
+  /// Admin-set override of the teacher's cut for this course; null = the platform default for its type.
+  final int? teacherCutPercent;
+
+  /// Learners with a live plan, when the API reports it (the course owner sees it).
+  final int? subscriberCount;
+
+  bool get isRecorded => type == CourseType.recorded;
 
   String title(AppLocale l) => _pick(l, titleEn, titleAr);
   String description(AppLocale l) => _pick(l, descriptionEn, descriptionAr);

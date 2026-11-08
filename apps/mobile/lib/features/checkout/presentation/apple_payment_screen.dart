@@ -120,7 +120,7 @@ class _ApplePaymentScreenState extends ConsumerState<ApplePaymentScreen> {
             children: [
               RaisedCard(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  MonoLabel(l.orderRef(o.reference)),
+                  Kicker(l.orderRef(o.reference)),
                   const SizedBox(height: 8),
                   Text(o.batch?.course?.title(locale) ?? o.batch?.code ?? '', style: t.titleMedium),
                   const SizedBox(height: 12),

@@ -5,6 +5,8 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/network/error_text.dart';
 import '../../../core/widgets/cover_scroll_view.dart';
 import '../../../core/widgets/ui.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../auth/presentation/guest_gate.dart';
 import '../data/reviews_repository.dart';
 
 /// Heart toggle on the course cover. Saved state comes from `GET /me/saved-courses`; the tap flips it at once
@@ -44,6 +46,14 @@ class _SaveCourseButtonState extends ConsumerState<SaveCourseButton> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    if (ref.watch(isGuestProvider)) {
+      return CoverButton(
+        key: const Key('save-course'),
+        icon: Icons.favorite_border_rounded,
+        tooltip: l.saveCourse,
+        onPressed: () => requireAccount(context, ref),
+      );
+    }
     final fromServer = ref.watch(savedCoursesProvider).value?.any((c) => c.id == widget.courseId) ?? false;
     final saved = _optimistic ?? fromServer;
     return Semantics(

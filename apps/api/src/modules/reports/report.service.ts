@@ -3,6 +3,7 @@ import { BusinessRuleError } from '../../core/errors';
 import type { Clock } from '../../core/ports';
 import { addDays, zonedToUtc } from '../../core/time';
 import { certificateProgress } from '../certificates/certificate-eligibility';
+import { EarningsCalculator } from '../payouts/earnings-calculator';
 import { attendanceByUser } from '../sessions/attended-sessions';
 import {
   attendanceRate,
@@ -37,12 +38,13 @@ export class ReportService {
     const { range, previous } = resolved;
     const cur = bounds(range);
 
-    const [kpis, prevKpis, batchRows, running, sessions] = await Promise.all([
+    const [kpis, prevKpis, batchRows, running, sessions, recordedPayments] = await Promise.all([
       this.kpis(cur.from, cur.to),
       this.kpis(bounds(previous).from, bounds(previous).to),
       this.repo.batchesActiveIn(cur.from, cur.to),
       this.repo.runningBatches(),
       this.repo.endedSessions(cur.from, cur.to),
+      this.repo.recordedPayments(cur.from, cur.to),
     ]);
     const seats = await this.repo.seatCounts([...new Set([...batchRows, ...running].map((b) => b.id))]);
     const withSeats = <T extends { id: string }>(b: T) => ({ ...b, ...seats.get(b.id)! });
@@ -67,6 +69,8 @@ export class ReportService {
       kpis: kpis.kpis,
       previous: prevKpis.kpis,
       revenueByCourse: kpis.revenueByCourse,
+      /** Recorded-plan revenue, its own line: net = gross − refunds − fees − VAT. */
+      recorded: new EarningsCalculator().batchBreakdown(recordedPayments),
       batches: batchRows.map(withSeats).map((b) => ({
         id: b.id,
         code: b.code,

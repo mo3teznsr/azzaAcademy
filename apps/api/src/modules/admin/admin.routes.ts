@@ -4,19 +4,23 @@ import { currentUser, requireRole } from '../../http/middleware';
 import { paged } from '../../http/pagination';
 import type { AppEnv } from '../../http/types';
 import { validate } from '../../http/validate';
+import type { SettingsService } from '../settings/settings.service';
 import type { AdminService } from './admin.service';
 
 /** Read-only platform constants + which integrations are configured (never secrets). */
 export interface PlatformSettings {
-  rules: { TEACHER_SHARE_PERCENT: number; EARNING_HOLD_DAYS: number; MIN_PAYOUT_AED: number; BANK_TRANSFER_HOLD_HOURS: number; VAT_PERCENT: number };
+  rules: { EARNING_HOLD_DAYS: number; MIN_PAYOUT_AED: number; BANK_TRANSFER_HOLD_HOURS: number; VAT_PERCENT: number };
   integrations: { stripe: boolean; livekit: boolean; smtp: boolean; push: boolean };
 }
 
 /** Mounted at /api/v1/admin */
-export function adminRoutes(service: AdminService, settings: PlatformSettings) {
+export function adminRoutes(service: AdminService, settings: PlatformSettings, cutSettings: Pick<SettingsService, 'cuts'>) {
   return new Hono<AppEnv>()
     .use('*', requireRole('ADMIN'))
-    .get('/settings', (c) => c.json(settings))
+    // TEACHER_SHARE_PERCENT is kept in the payload for existing clients; it now mirrors the live-course default cut.
+    .get('/settings', async (c) =>
+      c.json({ ...settings, rules: { ...settings.rules, TEACHER_SHARE_PERCENT: (await cutSettings.cuts()).liveCutPercent } }),
+    )
     .get('/dashboard', async (c) => c.json(await service.dashboard()))
     .get('/users', validate('query', adminUserListQuery), async (c) => {
       const { page, pageSize, role, q } = c.req.valid('query');

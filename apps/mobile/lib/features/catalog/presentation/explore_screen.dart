@@ -100,7 +100,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ]),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 48,
+                  height: context.scaled(48),
                   child: ListView(
                     key: const Key('category-rail'),
                     scrollDirection: Axis.horizontal,
@@ -133,7 +133,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   ]),
                 ],
                 const SizedBox(height: 8),
-                if (courses.hasValue) MonoLabel(l.coursesCount(f.n(courses.requireValue.length))),
+                if (courses.hasValue) Kicker(f.n(l.coursesCount(courses.requireValue.length))),
                 const SizedBox(height: 8),
               ]),
             ),

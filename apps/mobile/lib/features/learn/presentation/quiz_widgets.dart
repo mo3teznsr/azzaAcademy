@@ -17,8 +17,8 @@ String fmtPoints(Fmt f, double v) {
 String quizMetaLine(BuildContext context, Fmt f, {required int questionCount, int? timeLimitMin, DateTime? dueAt}) {
   final l = context.l10n;
   return [
-    l.quizQuestionsN(f.n(questionCount)),
-    if (timeLimitMin != null && timeLimitMin > 0) l.quizMinutesN(f.n(timeLimitMin)),
+    f.n(l.quizQuestionsN(questionCount)),
+    if (timeLimitMin != null && timeLimitMin > 0) f.n(l.quizMinutesN(timeLimitMin)),
     if (dueAt != null) l.dueAt(f.dayTime(dueAt)),
   ].join(' · ');
 }

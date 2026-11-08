@@ -124,7 +124,7 @@ void main() {
       await tester.tap(find.byKey(const Key('share-course')));
       await settle(tester);
       expect(shared.single.toString(), 'https://azza.academy/courses/product-design');
-      expect(find.byKey(const Key('save-course')), findsNothing, reason: 'signed out: no heart');
+      expect(find.byKey(const Key('save-course')), findsOneWidget, reason: 'the heart shows signed out too; it asks for an account');
     });
 
     testWidgets('"load more" fetches the next page of reviews', (tester) async {

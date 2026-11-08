@@ -27,6 +27,18 @@ export class PriceCalculator {
     return batchPriceFils ?? coursePriceFils;
   }
 
+  /** The VAT-inclusive amount charged for a pre-VAT price (what a Stripe Price for a plan holds). */
+  inclusive(priceFils: number): number {
+    return this.quote({ priceFils }).totalFils;
+  }
+
+  /** Splits a VAT-inclusive total back into its pre-VAT part and VAT, the inverse of `quote` (exact whenever the total came from `quote`). */
+  splitInclusive(totalFils: number): { subtotalFils: number; vatFils: number } {
+    const guess = Math.round((totalFils * 100) / (100 + this.vatPercent));
+    const subtotalFils = [guess, guess - 1, guess + 1].find((s) => s >= 0 && this.inclusive(s) === totalFils) ?? guess;
+    return { subtotalFils, vatFils: totalFils - subtotalFils };
+  }
+
   quote(args: { priceFils: number; coupon?: CouponTerms | null; displayCurrency?: DisplayCurrency; fxRate?: number }): Quote {
     const subtotalFils = Math.max(0, Math.round(args.priceFils));
     const c = args.coupon;

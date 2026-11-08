@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/theme/typography.dart';
-import '../../../core/utils/digits.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/widgets/price.dart';
@@ -26,13 +24,12 @@ Color coverColor(String style) => switch (style) {
 String scheduleLabel(Fmt f, ScheduleRule rule, {DateTime? sample}) {
   if (rule.weekdays.isEmpty) return '';
   // 2023-01-01 is a Sunday.
-  final names = rule.weekdays.map((d) => DateFormat('EEE', f.locale.wire).format(DateTime(2023, 1, 1 + d)).digits(f.arabicDigits));
-  final days = names.length <= 2 ? names.join(' & ') : names.join(' · ');
+  final days = f.weekdays(rule.weekdays);
   if (rule.startTime.isEmpty) return days;
   final parts = rule.startTime.split(':');
   final start = DateTime(2023, 1, 1, int.tryParse(parts.first) ?? 0, parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0);
   final end = start.add(Duration(minutes: rule.durationMin));
-  return '$days · ${f.time(start)}–${f.time(end)}';
+  return '$days · ${f.timeRange(start, end)}';
 }
 
 /// Course cover: the film-set photo shown clean — no scrim, no text on it; callers put the title
@@ -60,7 +57,7 @@ class CourseCover extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MonoLabel('${course.categoryName(locale)} · ${l.levelN('${course.level.number}')}', color: AzzaColors.ink),
+          Kicker('${course.categoryName(locale)} · ${l.levelN('${course.level.number}')}', color: AzzaColors.ink),
           Expanded(
             child: Align(
               alignment: AlignmentDirectional.bottomStart,
@@ -95,7 +92,7 @@ class CourseMetaLine extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final name = course.categoryName(ref.watch(localeProvider));
     final level = context.l10n.levelN('${course.level.number}');
-    return MonoLabel(name.isEmpty ? level : '$name · $level');
+    return Kicker(name.isEmpty ? level : '$name · $level');
   }
 }
 
@@ -158,7 +155,7 @@ class RatingLine extends ConsumerWidget {
     if (count <= 0) return const SizedBox.shrink();
     final f = ref.watch(fmtProvider);
     final t = Theme.of(context).textTheme;
-    final label = context.l10n.ratingSemantics(f.n(avg.toStringAsFixed(1)), f.n(count));
+    final label = f.n(context.l10n.ratingSemantics(f.n(avg.toStringAsFixed(1)), count));
     return Semantics(
       label: label,
       child: ExcludeSemantics(
@@ -196,20 +193,42 @@ class CourseCard extends ConsumerWidget {
         children: [
           CourseCover(course: c, locale: locale, height: 170, compact: true),
           const SizedBox(height: 10),
-          Row(children: [Expanded(child: CourseMetaLine(course: c)), ?trailing]),
+          Row(children: [
+            Expanded(child: CourseMetaLine(course: c)),
+            if (c.isRecorded) RecordedMarker(courseId: c.id),
+            ?trailing,
+          ]),
           const SizedBox(height: 2),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: Text(c.title(locale), style: t.titleMedium)),
               const SizedBox(width: 8),
-              Price.from(c.priceFils, style: t.titleSmall, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end),
+              if (c.isRecorded)
+                Price(c.monthlyPriceFils ?? c.priceFils ?? 0, label: l.fromPricePerMonth, style: t.titleSmall, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end)
+              else
+                Price.from(c.priceFils, style: t.titleSmall, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end),
             ],
           ),
           if (c.ratingCount > 0) ...[const SizedBox(height: 4), RatingLine(avg: c.ratingAvg, count: c.ratingCount)],
-          if (c.batchCount != null) Text(l.chooseBatchN(f.n(c.batchCount!)), style: t.bodySmall),
+          if (c.batchCount != null && !c.isRecorded) Text(l.chooseBatchN(f.n(c.batchCount!)), style: t.bodySmall),
         ],
       ),
+    );
+  }
+}
+
+/// The small "Recorded" tag on a card or rail: lessons on a plan rather than a live class.
+class RecordedMarker extends StatelessWidget {
+  const RecordedMarker({super.key, required this.courseId});
+  final String courseId;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = AzzaPalette.of(context);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 8),
+      child: StatusChip(key: Key('recorded-marker-$courseId'), label: context.l10n.courseTypeRecorded, color: p.infoBg, textColor: p.info),
     );
   }
 }
@@ -229,7 +248,7 @@ class CourseRail extends ConsumerWidget {
     return Column(key: railKey, crossAxisAlignment: CrossAxisAlignment.start, children: [
       SectionHeader(title, padding: const EdgeInsets.only(top: 20, bottom: 10)),
       SizedBox(
-        height: 214,
+        height: context.scaled(94, fixed: 120),
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: courses.length,
@@ -246,6 +265,7 @@ class CourseRail extends ConsumerWidget {
                   CourseCover(course: c, locale: locale, height: 120, compact: true, radius: AzzaSpace.radiusSm),
                   const SizedBox(height: 8),
                   Text(c.title(locale), style: t.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  if (c.isRecorded) Text(context.l10n.courseTypeRecorded, key: Key('rail-recorded-${c.id}'), style: t.bodySmall),
                   if (c.ratingCount > 0) RatingLine(avg: c.ratingAvg, count: c.ratingCount, size: 12),
                 ]),
               ),
@@ -287,7 +307,7 @@ class SessionRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(fmt.time(session.startsAt), style: AzzaFonts.mono(size: 15, color: p.text, weight: FontWeight.w500, tracking: 0)),
-                  if (showDay) MonoLabel(fmt.weekday(session.startsAt)),
+                  if (showDay) Kicker(fmt.weekday(session.startsAt)),
                 ],
               ),
             ),

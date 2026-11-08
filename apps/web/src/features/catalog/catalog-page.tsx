@@ -42,7 +42,7 @@ export function Catalog() {
   const params = useDeferredValue(useMemo(() => toListParams(api.filters), [api.filters]));
   const courses = useCatalogCourses(params);
   const batches = usePublicBatches();
-  const items = courses.data?.items ?? [];
+  const items = (courses.data?.items ?? []).filter((c) => !api.filters.type || c.type === api.filters.type);
 
   return (
     <section id="catalog" aria-labelledby="catalog-title" className="flex scroll-mt-8 flex-col gap-6">

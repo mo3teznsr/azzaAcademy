@@ -8,6 +8,7 @@ import '../../../core/utils/json.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../checkout/domain/checkout_models.dart';
 import '../../live/domain/live_models.dart';
+import '../../teacher/data/teacher_repository.dart' show CourseEarning;
 
 /// `GET /admin/dashboard` → `alerts[]`: aggregated counts `{ type, severity: info|warning, count }`.
 /// Types: `TRANSFERS_TO_VERIFY`, `SEAT_HOLDS_EXPIRING`, `TEACHER_BANK_UNVERIFIED`, `PAYOUTS_HELD`.
@@ -124,11 +125,30 @@ class LiveRoomStat {
 
 @immutable
 class PayoutLine {
-  const PayoutLine({required this.id, required this.teacherName, required this.amountFils, required this.status, this.adjustmentsFils = 0, this.holdReason, this.bankName, this.sessions});
+  const PayoutLine({
+    required this.id,
+    required this.teacherName,
+    required this.amountFils,
+    required this.status,
+    this.adjustmentsFils = 0,
+    this.holdReason,
+    this.bankName,
+    this.sessions,
+    this.teacherId = '',
+    this.bankVerified,
+    this.iban,
+    this.accountHolder,
+    this.courses = const [],
+  });
   factory PayoutLine.fromJson(Json j) {
     final t = obj(j, 'teacher');
+    final bank = objOrNull(t, 'bankDetails');
     return PayoutLine(
       id: str(j, 'id'),
+      teacherId: str(t, 'id', str(j, 'teacherId')),
+      bankVerified: bank == null ? null : boolean(bank, 'verified'),
+      iban: bank == null ? null : strOrNull(bank, 'iban'),
+      accountHolder: bank == null ? null : strOrNull(bank, 'accountHolder'),
       teacherName: str(t, 'name', str(j, 'teacherName')),
       amountFils: integer(j, 'amountFils'),
       adjustmentsFils: integer(j, 'adjustmentsFils'),
@@ -136,6 +156,7 @@ class PayoutLine {
       holdReason: strOrNull(j, 'holdReason'),
       bankName: strOrNull(obj(t, 'bankDetails'), 'bankName') ?? strOrNull(j, 'bankName'),
       sessions: intOrNull(obj(j, '_count'), 'earnings'),
+      courses: list(j, 'courses').map((c) => CourseEarning.fromJson(c, amountKey: 'amountFils')).toList(),
     );
   }
   final String id;
@@ -146,7 +167,21 @@ class PayoutLine {
   final String? holdReason;
   final String? bankName;
   final int? sessions;
+
+  /// The teacher's user id (for `POST /admin/teachers/:id/bank-details/verify`).
+  final String teacherId;
+
+  /// Null when the teacher has no bank details on file.
+  final bool? bankVerified;
+  final String? iban;
+  final String? accountHolder;
+
+  /// Recorded-course earnings inside this payout (`courses[]`).
+  final List<CourseEarning> courses;
   int get netFils => amountFils + adjustmentsFils;
+
+  /// Held only because the bank details are not verified yet: verifying releases it.
+  bool get awaitsBankCheck => bankVerified == false;
 }
 
 @immutable
@@ -154,7 +189,8 @@ class PayoutRun {
   const PayoutRun({required this.id, required this.periodStart, required this.periodEnd, required this.status, this.payouts = const [], this.totalFils});
   factory PayoutRun.fromJson(Json j) {
     final r = j['run'] is Map ? obj(j, 'run') : j;
-    final payouts = [...list(r, 'payouts'), ...list(j, 'payouts')].map(PayoutLine.fromJson).toList();
+    // The detail is the run itself with `payouts` beside its fields, so `r` and `j` can be one map: read it once.
+    final payouts = (identical(r, j) ? list(r, 'payouts') : [...list(r, 'payouts'), ...list(j, 'payouts')]).map(PayoutLine.fromJson).toList();
     return PayoutRun(
       id: str(r, 'id'),
       periodStart: dateOr(r, 'periodStart', DateTime.now()),

@@ -14,6 +14,13 @@ String? appleSeatProductId(int priceFils) {
   return '$appleSeatProductPrefix${priceFils ~/ 100}';
 }
 
+/// Auto-renewable products of recorded courses: `com.futuretech.azza.rec.<courseSlug>.monthly|yearly`, one
+/// subscription group per course. Mirrors `appleRecordedProductId` in packages/shared/src/subscriptions.ts.
+const appleRecordedProductPrefix = 'com.futuretech.azza.rec.';
+
+/// Whether [productId] is a recorded-course plan (settled through `/subscriptions/apple/verify`, not as a seat order).
+bool isAppleSubscriptionProduct(String productId) => productId.startsWith(appleRecordedProductPrefix);
+
 /// A StoreKit product as the App Store prices it for the user's storefront.
 @immutable
 class StoreProduct {

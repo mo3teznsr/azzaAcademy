@@ -40,6 +40,7 @@ class CourseDraft {
     this.audienceEn = const [],
     this.audienceAr = const [],
     this.faq = const [],
+    this.type,
   });
 
   final String titleEn;
@@ -60,11 +61,15 @@ class CourseDraft {
   final List<String> audienceAr;
   final List<CourseFaq> faq;
 
+  /// Live or recorded. Sent only when a course is created: the type is fixed from then on.
+  final CourseType? type;
+
   static List<String> _bullets(List<String> v) => v.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
 
   static String? _opt(String? v) => v == null || v.trim().isEmpty ? null : v.trim();
 
   Map<String, dynamic> toJson() => {
+        'type': ?type?.wire,
         'titleEn': titleEn.trim(),
         'titleAr': ?_opt(titleAr),
         'descriptionEn': descriptionEn.trim(),

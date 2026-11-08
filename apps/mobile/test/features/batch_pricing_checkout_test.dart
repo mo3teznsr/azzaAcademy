@@ -319,6 +319,8 @@ void main() {
         proposalsRepositoryProvider.overrideWithValue(repo),
       ]);
       await settle(tester);
+      await tester.tap(find.byKey(const Key('course-type-live')));
+      await settle(tester);
       expect(find.byKey(const Key('course-price')), findsNothing);
       expect(find.byKey(const Key('course-price-note')), findsOneWidget);
 

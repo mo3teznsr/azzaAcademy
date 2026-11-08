@@ -25,7 +25,9 @@ class DioCatalogRepository extends DioRepository implements CatalogRepository {
   @override
   Future<List<Course>> courses([CourseFilters filters = const CourseFilters()]) async {
     final items = await getItems('/api/v1/courses', query: {'pageSize': 50, ...filters.toQuery()});
-    return items.map(Course.fromJson).toList();
+    final all = items.map(Course.fromJson).toList();
+    // The list also honours `type` server-side; this keeps the filter true against an API that doesn't yet.
+    return filters.type == null ? all : all.where((c) => c.type == filters.type).toList();
   }
 
   @override

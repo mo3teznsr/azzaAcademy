@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
-import { COURSE_LEVELS, COURSE_SORTS, SESSION_LANGUAGES, type CourseLevel, type CourseSort, type SessionLanguage } from '@azza/shared';
+import { COURSE_LEVELS, COURSE_SORTS, COURSE_TYPES, SESSION_LANGUAGES, type CourseLevel, type CourseSort, type CourseType, type SessionLanguage } from '@azza/shared';
 import { SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,8 @@ export interface CatalogFilters {
   q: string;
   category: string;
   level?: CourseLevel;
+  /** LIVE or RECORDED; unset = both. Applied to the results in the browser. */
+  type?: CourseType;
   language?: SessionLanguage;
   minPrice?: number;
   maxPrice?: number;
@@ -46,6 +48,7 @@ export function useCatalogFilters() {
       q: sp.get('q') ?? '',
       category: sp.get('category') ?? '',
       level: oneOf(COURSE_LEVELS, sp.get('level')),
+      type: oneOf(COURSE_TYPES, sp.get('type')),
       language: oneOf(SESSION_LANGUAGES, sp.get('language')),
       minPrice: num(sp.get('minPrice')),
       maxPrice: num(sp.get('maxPrice')),
@@ -68,10 +71,10 @@ export function useCatalogFilters() {
     [sp, router, pathname],
   );
 
-  const clear = useCallback(() => set({ q: undefined, category: undefined, level: undefined, language: undefined, minPrice: undefined, maxPrice: undefined, minRating: undefined, sort: undefined }), [set]);
+  const clear = useCallback(() => set({ q: undefined, category: undefined, level: undefined, type: undefined, language: undefined, minPrice: undefined, maxPrice: undefined, minRating: undefined, sort: undefined }), [set]);
 
   /** Filters behind the "Filters" button (category chips and search stay visible). */
-  const activeCount = [filters.level, filters.language, filters.minPrice ?? filters.maxPrice, filters.minRating].filter((v) => v !== undefined).length;
+  const activeCount = [filters.level, filters.type, filters.language, filters.minPrice ?? filters.maxPrice, filters.minRating].filter((v) => v !== undefined).length;
   const anyActive = activeCount > 0 || !!filters.q || !!filters.category;
   return { filters, set, clear, activeCount, anyActive };
 }
@@ -81,6 +84,7 @@ export function toListParams(f: CatalogFilters): CourseListParams {
     q: f.q || undefined,
     category: f.category || undefined,
     level: f.level,
+    type: f.type,
     language: f.language,
     minPriceAed: f.minPrice,
     maxPriceAed: f.maxPrice,
@@ -204,6 +208,18 @@ function FilterFields({ api, layout }: { api: FilterApi; layout: 'inline' | 'sta
                 {t.status.level[l]}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label={t.catalog.type} htmlFor={`${id}-type`}>
+        <Select value={filters.type ?? ANY} onValueChange={(v) => set({ type: v === ANY ? undefined : v })}>
+          <SelectTrigger id={`${id}-type`} className={trigger}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ANY}>{t.catalog.anyType}</SelectItem>
+            <SelectItem value="LIVE">{t.catalog.typeLive}</SelectItem>
+            <SelectItem value="RECORDED">{t.catalog.typeRecorded}</SelectItem>
           </SelectContent>
         </Select>
       </Field>

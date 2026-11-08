@@ -11,8 +11,7 @@ import '../../learn/data/quizzes_repository.dart';
 import '../../learn/domain/quiz_models.dart';
 import '../../learn/presentation/quiz_widgets.dart';
 
-/// A batch's quizzes for its teacher: read-only, with a way into each quiz's results.
-/// Quizzes are written and published on the web.
+/// A class's quizzes for its teacher: write, publish and follow results.
 class BatchQuizzesScreen extends ConsumerWidget {
   const BatchQuizzesScreen({super.key, required this.batchId});
   final String batchId;
@@ -25,35 +24,38 @@ class BatchQuizzesScreen extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final p = AzzaPalette.of(context);
 
-    final webNote = SectionCard(
-      key: const Key('quizzes-web-note'),
-      margin: const EdgeInsets.only(top: 4, bottom: 4),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(Icons.laptop_mac_rounded, color: p.muted, size: 20),
-        const SizedBox(width: 12),
-        Expanded(child: Text(l.quizzesWebOnly, style: t.bodySmall)),
-      ]),
-    );
+    Future<void> open(String route) async {
+      await context.push(route);
+      ref.invalidate(batchQuizzesProvider(batchId));
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l.quizzesTitle)),
+      floatingActionButton: FloatingActionButton.extended(
+        key: const Key('new-quiz-fab'),
+        onPressed: () => open(Routes.teacherNewQuiz(batchId)),
+        icon: const Icon(Icons.add_rounded),
+        label: Text(l.teacherNewQuiz),
+      ),
       body: AsyncView<List<QuizSummary>>(
         value: quizzes,
         onRetry: () => ref.invalidate(batchQuizzesProvider(batchId)),
         isEmpty: (list) => list.isEmpty,
-        empty: ListView(padding: const EdgeInsets.all(AzzaSpace.gutter), children: [
-          webNote,
-          EmptyState(title: l.noQuizzes, icon: Icons.quiz_outlined),
-        ]),
+        empty: EmptyState(
+          title: l.noQuizzes,
+          body: l.teacherNoQuizzesBody,
+          icon: Icons.quiz_outlined,
+          action: l.teacherNewQuiz,
+          onAction: () => open(Routes.teacherNewQuiz(batchId)),
+        ),
         data: (list) => RefreshList(
           onRefresh: () async => ref.invalidate(batchQuizzesProvider(batchId)),
           children: [
-            webNote,
             for (final q in list) ...[
               const SizedBox(height: 10),
               RaisedCard(
                 key: Key('batch-quiz-${q.id}'),
-                onTap: () => context.push(Routes.quizResults(q.id)),
+                onTap: () => open(Routes.teacherEditQuiz(batchId, q.id)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(children: [
                     Expanded(child: Text(q.title, style: t.titleMedium)),
@@ -66,14 +68,25 @@ class BatchQuizzesScreen extends ConsumerWidget {
                   Text(quizMetaLine(context, f, questionCount: q.questionCount, timeLimitMin: q.timeLimitMin, dueAt: q.dueAt), style: t.bodySmall),
                   if (!q.draft) ...[
                     const SizedBox(height: 6),
-                    Text(
-                      l.quizStudentsAttempted(f.n(q.studentsAttempted ?? 0), f.n(q.attemptCount ?? 0)),
-                      style: t.bodySmall?.copyWith(color: p.muted),
-                    ),
+                    Row(children: [
+                      Expanded(
+                        child: Text(
+                          f.n(l.quizStudentsAttempted(q.studentsAttempted ?? 0, q.attemptCount ?? 0)),
+                          style: t.bodySmall?.copyWith(color: p.muted),
+                        ),
+                      ),
+                      TextButton(
+                        key: Key('quiz-results-${q.id}'),
+                        style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+                        onPressed: () => context.push(Routes.quizResults(q.id)),
+                        child: Text(l.teacherQuizResults),
+                      ),
+                    ]),
                   ],
                 ]),
               ),
             ],
+            const SizedBox(height: 72), // clear of the FAB
           ],
         ),
       ),

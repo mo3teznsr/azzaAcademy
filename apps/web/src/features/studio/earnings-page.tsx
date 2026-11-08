@@ -104,6 +104,27 @@ export function EarningsPage() {
               </Table>
             )}
           </Panel>
+          {q.data.courses.length > 0 && (
+            <Panel>
+              <SectionHeader title={t.studio.earnings.byCourse} aside={<span className="label-mono text-muted-foreground">{t.studio.earnings.allAed}</span>} />
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t.studio.earnings.colCourse}</TableHead>
+                    <TableHead className="text-end">{t.studio.earnings.colEarned}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {q.data.courses.map((c) => (
+                    <TableRow key={c.courseId}>
+                      <TableCell>{pick(c.titleEn, c.titleAr).text}</TableCell>
+                      <TableCell className="text-end font-semibold">{money.aed(c.earnedFils)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Panel>
+          )}
           <div className="grid items-start gap-4 xl:grid-cols-2">
             <Panel>
               <SectionHeader title={t.studio.earnings.ledger} size="sm" />
@@ -118,11 +139,11 @@ export function EarningsPage() {
                           {l.session ? (
                             <>
                               <bdi dir="ltr">
-                                {l.batch.code}·{sessionCode(l.session.number)}
+                                {l.batch?.code}·{sessionCode(l.session.number)}
                               </bdi> · {l.session.title}
                             </>
                           ) : (
-                            (l.note ?? l.kind)
+                            (l.note ?? (l.course ? pick(l.course.titleEn, l.course.titleAr).text : l.kind))
                           )}
                         </b>
                         <span className="text-[13px] text-muted-foreground">{f.dayMonth(l.createdAt)}</span>

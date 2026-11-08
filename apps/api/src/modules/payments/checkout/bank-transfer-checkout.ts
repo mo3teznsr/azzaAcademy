@@ -6,6 +6,14 @@ import type { Notifier } from '../../notifications/notification.types';
 import type { PaymentsRepository } from '../payments.repository';
 import type { CheckoutContext, CheckoutStart, CheckoutStrategy } from './checkout-strategy';
 
+/** The account a transfer is paid into: the one asked for (must be active), else the first active one. Shared by seats and plans. */
+export async function resolveBankAccount(repo: Pick<PaymentsRepository, 'findBankAccount' | 'firstActiveBankAccount'>, bankAccountId?: string) {
+  const account = bankAccountId ? await repo.findBankAccount(bankAccountId) : await repo.firstActiveBankAccount();
+  if (bankAccountId && !account) throw new NotFoundError('Bank account', bankAccountId);
+  if (!account || !account.active) throw new BusinessRuleError('No bank account is available for transfers', 'NO_BANK_ACCOUNT');
+  return account;
+}
+
 /** Seat is held for BANK_TRANSFER_HOLD_HOURS while the student transfers and uploads a receipt. */
 export class BankTransferCheckout implements CheckoutStrategy {
   readonly method = 'BANK_TRANSFER' as const;
@@ -18,11 +26,7 @@ export class BankTransferCheckout implements CheckoutStrategy {
   ) {}
 
   async start(ctx: CheckoutContext): Promise<CheckoutStart> {
-    const account = ctx.input.bankAccountId
-      ? await this.repo.findBankAccount(ctx.input.bankAccountId)
-      : await this.repo.firstActiveBankAccount();
-    if (ctx.input.bankAccountId && !account) throw new NotFoundError('Bank account', ctx.input.bankAccountId);
-    if (!account || !account.active) throw new BusinessRuleError('No bank account is available for transfers', 'NO_BANK_ACCOUNT');
+    const account = await resolveBankAccount(this.repo, ctx.input.bankAccountId);
 
     const expiresAt = addHours(ctx.now, this.holdHours);
     const amount = formatMoney(ctx.quote.totalFils / 100, 'AED');

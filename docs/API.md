@@ -209,6 +209,13 @@ Teachers draft courses and batches; admins approve them.
 - Return URLs: `${WEB_URL}/checkout/return?ref=<order reference>` (and `&cancelled=1` on cancel). `GET /api/v1/orders/by-reference/:ref` (owner/admin) returns the order so the page can show "confirming…" until the webhook lands.
 - Dev without Stripe keys: the fake gateway returns the success URL directly; confirm with a fake webhook body `{ "type": "payment.succeeded", "checkoutSessionId": "cs_dev_<ref>" }`.
 
+
+### Stripe setup for recorded-course plans
+- **Webhook events** (`POST /api/webhooks/stripe`): `checkout.session.completed`, `customer.subscription.created|updated|deleted`, `invoice.paid`, `invoice.payment_failed`, `charge.refunded`.
+- **Dunning (Billing → Revenue recovery → Retries):** turn on **Smart Retries** and make the retry window end **within 16 days** of the first failed payment, then set the final action to **Cancel the subscription**. 16 days is the access grace (`GRACE_DAYS`): a PAST_DUE learner keeps access until `currentPeriodEnd + 16 days`, and Stripe's cancel arrives as `customer.subscription.deleted` and ends the plan (`SUBSCRIPTION_ENDED`). A longer retry window would leave a learner locked out yet still billed.
+- **Customer Portal (Settings → Billing → Customer portal):** turn on **Cancel subscriptions → at the end of the billing period** (not immediately) and **Update subscriptions → Customers can switch plans**, allowing each recorded course's monthly and yearly Price (the API creates them under the course's Product); keep payment-method updates and invoice history on. Learners reach it through `POST /subscriptions/:id/portal`.
+- **Refunds made in the Dashboard** on a plan invoice are picked up from `charge.refunded` (see *Recorded courses → Refunds*).
+
 ## Batch sessions
 
 - `POST /api/v1/batches/:id/sessions` (ADMIN or the batch's teacher) `{ startsAt (ISO), durationMin 15–480, title, notifyStudents }` → 201 session. Adds one session outside the weekly rule (next number), stretches the batch dates and the rule's session count, checks teacher clashes (409 `CONFLICT` with `details.conflicts`), refuses past times (422 `START_IN_PAST`) and closed batches (422 `BATCH_CLOSED`). Students get `SESSION_ADDED`.
@@ -297,3 +304,94 @@ New announcements notify their recipients, except the author, with `ANNOUNCEMENT
 | `PATCH /api/v1/support/tickets/:id` | `updateSupportTicketInput` `{ status?, assigneeId? (an admin, or null) }`. ADMIN may change anything; the owner may only send `{ status: 'RESOLVED' }` (otherwise 403) → ticket detail |
 
 **Account deletion** (`DELETE /me`) also erases the user's chat messages, their private chats, their read markers, their support tickets and any support messages they wrote.
+
+## Lesson progress
+
+- `PUT /api/v1/lessons/:lessonId/complete` / `DELETE …/complete` (anyone who can read the course's lessons) → `{ lessonId, completed }`. Marks the lesson done for the caller (idempotent).
+- `GET /api/v1/courses/:courseId/lessons` now also returns `progress: { completed, total, nextLesson: { id, titleEn, titleAr, moduleId, moduleTitleEn, moduleTitleAr } | null }`, and each lesson has `completed: boolean` for the caller. Order is module order, then lesson order; `nextLesson` is the first not done.
+- `GET /api/v1/me/learning-progress` → `{ items: [{ courseId, slug, titleEn, titleAr, type: 'LIVE'|'RECORDED', completed, total, nextLesson, subscription? }] }` for every course with an ACTIVE enrollment, plus every RECORDED course with a live plan or any lesson progress (progress outlives a plan, so a lapsed course stays listed). RECORDED items carry `subscription: { status, currentPeriodEnd, cancelAtPeriodEnd, hasAccess } | null` (the plan that decides access, else the newest ended one; `null` = never had a plan; `hasAccess` follows the access rule, and is always true for an admin or the course's author). LIVE items have no `subscription`. Powers "Continue learning".
+
+## Assignment & material files
+
+Files are uploaded first, then referenced by URL. Uploads go to the `FileStorage` port (local disk under `/uploads/...` in dev, S3 + CloudFront in prod) with unguessable 128-bit keys. Nothing is stored for a rejected file.
+
+| | |
+|---|---|
+| `POST /api/v1/assignments/:id/submission/file` | a STUDENT with an ACTIVE enrollment in the assignment's batch (403 otherwise, 404 for an unknown assignment), multipart `file` → 201 `{ url, name, size, type }`, stored under `submissions/` |
+| `POST /api/v1/batches/:id/materials/file` | the batch teacher or ADMIN, multipart `file` → 201 `{ url, name, size, type }`, stored under `materials/` |
+| `PATCH /api/v1/assignments/:id` | the batch teacher or ADMIN, `updateAssignmentInput` `{ sessionId? (null detaches), title?, description?, dueAt?, maxScore? }` → the assignment. `maxScore` cannot go below an existing grade (422 `SCORE_TOO_HIGH`). |
+| `DELETE /api/v1/assignments/:id` | the batch teacher or ADMIN → `{ ok: true }`. Assignments are hard-deleted, so this is refused with 409 `ASSIGNMENT_HAS_SUBMISSIONS` once anyone has submitted. |
+
+- **Submission files:** pdf, docx, pptx, xlsx, png, jpg, webp, zip, txt, md; at most 20 MB. Errors are 422 `SUBMISSION_FILE_INVALID` with `details.reason` = `TYPE` | `EMPTY` | `TOO_LARGE` | `MISSING` (no `file` field).
+- **Material files:** the same types plus mp3 and m4a; at most 50 MB. Errors are 422 `MATERIAL_FILE_INVALID` with the same reasons.
+- **Type detection:** by the part's content type (common aliases such as `application/x-zip-compressed` are accepted). When the browser sends no type or `application/octet-stream`, the file extension decides. `type` in the response is the canonical content type.
+- **Size:** oversized bodies are refused while streaming (`bodyLimit`), before the file is buffered.
+- **Submitting:** `POST /api/v1/assignments/:id/submissions` now also takes `files: [{ url, name, size, type }]` (at most 5), alongside `url` and `text`; at least one of the three is required (`EMPTY_SUBMISSION`). Each `url` must be a `submissions/` file on our storage origin, otherwise 422 `SUBMISSION_FILE_INVALID` with `reason: 'FOREIGN_URL'`. The stored `type` comes from the stored key, not the client. Omitting `files` on a re-submit keeps the previous list; `files: []` clears it.
+- **Reading:** submissions carry `files` (default `[]`) in the teacher's `GET /api/v1/assignments/:id/submissions` and in the student's `mySubmission` on `GET /api/v1/batches/:id/assignments`.
+- **Materials:** after uploading, create the material with `POST /api/v1/batches/:id/materials` using the returned `url`. A `FILE` material must use a `materials/` URL from our storage (422 `MATERIAL_FILE_INVALID`, `reason: 'FOREIGN_URL'`); `SLIDES`, `LINK` and `VIDEO` accept any URL as before.
+- **Notifications:** none. Assignment creation does not notify students, so edits (including due date changes) don't either.
+
+## Recorded courses ✅
+
+A `Course` has `type` `LIVE` (cohorts, sold per batch) or `RECORDED` (self-paced, sold as a monthly or yearly plan per course). The type is fixed at creation. **Access** to a recorded course's lessons and quizzes: an admin, the author, or a subscription that is ACTIVE or CANCELLING with `now < currentPeriodEnd`, or PAST_DUE with `now < currentPeriodEnd + 16 days`. Progress, quiz attempts and certificates survive a lapsed plan. Bank-transfer plans are prepaid with no auto-renew and no grace (a renewal receipt uploaded before the end keeps access until it is reviewed).
+
+### Catalog and course DTO
+- `GET /api/v1/courses?type=LIVE|RECORDED` — optional filter (omitted = both); `courseListQuery` otherwise unchanged.
+- `teacherCutPercent` is in a course payload only for **admins and the course's author**; public responses omit the field. Stripe ids are never returned; Apple ids come as `appleProducts: { monthly, yearly } | null`.
+- `POST /courses` (`type` RECORDED), `PATCH /courses/:id` and `POST /courses/:id/submit|review` as for live courses. Publishing a RECORDED course needs both prices and a lesson: 422 `RECORDED_NOT_READY` with `details.missing: ('PRICES'|'LESSONS')[]`. Editing a published course as its teacher: 422 `COURSE_LOCKED`.
+
+### Course setup (ADMIN unless noted)
+| | |
+|---|---|
+| `PUT /api/v1/admin/courses/:id/recorded-pricing` | `{ monthlyPriceFils, yearlyPriceFils }` (before VAT; yearly must be below 12 monthly) → course; syncs the Stripe Product and Prices. 422 `NOT_RECORDED` |
+| `PUT /api/v1/admin/courses/:id/apple-products` | `{ monthly?, yearly? }` (null clears) — each must equal `com.futuretech.azza.rec.<slug>.monthly\|yearly`, else 422 `APPLE_PRODUCT_MISMATCH` |
+| `PUT /api/v1/courses/:id/preview-lesson` | TEACHER (author, under the editing rule) or ADMIN, `{ lessonId \| null }` — the one lesson anyone can watch; 404 when it is not in the course. `null` (or a lesson that was later deleted) means the first lesson in curriculum order (module order, then lesson order); the course DTO's `previewLessonId` is always this effective id on RECORDED courses |
+| `GET /api/v1/admin/settings/cuts` · `PUT` | `{ liveCutPercent, recordedCutPercent }` — default teacher cuts (percent, 0–100) |
+| `PUT /api/v1/admin/courses/:id/cut` | `{ teacherCutPercent \| null }` — per-course override (wins when set). A cut is read at payment time and never recalculated |
+
+### Lessons (recorded)
+- `GET /courses/:id/lessons` — for a RECORDED course anyone signed in gets the structure: lessons they cannot open come as `{ id, moduleId, order, titleEn, titleAr, completed, locked: true }` (no body, video or links); the preview lesson and everything for staff/subscribers has `locked: false`. Unpublished recorded courses are 404 to non-staff.
+- `GET /lessons/:id/preview` — public (no sign-in): only the preview lesson (the teacher's choice, else the first lesson in curriculum order) of a PUBLISHED recorded course, else 404.
+- `GET /lessons/:id` — 403 `PLAN_REQUIRED` with `details: { courseSlug, lapsed }` when the viewer has no access (`lapsed` = once had a paid period; an abandoned, never-paid checkout is `false`). The same applies to `PUT /lessons/:id/video-position`, `PUT|DELETE /lessons/:id/complete` and course quizzes.
+- `PUT /lessons/:id/video-position` `{ positionSec }` → `{ lessonId, positionSec }`; `GET /lessons/:id` returns `videoPositionSec`.
+
+### Course quizzes (recorded)
+`GET|POST /courses/:id/quizzes`, `PATCH|DELETE /courses/:id/quizzes/:quizId`, `POST …/publish|unpublish` — authored by course editors (same shapes as batch quizzes; `moduleId` optional; `passPercent` default 70). Subscribers take them through `GET /quizzes/:id`, `POST /quizzes/:id/start`, `POST /quizzes/:id/attempts`: **unlimited attempts, no due date**. Errors: 422 `NOT_RECORDED_COURSE` (course quizzes on a live course), 403 `PLAN_REQUIRED`, plus the batch-quiz codes (`QUIZ_EMPTY`, `ALREADY_PUBLISHED`, `QUIZ_HAS_ATTEMPTS`, `MODULE_NOT_IN_COURSE`, `ATTEMPT_NOT_STARTED`, `QUIZ_TIME_UP`).
+
+### Certificates (recorded)
+`GET /me/certificates` also issues a course certificate once every lesson is completed and every published quiz's best attempt is at or above its `passPercent`; no active plan is needed and it is never revoked. Recorded items have `kind: 'RECORDED'`, `batchId: null`, `batchCode: null`, `attended: 0`, `total: 0`, `startsOn/endsOn: null`. `GET /certificates/:code` verifies as before.
+
+### Subscriptions (learner)
+| | |
+|---|---|
+| `POST /api/v1/courses/:id/subscribe` | `{ plan: 'MONTHLY'\|'YEARLY', method: 'STRIPE'\|'APPLE_IAP'\|'BANK_TRANSFER', bankAccountId? }`. STRIPE → 201 `{ checkoutUrl, reference }`; APPLE_IAP → `{ productId, appAccountToken, reference }`; BANK_TRANSFER → `{ plan, bankAccount, reference, amountFils, expiresAt, paymentId }`. Coupons never apply. Errors: 404 (course not published), 422 `NOT_RECORDED`, `PRICE_NOT_READY`, `APPLE_PRODUCT_MISSING`, `METHOD_UNAVAILABLE`, `NO_BANK_ACCOUNT`; 409 `ALREADY_SUBSCRIBED` |
+| `POST /api/v1/subscriptions/apple/verify` | `{ signedTransaction }` → the plan; 422 `APPLE_UNAVAILABLE`, `PRODUCT_MISMATCH`, `APPLE_ACCOUNT_CONFLICT`, `FOREIGN_SUBSCRIPTION` |
+| `GET /api/v1/subscriptions/by-reference/:ref` | the return page's poll → `{ status, courseSlug, nextLessonId }` (owner only) |
+| `GET /api/v1/me/subscriptions` | `{ items: [{ id, course{id,slug,titleEn,titleAr,coverImageUrl}, plan, provider, status, currentPeriodEnd, cancelAtPeriodEnd, priceFils, hasAccess, pendingPayment: { id, reference, amountFils, status, expiresAt, reviewNote, bankAccount } \| null }] }` (an envelope, like the other /me lists) |
+| `POST /api/v1/subscriptions/:id/cancel` · `/resume` | card plans: cancel at period end (access stays to the end) / undo. 422 `NOT_ACTIVE` |
+| `POST /api/v1/subscriptions/:id/switch` | `{ plan }` — the other plan, prorated by Stripe. 422 `SAME_PLAN`, `PRICE_NOT_READY` |
+| `POST /api/v1/subscriptions/:id/switch-to-card` | a transfer plan → a card plan whose first charge is the day the paid period ends |
+| `POST /api/v1/subscriptions/:id/portal` | → `{ url }` (Stripe Customer Portal). 422 `NOT_CARD_PLAN` |
+| `POST /api/v1/subscription-payments/:id/receipt` | multipart receipt for a transfer payment (see *Checkout*); 422 `METHOD_UNAVAILABLE`, `PAYMENT_NOT_AWAITING_RECEIPT`, `PAYMENT_EXPIRED` |
+
+Apple plans cannot be cancelled, resumed, switched or opened in the portal here: 422 `MANAGED_BY_APPLE` (the learner uses their App Store subscriptions). Transfer plans: 422 `NOT_CARD_PLAN` on those card-only actions. Transfers appear in `GET /admin/transfers` next to seat orders (`kind: 'SUBSCRIPTION'`) and are reviewed there; review errors: 422 `PAYMENT_NOT_REVIEWABLE`, `NOTE_REQUIRED`, `AMOUNT_MISMATCH`.
+
+### Subscriptions (admin and author)
+| | |
+|---|---|
+| `GET /api/v1/admin/subscriptions?courseId&status&provider&page&pageSize` | ADMIN → paged `{ items: [{ id, user{id,name,email}, course{id,slug,titleEn,titleAr}, plan, provider: 'STRIPE'\|'APPLE'\|'BANK_TRANSFER', status, currentPeriodEnd, cancelAtPeriodEnd, priceFils, lastPayment: { id, totalFils, status, paidAt } \| null, createdAt }], total, page, pageSize, pageCount }`, newest first |
+| `POST /api/v1/admin/subscriptions/:id/cancel` | ADMIN, `{ refund: 'NONE'\|'FULL' }` → `{ id, plan, status: 'EXPIRED', currentPeriodEnd, cancelAtPeriodEnd, priceFils, closedPayments: [{ id, reference, status, totalFils, receiptUploaded }], refundedFils }`. Ends the plan now and sends `SUBSCRIPTION_ENDED`. STRIPE: an unfinished checkout (INCOMPLETE) has its Checkout Session expired first; if it was already paid the answer is 409 `CHECKOUT_COMPLETED` and nothing changes. FULL refunds the last paid invoice first, then cancels, records the refund and reverses the teacher's earning; if Stripe refuses the refund nothing changes (502 `REFUND_FAILED`, retry or cancel with `NONE`); if the cancel fails after a refund the response is 200 with `cancelPending: true` (refund kept, plan still running; cancel again with `NONE`). The response also has `cancelPending: false` normally. BANK_TRANSFER: ends it; FULL records a manual refund (finance returns the money) and `closedPayments` lists open payments that were closed (`receiptUploaded: true` = money may need returning). Errors: 422 `MANAGED_BY_APPLE`, `NOT_ACTIVE` (already ended), 404, 409 `CHECKOUT_COMPLETED`, 502 `REFUND_FAILED` |
+| `GET /api/v1/teacher/courses/:id/subscribers` | the course's author or an ADMIN (others 403) → `{ active, cancelling, pastDue, total }` |
+
+### Refunds
+- A refund made in the **Stripe Dashboard** on a plan invoice arrives as `charge.refunded`. The charge's invoice id and cumulative `amount_refunded` are matched to the `SubscriptionPayment`; `refundedFils` is set to the cumulative amount (status `REFUNDED` once fully refunded, otherwise it stays `PAID`) and the teacher's earning is reversed pro rata. Idempotent: the same or a smaller cumulative amount changes nothing. Refunds of seat orders carry no invoice and behave as before. The learner's access is not changed by a refund (use admin cancel for that).
+- Apple `REFUND` / `REVOKE` notifications are handled as for seats (payment `REFUNDED`, earning reversed; the plan ends when it is the current period).
+- Admin cancel with FULL goes through the same record-and-reverse step.
+
+### Notifications and jobs
+Types (each with `data: { courseSlug, subscriptionId }`): `SUBSCRIPTION_ACTIVE`, `SUBSCRIPTION_PAYMENT_FAILED`, `SUBSCRIPTION_RENEWS_SOON`, `SUBSCRIPTION_ENDED`, plus `SUBSCRIPTION_RECEIPT` for every charge. Copy is localised by the user's language.
+- `remind-renewals` (daily; `YEARLY_REMINDER_DAYS` = 7): `SUBSCRIPTION_RENEWS_SOON` by in-app, email and push, once per period (remembered in `Subscription.reminderSentForPeriodEnd`). STRIPE/APPLE: YEARLY plans that are ACTIVE (not CANCELLING) and end within 7 days (a late run still sends it, once); monthly card plans get none. BANK_TRANSFER, monthly and yearly: within 7 days and again on the end day, i.e. ends today or ended within the last 24 h (`reminderEndDaySentFor`), unless a renewal receipt is already waiting for review; the message points to "Renew by transfer".
+- `expire-transfer-subscriptions` (daily) ends transfer plans past their end with no grace; `expire-transfer-payments` (every 5 minutes) closes unpaid holds.
+
+### Error codes (recorded courses)
+`NOT_RECORDED`, `NOT_RECORDED_COURSE`, `RECORDED_NOT_READY` (`details.missing`), `COURSE_LOCKED`, `PLAN_REQUIRED` (403, `details: { courseSlug, lapsed }`), `PRICE_NOT_READY`, `APPLE_PRODUCT_MISSING`, `APPLE_PRODUCT_MISMATCH`, `APPLE_UNAVAILABLE`, `PRODUCT_MISMATCH`, `APPLE_ACCOUNT_CONFLICT`, `FOREIGN_SUBSCRIPTION`, `MANAGED_BY_APPLE`, `ALREADY_SUBSCRIBED` (409), `SAME_PLAN`, `NOT_ACTIVE`, `NOT_CARD_PLAN`, `NOT_TRANSFER_PLAN`, `METHOD_UNAVAILABLE`, `NO_BANK_ACCOUNT`, `PAYMENT_NOT_AWAITING_RECEIPT`, `PAYMENT_EXPIRED`, `PAYMENT_NOT_REVIEWABLE`, `NOTE_REQUIRED`, `REFUND_FAILED`, `CHECKOUT_COMPLETED` (409), `LESSON_ORDER_MISMATCH`, `QUIZ_*`.

@@ -77,12 +77,16 @@ class _CertificateDetailScreenState extends ConsumerState<CertificateDetailScree
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     DisplayText(l.certificateCompleteTitle, size: 28),
                     const SizedBox(height: 4),
-                    Text(l.certificateCompleteBody(f.n(c.attended), f.n(c.total)), style: t.bodySmall),
+                    Text(
+                      c.isRecorded ? l.certificateRecordedCompletion : f.n(l.certificateCompleteBody(c.attended, c.total)),
+                      key: const Key('cert-completion-line'),
+                      style: t.bodySmall,
+                    ),
                   ]),
                 ),
               ]),
               const SizedBox(height: 24),
-              _CertificateCard(cert: c, holder: c.holderName ?? ref.watch(currentUserProvider)?.name ?? ''),
+              CertificateCard(cert: c, holder: c.holderName ?? ref.watch(currentUserProvider)?.name ?? ''),
               const SizedBox(height: 16),
               Text(
                 l.certificateVerifyHint(ref.watch(appConfigProvider).certificateVerifyUrl(c.code)),
@@ -107,9 +111,9 @@ class _CertificateDetailScreenState extends ConsumerState<CertificateDetailScree
   }
 }
 
-/// The paper: ivory stock, ink type, mono data — the same in every theme.
-class _CertificateCard extends ConsumerWidget {
-  const _CertificateCard({required this.cert, required this.holder});
+/// The paper (also on the public verify screen): ivory stock, ink type, mono data — the same in every theme.
+class CertificateCard extends ConsumerWidget {
+  const CertificateCard({super.key, required this.cert, required this.holder});
   final Certificate cert;
   final String holder;
 
@@ -125,7 +129,7 @@ class _CertificateCard extends ConsumerWidget {
     Widget field(String label, String value, {bool mono = false}) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 7),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            SizedBox(width: 96, child: MonoLabel(label, color: muted)),
+            SizedBox(width: 96, child: Kicker(label, color: muted)),
             Expanded(
               child: Text(
                 value,
@@ -154,24 +158,27 @@ class _CertificateCard extends ConsumerWidget {
           Row(children: [
             const AzzaWordmark(size: 30, color: AzzaColors.ink),
             const Spacer(),
-            Flexible(child: MonoLabel(l.certificateOfCompletion, color: muted, size: 10)),
+            Flexible(child: Kicker(l.certificateOfCompletion, color: muted)),
           ]),
           const SizedBox(height: 28),
-          MonoLabel(l.certificateAwardedTo, color: muted),
+          Kicker(l.certificateAwardedTo, color: muted),
           const SizedBox(height: 6),
           Text(holder, style: AzzaFonts.display(arabic: arabic, size: 32, weight: FontWeight.w800, color: ink)),
           const SizedBox(height: 18),
-          MonoLabel(l.certificateForCompleting, color: muted),
+          Kicker(l.certificateForCompleting, color: muted),
           const SizedBox(height: 6),
           Text(cert.courseName(locale), style: AzzaFonts.display(arabic: arabic, size: 24, color: ink)),
           const SizedBox(height: 20),
           const Divider(color: AzzaColors.creamLine, height: 1),
           const SizedBox(height: 8),
-          field(l.certificateBatch, cert.batchCode, mono: true),
+          if (!cert.isRecorded && cert.batchCode.isNotEmpty) field(l.certificateBatch, cert.batchCode, mono: true),
           if (cert.teacherName.isNotEmpty) field(l.certificateTeacher, cert.teacherName),
-          if (cert.startsOn != null || cert.endsOn != null) field(l.certificateDates, batchDates(f, cert.startsOn, cert.endsOn)),
+          if (!cert.isRecorded && (cert.startsOn != null || cert.endsOn != null)) field(l.certificateDates, batchDates(f, cert.startsOn, cert.endsOn)),
           if (cert.issuedAt != null) field(l.certificateIssued, f.longDate(cert.issuedAt!)),
-          field(l.certificateAttendance, '${f.n(cert.attended)}/${f.n(cert.total)}'),
+          if (cert.isRecorded)
+            field(l.certificateCompletion, l.certificateRecordedCompletion)
+          else
+            field(l.certificateAttendance, '${f.n(cert.attended)}/${f.n(cert.total)}'),
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
@@ -182,7 +189,7 @@ class _CertificateCard extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  MonoLabel(l.certificateVerifyCode, color: muted),
+                  Kicker(l.certificateVerifyCode, color: muted),
                   const SizedBox(height: 4),
                   SelectableText(
                     cert.code,

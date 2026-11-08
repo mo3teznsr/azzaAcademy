@@ -75,3 +75,7 @@ export function receivedFils(order: Pick<OrderRecord, 'totalFils'>, tx: Pick<App
 export function appleNotificationAction(notificationType: string): 'refund' | 'ignore' {
   return notificationType === 'REFUND' || notificationType === 'REVOKE' ? 'refund' : 'ignore';
 }
+
+/** Product ids of the recorded-course subscription groups (`appleRecordedProductId`); everything else is a seat purchase. */
+export const APPLE_RECORDED_PREFIX = 'com.futuretech.azza.rec.';
+export const isRecordedPlanProduct = (productId: string): boolean => productId.startsWith(APPLE_RECORDED_PREFIX);

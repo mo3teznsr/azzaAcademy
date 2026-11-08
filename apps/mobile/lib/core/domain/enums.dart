@@ -63,6 +63,28 @@ enum CourseStatus implements WireEnum {
   bool get teacherEditable => this == CourseStatus.draft || this == CourseStatus.pendingReview;
 }
 
+/// Fixed when the course is created: LIVE = batches of live sessions, RECORDED = lessons on a monthly or yearly plan.
+enum CourseType implements WireEnum {
+  live('LIVE'),
+  recorded('RECORDED');
+
+  const CourseType(this.wire);
+  @override
+  final String wire;
+  static CourseType parse(Object? raw) => _parse(values, raw, CourseType.live);
+}
+
+/// A recorded course's two plans (`SUBSCRIPTION_PLANS` in packages/shared).
+enum SubscriptionPlan implements WireEnum {
+  monthly('MONTHLY'),
+  yearly('YEARLY');
+
+  const SubscriptionPlan(this.wire);
+  @override
+  final String wire;
+  static SubscriptionPlan parse(Object? raw) => _parse(values, raw, SubscriptionPlan.monthly);
+}
+
 enum CourseLevel implements WireEnum {
   beginner('BEGINNER'),
   intermediate('INTERMEDIATE'),

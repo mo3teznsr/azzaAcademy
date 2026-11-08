@@ -67,7 +67,7 @@ class _PromotedCard extends ConsumerWidget {
           Row(children: [
             PulsingDot(color: AzzaColors.ink, size: 7, active: !expired),
             const SizedBox(width: 4),
-            Expanded(child: MonoLabel(l.waitlistSeatOpen, color: AzzaColors.ink)),
+            Expanded(child: Kicker(l.waitlistSeatOpen, color: AzzaColors.ink)),
             MonoLabel(seat.batchCode, color: AzzaColors.ink),
           ]),
           const SizedBox(height: 10),
@@ -115,7 +115,7 @@ class _WaitlistTile extends ConsumerWidget {
         const SizedBox(width: 14),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            MonoLabel([entry.batchCode, if (entry.startsOn != null) l.startsOnDate(f.shortDate(entry.startsOn!))].join(' · ')),
+            Kicker([entry.batchCode, if (entry.startsOn != null) l.startsOnDate(f.shortDate(entry.startsOn!))].join(' · ')),
             const SizedBox(height: 2),
             Text(entry.courseName(locale), style: t.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
             Text(waitlistPositionLabel(l, f, entry), style: t.bodySmall),
@@ -230,7 +230,7 @@ class _WaitlistSheetState extends ConsumerState<WaitlistSheet> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 16),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          MonoLabel([e.batchCode, if (e.startsOn != null) l.startsOnDate(f.shortDate(e.startsOn!))].join(' · ')),
+          Kicker([e.batchCode, if (e.startsOn != null) l.startsOnDate(f.shortDate(e.startsOn!))].join(' · ')),
           const SizedBox(height: 6),
           DisplayText(e.courseName(locale), size: 26),
           const SizedBox(height: 16),

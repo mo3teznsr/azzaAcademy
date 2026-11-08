@@ -77,3 +77,19 @@ export type AttendanceMark = (typeof ATTENDANCE_MARKS)[number];
 
 export const RESCHEDULE_REQUEST_STATUSES = ['PENDING', 'APPROVED', 'DECLINED'] as const;
 export type RescheduleRequestStatus = (typeof RESCHEDULE_REQUEST_STATUSES)[number];
+
+/** Fixed at creation, never converted. LIVE = batches of live sessions; RECORDED = self-paced lessons on a monthly or yearly plan. */
+export const COURSE_TYPES = ['LIVE', 'RECORDED'] as const;
+export type CourseType = (typeof COURSE_TYPES)[number];
+
+export const SUBSCRIPTION_PLANS = ['MONTHLY', 'YEARLY'] as const;
+export type SubscriptionPlan = (typeof SUBSCRIPTION_PLANS)[number];
+
+export const SUBSCRIPTION_PROVIDERS = ['STRIPE', 'APPLE', 'BANK_TRANSFER'] as const;
+export type SubscriptionProvider = (typeof SUBSCRIPTION_PROVIDERS)[number];
+
+export const SUBSCRIPTION_STATUSES = ['INCOMPLETE', 'ACTIVE', 'PAST_DUE', 'CANCELLING', 'EXPIRED'] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
+
+export const SUBSCRIPTION_PAYMENT_STATUSES = ['AWAITING_RECEIPT', 'AWAITING_REVIEW', 'PAID', 'REJECTED', 'EXPIRED', 'REFUNDED'] as const;
+export type SubscriptionPaymentStatus = (typeof SUBSCRIPTION_PAYMENT_STATUSES)[number];

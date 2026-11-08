@@ -37,21 +37,21 @@ class LanguageSettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(AzzaSpace.gutter),
         children: [
-          MonoLabel(l.appLanguage),
+          Kicker(l.appLanguage),
           const SizedBox(height: 10),
           OptionTile(title: 'العربية', subtitle: l.rightToLeft, selected: locale == AppLocale.ar, onTap: () => _setLocale(ref, AppLocale.ar)),
           const SizedBox(height: 8),
           OptionTile(title: 'English', subtitle: l.leftToRight, selected: locale == AppLocale.en, onTap: () => _setLocale(ref, AppLocale.en)),
           if (locale == AppLocale.ar) ...[
             const SizedBox(height: 24),
-            MonoLabel(l.numerals),
+            Kicker(l.numerals),
             const SizedBox(height: 10),
             OptionTile(title: l.numeralsArabic, selected: arabicDigits, onTap: () => ref.read(arabicDigitsPrefProvider.notifier).set(true)),
             const SizedBox(height: 8),
             OptionTile(title: l.numeralsWestern, selected: !arabicDigits, onTap: () => ref.read(arabicDigitsPrefProvider.notifier).set(false)),
           ],
           const SizedBox(height: 24),
-          MonoLabel(l.preview),
+          Kicker(l.preview),
           const SizedBox(height: 10),
           RaisedCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

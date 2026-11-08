@@ -97,3 +97,10 @@ final authControllerProvider = AsyncNotifierProvider<AuthController, AppUser?>(A
 
 final currentUserProvider = Provider<AppUser?>((ref) => ref.watch(authControllerProvider).value);
 final currentRoleProvider = Provider<Role?>((ref) => ref.watch(currentUserProvider)?.role);
+
+/// Signed out with the session check finished: browsing as a guest. (While restoring, or if restoring failed,
+/// this is false: the router holds those on splash.)
+final isGuestProvider = Provider<bool>((ref) {
+  final auth = ref.watch(authControllerProvider);
+  return auth is AsyncData<AppUser?> && auth.value == null;
+});

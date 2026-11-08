@@ -33,7 +33,11 @@ export const qk = {
   assignments: (batchId: string) => ['batch', batchId, 'assignments'] as const,
   /** Lessons of a course (gated); invalidate after editing lessons. */
   lessons: (courseId: string) => ['course', courseId, 'lessons'] as const,
-  quizzes: (batchId: string) => ['batch', batchId, 'quizzes'] as const,
+  /** Lesson progress across my courses ("Continue learning"); invalidate after completing a lesson. */
+  mySubscriptions: ['me', 'subscriptions'] as const,
+  learningProgress: ['me', 'learning-progress'] as const,
+  /** `scopeKey` is a batch id, or `course:<id>` for a recorded course's quizzes. */
+  quizzes: (scopeKey: string) => ['quizzes', scopeKey] as const,
   quiz: (id: string) => ['quiz', id] as const,
   quizResults: (id: string) => ['quiz', id, 'results'] as const,
   myQuizzes: ['me', 'quizzes'] as const,
@@ -52,6 +56,7 @@ export const qk = {
   tickets: (params: object) => ['support', 'tickets', params] as const,
   ticket: (id: string) => ['support', 'ticket', id] as const,
   earnings: ['teacher', 'earnings'] as const,
+  courseSubscribers: (courseId: string) => ['teacher', 'course-subscribers', courseId] as const,
   payouts: ['teacher', 'payouts'] as const,
   bankDetails: ['teacher', 'bank-details'] as const,
   admin: {
@@ -65,9 +70,12 @@ export const qk = {
     coupons: ['admin', 'coupons'] as const,
     couponUsage: (id: string) => ['admin', 'coupons', id, 'usage'] as const,
     payoutRuns: ['admin', 'payout-runs'] as const,
+    appStore: ['admin', 'app-store'] as const,
     payoutRun: (id: string) => ['admin', 'payout-runs', id] as const,
     /** Prefix `['admin', 'instructor-applications']` invalidates every tab. */
     instructorApplications: (status?: string) => ['admin', 'instructor-applications', status ?? 'all'] as const,
     admins: ['admin', 'users', 'admins'] as const,
+    cuts: ['admin', 'settings', 'cuts'] as const,
+    subscriptions: (params: object) => ['admin', 'subscriptions', params] as const,
   },
 };

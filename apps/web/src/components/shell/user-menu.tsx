@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { LifeBuoy, LogOut, Settings } from 'lucide-react';
+import { CreditCard, LifeBuoy, LogOut, Settings } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +40,13 @@ export function UserMenu({ settingsHref }: { settingsHref: string }) {
             <Settings /> {t.common.settings}
           </Link>
         </DropdownMenuItem>
+        {role === 'STUDENT' && (
+          <DropdownMenuItem asChild>
+            <Link href="/plans">
+              <CreditCard /> {t.recorded.plansTitle}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href={role === 'ADMIN' ? '/admin/support' : '/support'}>
             <LifeBuoy /> {role === 'ADMIN' ? t.nav.admin.support : t.comms.support.nav}

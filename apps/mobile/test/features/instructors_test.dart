@@ -108,7 +108,7 @@ void main() {
     expect(find.text('Product designer'), findsOneWidget);
     expect(find.text('DESIGN'), findsOneWidget, reason: 'category chips use the category name, not the slug');
     expect(find.text('LANGUAGES'), findsOneWidget);
-    expect(find.text('1 courses · 2 open classes'), findsOneWidget);
+    expect(find.text('1 course · 2 open classes'), findsOneWidget);
     expect(find.text('ARABIC · ENGLISH'), findsOneWidget);
     expect(find.byKey(const Key('instructor-t2')), findsOneWidget);
   });

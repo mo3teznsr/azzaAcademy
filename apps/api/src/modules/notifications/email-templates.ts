@@ -23,6 +23,22 @@ export const authEmails = {
 };
 
 export const appEmails = {
+  subscriptionReceipt: (name: string, course: string, amount: string, until: string, url: string) => ({
+    subject: `Receipt · ${course}`,
+    html: layout(`Thanks, ${name}`, `<p>We received <b>${amount}</b> for <b>${course}</b>. You're covered until <b>${until}</b>.</p>${button(url, 'Keep learning')}`),
+    text: `We received ${amount} for ${course}. Covered until ${until}. ${url}`,
+  }),
+  subscriptionPaymentFailed: (name: string, course: string, url: string) => ({
+    subject: `Update your card · ${course}`,
+    html: layout(`Hi ${name}`, `<p>Your last payment didn't go through. Update your card to keep learning.</p>${button(url, 'Update my card')}`),
+    text: `Your last payment didn't go through. Update your card to keep learning. ${url}`,
+  }),
+  /** `body` is already localised; the same text goes on the notification. */
+  subscriptionRenewsSoon: (name: string, subject: string, body: string, url: string, label: string) => ({
+    subject,
+    html: layout(`Hi ${name}`, `<p>${body}</p>${button(url, label)}`),
+    text: `${body} ${url}`,
+  }),
   enrolled: (name: string, course: string, batch: string, firstSession: string, url: string) => ({
     subject: `You’re enrolled · ${course} ${batch}`,
     html: layout(`You’re in, ${name}`, `<p>${course} · ${batch}. Your first session is <b>${firstSession}</b>.</p>${button(url, 'Open my schedule')}`),

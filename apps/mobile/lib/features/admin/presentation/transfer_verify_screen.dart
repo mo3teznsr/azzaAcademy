@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/app_exception.dart';
 import '../../../core/network/error_text.dart';
+import '../../../router/routes.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/money/money.dart';
 import '../../../core/prefs/app_prefs.dart';
@@ -12,12 +14,16 @@ import '../../../core/utils/links.dart';
 import '../../../core/widgets/ui.dart';
 import '../../checkout/data/checkout_repository.dart';
 import '../../checkout/domain/checkout_models.dart';
+import '../../subscriptions/presentation/plan_picker.dart' show planName;
 import '../data/admin_repository.dart';
 
 /// Admin: verify a bank transfer — match amount, reference and account, then enroll.
 class TransferVerifyScreen extends ConsumerStatefulWidget {
-  const TransferVerifyScreen({super.key, required this.orderId});
+  const TransferVerifyScreen({super.key, required this.orderId, this.transfer});
   final String orderId;
+
+  /// A plan payment from the inbox (it isn't an order, so there is nothing else to fetch).
+  final Order? transfer;
 
   @override
   ConsumerState<TransferVerifyScreen> createState() => _TransferVerifyScreenState();
@@ -62,7 +68,27 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
     final l = context.l10n;
     final f = ref.watch(fmtProvider);
     final locale = ref.watch(localeProvider);
-    final order = ref.watch(orderProvider(widget.orderId));
+    var plan = widget.transfer != null && widget.transfer!.isSubscription ? widget.transfer : null;
+    // Opened from a link there is no `extra`: a plan payment is not an order, so find it in the inbox before asking for an order.
+    final inbox = widget.transfer == null ? ref.watch(transfersProvider) : null;
+    if (plan == null && inbox != null) plan = inbox.value?.where((o) => o.id == widget.orderId && o.isSubscription).firstOrNull;
+    final AsyncValue<Order> order = plan != null
+        ? AsyncData(plan)
+        : (inbox != null && inbox.isLoading && !inbox.hasValue)
+            ? const AsyncLoading<Order>()
+            : ref.watch(orderProvider(widget.orderId));
+    if (order.hasError && order.error is AppException && (order.error as AppException).code == 'NOT_FOUND') {
+      return Scaffold(
+        appBar: AppBar(),
+        body: EmptyState(
+          key: const Key('transfer-not-found'),
+          title: l.transferNotFound,
+          icon: Icons.search_off_rounded,
+          action: l.transferBackToQueue,
+          onAction: () => context.go(Routes.adminApprovalsTab('transfers')),
+        ),
+      );
+    }
     final t = Theme.of(context).textTheme;
     final p = AzzaPalette.of(context);
     final reasons = [l.reasonShort, l.reasonReference, l.reasonUnreadable, l.reasonNotReceived];
@@ -101,7 +127,11 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
               SectionCard(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   KeyValueRow(l.studentLabel, o.student?.name ?? '—'),
-                  KeyValueRow(l.batchLabel, '${o.batch?.course?.title(locale) ?? ''} · ${o.batch?.code ?? ''}'),
+                  if (o.isSubscription) ...[
+                    KeyValueRow(l.adminTransferCourse, o.subscriptionCourse?.title(locale) ?? '—'),
+                    KeyValueRow(l.adminTransferPlan, planName(l, o.subscriptionPlan!)),
+                  ] else
+                    KeyValueRow(l.batchLabel, '${o.batch?.course?.title(locale) ?? ''} · ${o.batch?.code ?? ''}'),
                   KeyValueRow(l.reference, o.reference, mono: true),
                   if (o.bankAccount != null) KeyValueRow(l.bankName, o.bankAccount!.bankName),
                   KeyValueRow(l.expected, f.aed(o.totalFils), emphasize: true),
@@ -148,7 +178,7 @@ class _TransferVerifyScreenState extends ConsumerState<TransferVerifyScreen> {
                 Expanded(
                   child: FilledButton(
                     onPressed: _busy || double.tryParse(_received.text) == null ? null : () => _decide(TransferDecision.approve),
-                    child: Text(l.approveEnroll),
+                    child: Text(plan != null ? l.approve : l.approveEnroll),
                   ),
                 ),
               ]),

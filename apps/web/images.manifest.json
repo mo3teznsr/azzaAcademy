@@ -7,7 +7,7 @@
       "path": "public/images/landing/on-air.jpg",
       "aspect": "4:5",
       "width": 1400,
-      "prompt": "A fictional Arab woman teacher in her late 30s, hair covered with a loose cream shawl, seated at a desk in a small home studio in the evening, mid-sentence and gesturing with one open hand toward a laptop webcam just off-frame. A warm paper lamp behind her, a pothos plant on a shelf, a mug and an open spiral notebook with unreadable pencil marks. Her face is lit by the soft screen glow; the background falls into deep green-ink shadow. Taken from slightly to the side, as if from the doorway."
+      "prompt": "A fictional Arab woman teacher in her late 30s, hair covered with a loose cream shawl, seated at a desk in a small home studio in the evening, mid-sentence and gesturing with one open hand toward a laptop that is completely OUT OF FRAME to the right (the laptop itself is not visible at all; only its soft cool glow falls on her face and hand). A warm paper lamp behind her, a pothos plant on a shelf, a mug and an open spiral notebook with unreadable pencil marks on the desk. The background falls into deep green-ink shadow. Taken from slightly to the side, as if from the doorway. No laptop, monitor, tablet or phone anywhere in the frame."
     },
     {
       "id": "room",

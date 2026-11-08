@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { FileStorage, StoredFile } from '../../core/ports';
-import { newStorageKey, storageKeyContentType } from './storage-key';
+import { newStorageKey, storageKeyContentType, storageKeyFromUrl } from './storage-key';
 
 /**
  * Local/dev adapter. Stores files under `<root>/<folder>/<random>.<ext>` and serves them at `<publicBaseUrl>/<key>`.
@@ -30,6 +30,10 @@ export class LocalDiskStorage implements FileStorage {
       return null;
     }
   }
+
+  keyFromUrl(url: string) {
+    return storageKeyFromUrl(url, this.publicBaseUrl);
+  }
 }
 
 /** In-memory adapter for tests. */
@@ -43,5 +47,8 @@ export class MemoryFileStorage implements FileStorage {
   }
   async read(key: string) {
     return this.files.get(key) ?? null;
+  }
+  keyFromUrl(url: string) {
+    return storageKeyFromUrl(url, 'http://files.test');
   }
 }

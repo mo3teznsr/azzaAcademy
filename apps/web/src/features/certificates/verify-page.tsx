@@ -65,14 +65,14 @@ export function VerifyPage({ code }: { code?: string }) {
 function ValidCard({ c }: { c: CertificateVerification }) {
   const { t, f, fill, pick } = useI18n();
   const course = pick(c.course.titleEn, c.course.titleAr).text || c.courseTitle;
-  const rows: Array<[string, React.ReactNode]> = [
-    [t.verify.course, course],
-    [t.verify.batch, <bdi key="b" dir="ltr">{c.batchCode}</bdi>],
-    [t.verify.teacher, <bdi key="t">{c.teacherName}</bdi>],
-    [t.verify.dates, `${f.dayMonth(c.startsOn)} – ${f.dayMonth(c.endsOn)}`],
-    [t.verify.attendance, fill(t.certificates.attended, { a: f.number(c.attended), b: f.number(c.total) })],
-    [t.verify.issued, f.dateLong(c.issuedAt)],
-  ];
+  const recorded = c.kind === 'RECORDED';
+  const rows: Array<[string, React.ReactNode]> = [[t.verify.course, course]];
+  if (!recorded && c.batchCode) rows.push([t.verify.batch, <bdi key="b" dir="ltr">{c.batchCode}</bdi>]);
+  if (c.teacherName) rows.push([t.verify.teacher, <bdi key="t">{c.teacherName}</bdi>]);
+  if (!recorded && c.startsOn && c.endsOn) rows.push([t.verify.dates, `${f.dayMonth(c.startsOn)} – ${f.dayMonth(c.endsOn)}`]);
+  if (recorded) rows.push([t.verify.completion, t.certificates.completedAll]);
+  else rows.push([t.verify.attendance, fill(t.certificates.attended, { a: f.number(c.attended), b: f.number(c.total) })]);
+  rows.push([t.verify.issued, f.dateLong(c.issuedAt)]);
   return (
     <section aria-labelledby="valid" className="theme-cream rise flex flex-col gap-8 rounded-[28px] bg-ivory p-[clamp(1.5rem,4vw,3rem)] text-ink light:border light:border-border">
       <div className="flex flex-wrap items-center gap-3">

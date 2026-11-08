@@ -28,6 +28,7 @@ class CourseFilters {
     this.minRating,
     this.sort = CourseSort.newest,
     this.featured = false,
+    this.type,
   });
 
   final String q;
@@ -44,6 +45,9 @@ class CourseFilters {
   final CourseSort sort;
   final bool featured;
 
+  /// Live classes or recorded lessons; null = both.
+  final CourseType? type;
+
   /// Filters set in the sheet (search text and the category rail are visible on screen, so they don't count).
   int get activeCount => [
         level != null,
@@ -51,6 +55,7 @@ class CourseFilters {
         minPriceAed != null || maxPriceAed != null,
         minRating != null,
         sort != CourseSort.newest,
+        type != null,
       ].where((on) => on).length;
 
   Map<String, dynamic> toQuery() => {
@@ -63,6 +68,7 @@ class CourseFilters {
         'minRating': ?minRating,
         if (sort != CourseSort.newest) 'sort': sort.wire,
         if (featured) 'featured': 'true',
+        'type': ?type?.wire,
       };
 
   CourseFilters copyWith({
@@ -74,6 +80,7 @@ class CourseFilters {
     ValueGetter<num?>? maxPriceAed,
     ValueGetter<double?>? minRating,
     CourseSort? sort,
+    ValueGetter<CourseType?>? type,
   }) =>
       CourseFilters(
         q: q ?? this.q,
@@ -85,6 +92,7 @@ class CourseFilters {
         minRating: minRating == null ? this.minRating : minRating(),
         sort: sort ?? this.sort,
         featured: featured,
+        type: type == null ? this.type : type(),
       );
 
   /// Keeps search text and category; clears what the sheet sets.
@@ -101,8 +109,9 @@ class CourseFilters {
       other.maxPriceAed == maxPriceAed &&
       other.minRating == minRating &&
       other.sort == sort &&
-      other.featured == featured;
+      other.featured == featured &&
+      other.type == type;
 
   @override
-  int get hashCode => Object.hash(q, category, level, language, minPriceAed, maxPriceAed, minRating, sort, featured);
+  int get hashCode => Object.hash(q, category, level, language, minPriceAed, maxPriceAed, minRating, sort, featured, type);
 }

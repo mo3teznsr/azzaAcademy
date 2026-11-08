@@ -2,7 +2,7 @@
 export class AppError extends Error {
   constructor(
     message: string,
-    readonly status: 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500 = 400,
+    readonly status: 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500 | 502 | 503 = 400,
     readonly code: string = 'BAD_REQUEST',
     readonly details?: unknown,
   ) {
@@ -20,6 +20,13 @@ export class NotFoundError extends AppError {
 export class ForbiddenError extends AppError {
   constructor(message = 'You do not have access to this resource') {
     super(message, 403, 'FORBIDDEN');
+  }
+}
+
+/** A recorded course needs an active plan. `lapsed`: the learner had one before, so the app offers a renewal. */
+export class PlanRequiredError extends AppError {
+  constructor(courseSlug: string, lapsed: boolean) {
+    super('This lesson needs an active plan', 403, 'PLAN_REQUIRED', { courseSlug, lapsed });
   }
 }
 

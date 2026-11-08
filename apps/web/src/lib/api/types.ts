@@ -2,6 +2,7 @@ import type {
   BatchStatus,
   CourseLevel,
   CourseStatus,
+  CourseType,
   DisplayCurrency,
   EarningStatus,
   EnrollmentStatus,
@@ -14,6 +15,8 @@ import type {
   Role,
   SessionLanguage,
   SessionStatus,
+  SubscriptionPlan,
+  SubscriptionStatus,
 } from '@azza/shared';
 
 /**
@@ -114,6 +117,19 @@ export interface Course {
   introVideoUrl: string | null;
   /** "From" price: the lowest price among open (ENROLLING/FULL/RUNNING) batches; null when none. */
   priceFils: number | null;
+  /** LIVE = batches and live sessions; RECORDED = lessons on a monthly or yearly plan. Fixed at creation. */
+  type: CourseType;
+  /** RECORDED only, before VAT, in fils of AED; null on LIVE courses. */
+  monthlyPriceFils: number | null;
+  yearlyPriceFils: number | null;
+  /** The one lesson anyone can watch without a plan; null = none. */
+  previewLessonId: string | null;
+  appleProducts: { monthly: string | null; yearly: string | null } | null;
+  /** Result of the last App Store product sync (admin). Absent or null = never synced. */
+  appleSyncStatus?: AppleSyncStatus | null;
+  appleSyncedAt?: ISODate | null;
+  /** Per-course override of the teacher's cut (percent); null = the platform default. Admin-facing. */
+  teacherCutPercent?: number | null;
   outcomesEn: string[];
   outcomesAr: string[];
   requirementsEn: string[];
@@ -136,6 +152,37 @@ export interface Course {
   createdAt: ISODate;
   updatedAt: ISODate;
 }
+
+/** A bank transfer waiting on the learner or on us (first payment or a renewal). */
+export interface PendingTransferPayment {
+  id: string;
+  reference: string;
+  amountFils: number;
+  status: 'AWAITING_RECEIPT' | 'AWAITING_REVIEW' | 'REJECTED';
+  expiresAt: ISODate | null;
+  /** Our note when a transfer was rejected. */
+  reviewNote: string | null;
+  /** The account to pay into, when the API sends it. */
+  bankAccount?: BankAccount | null;
+}
+
+/** A subscription row on `GET /me/subscriptions`. */
+export interface MySubscription {
+  id: string;
+  course: { id: string; slug: string; titleEn: string; titleAr: string | null; coverImageUrl: string | null };
+  plan: SubscriptionPlan;
+  provider: 'STRIPE' | 'APPLE' | 'BANK_TRANSFER';
+  status: SubscriptionStatus;
+  currentPeriodEnd: ISODate | null;
+  cancelAtPeriodEnd: boolean;
+  priceFils: number;
+  hasAccess: boolean;
+  /** Bank-transfer rows only (API Task 6b); absent until then. */
+  pendingPayment?: PendingTransferPayment | null;
+}
+
+/** `GET /courses/:slug`. */
+export type CourseDetail = Course;
 
 export type CourseRef = Pick<Course, 'id' | 'slug' | 'titleEn' | 'titleAr' | 'coverStyle' | 'coverImageUrl'>;
 
@@ -322,12 +369,22 @@ export interface Assignment {
   mySubmission?: Submission | null;
 }
 
+/** A file stored by `POST /assignments/:id/submission/file` or `POST /batches/:id/materials/file`. */
+export interface UploadedFile {
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+}
+
 export interface Submission {
   id: string;
   assignmentId: string;
   userId: string;
   url: string | null;
   text: string | null;
+  /** Attached files (`[]` when none). */
+  files?: UploadedFile[];
   score: number | null;
   feedback: string | null;
   submittedAt: ISODate;
@@ -553,7 +610,10 @@ export interface LedgerEntry {
   createdAt: ISODate;
   note: string | null;
   payoutId: string | null;
-  batch: { id: string; code: string; course: { titleEn: string; titleAr: string | null } };
+  /** Null on recorded-course (subscription) earnings. */
+  batch: { id: string; code: string; course: { titleEn: string; titleAr: string | null } } | null;
+  /** Recorded-course earnings carry the course instead of a batch. */
+  course: { id: string; titleEn: string; titleAr: string | null } | null;
   session: { id: string; number: number; title: string; endedAt: ISODate | null } | null;
 }
 
@@ -568,6 +628,8 @@ export interface EarningsSummary {
     nextPayout: { expectedOn: string; estimatedFils: number };
   };
   batches: EarningsBatch[];
+  /** Recorded (subscription) earnings, grouped by course. */
+  courses: Array<{ courseId: string; titleEn: string; titleAr: string | null; earnedFils: number }>;
   ledger: LedgerEntry[];
 }
 
@@ -607,6 +669,8 @@ export interface TeacherPayout extends Payout {
 export interface RunPayout extends Payout {
   teacher: PersonRef & { email: string; bankDetails: TeacherBankDetails | null };
   _count: { earnings: number };
+  /** Recorded-course lines that make up this payout. */
+  courses?: Array<{ courseId: string; titleEn: string; titleAr: string | null; amountFils: number }>;
 }
 
 interface PayoutRunBase {
@@ -692,6 +756,12 @@ export interface LiveRooms {
 }
 
 /** GET /admin/settings */
+/** GET/PUT /admin/settings/cuts: the teacher's default share, in percent. */
+export interface PlatformCuts {
+  liveCutPercent: number;
+  recordedCutPercent: number;
+}
+
 export interface PlatformSettings {
   rules: { TEACHER_SHARE_PERCENT: number; EARNING_HOLD_DAYS: number; MIN_PAYOUT_AED: number; BANK_TRANSFER_HOLD_HOURS: number; VAT_PERCENT: number };
   integrations: { stripe: boolean; livekit: boolean; smtp: boolean; push: boolean };
@@ -720,16 +790,19 @@ export type CertificateCourse = Pick<Course, 'id' | 'slug' | 'titleEn' | 'titleA
 export interface Certificate {
   id: string;
   code: string;
+  /** RECORDED certificates have no batch, dates or attendance. */
+  kind: 'LIVE' | 'RECORDED';
   issuedAt: ISODate;
   attended: number;
   total: number;
-  batchId: string;
-  batchCode: string;
+  batchId: string | null;
+  batchCode: string | null;
   course: CertificateCourse;
   courseTitle: string;
-  teacherName: string;
-  startsOn: ISODate;
-  endsOn: ISODate;
+  /** Null when a recorded course's author is gone. */
+  teacherName: string | null;
+  startsOn: ISODate | null;
+  endsOn: ISODate | null;
 }
 
 /** ACTIVE batch that is not over yet: `required` sessions to attend, `needed` still to attend. */
@@ -835,12 +908,22 @@ export interface ReportKpis {
   refundsFils: number;
 }
 
+export interface RecordedRevenue {
+  grossFils: number;
+  refundsFils: number;
+  feesFils: number;
+  vatFils: number;
+  netFils: number;
+}
+
 /** GET /admin/reports?from&to */
 export interface AdminReport {
   range: { from: string; to: string; days: number; timezone: string };
   previousRange: { from: string; to: string; days: number };
   kpis: ReportKpis;
   previous: ReportKpis;
+  /** Recorded-course subscription revenue as its own line. Absent until the API sends it. */
+  recorded?: RecordedRevenue;
   revenueByCourse: Array<{ courseId: string; title: string; revenueFils: number }>;
   batches: Array<{
     id: string;
@@ -893,3 +976,59 @@ export interface CourseReviewPage {
 
 /** GET /me/saved-courses item. */
 export type SavedCourse = Course & { savedAt: ISODate };
+
+// ---------- Recorded courses: admin ----------
+
+/** A row of `GET /admin/transfers`. Subscription payments sit in the same inbox as seat orders. */
+export type TransferItem = Omit<Order, 'enrollment'> & {
+  /** Absent on older API builds; treat missing as SEAT. */
+  kind?: 'SEAT' | 'SUBSCRIPTION';
+  /** SEAT orders only. */
+  enrollment?: Order['enrollment'] | null;
+  /** SUBSCRIPTION payments only. */
+  course?: { id: string; slug?: string; titleEn: string; titleAr: string | null } | null;
+  plan?: SubscriptionPlan | null;
+};
+
+/** A row of `GET /admin/subscriptions`. */
+export interface AdminSubscription {
+  id: string;
+  user: PersonRef & { email: string };
+  course: { id: string; slug: string; titleEn: string; titleAr: string | null };
+  plan: SubscriptionPlan;
+  provider: 'STRIPE' | 'APPLE' | 'BANK_TRANSFER';
+  status: SubscriptionStatus;
+  currentPeriodEnd: ISODate | null;
+  cancelAtPeriodEnd: boolean;
+  lastPayment: { id: string; totalFils: number; status: string; paidAt: ISODate | null } | null;
+}
+
+/** GET /teacher/courses/:id/subscribers */
+export interface CourseSubscribers {
+  active: number;
+  cancelling: number;
+  pastDue: number;
+  total: number;
+}
+
+/** POST /admin/subscriptions/:id/cancel */
+export interface CancelSubscriptionResult {
+  closedPayments?: Array<{ id: string; reference: string; status: string; receiptUploaded: boolean }>;
+}
+
+export type AppleSyncStatus = 'SYNCED' | 'SKIPPED' | 'FAILED';
+
+/** GET /admin/app-store/status */
+export interface AppStoreStatus {
+  configured: boolean;
+  seats: Array<{ priceFils: number; productId: string; status: AppleSyncStatus; detail: string | null; syncedAt: ISODate | null }>;
+  courses: Array<{ id: string; slug: string; titleEn: string; titleAr: string | null; status: AppleSyncStatus | null; detail: string | null; syncedAt: ISODate | null }>;
+}
+
+export interface AdminSubscriptionParams {
+  courseId?: string;
+  status?: SubscriptionStatus;
+  provider?: 'STRIPE' | 'APPLE' | 'BANK_TRANSFER';
+  page?: number;
+  pageSize?: number;
+}

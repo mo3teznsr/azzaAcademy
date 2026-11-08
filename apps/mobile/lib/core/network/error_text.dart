@@ -24,6 +24,9 @@ extension AppExceptionText on AppException {
       'NOT_CLASS_MEMBER' => l.errNotClassMember,
       'CHAT_CLOSED' => l.chatClosedNote,
       'INVALID_ASSIGNEE' => l.errInvalidAssignee,
+      'ALREADY_SUBSCRIBED' => l.errAlreadySubscribed,
+      'PLAN_REQUIRED' => l.errPlanRequired,
+      'APPLE_PRODUCT_MISSING' => l.errAppleProductMissing,
       'COURSE_LOCKED' => l.errCourseLocked,
       'COURSE_INCOMPLETE' => l.errCourseIncomplete,
       'ALREADY_SUBMITTED' => l.errAlreadySubmitted,
@@ -39,6 +42,17 @@ extension AppExceptionText on AppException {
       'QUIZ_CLOSED' => l.errQuizClosed,
       'NO_ATTEMPTS_LEFT' => l.errNoAttemptsLeft,
       'ATTEMPT_NOT_STARTED' => l.errAttemptNotStarted,
+      'SUBMISSION_FILE_INVALID' || 'MATERIAL_FILE_INVALID' => switch (_detail('reason')) {
+          'TYPE' => l.filesErrType,
+          'EMPTY' => l.filesErrEmpty,
+          'TOO_LARGE' => l.filesErrTooLarge,
+          'MISSING' => l.filesErrMissing,
+          'FOREIGN_URL' => l.filesErrForeignUrl,
+          _ => null,
+        },
+      'EMPTY_SUBMISSION' => l.filesErrEmptySubmission,
+      'ASSIGNMENT_HAS_SUBMISSIONS' => l.filesErrHasSubmissions,
+      'SCORE_TOO_HIGH' when _detail('highestScore') != null => l.filesErrScoreTooHigh('${_detail('highestScore')}'),
       'CONFLICT' when details is Map && (details as Map)['conflicts'] is List => l.errScheduleConflict,
       'CONFLICT' => l.errConflict,
       'START_IN_PAST' => l.errStartInPast,
@@ -51,6 +65,9 @@ extension AppExceptionText on AppException {
     final english = Localizations.localeOf(context).languageCode == 'en';
     return english && message.isNotEmpty && code != 'UNKNOWN' ? message : l.errGeneric;
   }
+
+  /// One field of the error envelope's `details`, when it is a map.
+  Object? _detail(String key) => details is Map ? (details as Map)[key] : null;
 }
 
 /// Shorthand for `catch (e)` blocks.

@@ -11,10 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { OrderStatusChip } from '@/components/brand/status-chip';
+import { Chip, OrderStatusChip } from '@/components/brand/status-chip';
 import { PageTitle, Panel, SectionHeader } from '@/components/brand/section';
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states';
-import { adminApi, type Order } from '@/lib/api';
+import { adminApi, type Paged, type TransferItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
@@ -24,14 +24,14 @@ import { useNow } from '@/lib/use-now';
 const FILTERS = { needs: undefined, all: 'ALL', approved: 'PAID', rejected: 'REJECTED', expired: 'EXPIRED' } as const;
 
 export function Transfers() {
-  const { t, f } = useI18n();
+  const { t, f, fill, pick } = useI18n();
   const money = useMoney();
   const [filter, setFilter] = useState<keyof typeof FILTERS>('needs');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const status = FILTERS[filter];
   const q = useQuery({
     queryKey: qk.admin.transfers(status),
-    queryFn: () => (status === 'ALL' ? adminApi.orders({ method: 'BANK_TRANSFER', pageSize: 100 }) : adminApi.transfers({ status, pageSize: 100 })),
+    queryFn: (): Promise<Paged<TransferItem>> => (status === 'ALL' ? adminApi.orders({ method: 'BANK_TRANSFER', pageSize: 100 }) : adminApi.transfers({ status, pageSize: 100 })),
     select: (p) => p.items,
   });
   const now = useNow(60_000);
@@ -82,9 +82,16 @@ export function Transfers() {
                       </TableCell>
                       <TableCell>
                         <bdi className="block font-medium">{o.user?.name ?? '—'}</bdi>
-                        <span className="text-xs text-muted-foreground" dir="ltr">
-                          {o.enrollment?.batch.code}
-                        </span>
+                        {o.kind === 'SUBSCRIPTION' ? (
+                          <span className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                            <Chip tone="sky">{t.recordedOps.transfers.kindPlan}</Chip>
+                            {o.course ? fill(t.recordedOps.transfers.planLabel, { course: pick(o.course.titleEn, o.course.titleAr).text, plan: o.plan ? t.recordedOps.subs.plan[o.plan] : '' }) : null}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground" dir="ltr">
+                            {o.enrollment?.batch.code}
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell>{money.aed(o.totalFils)}</TableCell>
                       <TableCell>{o.receivedFils != null ? money.aed(o.receivedFils) : '—'}</TableCell>
@@ -109,8 +116,9 @@ export function Transfers() {
   );
 }
 
-function Review({ order, onDone }: { order: Order; onDone: () => void }) {
-  const { t, f, fill } = useI18n();
+function Review({ order, onDone }: { order: TransferItem; onDone: () => void }) {
+  const { t, f, fill, pick } = useI18n();
+  const sub = order.kind === 'SUBSCRIPTION';
   const money = useMoney();
   const qc = useQueryClient();
   const [received, setReceived] = useState(String(filsToAed(order.receivedFils ?? order.totalFils)));
@@ -134,7 +142,14 @@ function Review({ order, onDone }: { order: Order; onDone: () => void }) {
     <div className="flex flex-col gap-4">
       <SectionHeader title={<span dir="ltr">{order.reference}</span>} size="sm" aside={<OrderStatusChip status={order.status} />} />
       <p className="text-sm text-muted-foreground">
-        <bdi>{order.user?.name}</bdi> · {order.enrollment?.batch.course.titleEn} · <span dir="ltr">{order.enrollment?.batch.code}</span>
+        <bdi>{order.user?.name}</bdi> ·{' '}
+        {sub ? (
+          fill(t.recordedOps.transfers.planLabel, { course: order.course ? pick(order.course.titleEn, order.course.titleAr).text : '', plan: order.plan ? t.recordedOps.subs.plan[order.plan] : '' })
+        ) : (
+          <>
+            {order.enrollment?.batch.course.titleEn} · <span dir="ltr">{order.enrollment?.batch.code}</span>
+          </>
+        )}
       </p>
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div>
@@ -169,11 +184,11 @@ function Review({ order, onDone }: { order: Order; onDone: () => void }) {
             <Label htmlFor="reason">{t.admin.transfers.reason}</Label>
             <Textarea id="reason" rows={2} value={reason} onChange={(e) => setReason(e.target.value)} />
           </div>
-          <p className="text-[13px] text-muted-foreground">{fill(t.admin.transfers.approveNote, { amount: `AED ${received}`, ref: order.reference })}</p>
+          <p className="text-[13px] text-muted-foreground">{fill(sub ? t.recordedOps.transfers.approvePlanNote : t.admin.transfers.approveNote, { amount: `AED ${received}`, ref: order.reference })}</p>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex flex-wrap gap-2">
             <Button variant="ink" disabled={m.isPending} onClick={() => m.mutate('APPROVE')}>
-              {t.admin.transfers.approve}
+              {sub ? t.recordedOps.transfers.approvePlan : t.admin.transfers.approve}
             </Button>
             <Button variant="outline" disabled={m.isPending} onClick={() => m.mutate('REQUEST_NEW_RECEIPT')}>
               {t.admin.transfers.requestNew}

@@ -63,11 +63,11 @@ class _AfterSessionScreenState extends ConsumerState<AfterSessionScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
             children: [
-              MonoLabel(l.endedStayed(f.time(ended), f.n(d.session.duration.inMinutes))),
+              Kicker(f.n(l.endedStayed(f.time(ended), d.session.duration.inMinutes))),
               const SizedBox(height: 12),
               DisplayText(l.wrapTitle, size: 60, weight: FontWeight.w800),
               const SizedBox(height: 24),
-              Text(l.howWas('S${d.session.number.toString().padLeft(2, '0')}'), style: t.titleLarge),
+              Text(l.studentHowWasToday, style: t.titleLarge),
               const SizedBox(height: 12),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 for (var i = 1; i <= 5; i++)
@@ -118,15 +118,19 @@ class _AfterSessionScreenState extends ConsumerState<AfterSessionScreen> {
                   ),
                 ]),
               ),
+              if (d.assignments.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _SessionPractice(detail: d),
+              ],
               if (next != null) ...[
                 const SizedBox(height: 12),
                 RaisedCard(
                   onTap: () => context.push(Routes.lobby(next.id)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    MonoLabel('${l.nextLabel} · S${next.number.toString().padLeft(2, '0')} · ${f.weekday(next.startsAt)}'),
+                    Kicker('${l.nextLabel} · ${l.studentSessionN(f.n(next.number))} · ${f.weekday(next.startsAt)}'),
                     const SizedBox(height: 6),
                     Text(next.title, style: t.titleMedium),
-                    Text('${f.dayTime(next.startsAt)} · ${l.quizMinutesN(f.n(next.duration.inMinutes))}', style: t.bodySmall),
+                    Text('${f.dayTime(next.startsAt)} · ${f.n(l.quizMinutesN(next.duration.inMinutes))}', style: t.bodySmall),
                   ]),
                 ),
               ],
@@ -136,6 +140,37 @@ class _AfterSessionScreenState extends ConsumerState<AfterSessionScreen> {
       ),
       bottomNavigationBar: BottomActionBar(children: [
         FilledButton(onPressed: _rating == 0 || _busy || _sent ? null : _send, child: Text(_sent ? l.thanksFeedback : l.sendFeedback)),
+      ]),
+    );
+  }
+}
+
+/// The practice this session set (its assignments): one card that opens the class's assignments.
+class _SessionPractice extends ConsumerWidget {
+  const _SessionPractice({required this.detail});
+  final SessionDetail detail;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final f = ref.watch(fmtProvider);
+    final t = Theme.of(context).textTheme;
+    final p = AzzaPalette.of(context);
+    final batchId = detail.session.batchId;
+    return RaisedCard(
+      key: const Key('after-practice'),
+      onTap: () => context.push(Uri(path: Routes.assignments, queryParameters: {if (batchId.isNotEmpty) 'batchId': batchId}).toString()),
+      child: Row(children: [
+        Icon(Icons.edit_note_rounded, color: p.accent),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(l.studentSessionPractice, style: t.titleSmall),
+            for (final a in detail.assignments.take(3))
+              Text('${a.title} · ${l.dueAt(f.dayTime(a.dueAt))}', style: t.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ]),
+        ),
+        const Icon(Icons.chevron_right_rounded),
       ]),
     );
   }

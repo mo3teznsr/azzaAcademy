@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { courseListQuery, createCourseInput, reviewDecisionInput, updateCourseInput } from '@azza/shared';
+import { appleProductsInput, courseListQuery, createCourseInput, previewLessonInput, recordedPricingInput, reviewDecisionInput, updateCourseInput } from '@azza/shared';
 import { currentUser, requireRole } from '../../http/middleware';
 import type { AppEnv } from '../../http/types';
 import { validate } from '../../http/validate';
@@ -21,8 +21,23 @@ export function courseRoutes(service: CourseService) {
     .patch('/:id', requireRole('TEACHER', 'ADMIN'), validate('json', updateCourseInput), async (c) =>
       c.json(await service.update(c.req.param('id'), c.req.valid('json'), currentUser(c))),
     )
+    .put('/:id/preview-lesson', requireRole('TEACHER', 'ADMIN'), validate('json', previewLessonInput), async (c) =>
+      c.json(await service.setPreviewLesson(c.req.param('id'), c.req.valid('json'), currentUser(c))),
+    )
     .post('/:id/submit', requireRole('TEACHER'), async (c) => c.json(await service.submit(c.req.param('id'), currentUser(c))))
     .post('/:id/review', requireRole('ADMIN'), validate('json', reviewDecisionInput), async (c) =>
       c.json(await service.review(c.req.param('id'), c.req.valid('json'))),
+    );
+}
+
+/** Mounted at /api/v1/admin */
+export function adminCourseRoutes(service: CourseService) {
+  return new Hono<AppEnv>()
+    .use('/courses/*', requireRole('ADMIN'))
+    .put('/courses/:id/recorded-pricing', validate('json', recordedPricingInput), async (c) =>
+      c.json(await service.setRecordedPricing(c.req.param('id'), c.req.valid('json'))),
+    )
+    .put('/courses/:id/apple-products', validate('json', appleProductsInput), async (c) =>
+      c.json(await service.setAppleProducts(c.req.param('id'), c.req.valid('json'))),
     );
 }

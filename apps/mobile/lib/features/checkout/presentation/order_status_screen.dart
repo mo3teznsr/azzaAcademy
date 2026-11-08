@@ -94,7 +94,7 @@ class _OrderStatusScreenState extends ConsumerState<OrderStatusScreen> with Widg
     final l = context.l10n;
     final order = ref.watch(orderProvider(widget.orderId));
     return Scaffold(
-      appBar: AppBar(title: order.hasValue ? MonoLabel(l.orderRef(order.requireValue.reference)) : null),
+      appBar: AppBar(title: order.hasValue ? Kicker(l.orderRef(order.requireValue.reference)) : null),
       body: AsyncView<Order>(
         value: order,
         onRetry: () => ref.invalidate(orderProvider(widget.orderId)),

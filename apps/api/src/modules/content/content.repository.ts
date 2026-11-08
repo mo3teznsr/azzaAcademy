@@ -1,5 +1,7 @@
 import type { Db } from '../../infrastructure/db';
 
+export type SubmissionFileRecord = { url: string; name: string; size: number; type: string };
+
 export class PrismaContentRepository {
   constructor(private readonly db: Db) {}
 
@@ -39,6 +41,22 @@ export class PrismaContentRepository {
     return this.db.assignment.findUnique({ where: { id } });
   }
 
+  updateAssignment(id: string, data: { sessionId?: string | null; title?: string; description?: string; dueAt?: Date; maxScore?: number }) {
+    return this.db.assignment.update({ where: { id }, data });
+  }
+
+  async deleteAssignment(id: string) {
+    await this.db.assignment.delete({ where: { id } });
+  }
+
+  submissionCount(assignmentId: string) {
+    return this.db.submission.count({ where: { assignmentId } });
+  }
+
+  async highestScore(assignmentId: string): Promise<number | null> {
+    return (await this.db.submission.aggregate({ where: { assignmentId }, _max: { score: true } }))._max.score;
+  }
+
   submissions(assignmentId: string) {
     return this.db.submission.findMany({
       where: { assignmentId },
@@ -47,7 +65,8 @@ export class PrismaContentRepository {
     });
   }
 
-  upsertSubmission(assignmentId: string, userId: string, data: { url?: string; text?: string }, at: Date) {
+  /** `files` replaces the stored list when given and is left alone otherwise (like `url` / `text`). */
+  upsertSubmission(assignmentId: string, userId: string, data: { url?: string; text?: string; files?: SubmissionFileRecord[] }, at: Date) {
     return this.db.submission.upsert({
       where: { assignmentId_userId: { assignmentId, userId } },
       create: { assignmentId, userId, ...data, submittedAt: at },

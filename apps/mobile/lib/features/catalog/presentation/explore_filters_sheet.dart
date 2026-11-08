@@ -71,7 +71,7 @@ class _CourseFiltersSheetState extends ConsumerState<CourseFiltersSheet> {
   Widget _group<T>(String title, List<(T?, String)> options, T? selected, ValueChanged<T?> onSelect, {String keyPrefix = ''}) {
     final p = AzzaPalette.of(context);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(padding: const EdgeInsets.only(top: 18, bottom: 8), child: MonoLabel(title)),
+      Padding(padding: const EdgeInsets.only(top: 18, bottom: 8), child: Kicker(title)),
       Wrap(spacing: 8, runSpacing: 4, children: [
         for (final (value, label) in options)
           ChoiceChip(
@@ -129,7 +129,10 @@ class _CourseFiltersSheetState extends ConsumerState<CourseFiltersSheet> {
               _group<double>(l.minRatingLabel, [(null, l.anyOption), for (final r in const [3.0, 4.0, 4.5]) (r, l.ratingAtLeast(_fmt(r)))],
                   _f.minRating, (v) => setState(() => _f = _f.copyWith(minRating: () => v)),
                   keyPrefix: 'rating'),
-              Padding(padding: const EdgeInsets.only(top: 18, bottom: 8), child: MonoLabel(l.priceRangeAed)),
+              _group<CourseType>(l.filterFormat, [(null, l.anyOption), (CourseType.live, l.formatLive), (CourseType.recorded, l.formatRecorded)], _f.type,
+                  (v) => setState(() => _f = _f.copyWith(type: () => v)),
+                  keyPrefix: 'type'),
+              Padding(padding: const EdgeInsets.only(top: 18, bottom: 8), child: Kicker(l.priceRangeAed)),
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 for (final (i, c, label) in [(0, _min, l.minPrice), (1, _max, l.maxPrice)]) ...[
                   if (i == 1) const SizedBox(width: 12),

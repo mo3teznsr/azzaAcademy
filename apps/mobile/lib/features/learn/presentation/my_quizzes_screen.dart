@@ -68,7 +68,7 @@ class QuizSummaryCard extends ConsumerWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Expanded(
-            child: MonoLabel([if (q.courseTitleEn.isNotEmpty) q.courseTitle(locale), if (q.batchCode.isNotEmpty) q.batchCode].join(' · ')),
+            child: Kicker([if (q.courseTitleEn.isNotEmpty) q.courseTitle(locale), if (q.batchCode.isNotEmpty) q.batchCode].join(' · ')),
           ),
           if (mine != null) QuizStatusChip(progress: mine),
         ]),

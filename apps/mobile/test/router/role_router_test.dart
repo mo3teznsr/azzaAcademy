@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:azza/app.dart';
 import 'package:azza/core/prefs/app_prefs.dart';
 import 'package:azza/core/providers.dart';
@@ -61,11 +63,18 @@ Future<GoRouter> bootApp(WidgetTester tester, AppUser? user, {bool onboarded = t
 
 String location(GoRouter r) => r.routerDelegate.currentConfiguration.uri.path;
 
+/// The top-most location, pushed routes included.
+String top(GoRouter r) => r.state.uri.path;
+
 void main() {
-  testWidgets('unauthenticated user is sent to sign-in', (tester) async {
+  testWidgets('a signed-out visitor lands on Welcome: create account, sign in or browse', (tester) async {
     final router = await bootApp(tester, null);
-    expect(location(router), Routes.signIn);
-    expect(find.text('Welcome back.'), findsOneWidget);
+    expect(location(router), Routes.welcome);
+    expect(find.byKey(const Key('welcome-sign-up')), findsOneWidget);
+    expect(find.byKey(const Key('welcome-sign-in')), findsOneWidget);
+    expect(find.byKey(const Key('welcome-browse')), findsOneWidget);
+    expect(find.byKey(const Key('legal-privacy')), findsOneWidget);
+    expect(find.byKey(const Key('legal-terms')), findsOneWidget);
   });
 
   testWidgets('first run without a session shows the language picker', (tester) async {
@@ -95,7 +104,7 @@ void main() {
   testWidgets('admin lands in the admin tree on the page ground', (tester) async {
     final router = await bootApp(tester, admin);
     expect(location(router), Routes.adminOverview);
-    for (final tab in ['Overview', 'Live', 'Batches', 'Approvals', 'Me']) {
+    for (final tab in ['Overview', 'Batches', 'Approvals', 'Manage', 'Me']) {
       expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(tab)), findsOneWidget);
     }
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
@@ -128,6 +137,50 @@ void main() {
     router.go(Routes.teacherNewCourse);
     await settle(tester);
     expect(location(router), Routes.teacherNewCourse);
+  });
+
+  testWidgets('a detail opened from a tab keeps the tab bar, and back returns within the tab', (tester) async {
+    final router = await bootApp(tester, student);
+    unawaited(router.push(Routes.messages));
+    await settle(tester);
+    expect(top(router), '/student/home/messages');
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(BackButton), findsOneWidget);
+
+    router.pop();
+    await settle(tester);
+    expect(top(router), Routes.studentHome);
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    // The same shared path opens under whichever tab the student is on; the other tab keeps its own stack.
+    router.go(Routes.studentMe);
+    await settle(tester);
+    unawaited(router.push(Routes.savedCourses));
+    await settle(tester);
+    expect(top(router), '/student/me${Routes.savedCourses}');
+    expect(find.byType(NavigationBar), findsOneWidget);
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Home')));
+    await settle(tester);
+    expect(top(router), Routes.studentHome);
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Me')));
+    await settle(tester);
+    expect(top(router), '/student/me${Routes.savedCourses}');
+  });
+
+  testWidgets('full-screen flows still cover the tab bar', (tester) async {
+    final router = await bootApp(tester, student);
+    unawaited(router.push(Routes.quizTake('q1')));
+    await settle(tester);
+    expect(top(router), Routes.quizTake('q1'));
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets("a teacher's shared screens open inside the current tab too", (tester) async {
+    final router = await bootApp(tester, teacher);
+    unawaited(router.push(Routes.messages));
+    await settle(tester);
+    expect(top(router), '/teacher/today/messages');
+    expect(find.byType(NavigationBar), findsOneWidget);
   });
 
   testWidgets('an admin cannot open the teacher course editor', (tester) async {

@@ -76,7 +76,7 @@ class _BankTransferScreenState extends ConsumerState<BankTransferScreen> {
               padding: const EdgeInsetsDirectional.only(end: 16),
               child: Center(
                 child: Ticker(
-                  builder: (_, now) => MonoLabel(
+                  builder: (_, now) => Kicker(
                     l.seatHeld(Fmt.holdClock(order.requireValue.expiresAt!.difference(now))),
                     color: AzzaPalette.of(context).accent,
                   ),
@@ -97,7 +97,7 @@ class _BankTransferScreenState extends ConsumerState<BankTransferScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(AzzaSpace.gutter, 0, AzzaSpace.gutter, 24),
             children: [
-              MonoLabel(l.transferExactly),
+              Kicker(l.transferExactly),
               const SizedBox(height: 6),
               DisplayText(f.aed(o.totalFils), size: 48, weight: FontWeight.w800),
               const SizedBox(height: 16),
@@ -105,7 +105,7 @@ class _BankTransferScreenState extends ConsumerState<BankTransferScreen> {
                 child: Row(children: [
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      MonoLabel(l.reference),
+                      Kicker(l.reference),
                       const SizedBox(height: 4),
                       Text(ref0, key: const Key('transfer-reference'), textDirection: TextDirection.ltr, style: AzzaFonts.mono(size: 18, color: p.text, tracking: 0.04)),
                     ]),

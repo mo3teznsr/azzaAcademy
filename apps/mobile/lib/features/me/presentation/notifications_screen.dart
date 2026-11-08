@@ -42,7 +42,7 @@ class NotificationsScreen extends ConsumerWidget {
               leading: SignalMark(size: 22, color: live ? AzzaColors.onAir : (n.read ? p.line : p.accent), live: live && !n.read),
               title: Text(n.title, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: n.read ? p.muted : p.text)),
               subtitle: Text(n.body, maxLines: 2, overflow: TextOverflow.ellipsis),
-              trailing: MonoLabel(n.createdAt.isBefore(today) ? f.shortDate(n.createdAt) : f.time(n.createdAt)),
+              trailing: Kicker(n.createdAt.isBefore(today) ? f.shortDate(n.createdAt) : f.time(n.createdAt)),
               onTap: () {
                 ref.read(notificationsProvider.notifier).markRead(n.id);
                 final r = n.route;

@@ -40,7 +40,9 @@ class _TeachScreenState extends ConsumerState<TeachScreen> {
   void initState() {
     super.initState();
     // Re-opening the screen picks up an approval made since the session started.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshSession(silent: true));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !ref.read(isGuestProvider)) _refreshSession(silent: true);
+    });
   }
 
   Future<void> _refreshSession({bool silent = false}) async {
@@ -60,6 +62,12 @@ class _TeachScreenState extends ConsumerState<TeachScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    if (ref.watch(isGuestProvider)) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l.teachOnAzza)),
+        body: ListView(padding: const EdgeInsets.all(AzzaSpace.gutter), children: [const _GuestApply()]),
+      );
+    }
     final role = ref.watch(currentRoleProvider);
     final application = ref.watch(myInstructorApplicationProvider);
     final canTeach = role == Role.teacher || role == Role.admin;
@@ -92,6 +100,46 @@ class _TeachScreenState extends ConsumerState<TeachScreen> {
                 _ => _ApplicationForm(rejected: app),
               },
             ),
+    );
+  }
+}
+
+/// Signed out: the pitch, and "create an account to apply" (sign-up brings the guest back here to the form).
+class _GuestApply extends StatelessWidget {
+  const _GuestApply();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final t = Theme.of(context).textTheme;
+    final p = AzzaPalette.of(context);
+    return SectionCard(
+      key: const Key('teach-guest'),
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(20),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Align(alignment: AlignmentDirectional.centerStart, child: Icon(Icons.co_present_outlined, color: p.success, size: 32)),
+        const SizedBox(height: 12),
+        DisplayText(l.teachPitchTitle, size: 26),
+        const SizedBox(height: 8),
+        Text(l.teachPitchBody, style: t.bodyMedium?.copyWith(color: p.muted)),
+        const SizedBox(height: 12),
+        Text(l.guestTeachBody, style: t.bodySmall),
+        const SizedBox(height: 20),
+        FilledButton(
+          key: const Key('teach-guest-sign-up'),
+          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+          onPressed: () => context.go(Routes.signUpFrom(Routes.teachOnAzza)),
+          child: Text(l.guestTeachCta),
+        ),
+        const SizedBox(height: 4),
+        TextButton(
+          key: const Key('teach-guest-sign-in'),
+          style: TextButton.styleFrom(minimumSize: const Size.fromHeight(44)),
+          onPressed: () => context.go(Routes.signInFrom(Routes.teachOnAzza)),
+          child: Text(l.haveAccount),
+        ),
+      ]),
     );
   }
 }

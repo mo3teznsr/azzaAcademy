@@ -21,7 +21,7 @@ class MessagesButton extends ConsumerWidget {
     final f = ref.watch(fmtProvider);
     return IconButton(
       key: const Key('messages-button'),
-      tooltip: unread > 0 ? '${l.messagesTitle} · ${l.chatUnreadN(f.n(unread))}' : l.messagesTitle,
+      tooltip: unread > 0 ? '${l.messagesTitle} · ${f.n(l.chatUnreadN(unread))}' : l.messagesTitle,
       onPressed: () => context.push(Routes.messages),
       icon: Badge(
         isLabelVisible: unread > 0,

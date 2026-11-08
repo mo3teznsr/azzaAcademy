@@ -25,6 +25,22 @@ export class PrismaReportRepository {
     });
   }
 
+  /**
+   * Real recorded-plan payments (PAID, or REFUNDED with money) by `paidAt` in [from, to).
+   * Apple tombstones (no money) and MANUAL_REFUND_NEEDED strays are left out.
+   */
+  recordedPayments(from: Date, to: Date) {
+    return this.db.subscriptionPayment.findMany({
+      where: {
+        status: { in: ['PAID', 'REFUNDED'] },
+        totalFils: { gt: 0 },
+        paidAt: { gte: from, lt: to },
+        OR: [{ reviewNote: null }, { reviewNote: { not: 'MANUAL_REFUND_NEEDED' } }],
+      },
+      select: { totalFils: true, vatFils: true, feeFils: true, refundedFils: true },
+    });
+  }
+
   /** Money returned on orders refunded (fully → REFUNDED, partially → still PAID) in [from, to); the last update dates the refund. */
   async refundedFils(from: Date, to: Date) {
     const r = await this.db.order.aggregate({

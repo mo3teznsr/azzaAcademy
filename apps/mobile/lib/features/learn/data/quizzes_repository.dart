@@ -8,6 +8,8 @@ import '../domain/quiz_models.dart';
 abstract class QuizzesRepository {
   Future<List<QuizSummary>> myQuizzes();
   Future<List<QuizSummary>> batchQuizzes(String batchId);
+  /// `GET /courses/:id/quizzes` — a recorded course's quizzes (teachers see drafts too).
+  Future<List<QuizSummary>> courseQuizzes(String courseId);
   Future<QuizView> quiz(String id);
   Future<QuizView> start(String id);
 
@@ -25,6 +27,10 @@ class DioQuizzesRepository extends DioRepository implements QuizzesRepository {
   @override
   Future<List<QuizSummary>> batchQuizzes(String batchId) async =>
       (await getItems('/api/v1/batches/$batchId/quizzes')).map(QuizSummary.fromJson).toList();
+
+  @override
+  Future<List<QuizSummary>> courseQuizzes(String courseId) async =>
+      (await getItems('/api/v1/courses/$courseId/quizzes')).map(QuizSummary.fromJson).toList();
 
   @override
   Future<QuizView> quiz(String id) async => QuizView.fromJson(await getJson('/api/v1/quizzes/$id'));
@@ -46,6 +52,10 @@ final myQuizzesProvider = FutureProvider.autoDispose<List<QuizSummary>>((ref) =>
 
 final batchQuizzesProvider = FutureProvider.autoDispose.family<List<QuizSummary>, String>(
   (ref, batchId) => ref.watch(quizzesRepositoryProvider).batchQuizzes(batchId),
+);
+
+final courseQuizzesProvider = FutureProvider.autoDispose.family<List<QuizSummary>, String>(
+  (ref, courseId) => ref.watch(quizzesRepositoryProvider).courseQuizzes(courseId),
 );
 
 final quizViewProvider = FutureProvider.autoDispose.family<QuizView, String>((ref, id) => ref.watch(quizzesRepositoryProvider).quiz(id));

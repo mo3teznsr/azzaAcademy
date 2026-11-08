@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { CourseCover } from '@/components/brand/course-cover';
 import { Price } from '@/components/brand/price';
-import { CourseStatusChip } from '@/components/brand/status-chip';
+import { Chip, CourseStatusChip } from '@/components/brand/status-chip';
 import { PageTitle } from '@/components/brand/section';
 import { EmptyState, LoadingBlock, QueryView } from '@/components/brand/states';
 import { coursesApi, type Course } from '@/lib/api';
@@ -65,7 +65,10 @@ function CourseRow({ c }: { c: Course }) {
           </span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-1.5">
-          <CourseStatusChip status={c.status} />
+          <span className="flex items-center gap-1.5">
+            {c.type === 'RECORDED' && <Chip tone="sky">{t.recordedOps.typeChip.RECORDED}</Chip>}
+            <CourseStatusChip status={c.status} />
+          </span>
           <Price fils={c.priceFils} from compact align="end" className="text-sm" />
         </span>
       </Link>

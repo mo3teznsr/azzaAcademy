@@ -69,11 +69,14 @@ abstract final class AzzaColors {
   /// Light raised (alias kept for older call sites).
   static const creamRaised = raised;
 
-  /// Placeholder (light); secondary text on dark.
+  /// Placeholder and hint (light); secondary text on dark. Too faint for text on light (about 2.2:1).
   static const muted = Color(0xFF9DABA3);
 
-  /// Secondary text on light.
+  /// Secondary text on light (BRAND text2, ≥ 4.5:1 on page and white).
   static const mutedDeep = Color(0xFF55655C);
+
+  /// Tertiary (BRAND text3): placeholders on dark, large text only on light.
+  static const text3 = Color(0xFF7D8C84);
 
   // ── Status (legacy names) ─────────────────────────────────────────────────
   /// Old yellow accent → the brand green (inkDeep text on it).
@@ -218,6 +221,14 @@ class AzzaPalette extends ThemeExtension<AzzaPalette> {
   final Color primary;
   final Color onPrimary;
   final bool isDark;
+
+  /// Secondary text: captions, subtitles, kickers, empty-state bodies (text2 on light, textMuted on dark).
+  /// At least 4.5:1 on [ground] and [raised] in both themes. [muted] carries the same value for
+  /// older call sites; prefer this for text.
+  Color get textSecondary => isDark ? AzzaColors.muted : AzzaColors.mutedDeep;
+
+  /// Hints and placeholders only (never body or secondary text).
+  Color get hint => isDark ? AzzaColors.text3 : AzzaColors.muted;
 
   /// Input outline.
   Color get fieldLine => isDark ? AzzaColors.fieldLine : AzzaColors.borderStrong;

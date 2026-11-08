@@ -8,10 +8,15 @@ import '../data/app_store_gateway.dart';
 import '../data/apple_iap_repository.dart';
 import '../domain/apple_iap.dart';
 import '../domain/checkout_models.dart';
+import '../../subscriptions/data/subscription_repository.dart';
+
+/// Sends a subscription purchase's JWS to the API (`POST /subscriptions/apple/verify`).
+typedef SubscriptionVerifier = Future<void> Function(String signedTransaction);
 
 enum ApplePurchasePhase { pending, confirming, paid, cancelled, failed, retryLater, rejected }
 
 /// What happened to an App Store purchase, for the screen showing it (matched by [productId]).
+/// A paid seat carries its [order]; a paid plan has none.
 @immutable
 class ApplePurchaseEvent {
   const ApplePurchaseEvent(this.productId, this.phase, {this.order, this.message});
@@ -25,10 +30,11 @@ class ApplePurchaseEvent {
 /// purchased → `POST /payments/apple/verify` → finish the transaction only after the server confirmed.
 /// On start it also re-posts transactions left unfinished by a killed app, so a paid seat is never lost.
 class AppleIapCoordinator {
-  AppleIapCoordinator(this._store, this._repo, {bool? enabled}) : _enabled = enabled ?? usesAppStorePayments;
+  AppleIapCoordinator(this._store, this._repo, {bool? enabled, this._verifySubscription}) : _enabled = enabled ?? usesAppStorePayments;
 
   final AppStoreGateway _store;
   final AppleIapRepository _repo;
+  final SubscriptionVerifier? _verifySubscription;
   final bool _enabled;
   final _events = StreamController<ApplePurchaseEvent>.broadcast();
   final _inFlight = <String>{};
@@ -46,7 +52,8 @@ class AppleIapCoordinator {
         await _handle(p);
       }
     }, onError: (Object _) {});
-    return _restore ??= _restoreUnfinished();
+    // A restore already running is shared; a later call after it ended retries what is still unfinished.
+    return _restore ??= _restoreUnfinished().whenComplete(() => _restore = null);
   }
 
   Future<void> _restoreUnfinished() async {
@@ -55,8 +62,7 @@ class AppleIapCoordinator {
         await _settle(p);
       }
     } catch (e) {
-      debugPrint('[iap] restore failed: $e');
-      _restore = null; // try again on the next start()
+      debugPrint('[iap] restore failed: $e'); // the next start() tries again
     }
   }
 
@@ -68,6 +74,12 @@ class AppleIapCoordinator {
     await start();
     _orderByToken[token.toLowerCase()] = order.id;
     await _store.buy(productId, appAccountToken: token);
+  }
+
+  /// Opens the App Store sheet for a recorded course's auto-renewable plan; the outcome arrives on [events].
+  Future<void> buySubscription({required String productId, required String appAccountToken}) async {
+    await start();
+    await _store.buySubscription(productId, appAccountToken: appAccountToken);
   }
 
   Future<void> _handle(StorePurchase p) async {
@@ -91,14 +103,27 @@ class AppleIapCoordinator {
     if (p.signedTransaction.isEmpty || !_inFlight.add(key)) return; // the stream and the restore can both deliver it
     _emit(p, ApplePurchasePhase.confirming);
     try {
-      final order = await _repo.verify(orderId: _orderByToken[p.appAccountToken?.toLowerCase()], signedTransaction: p.signedTransaction);
+      // A wiring bug: caught below so one bad item can't stop the restore loop or the stream listener, and never sent to the seat verify.
+      if (isAppleSubscriptionProduct(p.productId) && _verifySubscription == null) {
+        final wiring = StateError('No subscription verifier is wired for ${p.productId}.');
+        debugPrint('$wiring');
+        throw wiring;
+      }
+      final Order? order;
+      if (isAppleSubscriptionProduct(p.productId)) {
+        // A plan (first purchase, renewal or a restored transaction): the server activates or extends it, then we finish.
+        await _verifySubscription!(p.signedTransaction);
+        order = null;
+      } else {
+        order = await _repo.verify(orderId: _orderByToken[p.appAccountToken?.toLowerCase()], signedTransaction: p.signedTransaction);
+      }
       await _finish(p);
       _emit(p, ApplePurchasePhase.paid, order: order);
     } catch (e) {
       final err = AppException.from(e);
       final details = err.details;
       if (details is Map && details['finishTransaction'] == true) {
-        // Retrying can never succeed, and an unfinished consumable blocks buying this price point again.
+        // Retrying can never succeed, and an unfinished transaction blocks buying this product again.
         await _finish(p);
         _emit(p, ApplePurchasePhase.rejected, message: err.message);
       } else {
@@ -127,7 +152,11 @@ class AppleIapCoordinator {
 }
 
 final appleIapCoordinatorProvider = Provider<AppleIapCoordinator>((ref) {
-  final c = AppleIapCoordinator(ref.watch(appStoreGatewayProvider), ref.watch(appleIapRepositoryProvider));
+  final c = AppleIapCoordinator(
+    ref.watch(appStoreGatewayProvider),
+    ref.watch(appleIapRepositoryProvider),
+    verifySubscription: (jws) => ref.read(subscriptionRepositoryProvider).verifyApple(jws),
+  );
   ref.onDispose(c.dispose);
   return c;
 });

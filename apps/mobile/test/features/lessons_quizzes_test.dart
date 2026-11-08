@@ -87,6 +87,9 @@ class _FakeQuizzes implements QuizzesRepository {
   Future<List<QuizSummary>> myQuizzes() async => const [];
 
   @override
+  Future<List<QuizSummary>> courseQuizzes(String courseId) async => const [];
+
+  @override
   Future<List<QuizSummary>> batchQuizzes(String batchId) async => [
         QuizSummary.fromJson({'id': 'q1', 'batchId': batchId, 'title': 'Week 1 check', 'status': 'PUBLISHED', 'questionCount': 2, 'maxAttempts': 2, 'attemptCount': 5, 'studentsAttempted': 3}),
         QuizSummary.fromJson({'id': 'q2', 'batchId': batchId, 'title': 'Week 2 draft', 'status': 'DRAFT', 'questionCount': 0, 'maxAttempts': 1, 'attemptCount': 0, 'studentsAttempted': 0}),
@@ -258,11 +261,11 @@ void main() {
     expect(find.byKey(const Key('quiz-score')), findsOneWidget);
   });
 
-  testWidgets('teacher sees batch quizzes with the web-only note, and results per student and question', (tester) async {
+  testWidgets('teacher sees batch quizzes with a New quiz action, and results per student and question', (tester) async {
     final repo = _FakeQuizzes(QuizView.fromJson(_viewJson()));
     await pumpScreen(tester, const BatchQuizzesScreen(batchId: 'b7'), overrides: [quizzesRepositoryProvider.overrideWithValue(repo)]);
     await settle(tester);
-    expect(find.byKey(const Key('quizzes-web-note')), findsOneWidget);
+    expect(find.byKey(const Key('new-quiz-fab')), findsOneWidget);
     expect(find.text('3 students tried · 5 attempts'), findsOneWidget);
     expect(find.text('DRAFT'), findsOneWidget);
 

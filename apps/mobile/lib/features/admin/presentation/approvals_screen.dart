@@ -12,6 +12,8 @@ import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../checkout/domain/checkout_models.dart';
 import '../../live/domain/live_models.dart';
+import '../data/admin_queue.dart';
+import '../../subscriptions/presentation/plan_picker.dart' show planName;
 import '../data/admin_repository.dart';
 import 'review_queue.dart';
 
@@ -22,9 +24,28 @@ class ApprovalsScreen extends ConsumerWidget {
   /// 1 opens "To review" (from an `INSTRUCTOR_APPLIED` notification).
   final int initialTab;
 
+  /// `?tab=` values: `alerts` (0), `review` (1), `transfers` (2), `payouts` (3).
+  static int tabIndex(String? tab) => switch (tab) {
+        'review' => 1,
+        'transfers' => 2,
+        'payouts' => 3,
+        _ => 0,
+      };
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
+    final f = ref.watch(fmtProvider);
+    final q = ref.watch(adminQueueProvider);
+    Tab tab(String label, int n, String key) => Tab(
+          key: Key(key),
+          child: Badge(
+            isLabelVisible: n > 0,
+            label: Text(f.n(n)),
+            offset: const Offset(14, -6),
+            child: Text(label),
+          ),
+        );
     return DefaultTabController(
       length: 4,
       initialIndex: initialTab,
@@ -36,7 +57,12 @@ class ApprovalsScreen extends ConsumerWidget {
             tabAlignment: TabAlignment.start,
             labelColor: AzzaPalette.of(context).text,
             indicatorColor: AzzaPalette.of(context).text,
-            tabs: [Tab(text: l.needsYou), Tab(text: l.toReviewTab), Tab(text: l.transfersToVerify), Tab(text: l.payoutRuns)],
+            tabs: [
+              tab(l.needsYou, q.needsYouTab, 'tab-alerts'),
+              tab(l.toReviewTab, q.reviewTab, 'tab-review'),
+              tab(l.transfersToVerify, q.transfers, 'tab-transfers'),
+              tab(l.payoutRuns, q.payoutRuns, 'tab-payouts'),
+            ],
           ),
         ),
         body: const TabBarView(children: [_AlertsTab(), ReviewQueueTab(), _TransfersTab(), _PayoutRunsTab()]),
@@ -88,10 +114,10 @@ class AlertTile extends ConsumerWidget {
     final a = alert;
     final n = f.n(a.count);
     final title = switch (a.type) {
-      'TRANSFERS_TO_VERIFY' => l.alertTransfersToVerify(n),
-      'SEAT_HOLDS_EXPIRING' => l.alertSeatHoldsExpiring(n),
-      'TEACHER_BANK_UNVERIFIED' => l.alertTeacherBankUnverified(n),
-      'PAYOUTS_HELD' => l.alertPayoutsHeld(n),
+      'TRANSFERS_TO_VERIFY' => f.n(l.alertTransfersToVerify(a.count)),
+      'SEAT_HOLDS_EXPIRING' => f.n(l.alertSeatHoldsExpiring(a.count)),
+      'TEACHER_BANK_UNVERIFIED' => f.n(l.alertTeacherBankUnverified(a.count)),
+      'PAYOUTS_HELD' => f.n(l.alertPayoutsHeld(a.count)),
       _ => '${a.type.replaceAll('_', ' ')} · $n',
     };
     final tab = a.isTransfer ? 2 : (a.isPayouts ? 3 : null);
@@ -112,7 +138,7 @@ class AlertTile extends ConsumerWidget {
         child: Row(children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              MonoLabel(a.type.replaceAll('_', ' '), color: a.urgent ? AzzaPalette.of(context).warning : null),
+              Kicker(a.type.replaceAll('_', ' '), color: a.urgent ? AzzaPalette.of(context).warning : null),
               const SizedBox(height: 6),
               Text(title, style: t.titleSmall),
             ]),
@@ -166,15 +192,15 @@ class _RescheduleRequestTileState extends ConsumerState<RescheduleRequestTile> {
         color: AzzaColors.sun.withValues(alpha: 0.18),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            MonoLabel(l.reschedule.toUpperCase(), color: AzzaPalette.of(context).warning),
+            Kicker(l.reschedule.toUpperCase(), color: AzzaPalette.of(context).warning),
             const Spacer(),
-            if (r.createdAt != null) MonoLabel(f.shortDate(r.createdAt!)),
+            if (r.createdAt != null) Kicker(f.shortDate(r.createdAt!)),
           ]),
           const SizedBox(height: 6),
           Text(l.rescheduleRequestTitle(r.requestedByName, Fmt.slate(s.batchCode, s.number)), style: t.titleSmall),
           Text(s.title, style: t.bodySmall),
           const SizedBox(height: 6),
-          MonoLabel('${f.dayTime(s.startsAt)}  →  ${f.dayTime(r.startsAt)}'),
+          Kicker('${f.dayTime(s.startsAt)}  →  ${f.dayTime(r.startsAt)}'),
           if (r.reason != null) ...[const SizedBox(height: 4), Text(r.reason!, style: t.bodySmall)],
           const SizedBox(height: 10),
           Row(children: [
@@ -220,13 +246,16 @@ class _TransfersTab extends ConsumerWidget {
         children: [
           for (final o in list) ...[
             RaisedCard(
-              onTap: () => context.go(Routes.adminTransfer(o.id)),
+              onTap: () => context.go(Routes.adminTransfer(o.id), extra: o.isSubscription ? o : null),
               child: Row(children: [
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     MonoLabel(o.reference),
                     Text(o.student?.name ?? '', style: t.titleSmall),
-                    Text('${o.batch?.course?.title(locale) ?? ''} · ${o.batch?.code ?? ''}', style: t.bodySmall),
+                    if (o.isSubscription)
+                      Text('${o.subscriptionCourse?.title(locale) ?? ''} · ${planName(l, o.subscriptionPlan!)}', key: Key('transfer-plan-${o.id}'), style: t.bodySmall)
+                    else
+                      Text('${o.batch?.course?.title(locale) ?? ''} · ${o.batch?.code ?? ''}', style: t.bodySmall),
                   ]),
                 ),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -285,7 +314,7 @@ class _PayoutRunsTab extends ConsumerWidget {
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(f.monthYear(r.periodStart), style: t.titleSmall),
-                    MonoLabel('${f.shortDate(r.periodStart)}–${f.shortDate(r.periodEnd)}'),
+                    Kicker(f.dateRange(r.periodStart, r.periodEnd)),
                   ]),
                 ),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [

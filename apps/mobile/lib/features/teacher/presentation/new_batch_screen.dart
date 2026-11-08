@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart' show DateFormat;
 
 import '../../../core/domain/enums.dart';
 import '../../../core/l10n/l10n.dart';
@@ -14,6 +13,8 @@ import '../../../core/utils/digits.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/count_stepper.dart';
 import '../../../core/widgets/ui.dart';
+import '../../admin/data/back_office_repository.dart' show adminCoursesProvider, adminTeachersProvider, backOfficeRepositoryProvider, AdminUser;
+import '../../admin/presentation/admin_batches_screen.dart' show adminBatchesProvider;
 import '../../auth/presentation/auth_controller.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../data/proposals_repository.dart';
@@ -25,7 +26,10 @@ import 'teacher_batches_screen.dart';
 /// lists every session and any clash with the teacher's other batches; "Create batch" saves it as a DRAFT,
 /// then "Submit for review" hands it to the admins.
 class NewBatchScreen extends ConsumerStatefulWidget {
-  const NewBatchScreen({super.key});
+  const NewBatchScreen({super.key, this.adminMode = false});
+
+  /// Admin back office: pick the teacher, list every course, and create through the admin rules (no review hand-off).
+  final bool adminMode;
 
   @override
   ConsumerState<NewBatchScreen> createState() => _NewBatchScreenState();
@@ -44,6 +48,7 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
   TimeOfDay _startTime = const TimeOfDay(hour: 19, minute: 0);
   final Set<int> _weekdays = {};
   String? _device;
+  String? _teacherId; // admin mode
 
   SchedulePreview? _preview;
   Batch? _created;
@@ -111,7 +116,13 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
     if (problem != null) return showToast(context, problem);
     setState(() => _previewing = true);
     try {
-      final preview = await ref.read(proposalsRepositoryProvider).previewSchedule(_schedule(), timezone: _timezone.text.trim());
+      final preview = widget.adminMode
+          ? await ref.read(backOfficeRepositoryProvider).previewSchedule({
+              ..._schedule().toJson(),
+              'timezone': _timezone.text.trim(),
+              'teacherId': ?_teacherId,
+            })
+          : await ref.read(proposalsRepositoryProvider).previewSchedule(_schedule(), timezone: _timezone.text.trim());
       if (mounted) setState(() => _preview = preview);
     } catch (e) {
       if (mounted) showToast(context, errorText(context, e));
@@ -123,6 +134,7 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
   Future<void> _create() async {
     final l = context.l10n;
     if (_courseId == null) return showToast(context, l.pickCourse);
+    if (widget.adminMode && _teacherId == null) return showToast(context, l.adminPickTeacher);
     if (!BatchDraft.codePattern.hasMatch(_code.text.trim())) return showToast(context, l.batchCodeInvalid);
     final price = _priceAed;
     if (price == null) return showToast(context, l.seatPriceRequired);
@@ -132,16 +144,19 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
     if (problem != null) return showToast(context, problem);
     setState(() => _creating = true);
     try {
-      final batch = await ref.read(proposalsRepositoryProvider).createBatch(BatchDraft(
-            courseId: _courseId!,
-            code: _code.text.trim(),
-            capacity: seats,
-            priceAed: price,
-            language: _language,
-            timezone: _timezone.text.trim(),
-            schedule: _schedule(),
-          ));
-      ref.invalidate(teacherBatchesProvider);
+      final draft = BatchDraft(
+        courseId: _courseId!,
+        code: _code.text.trim(),
+        capacity: seats,
+        priceAed: price,
+        language: _language,
+        timezone: _timezone.text.trim(),
+        schedule: _schedule(),
+      );
+      final batch = widget.adminMode
+          ? await ref.read(backOfficeRepositoryProvider).createBatch({...draft.toJson(), 'teacherId': _teacherId})
+          : await ref.read(proposalsRepositoryProvider).createBatch(draft);
+      ref.invalidate(widget.adminMode ? adminBatchesProvider : teacherBatchesProvider);
       if (!mounted) return;
       setState(() => _created = batch);
       showToast(context, l.batchCreated);
@@ -204,7 +219,9 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
     final f = ref.watch(fmtProvider);
     final locale = ref.watch(localeProvider);
     final t = Theme.of(context).textTheme;
-    final courses = ref.watch(batchableCoursesProvider);
+    final courses = widget.adminMode
+        ? ref.watch(adminCoursesProvider(null)).whenData((list) => list.where((c) => c.status != CourseStatus.archived).toList())
+        : ref.watch(batchableCoursesProvider);
     final locked = _created != null;
 
     Widget tappable({required Key key, required String label, required IconData icon, required String value, required VoidCallback onTap}) =>
@@ -224,14 +241,24 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
         );
 
     final children = <Widget>[
-      if (_created != null) ...[
+      if (_created != null && widget.adminMode) ...[
+        _AdminCreatedCard(batch: _created!, onChanged: (b) => setState(() => _created = b)),
+        const SizedBox(height: 8),
+      ] else if (_created != null) ...[
         _CreatedCard(batch: _created!, submitting: _submitting, onSubmit: _submit),
         const SizedBox(height: 8),
       ],
       section(null, [
+        if (widget.adminMode) ...[
+          _TeacherPicker(value: _teacherId, enabled: !locked, onChanged: (id) => setState(() {
+                _teacherId = id;
+                _preview = null;
+              })),
+          const SizedBox(height: 12),
+        ],
         AsyncView<List<Course>>(
           value: courses,
-          onRetry: () => ref.invalidate(batchableCoursesProvider),
+          onRetry: () => ref.invalidate(widget.adminMode ? adminCoursesProvider : batchableCoursesProvider),
           isEmpty: (list) => list.isEmpty,
           empty: EmptyState(title: l.noBatchableCourses, icon: Icons.auto_stories_outlined),
           data: (list) => DropdownButtonFormField<String>(
@@ -365,14 +392,14 @@ class _NewBatchScreenState extends ConsumerState<NewBatchScreen> {
           ),
         ]),
         const SizedBox(height: 14),
-        MonoLabel(l.weekdaysLabel),
+        Kicker(l.weekdaysLabel),
         const SizedBox(height: 6),
         Wrap(spacing: 8, runSpacing: 4, children: [
           for (var d = 0; d < 7; d++)
             FilterChip(
               key: Key('weekday-$d'),
               // 2023-01-01 is a Sunday (API: 0 = Sunday).
-              label: Text(DateFormat('EEE', locale.wire).format(DateTime(2023, 1, 1 + d)).digits(f.arabicDigits)),
+              label: Text(f.weekday(DateTime(2023, 1, 1 + d))),
               selected: _weekdays.contains(d),
               showCheckmark: false,
               materialTapTargetSize: MaterialTapTargetSize.padded,
@@ -495,7 +522,7 @@ class _PreviewList extends ConsumerWidget {
                   child: Row(children: [
                     SizedBox(width: 44, child: MonoLabel('S${f.n(s.number)}')),
                     Expanded(child: Text('${day(s.localDate)} · ${startTime.digits(f.arabicDigits)}', style: t.bodyMedium)),
-                    if (c != null) MonoLabel(l.conflictWith(c.withBatch), color: clash),
+                    if (c != null) Kicker(l.conflictWith(c.withBatch), color: clash),
                   ]),
                 );
               }),
@@ -508,7 +535,7 @@ class _PreviewList extends ConsumerWidget {
                   child: Row(children: [
                     SizedBox(width: 44, child: MonoLabel('S${f.n(c.sessionNumber)}')),
                     Expanded(child: Text(day(c.localDate), style: t.bodyMedium)),
-                    MonoLabel(l.conflictWith(c.withBatch), color: clash),
+                    Kicker(l.conflictWith(c.withBatch), color: clash),
                   ]),
                 ),
           ]),
@@ -540,6 +567,83 @@ class _CreatedCard extends StatelessWidget {
         if (batch.status == BatchStatus.draft) ...[
           const SizedBox(height: 12),
           BusyButton(key: const Key('submit-batch'), label: l.submitForReview, busy: submitting, onPressed: onSubmit),
+        ],
+      ]),
+    );
+  }
+}
+
+/// Admin mode: which teacher runs the batch (required by `POST /batches` for admins).
+class _TeacherPicker extends ConsumerWidget {
+  const _TeacherPicker({required this.value, required this.enabled, required this.onChanged});
+  final String? value;
+  final bool enabled;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final teachers = ref.watch(adminTeachersProvider);
+    return AsyncView<List<AdminUser>>(
+      value: teachers,
+      compact: true,
+      onRetry: () => ref.invalidate(adminTeachersProvider),
+      data: (list) => DropdownButtonFormField<String>(
+        key: const Key('batch-teacher'),
+        initialValue: value,
+        isExpanded: true,
+        hint: Text(l.adminPickTeacher),
+        decoration: fieldDecoration(label: l.teacherLabel, icon: Icons.person_outline_rounded),
+        items: [
+          for (final t in list.where((t) => !t.banned)) DropdownMenuItem(value: t.id, child: Text(t.name, overflow: TextOverflow.ellipsis)),
+        ],
+        onChanged: enabled ? onChanged : null,
+      ),
+    );
+  }
+}
+
+/// Admin mode, after "Create batch": the draft can open for enrolment straight away.
+class _AdminCreatedCard extends ConsumerStatefulWidget {
+  const _AdminCreatedCard({required this.batch, required this.onChanged});
+  final Batch batch;
+  final ValueChanged<Batch> onChanged;
+
+  @override
+  ConsumerState<_AdminCreatedCard> createState() => _AdminCreatedCardState();
+}
+
+class _AdminCreatedCardState extends ConsumerState<_AdminCreatedCard> {
+  bool _busy = false;
+
+  Future<void> _open() async {
+    setState(() => _busy = true);
+    try {
+      final updated = await ref.read(backOfficeRepositoryProvider).updateBatch(widget.batch.id, {'status': BatchStatus.enrolling.wire});
+      ref.invalidate(adminBatchesProvider);
+      if (!mounted) return;
+      widget.onChanged(updated.id.isEmpty ? widget.batch : updated);
+      showToast(context, context.l10n.adminEnrolmentOpened);
+    } catch (e) {
+      if (mounted) showToast(context, errorText(context, e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final b = widget.batch;
+    return RaisedCard(
+      key: const Key('created-batch'),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [Slate(b.code), const Spacer(), StatusChip.batch(context, b.status)]),
+        const SizedBox(height: 10),
+        Text(b.status == BatchStatus.draft ? l.adminBatchDraftBody : l.adminBatchOpenBody, style: Theme.of(context).textTheme.bodyMedium),
+        if (b.status == BatchStatus.draft) ...[
+          const SizedBox(height: 12),
+          BusyButton(key: const Key('open-enrolment'), label: l.adminOpenEnrolment, busy: _busy, onPressed: _open),
         ],
       ]),
     );

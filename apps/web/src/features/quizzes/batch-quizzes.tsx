@@ -29,7 +29,7 @@ import { Chip } from '@/components/brand/status-chip';
 import { StatTile } from '@/components/brand/section';
 import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { EmptyState, ErrorState, LoadingBlock, QueryView } from '@/components/brand/states';
-import { coursesApi, learningApi, type QuizSummary, type StaffQuiz } from '@/lib/api';
+import { coursesApi, learningApi, quizScopeKey, type QuizScope, type QuizSummary, type StaffQuiz } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
@@ -39,10 +39,19 @@ type View = { kind: 'list' } | { kind: 'edit'; quizId?: string } | { kind: 'resu
 
 /** Quizzes tab of a batch, for its teacher and for admins: list, build, publish, results. */
 export function BatchQuizzes({ batchId, courseId }: { batchId: string; courseId: string }) {
+  return <QuizzesPanel scope={{ batchId }} courseId={courseId} />;
+}
+
+/** Quizzes of a recorded course (no batch): unlimited attempts, no due date, one pass mark each. */
+export function CourseQuizzes({ courseId }: { courseId: string }) {
+  return <QuizzesPanel scope={{ courseId }} courseId={courseId} />;
+}
+
+function QuizzesPanel({ scope, courseId }: { scope: QuizScope; courseId: string }) {
   const [view, setView] = useState<View>({ kind: 'list' });
-  if (view.kind === 'edit') return <QuizEditor batchId={batchId} courseId={courseId} quizId={view.quizId} onClose={() => setView({ kind: 'list' })} />;
+  if (view.kind === 'edit') return <QuizEditor scope={scope} courseId={courseId} quizId={view.quizId} onClose={() => setView({ kind: 'list' })} />;
   if (view.kind === 'results') return <QuizResultsView quizId={view.quizId} onBack={() => setView({ kind: 'list' })} />;
-  return <QuizList batchId={batchId} onEdit={(quizId) => setView({ kind: 'edit', quizId })} onResults={(quizId) => setView({ kind: 'results', quizId })} />;
+  return <QuizList scope={scope} onEdit={(quizId) => setView({ kind: 'edit', quizId })} onResults={(quizId) => setView({ kind: 'results', quizId })} />;
 }
 
 function BackButton({ onClick }: { onClick: () => void }) {
@@ -56,9 +65,9 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 // ───────── list ─────────
 
-function QuizList({ batchId, onEdit, onResults }: { batchId: string; onEdit: (id?: string) => void; onResults: (id: string) => void }) {
+function QuizList({ scope, onEdit, onResults }: { scope: QuizScope; onEdit: (id?: string) => void; onResults: (id: string) => void }) {
   const { t } = useI18n();
-  const q = useQuery({ queryKey: qk.quizzes(batchId), queryFn: () => learningApi.batchQuizzes(batchId) });
+  const q = useQuery({ queryKey: qk.quizzes(quizScopeKey(scope)), queryFn: () => learningApi.scopeQuizzes(scope) });
   return (
     <div className="flex flex-col gap-3">
       <Button className="self-start" onClick={() => onEdit()}>
@@ -68,7 +77,7 @@ function QuizList({ batchId, onEdit, onResults }: { batchId: string; onEdit: (id
         {(list) => (
           <ul className="flex flex-col gap-2">
             {list.map((quiz) => (
-              <QuizRow key={quiz.id} batchId={batchId} quiz={quiz} onEdit={() => onEdit(quiz.id)} onResults={() => onResults(quiz.id)} />
+              <QuizRow key={quiz.id} scope={scope} quiz={quiz} onEdit={() => onEdit(quiz.id)} onResults={() => onResults(quiz.id)} />
             ))}
           </ul>
         )}
@@ -77,13 +86,13 @@ function QuizList({ batchId, onEdit, onResults }: { batchId: string; onEdit: (id
   );
 }
 
-function QuizRow({ batchId, quiz, onEdit, onResults }: { batchId: string; quiz: QuizSummary; onEdit: () => void; onResults: () => void }) {
+function QuizRow({ scope, quiz, onEdit, onResults }: { scope: QuizScope; quiz: QuizSummary; onEdit: () => void; onResults: () => void }) {
   const { t, f, fill } = useI18n();
   const qc = useQueryClient();
   const errorText = useQuizError();
-  const refresh = () => qc.invalidateQueries({ queryKey: qk.quizzes(batchId) });
+  const refresh = () => qc.invalidateQueries({ queryKey: qk.quizzes(quizScopeKey(scope)) });
   const publish = useMutation({
-    mutationFn: () => learningApi.publishQuiz(batchId, quiz.id),
+    mutationFn: () => learningApi.publishQuiz(scope, quiz.id),
     onSuccess: () => {
       toast.success(t.learning.studio.publishedToast);
       void refresh();
@@ -101,6 +110,7 @@ function QuizRow({ batchId, quiz, onEdit, onResults }: { batchId: string; quiz: 
         <span className="text-[13px] text-muted-foreground">
           {fill(t.learning.quizzes.questions, { n: f.number(quiz.questionCount) })} · {quiz.timeLimitMin ? fill(t.learning.quizzes.timeLimit, { n: f.number(quiz.timeLimitMin) }) : t.learning.quizzes.untimed}
           {quiz.dueAt && <> · {fill(t.learning.quizzes.due, { d: f.dateTime(quiz.dueAt) })}</>}
+          {quiz.passPercent != null && <> · {fill(t.recordedOps.quiz.passMarkValue, { n: f.percent(quiz.passPercent) })}</>}
           {published && <> · {fill(t.learning.studio.studentsCount, { n: f.number(quiz.studentsAttempted ?? 0) })}</>}
         </span>
       </div>
@@ -159,6 +169,7 @@ interface QuizValues {
   dueAt: string;
   timeLimitMin: string;
   maxAttempts: number;
+  passPercent: number;
   questions: QuestionValues[];
 }
 
@@ -197,6 +208,7 @@ function toValues(q?: StaffQuiz): QuizValues {
     dueAt: toLocalInput(q?.dueAt ?? null),
     timeLimitMin: q?.timeLimitMin ? String(q.timeLimitMin) : '',
     maxAttempts: q?.maxAttempts ?? 1,
+    passPercent: q?.passPercent ?? 70,
     questions: q
       ? q.questions.map((x) => ({
           qid: x.id,
@@ -210,14 +222,14 @@ function toValues(q?: StaffQuiz): QuizValues {
   };
 }
 
-function QuizEditor({ batchId, courseId, quizId, onClose }: { batchId: string; courseId: string; quizId?: string; onClose: () => void }) {
+function QuizEditor({ scope, courseId, quizId, onClose }: { scope: QuizScope; courseId: string; quizId?: string; onClose: () => void }) {
   const existing = useQuery({ queryKey: qk.quiz(quizId ?? 'new'), queryFn: () => learningApi.staffQuiz(quizId!), enabled: !!quizId });
   if (quizId && existing.isPending) return <LoadingBlock rows={3} height={120} />;
   if (quizId && existing.isError) return <ErrorState error={existing.error} onRetry={() => void existing.refetch()} />;
-  return <QuizForm batchId={batchId} courseId={courseId} quiz={existing.data as StaffQuiz | undefined} onClose={onClose} />;
+  return <QuizForm scope={scope} courseId={courseId} quiz={existing.data as StaffQuiz | undefined} onClose={onClose} />;
 }
 
-function QuizForm({ batchId, courseId, quiz, onClose }: { batchId: string; courseId: string; quiz?: StaffQuiz; onClose: () => void }) {
+function QuizForm({ scope, courseId, quiz, onClose }: { scope: QuizScope; courseId: string; quiz?: StaffQuiz; onClose: () => void }) {
   const { t, f, fill, pick } = useI18n();
   const qc = useQueryClient();
   const errorText = useQuizError();
@@ -226,16 +238,18 @@ function QuizForm({ batchId, courseId, quiz, onClose }: { batchId: string; cours
   const form = useForm<QuizValues>({ defaultValues: toValues(quiz) });
   const questions = useFieldArray({ control: form.control, name: 'questions' });
   const watched = useWatch({ control: form.control, name: 'questions' });
+  // Recorded course quizzes: unlimited attempts and no due date, so those fields stay out of the form.
+  const courseQuiz = 'courseId' in scope;
   const locked = !!quiz?.hasAttempts;
   const total = (watched ?? []).reduce((s, q) => s + (Number(q.points) || 0), 0);
 
   const done = () => {
-    void qc.invalidateQueries({ queryKey: qk.quizzes(batchId) });
+    void qc.invalidateQueries({ queryKey: qk.quizzes(quizScopeKey(scope)) });
     if (quiz) void qc.invalidateQueries({ queryKey: qk.quiz(quiz.id) });
   };
   const save = useMutation({
     mutationFn: (payload: ReturnType<typeof quizInput.parse>) =>
-      quiz ? learningApi.updateQuiz(batchId, quiz.id, locked ? { ...payload, questions: undefined } : payload) : learningApi.createQuiz(batchId, payload),
+      quiz ? learningApi.updateQuiz(scope, quiz.id, locked ? { ...payload, questions: undefined } : payload) : learningApi.createQuiz(scope, payload),
     onSuccess: () => {
       toast.success(t.learning.studio.saved);
       done();
@@ -244,7 +258,7 @@ function QuizForm({ batchId, courseId, quiz, onClose }: { batchId: string; cours
     onError: (e) => toast.error(errorText(e)),
   });
   const remove = useMutation({
-    mutationFn: () => learningApi.deleteQuiz(batchId, quiz!.id),
+    mutationFn: () => learningApi.deleteQuiz(scope, quiz!.id),
     onSuccess: () => {
       toast.success(t.learning.studio.deleted);
       done();
@@ -253,7 +267,7 @@ function QuizForm({ batchId, courseId, quiz, onClose }: { batchId: string; cours
     onError: (e) => toast.error(errorText(e)),
   });
   const unpublish = useMutation({
-    mutationFn: () => learningApi.unpublishQuiz(batchId, quiz!.id),
+    mutationFn: () => learningApi.unpublishQuiz(scope, quiz!.id),
     onSuccess: () => {
       done();
       onClose();
@@ -266,9 +280,10 @@ function QuizForm({ batchId, courseId, quiz, onClose }: { batchId: string; cours
       title: v.title,
       description: v.description,
       moduleId: v.moduleId === NO_MODULE ? null : v.moduleId,
-      dueAt: v.dueAt ? new Date(v.dueAt).toISOString() : null,
+      dueAt: !courseQuiz && v.dueAt ? new Date(v.dueAt).toISOString() : null,
       timeLimitMin: v.timeLimitMin ? Number(v.timeLimitMin) : null,
-      maxAttempts: Number(v.maxAttempts),
+      maxAttempts: courseQuiz ? 1 : Number(v.maxAttempts),
+      passPercent: Number(v.passPercent),
       questions: v.questions.map((q) => ({
         id: q.qid,
         type: q.type,
@@ -322,10 +337,12 @@ function QuizForm({ batchId, courseId, quiz, onClose }: { batchId: string; cours
             )}
           />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="quiz-due">{t.learning.studio.dueAt}</Label>
-          <Input id="quiz-due" type="datetime-local" dir="ltr" {...form.register('dueAt')} />
-        </div>
+        {!courseQuiz && (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="quiz-due">{t.learning.studio.dueAt}</Label>
+            <Input id="quiz-due" type="datetime-local" dir="ltr" {...form.register('dueAt')} />
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="quiz-limit">{t.learning.studio.timeLimit}</Label>
           <InputGroup>
@@ -338,9 +355,21 @@ function QuizForm({ batchId, courseId, quiz, onClose }: { batchId: string; cours
             </InputGroupAddon>
           </InputGroup>
         </div>
+        {!courseQuiz && (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="quiz-attempts">{t.learning.studio.maxAttempts}</Label>
+            <Input id="quiz-attempts" type="number" min={1} max={20} inputMode="numeric" {...form.register('maxAttempts', { valueAsNumber: true })} />
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="quiz-attempts">{t.learning.studio.maxAttempts}</Label>
-          <Input id="quiz-attempts" type="number" min={1} max={20} inputMode="numeric" {...form.register('maxAttempts', { valueAsNumber: true })} />
+          <Label htmlFor="quiz-pass">{t.recordedOps.quiz.passMark}</Label>
+          <InputGroup>
+            <InputGroupInput id="quiz-pass" type="number" min={0} max={100} step={1} inputMode="numeric" dir="ltr" {...form.register('passPercent', { valueAsNumber: true })} />
+            <InputGroupAddon align="inline-end">
+              <InputGroupText>%</InputGroupText>
+            </InputGroupAddon>
+          </InputGroup>
+          <span className="text-[13px] text-muted-foreground">{courseQuiz ? t.recordedOps.quiz.passMarkHintCourse : t.recordedOps.quiz.passMarkHint}</span>
         </div>
       </section>
 

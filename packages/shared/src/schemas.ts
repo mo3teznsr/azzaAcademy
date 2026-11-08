@@ -6,6 +6,7 @@ import {
   COURSE_LEVELS,
   COURSE_SORTS,
   COURSE_STATUSES,
+  COURSE_TYPES,
   DISPLAY_CURRENCIES,
   LOCALES,
   ORDER_STATUSES,
@@ -14,6 +15,9 @@ import {
   RESCHEDULE_REQUEST_STATUSES,
   ROLES,
   SESSION_LANGUAGES,
+  SUBSCRIPTION_PLANS,
+  SUBSCRIPTION_PROVIDERS,
+  SUBSCRIPTION_STATUSES,
 } from './enums';
 
 // Request contracts shared by the API (validation) and the web client (forms).
@@ -97,6 +101,8 @@ export const createCourseInput = z.object({
   /** A `Category.slug` (see `GET /categories`). */
   category: z.string().min(2),
   level: z.enum(COURSE_LEVELS),
+  /** Fixed at creation. */
+  type: z.enum(COURSE_TYPES).default('LIVE'),
   coverStyle: z.enum(['sun', 'sky', 'sage', 'peach']).default('sun'),
   /** Photo cover: bundled art under `/media/`, a file from `POST /admin/media`, or an https URL. Null = typographic cover. */
   coverImageUrl: z.string().max(500).refine(isCourseCoverUrl, 'Must be a /media/ path, an uploaded file or an https URL').nullable().optional(),
@@ -119,12 +125,14 @@ export const createCourseInput = z.object({
   featuredRank: z.number().int().min(0).max(999).nullable().optional(),
 });
 export type CreateCourseInput = z.infer<typeof createCourseInput>;
-export const updateCourseInput = createCourseInput.partial().extend({ status: z.enum(COURSE_STATUSES).optional() });
+export const updateCourseInput = createCourseInput.omit({ type: true }).partial().extend({ status: z.enum(COURSE_STATUSES).optional() });
 export type UpdateCourseInput = z.infer<typeof updateCourseInput>;
 
 export const courseListQuery = paginationQuery.extend({
   category: z.string().optional(),
   level: z.enum(COURSE_LEVELS).optional(),
+  /** LIVE (cohorts) or RECORDED (self-paced plans); omitted = both. */
+  type: z.enum(COURSE_TYPES).optional(),
   status: z.enum(COURSE_STATUSES).optional(),
   /** TEACHER: only the courses they proposed (any status). */
   mine: z.stringbool().optional(),
@@ -378,7 +386,34 @@ export const assignmentInput = z.object({
   dueAt: z.iso.datetime(),
   maxScore: z.number().int().min(1).default(100),
 });
-export const submissionInput = z.object({ url: z.url().optional(), text: z.string().max(10000).optional() });
+/** Largest assignment submission file (`POST /assignments/:id/submission/file`). */
+export const MAX_SUBMISSION_FILE_BYTES = 20 * 1024 * 1024;
+/** Largest class material file (`POST /batches/:id/materials/file`). */
+export const MAX_MATERIAL_FILE_BYTES = 50 * 1024 * 1024;
+export const MAX_SUBMISSION_FILES = 5;
+/** A file returned by `POST /assignments/:id/submission/file`; the API only accepts its own `submissions/` URLs. */
+export const submissionFileInput = z.object({
+  url: z.url().max(500),
+  name: z.string().trim().min(1).max(255),
+  size: z.number().int().min(1).max(MAX_SUBMISSION_FILE_BYTES),
+  type: z.string().max(150),
+});
+export const submissionInput = z.object({
+  url: z.url().optional(),
+  text: z.string().max(10000).optional(),
+  files: z.array(submissionFileInput).max(MAX_SUBMISSION_FILES).optional(),
+});
+/** `PATCH /assignments/:id` — the create fields, all optional; `sessionId: null` detaches the session. */
+export const updateAssignmentInput = z.object({
+  sessionId: id.nullable().optional(),
+  title: z.string().min(2).optional(),
+  description: z.string().optional(),
+  dueAt: z.iso.datetime().optional(),
+  maxScore: z.number().int().min(1).optional(),
+});
+export type SubmissionFileInput = z.infer<typeof submissionFileInput>;
+export type SubmissionInput = z.infer<typeof submissionInput>;
+export type UpdateAssignmentInput = z.infer<typeof updateAssignmentInput>;
 export const gradeInput = z.object({ score: z.number().int().min(0), feedback: z.string().max(5000).optional() });
 
 export const sessionFeedbackInput = z.object({
@@ -409,6 +444,18 @@ export type OrderListQuery = z.infer<typeof orderListQuery>;
 export const transferListQuery = paginationQuery.extend({
   status: z.enum(ORDER_STATUSES).optional(),
 });
+
+/** `GET /admin/subscriptions` */
+export const adminSubscriptionListQuery = paginationQuery.extend({
+  courseId: z.string().min(1).optional(),
+  status: z.enum(SUBSCRIPTION_STATUSES).optional(),
+  provider: z.enum(SUBSCRIPTION_PROVIDERS).optional(),
+});
+export type AdminSubscriptionListQuery = z.infer<typeof adminSubscriptionListQuery>;
+
+/** `POST /admin/subscriptions/:id/cancel`: FULL also refunds the last payment. */
+export const adminCancelSubscriptionInput = z.object({ refund: z.enum(['NONE', 'FULL']) });
+export type AdminCancelSubscriptionInput = z.infer<typeof adminCancelSubscriptionInput>;
 
 export const adminUserListQuery = paginationQuery.extend({
   role: z.enum(ROLES).optional(),
@@ -509,19 +556,28 @@ export const quizQuestionInput = z
   });
 export type QuizQuestionInput = z.infer<typeof quizQuestionInput>;
 
-export const quizInput = z.object({
+/** Quiz fields without defaults: a PATCH parses only the keys it sends, so it never resets a field it left out. */
+const quizFields = z.object({
   title: z.string().trim().min(2).max(160),
-  description: z.string().max(5000).default(''),
+  description: z.string().max(5000),
   /** Optional link to a module of the batch's course. */
   moduleId: id.nullable().optional(),
   dueAt: z.iso.datetime().nullable().optional(),
   /** Minutes; null = untimed. */
   timeLimitMin: z.number().int().min(1).max(600).nullable().optional(),
-  maxAttempts: z.number().int().min(1).max(20).default(1),
-  questions: z.array(quizQuestionInput).max(100).default([]),
+  maxAttempts: z.number().int().min(1).max(20),
+  /** Percent of the points needed to pass (recorded-course certificates). */
+  passPercent: z.number().int().min(0).max(100),
+  questions: z.array(quizQuestionInput).max(100),
+});
+export const quizInput = quizFields.extend({
+  description: quizFields.shape.description.default(''),
+  maxAttempts: quizFields.shape.maxAttempts.default(1),
+  passPercent: quizFields.shape.passPercent.default(70),
+  questions: quizFields.shape.questions.default([]),
 });
 export type QuizInput = z.infer<typeof quizInput>;
-export const updateQuizInput = quizInput.partial();
+export const updateQuizInput = quizFields.partial();
 export type UpdateQuizInput = z.infer<typeof updateQuizInput>;
 
 /** POST /quizzes/:id/attempts — selected option ids per question id (one id for single choice and true/false). */
@@ -610,3 +666,54 @@ export const supportTicketsQuery = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
 export type SupportTicketsQuery = z.infer<typeof supportTicketsQuery>;
+
+// ---------- Recorded courses: plans, cuts, video position ----------
+
+/** PUT /courses/:id/recorded-pricing — prices before VAT; the yearly plan must beat twelve monthly payments. */
+export const recordedPricingInput = z
+  .object({
+    monthlyPriceFils: z.number().int().min(100),
+    yearlyPriceFils: z.number().int().min(100),
+  })
+  .refine((v) => v.yearlyPriceFils < v.monthlyPriceFils * 12, {
+    message: 'Yearly price must be lower than twelve monthly payments',
+    path: ['yearlyPriceFils'],
+  });
+export type RecordedPricingInput = z.infer<typeof recordedPricingInput>;
+
+/** PUT /courses/:id/preview-lesson — the one lesson anyone can watch; null clears it. */
+export const previewLessonInput = z.object({ lessonId: z.string().min(1).nullable() });
+export type PreviewLessonInput = z.infer<typeof previewLessonInput>;
+
+/** PUT /admin/courses/:id/apple-products — each id must be `appleRecordedProductId(slug, plan)`; null clears it. */
+export const appleProductsInput = z.object({
+  monthly: z.string().min(1).max(200).nullable().optional(),
+  yearly: z.string().min(1).max(200).nullable().optional(),
+});
+export type AppleProductsInput = z.infer<typeof appleProductsInput>;
+
+/** Platform default teacher cuts, in percent. */
+export const cutSettingsInput = z.object({
+  liveCutPercent: z.number().int().min(0).max(100),
+  recordedCutPercent: z.number().int().min(0).max(100),
+});
+export type CutSettingsInput = z.infer<typeof cutSettingsInput>;
+
+/** Per-course override of the teacher cut; null clears it. */
+export const courseCutInput = z.object({
+  teacherCutPercent: z.number().int().min(0).max(100).nullable(),
+});
+export type CourseCutInput = z.infer<typeof courseCutInput>;
+
+/** POST /courses/:id/subscribe */
+export const subscribeInput = z.object({
+  plan: z.enum(SUBSCRIPTION_PLANS),
+  method: z.enum(['STRIPE', 'APPLE_IAP', 'BANK_TRANSFER']),
+  bankAccountId: id.optional(),
+  displayCurrency: z.string().optional(),
+});
+export type SubscribeInput = z.infer<typeof subscribeInput>;
+
+/** PUT /lessons/:id/position */
+export const videoPositionInput = z.object({ positionSec: z.number().int().min(0) });
+export type VideoPositionInput = z.infer<typeof videoPositionInput>;

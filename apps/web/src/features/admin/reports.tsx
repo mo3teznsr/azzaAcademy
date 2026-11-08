@@ -105,6 +105,8 @@ function ReportView({ r, stale }: { r: AdminReport; stale: boolean }) {
         ))}
       </section>
 
+      {r.recorded && <RecordedLine r={r.recorded} />}
+
       <div className="grid items-start gap-5 xl:grid-cols-2">
         <Panel aria-labelledby="rev-course">
           <SectionHeader title={<span id="rev-course">{t.reports.revenueByCourse}</span>} />
@@ -272,5 +274,38 @@ function KpiTile({ k, cur, prev }: { k: keyof ReportKpis; cur: number; prev: num
         {label}
       </span>
     </div>
+  );
+}
+
+function RecordedLine({ r }: { r: NonNullable<AdminReport['recorded']> }) {
+  const { t } = useI18n();
+  const money = useMoney();
+  const c = t.recordedOps.reports;
+  const rows: Array<[string, number, boolean?]> = [
+    [c.gross, r.grossFils],
+    [c.refunds, -r.refundsFils],
+    [c.fees, -r.feesFils],
+    [c.vat, -r.vatFils],
+    [c.net, r.netFils, true],
+  ];
+  const empty = r.grossFils === 0 && r.refundsFils === 0;
+  return (
+    <Panel aria-labelledby="rec-line">
+      <SectionHeader title={<span id="rec-line">{c.title}</span>} />
+      {empty ? (
+        <p className="text-sm text-muted-foreground">{c.none}</p>
+      ) : (
+        <dl className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
+          {rows.map(([label, v, strong]) => (
+            <div key={label} className={cn('flex flex-col gap-1 rounded-xl border border-border p-4', strong && 'bg-ink text-ivory')}>
+              <dt className="label-mono opacity-70">{label}</dt>
+              <dd className="font-display text-2xl font-extrabold tabular-nums" dir="ltr">
+                {money.aed(v)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </Panel>
   );
 }

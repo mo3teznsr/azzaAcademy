@@ -24,7 +24,7 @@ export function engagementRoutes(reviews: ReviewService, saved: SavedCourseServi
     .patch('/reviews/:id', requireRole('ADMIN'), validate('json', reviewModerationInput), async (c) =>
       c.json(await reviews.moderate(c.req.param('id'), c.req.valid('json').hidden)),
     )
-    .get('/me/saved-courses', requireRole('STUDENT', 'TEACHER', 'ADMIN'), async (c) => c.json(await saved.list(currentUser(c).id)))
+    .get('/me/saved-courses', requireRole('STUDENT', 'TEACHER', 'ADMIN'), async (c) => c.json(await saved.list(currentUser(c).id, currentUser(c).role)))
     .put('/courses/:id/save', requireRole('STUDENT', 'TEACHER', 'ADMIN'), async (c) => c.json(await saved.save(currentUser(c).id, c.req.param('id'))))
     .delete('/courses/:id/save', requireRole('STUDENT', 'TEACHER', 'ADMIN'), async (c) => c.json(await saved.unsave(currentUser(c).id, c.req.param('id'))));
 }

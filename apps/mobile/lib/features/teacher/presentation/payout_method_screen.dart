@@ -85,7 +85,7 @@ class PayoutMethodScreen extends ConsumerWidget {
                       ),
                       Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                         Text(f.aed(e.amountFils), style: t.titleSmall),
-                        MonoLabel(switch (e.status) {
+                        Kicker(switch (e.status) {
                           PayoutStatus.paid => l.paidLabel,
                           PayoutStatus.held => l.held,
                           PayoutStatus.carriedOver => l.carriedOver,

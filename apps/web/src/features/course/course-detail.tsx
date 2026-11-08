@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Check, ChevronRight, Share2 } from 'lucide-react';
+import { Check, ChevronRight, Lock, PlayCircle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BatchCard } from '@/components/brand/batch-card';
@@ -18,7 +18,9 @@ import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states'
 import { Panel } from '@/components/brand/section';
 import { useCategoryLabel } from '@/components/brand/category';
 import { RatingInline } from '@/components/brand/rating';
-import { ApiError, batchesApi, coursesApi, meApi, type BatchDetail, type Course } from '@/lib/api';
+import { ApiError, batchesApi, coursesApi, meApi, learningApi, subscriptionsApi, type BatchDetail, type Course, type MySubscription } from '@/lib/api';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { Price } from '@/components/brand/price';
@@ -29,6 +31,9 @@ import { Accordion } from '../catalog/faq';
 import { CourseRail } from '../catalog/course-card';
 import { usePublicBatches } from '../catalog/use-catalog';
 import { SaveToggle } from '../saved/use-saved';
+import { PlanPicker } from '../subscriptions/plan-picker';
+import { PlanBanner } from '../subscriptions/plan-banner';
+import { PendingTransfer } from '../subscriptions/manage-plan';
 import { CourseReviews } from './reviews';
 
 const ZONES = ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Africa/Cairo', 'Europe/London'];
@@ -55,6 +60,19 @@ export function CourseDetail({ slug }: { slug: string }) {
   return <CourseView course={course.data} />;
 }
 
+/** The pending transfer in the plan card's place: ivory paper like the picker. */
+function PendingPanel({ subscription, onRestart }: { subscription: MySubscription; onRestart: () => void }) {
+  const { t } = useI18n();
+  return (
+    <Card id="plan-card" className="theme-cream h-fit gap-0 rounded-[24px] bg-ivory py-0 text-ink ring-0 light:border light:border-border lg:sticky lg:top-6">
+      <CardContent className="flex flex-col gap-5 p-5 sm:p-6">
+        <h3 className="font-display text-2xl font-extrabold">{t.recorded.pendingTitle}</h3>
+        <PendingTransfer subscription={subscription} onRestart={onRestart} />
+      </CardContent>
+    </Card>
+  );
+}
+
 function CourseView({ course }: { course: Course }) {
   const { t, f, fill, pick, locale } = useI18n();
   const params = useSearchParams();
@@ -68,7 +86,18 @@ function CourseView({ course }: { course: Course }) {
   const title = pick(course.titleEn, course.titleAr);
   const desc = pick(course.descriptionEn, course.descriptionAr);
   const p = { courseId: course.id, pageSize: 50 };
-  const batches = useQuery({ queryKey: qk.batches(p), queryFn: () => batchesApi.list(p) });
+  const recorded = course.type === 'RECORDED';
+  // Recorded courses have no classes; they sell a plan instead.
+  const batches = useQuery({ queryKey: qk.batches(p), queryFn: () => batchesApi.list(p), enabled: !recorded });
+  const subs = useQuery({ queryKey: qk.mySubscriptions, queryFn: subscriptionsApi.mine, enabled: recorded && !!user && role === 'STUDENT', retry: false });
+  const subscription = subs.data?.find((s) => s.course.id === course.id && s.status !== 'INCOMPLETE') ?? null;
+  const hasPlan = !!subscription?.hasAccess;
+  // A first bank transfer is an INCOMPLETE row with a pending payment: show where it stands instead of an empty picker.
+  const pendingRow = subs.data?.find((s) => s.course.id === course.id && s.status === 'INCOMPLETE' && s.provider === 'BANK_TRANSFER' && !!s.pendingPayment) ?? null;
+  const [startOver, setStartOver] = useState(false);
+  // The API says which lessons are locked for this viewer (admins and authors get none); signed-out visitors fall back to "all but the free lesson".
+  const lessonFlags = useQuery({ queryKey: qk.lessons(course.id), queryFn: () => learningApi.lessons(course.id), enabled: recorded && !!user, retry: false });
+  const lockedById = new Map(lessonFlags.data?.modules.flatMap((m) => m.lessons.map((l) => [l.id, !!l.locked] as const)));
   const list = useMemo(() => [...(batches.data?.items ?? [])].sort((a, b) => a.startsOn.localeCompare(b.startsOn)), [batches.data]);
   const [picked, setPicked] = useState<string | null>(params.get('batch'));
   const selectedId = picked ?? list.find((b) => b.status === 'ENROLLING')?.id ?? list[0]?.id ?? null;
@@ -95,14 +124,24 @@ function CourseView({ course }: { course: Course }) {
         <span className="text-foreground">{title.text}</span>
       </nav>
 
+      {recorded && <PlanBanner subscription={subscription} />}
+
       <section className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap gap-2">
             <Chip tone="ivory">
               {categoryLabel(course)} · {t.status.level[course.level]}
             </Chip>
-            <Chip tone="outline">{fill(t.course.liveSessions, { n: f.number((list.find((b) => b.status === 'ENROLLING') ?? list[0])?.schedule?.sessionCount ?? course.modules.length) })}</Chip>
-            <Chip tone="outline">{t.course.recordings}</Chip>
+            {recorded ? (
+              <Chip tone="sun">{t.catalog.recordedMarker}</Chip>
+            ) : (
+              <>
+                <Chip tone="outline">
+                  {fill(t.course.liveSessions, { n: f.number((list.find((b) => b.status === 'ENROLLING') ?? list[0])?.schedule?.sessionCount ?? course.modules.length) })}
+                </Chip>
+                <Chip tone="outline">{t.course.recordings}</Chip>
+              </>
+            )}
             {title.fallback && <Chip tone="dashed">{t.common.englishOnly}</Chip>}
           </div>
           <h1 className="font-display text-[clamp(48px,7vw,96px)] font-extrabold leading-[0.88]">{title.text}</h1>
@@ -112,7 +151,9 @@ function CourseView({ course }: { course: Course }) {
             </a>
           )}
           {desc.text && <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">{desc.text}</p>}
+          {recorded && <p className="font-semibold text-foreground">{t.recorded.tagline}</p>}
           <div className="flex flex-wrap gap-2">
+            {recorded && !hasPlan && course.previewLessonId && <FreeLessonLink slug={course.slug} />}
             <SaveToggle course={course} labelled />
             <ShareButton title={title.text} slug={course.slug} />
           </div>
@@ -160,12 +201,29 @@ function CourseView({ course }: { course: Course }) {
                     {/* Syllabus preview: lesson titles only; the lessons open to enrolled students. */}
                     {!!m.lessons?.length && (
                       <ol aria-label={t.learning.lessons.title} className="mt-1 flex flex-col gap-1 text-[14px] text-muted-foreground">
-                        {m.lessons.map((l) => (
-                          <li key={l.id} className="flex gap-2">
-                            <span className="size-1.5 shrink-0 translate-y-2 rounded-full bg-green" aria-hidden />
-                            {pick(l.titleEn, l.titleAr).text}
-                          </li>
-                        ))}
+                        {m.lessons.map((l) => {
+                          const isPreview = recorded && l.id === course.previewLessonId;
+                          const locked = recorded && !isPreview && (lockedById.get(l.id) ?? !hasPlan);
+                          const name = pick(l.titleEn, l.titleAr).text;
+                          return (
+                            <li key={l.id} className="flex items-baseline gap-2">
+                              {locked ? (
+                                <Lock className="size-3.5 shrink-0 translate-y-0.5 self-start" aria-hidden />
+                              ) : (
+                                <span className="size-1.5 shrink-0 translate-y-0.5 rounded-full bg-green" aria-hidden />
+                              )}
+                              {isPreview ? (
+                                <Link href={`/courses/${course.slug}/preview`} className="link-sun inline-flex flex-wrap items-center gap-2">
+                                  {name}
+                                  <Chip tone="sun">{t.recorded.free}</Chip>
+                                </Link>
+                              ) : (
+                                <span>{name}</span>
+                              )}
+                              {locked && <span className="sr-only">{t.recorded.lockedSr}</span>}
+                            </li>
+                          );
+                        })}
                       </ol>
                     )}
                   </span>
@@ -176,48 +234,75 @@ function CourseView({ course }: { course: Course }) {
         </Panel>
       )}
 
-      <section aria-labelledby="pick" className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+      {recorded ? (
+        <section id="plan" aria-labelledby="plan-title" className={cn('grid scroll-mt-8 gap-8', !hasPlan && 'lg:grid-cols-[1.4fr_1fr]')}>
+          {!hasPlan && (
+          <div className="flex flex-col gap-5">
             <div>
-              <span className="label-mono text-muted-foreground">{t.course.step}</span>
-              <h2 id="pick" className="mt-2 font-display text-[44px] font-extrabold leading-none">
-                {t.course.pickWeek}
+              <span className="label-mono text-muted-foreground">{t.recorded.kicker}</span>
+              <h2 id="plan-title" className="mt-2 font-display text-[44px] font-extrabold leading-none">
+                {t.recorded.title}
               </h2>
             </div>
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              {t.course.showTimesIn}
-              <Select value={tz} onValueChange={setTz}>
-                <SelectTrigger size="sm" className="rounded-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {zones.map((z) => (
-                    <SelectItem key={z} value={z}>
-                      {z} · {gmtOffset(z)} {z === localTz ? `(${t.course.yours})` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
+            <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">{t.recorded.tagline}</p>
+            {course.previewLessonId && (
+              <div className="flex flex-col items-start gap-1.5">
+                <FreeLessonLink slug={course.slug} />
+                <span className="text-[13px] text-muted-foreground">{t.recorded.freeLessonHint}</span>
+              </div>
+            )}
           </div>
-          {batches.isPending ? (
-            <LoadingBlock rows={2} height={200} />
-          ) : batches.isError ? (
-            <ErrorState error={batches.error} onRetry={() => void batches.refetch()} />
-          ) : list.length === 0 ? (
-            <EmptyState title={t.course.noBatches} />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {list.map((b) => (
-                <BatchCard key={b.id} batch={b} selected={b.id === selectedId} onSelect={() => setPicked(b.id)} />
-              ))}
-            </div>
           )}
-          {selectedId && <BatchSchedule batchId={selectedId} tz={tz} />}
-        </div>
-        {selectedId && <SeatPanel batchId={selectedId} tz={tz} />}
-      </section>
+          {pendingRow && !startOver ? (
+            <PendingPanel subscription={pendingRow} onRestart={() => setStartOver(true)} />
+          ) : (
+            <PlanPicker course={course} subscription={subscription} />
+          )}
+        </section>
+      ) : (
+        <section aria-labelledby="pick" className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <span className="label-mono text-muted-foreground">{t.course.step}</span>
+                <h2 id="pick" className="mt-2 font-display text-[44px] font-extrabold leading-none">
+                  {t.course.pickWeek}
+                </h2>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                {t.course.showTimesIn}
+                <Select value={tz} onValueChange={setTz}>
+                  <SelectTrigger size="sm" className="rounded-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {zones.map((z) => (
+                      <SelectItem key={z} value={z}>
+                        {z} · {gmtOffset(z)} {z === localTz ? `(${t.course.yours})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
+            </div>
+            {batches.isPending ? (
+              <LoadingBlock rows={2} height={200} />
+            ) : batches.isError ? (
+              <ErrorState error={batches.error} onRetry={() => void batches.refetch()} />
+            ) : list.length === 0 ? (
+              <EmptyState title={t.course.noBatches} />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {list.map((b) => (
+                  <BatchCard key={b.id} batch={b} selected={b.id === selectedId} onSelect={() => setPicked(b.id)} />
+                ))}
+              </div>
+            )}
+            {selectedId && <BatchSchedule batchId={selectedId} tz={tz} />}
+          </div>
+          {selectedId && <SeatPanel batchId={selectedId} tz={tz} />}
+        </section>
+      )}
 
       <section id="reviews" aria-labelledby="reviews-title" className="flex scroll-mt-8 flex-col gap-6">
         <h2 id="reviews-title" className="font-display text-[44px] font-extrabold leading-none">
@@ -237,6 +322,18 @@ function CourseView({ course }: { course: Course }) {
 
       <RelatedCourses courseId={course.id} />
     </div>
+  );
+}
+
+/** Opens the course's free lesson on a public page (no sign-in). */
+function FreeLessonLink({ slug }: { slug: string }) {
+  const { t } = useI18n();
+  return (
+    <Button asChild variant="outline">
+      <Link href={`/courses/${slug}/preview`}>
+        <PlayCircle /> {t.recorded.freeLesson}
+      </Link>
+    </Button>
   );
 }
 

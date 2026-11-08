@@ -14,8 +14,6 @@ export interface PayoutDecision {
 
 /** Pure money rules for teacher earnings. All amounts are integer fils. */
 export class EarningsCalculator {
-  constructor(private readonly sharePercent: number) {}
-
   /**
    * Net revenue an order contributes to its batch: what was kept after refunds,
    * excluding VAT (owed to the tax authority), minus the processor fee.
@@ -41,20 +39,25 @@ export class EarningsCalculator {
     return { grossFils, refundsFils, feesFils, vatFils: grossFils - refundsFils - feesFils - netFils, netFils };
   }
 
-  /** round(share% × net ÷ sessionCount) — what the teacher earns for one delivered session. */
-  sessionShare(netFils: number, sessionCount: number): number {
+  /** round(cut% × net ÷ sessionCount) — what the teacher earns for one delivered session. */
+  sessionShare(netFils: number, sessionCount: number, cutPercent: number): number {
     if (sessionCount <= 0 || netFils <= 0) return 0;
-    return Math.round((this.sharePercent / 100) * (netFils / sessionCount));
+    return Math.round((cutPercent / 100) * (netFils / sessionCount));
+  }
+
+  /** round(cut% × net) — the teacher's share of one payment (recorded plans have no sessions). */
+  paymentShare(netFils: number, cutPercent: number): number {
+    if (netFils <= 0) return 0;
+    return Math.round((cutPercent / 100) * netFils);
   }
 
   /**
-   * A refund after some sessions were delivered claws back the share already earned on that
-   * money (future sessions accrue on the smaller net automatically). Returns a negative amount.
+   * A refund claws back the same fraction of what was actually accrued as the refund is of the batch net before it.
+   * Based on stored earnings, so a cut changed since accrual never alters it. Returns a negative amount.
    */
-  refundReversal(refundNetFils: number, deliveredSessions: number, sessionCount: number): number {
-    if (sessionCount <= 0 || deliveredSessions <= 0 || refundNetFils <= 0) return 0;
-    const delivered = Math.min(deliveredSessions, sessionCount);
-    return -Math.round((this.sharePercent / 100) * ((refundNetFils * delivered) / sessionCount));
+  refundReversal(refundNetFils: number, netBeforeRefundFils: number, accruedFils: number): number {
+    if (refundNetFils <= 0 || netBeforeRefundFils <= 0 || accruedFils <= 0) return 0;
+    return -Math.round((accruedFils * Math.min(refundNetFils, netBeforeRefundFils)) / netBeforeRefundFils);
   }
 
   payoutDecision(args: { amountFils: number; bankVerified: boolean; hasBankDetails: boolean; minPayoutFils: number }): PayoutDecision {

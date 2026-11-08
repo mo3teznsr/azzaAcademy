@@ -12,6 +12,8 @@ import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../announcements/presentation/class_hub.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../auth/presentation/guest_gate.dart';
 import '../../me/data/me_repository.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
@@ -39,7 +41,8 @@ class BatchScheduleScreen extends ConsumerWidget {
     final f = ref.watch(fmtProvider);
     final locale = ref.watch(localeProvider);
     final batch = ref.watch(batchProvider(batchId));
-    final enrolled = ref.watch(enrollmentsProvider).value?.any((e) => e.batch.id == batchId && e.isActive) ?? false;
+    // A guest previews the schedule; there are no enrollments to look up.
+    final enrolled = !ref.watch(isGuestProvider) && (ref.watch(enrollmentsProvider).value?.any((e) => e.batch.id == batchId && e.isActive) ?? false);
     final price = ref.watch(priceFormatProvider);
     final now = DateTime.now();
 
@@ -64,7 +67,7 @@ class BatchScheduleScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 RaisedCard(
                   color: AzzaColors.sun.withValues(alpha: 0.12),
-                  child: Text(l.joiningLate(f.n(ran), f.n(left)), style: t.bodyMedium),
+                  child: Text(f.n(l.joiningLate(ran, left)), style: t.bodyMedium),
                 ),
               ],
               if (enrolled) ...[const SizedBox(height: 4), ClassHub(batchId: b.id)],
@@ -106,7 +109,10 @@ class BatchScheduleScreen extends ConsumerWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: FilledButton(
-                      onPressed: () => context.push(Routes.checkout(batchId)),
+                      key: const Key('schedule-enroll'),
+                      onPressed: () {
+                        if (requireAccount(context, ref)) context.push(Routes.checkout(batchId));
+                      },
                       child: Text(l.continueWithPrice(price.display(batch.requireValue.effectivePriceFils))),
                     ),
                   ),

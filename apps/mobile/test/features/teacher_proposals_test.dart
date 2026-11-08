@@ -81,6 +81,8 @@ void main() {
         proposalsRepositoryProvider.overrideWithValue(repo),
       ]);
       await settle(tester);
+      await tester.tap(find.byKey(const Key('course-type-live')));
+      await settle(tester);
       expect(find.text('New course'), findsOneWidget);
 
       await tester.enterText(_inEditor(const Key('course-title-en')), 'Calligraphy for beginners');
@@ -125,6 +127,8 @@ void main() {
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(teacher)),
         proposalsRepositoryProvider.overrideWithValue(repo),
       ]);
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('course-type-live')));
       await settle(tester);
       await tester.enterText(find.byKey(const Key('course-title-en')), 'Short');
       await tester.enterText(find.byKey(const Key('course-category')), 'art');

@@ -4,3 +4,4 @@ export * from './schemas';
 export * from './realtime';
 export * from './apple-iap';
 export * from './course-media';
+export * from './subscriptions';

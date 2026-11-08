@@ -16,9 +16,48 @@ export 'motion.dart';
 export 'signal_mark.dart';
 export 'states.dart';
 
-/// Uppercase mono caption (`LIVE · 00:05:12`, `B07 · S05`). Always LTR digits.
+extension TextScaleX on BuildContext {
+  /// [base] grown with the user's text scale, plus an unscaled [fixed] part (a cover image, say).
+  /// For fixed-extent rails and tiles that hold text, so they grow instead of clipping at 1.3–2×.
+  double scaled(double base, {double fixed = 0}) => fixed + MediaQuery.textScalerOf(this).scale(base);
+}
+
+/// Small heading above content ("eyebrow"), in Almarai 12–13pt bold. Words go here, in any
+/// language: Arabic is never uppercased or letter-spaced (that breaks the joins); Latin gets a
+/// little tracking and capitals. Use [MonoLabel] only for codes, times and timecodes.
+class Kicker extends StatelessWidget {
+  const Kicker(this.text, {super.key, this.color, this.size = 12, this.weight = FontWeight.w700, this.maxLines, this.textAlign});
+  final String text;
+  final Color? color;
+
+  /// Clamped to 12–13.
+  final double size;
+  final FontWeight weight;
+  final int? maxLines;
+  final TextAlign? textAlign;
+
+  static final _arabicScript = RegExp(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]');
+
+  @override
+  Widget build(BuildContext context) {
+    final arabic = context.isArabic || _arabicScript.hasMatch(text);
+    final s = size.clamp(12.0, 13.0);
+    final style = AzzaFonts.body(arabic: arabic, size: s, weight: weight, color: color ?? AzzaPalette.of(context).textSecondary)
+        .copyWith(letterSpacing: arabic ? 0 : 0.06 * s, height: arabic ? 1.5 : 1.35);
+    return Text(
+      arabic ? text : text.toUpperCase(),
+      maxLines: maxLines,
+      overflow: maxLines == null ? null : TextOverflow.ellipsis,
+      textAlign: textAlign,
+      style: style,
+    );
+  }
+}
+
+/// Uppercase mono caption for codes, times and timecodes only (`00:05:12`, `B07 · S05`, `AZ-7Q4K`).
+/// Always LTR digits. Words belong in a [Kicker].
 class MonoLabel extends StatelessWidget {
-  const MonoLabel(this.text, {super.key, this.color, this.size = 11, this.weight = FontWeight.w500});
+  const MonoLabel(this.text, {super.key, this.color, this.size = 12, this.weight = FontWeight.w500});
   final String text;
   final Color? color;
   final double size;
@@ -28,7 +67,7 @@ class MonoLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text.toUpperCase(),
-      style: AzzaFonts.mono(size: size, weight: weight, color: color ?? AzzaPalette.of(context).muted),
+      style: AzzaFonts.mono(size: size < 12 ? 12 : size, weight: weight, color: color ?? AzzaPalette.of(context).textSecondary),
     );
   }
 }
@@ -154,7 +193,10 @@ class StatusChip extends StatelessWidget {
     final c = color ?? AzzaPalette.of(context).muted;
     final filled = look == ChipLook.filled;
     final fg = filled ? (textColor ?? AzzaColors.inkDeep) : c;
-    final style = AzzaFonts.mono(size: 11, color: fg, tracking: 0.06).copyWith(
+    final arabic = context.isArabic;
+    final style = AzzaFonts.body(arabic: arabic, size: 12, weight: FontWeight.w700, color: fg).copyWith(
+      letterSpacing: arabic ? 0 : 0.5,
+      height: 1.25,
       decoration: look == ChipLook.struck ? TextDecoration.lineThrough : null,
       decorationColor: fg,
     );
@@ -162,7 +204,7 @@ class StatusChip extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (live) ...[SignalMark(size: 14, color: fg, live: true), const SizedBox(width: 4)],
-        Text(label.toUpperCase(), style: style),
+        Flexible(child: Text(arabic ? label : label.toUpperCase(), style: style)),
       ],
     );
     final decoration = BoxDecoration(
@@ -172,9 +214,10 @@ class StatusChip extends StatelessWidget {
           ? null
           : Border.all(color: look == ChipLook.struck ? AzzaPalette.of(context).line : c),
     );
+    // Grows with the text scale: a minimum height, never a fixed one.
     final chip = Container(
-      height: 24,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      constraints: const BoxConstraints(minHeight: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       alignment: Alignment.center,
       decoration: decoration,
       child: content,
@@ -235,7 +278,7 @@ class Slate extends StatelessWidget {
         border: inverted ? null : Border.all(color: p.line),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(text, textDirection: TextDirection.ltr, style: AzzaFonts.mono(size: 11, color: fg, tracking: 0.08)),
+      child: Text(text, textDirection: TextDirection.ltr, style: AzzaFonts.mono(size: 12, color: fg, tracking: 0.08)),
     );
   }
 }
@@ -289,7 +332,7 @@ class SectionCard extends StatelessWidget {
         if (title != null) ...[
           Row(children: [
             Expanded(child: Text(title!, style: Theme.of(context).textTheme.titleMedium)),
-            ?trailing,
+            if (trailing != null) Flexible(child: trailing!),
           ]),
           const SizedBox(height: 12),
         ],
@@ -313,7 +356,7 @@ class CardGroup extends StatelessWidget {
       if (title != null)
         Padding(
           padding: const EdgeInsetsDirectional.only(start: 4, top: 24, bottom: 8),
-          child: Text(title!, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: p.muted)),
+          child: Text(title!, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: p.textSecondary)),
         ),
       Material(
         color: p.raised,
@@ -346,10 +389,12 @@ class SectionHeader extends StatelessWidget {
         children: [
           Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
           if (action != null)
-            TextButton(
-              onPressed: onAction,
-              style: TextButton.styleFrom(foregroundColor: p.muted, minimumSize: const Size(48, 44)),
-              child: Text(action!),
+            Flexible(
+              child: TextButton(
+                onPressed: onAction,
+                style: TextButton.styleFrom(foregroundColor: p.textSecondary, minimumSize: const Size(48, 44)),
+                child: Text(action!, textAlign: TextAlign.end),
+              ),
             ),
         ],
       ),
@@ -448,7 +493,7 @@ class KeyValueRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(label, style: (emphasize ? t.titleMedium : t.bodyMedium)?.copyWith(color: emphasize ? null : p.muted))),
+          Expanded(child: Text(label, style: (emphasize ? t.titleMedium : t.bodyMedium)?.copyWith(color: emphasize ? null : p.textSecondary))),
           const SizedBox(width: 12),
           Flexible(child: Text(value, style: vStyle, textAlign: TextAlign.end)),
         ],

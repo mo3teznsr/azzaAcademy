@@ -13,6 +13,7 @@ import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/catalog_models.dart';
 import '../../catalog/presentation/catalog_widgets.dart';
 import '../../teacher/presentation/batch_sessions_editor.dart';
+import 'batch_admin_tools.dart';
 
 final adminBatchesProvider = FutureProvider.autoDispose.family<List<Batch>, BatchStatus?>(
   (ref, status) => ref.watch(catalogRepositoryProvider).batches(status: status?.wire),
@@ -37,10 +38,17 @@ class _AdminBatchesScreenState extends ConsumerState<AdminBatchesScreen> {
     final t = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.batchesTitle)),
+      appBar: AppBar(title: Text(l.batchesTitle), actions: [
+        IconButton(
+          key: const Key('admin-new-batch'),
+          tooltip: l.newBatch,
+          icon: const Icon(Icons.add_rounded),
+          onPressed: () => context.push(Routes.adminNewBatch),
+        ),
+      ]),
       body: Column(children: [
         SizedBox(
-          height: 44,
+          height: context.scaled(44),
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
@@ -117,7 +125,7 @@ class BatchQuickViewScreen extends ConsumerWidget {
           return RefreshList(
             onRefresh: () async => ref.invalidate(batchProvider(batchId)),
             children: [
-              MonoLabel(b.course?.title(locale) ?? ''),
+              Kicker(b.course?.title(locale) ?? ''),
               Row(children: [
                 DisplayText(b.code, size: 56, weight: FontWeight.w800),
                 const Spacer(),
@@ -128,7 +136,7 @@ class BatchQuickViewScreen extends ConsumerWidget {
               RaisedCard(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   DisplayText('${f.n(b.seatsTaken)} / ${f.n(b.capacity)}', size: 34),
-                  MonoLabel([l.seatsLabel, if (b.waitlistCount != null) '${f.n(b.waitlistCount!)} ${l.waitlist}'].join(' · ')),
+                  Kicker([l.seatsLabel, if (b.waitlistCount != null) '${f.n(b.waitlistCount!)} ${l.waitlist}'].join(' · ')),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: b.capacity == 0 ? 0 : (b.seatsTaken / b.capacity).clamp(0, 1).toDouble(),
@@ -139,7 +147,7 @@ class BatchQuickViewScreen extends ConsumerWidget {
                   Text(
                     [
                       if (b.startsOn != null && b.endsOn != null) '${f.shortDate(b.startsOn!)} → ${f.shortDate(b.endsOn!)}',
-                      if (b.sessions.isNotEmpty) l.sessionsRun(f.n(b.sessionsDone(now)), f.n(b.sessionCount)),
+                      if (b.sessions.isNotEmpty) f.n(l.sessionsRun(b.sessionsDone(now), b.sessionCount)),
                     ].join(' · '),
                     style: t.bodySmall,
                   ),
@@ -162,6 +170,7 @@ class BatchQuickViewScreen extends ConsumerWidget {
                 ]),
               ),
               if (!b.status.isProposal) BatchSessionsPanel(batch: b, isAdmin: true),
+              BatchAdminTools(batch: b),
               if (next != null) ...[
                 SectionHeader(l.nextSession),
                 RaisedCard(

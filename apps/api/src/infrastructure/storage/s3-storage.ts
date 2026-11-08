@@ -1,6 +1,6 @@
 import { GetObjectCommand, NoSuchKey, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import type { FileStorage, StoredFile } from '../../core/ports';
-import { newStorageKey, storageKeyContentType } from './storage-key';
+import { newStorageKey, storageKeyContentType, storageKeyFromUrl } from './storage-key';
 
 /**
  * Stores files in a private S3 bucket and serves them through CloudFront at `<cdnBaseUrl>/<key>`.
@@ -45,5 +45,9 @@ export class S3FileStorage implements FileStorage {
       if (err instanceof NoSuchKey) return null;
       throw err;
     }
+  }
+
+  keyFromUrl(url: string) {
+    return storageKeyFromUrl(url, this.cdnBaseUrl);
   }
 }

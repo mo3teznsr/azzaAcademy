@@ -11,7 +11,13 @@ import '../../../router/routes.dart';
 
 /// Interests + timezone; personalises Explore and converts batch times locally.
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({super.key});
+  const OnboardingScreen({super.key, this.next, this.from});
+
+  /// Where to go after: [Routes.signUp] from Welcome's "Create account", else sign-in.
+  final String? next;
+
+  /// Passed on to sign-in / sign-up so a guest lands back where they were.
+  final String? from;
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -37,7 +43,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           bestTimes: skip ? const [] : _times.toList(),
           timezone: tz,
         );
-    if (mounted) context.go(Routes.signIn);
+    if (mounted) context.go(widget.next == Routes.signUp ? Routes.signUpFrom(widget.from) : Routes.signInFrom(widget.from));
   }
 
   @override
@@ -93,7 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Icon(Icons.public_rounded, color: p.muted),
                 const SizedBox(width: 12),
                 Expanded(child: Text(_timezone, style: t.titleSmall)),
-                MonoLabel(l.detected),
+                Kicker(l.detected),
               ],
             ),
           ),

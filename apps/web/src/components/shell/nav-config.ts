@@ -27,7 +27,7 @@ import {
   GraduationCap,
   LifeBuoy,
   Megaphone,
-  type LucideIcon, Clapperboard } from 'lucide-react';
+  type LucideIcon, Clapperboard, Repeat } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/dictionaries/en';
 
 export interface NavItem {
@@ -91,6 +91,7 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
     label: t.nav.admin.finance,
     items: [
       { href: '/admin/transfers', label: t.nav.admin.transfers, icon: ArrowLeftRight },
+      { href: '/admin/subscriptions', label: t.nav.admin.subscriptions, icon: Repeat },
       { href: '/admin/payments', label: t.nav.admin.payments, icon: Receipt },
       { href: '/admin/bank-accounts', label: t.nav.admin.bankAccounts, icon: Landmark },
       { href: '/admin/currencies', label: t.nav.admin.currencies, icon: Coins },

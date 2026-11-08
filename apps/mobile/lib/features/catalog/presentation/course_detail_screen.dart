@@ -16,6 +16,9 @@ import '../../../core/widgets/price.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../auth/presentation/guest_gate.dart';
+import '../../subscriptions/data/subscription_repository.dart';
+import '../../subscriptions/presentation/plan_picker.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
 import 'catalog_widgets.dart';
@@ -34,6 +37,7 @@ class CourseDetailScreen extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
     final f = ref.watch(fmtProvider);
     final user = ref.watch(currentUserProvider);
+    final mySubs = ref.watch(mySubscriptionsProvider).value ?? const [];
 
     return Scaffold(
       appBar: course.hasValue ? null : AppBar(),
@@ -68,7 +72,9 @@ class CourseDetailScreen extends ConsumerWidget {
                   subject: c.title(locale),
                 ),
               ),
-              if (user != null) ...[const SizedBox(width: 8), SaveCourseButton(courseId: c.id)],
+              // Guests see the heart too; tapping it asks them to sign in and brings them back here.
+              const SizedBox(width: 8),
+              SaveCourseButton(courseId: c.id),
             ],
             slivers: [
               SliverPadding(
@@ -102,18 +108,20 @@ class CourseDetailScreen extends ConsumerWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        if (sessions != null && sessions > 0) StatusChip(label: l.liveSessionsN(f.n(sessions)), color: AzzaPalette.of(context).infoBg, textColor: AzzaPalette.of(context).info),
-                        if (minutes > 0)
+                        if (c.isRecorded) StatusChip(key: const Key('recorded-chip'), label: l.courseTypeRecorded, color: AzzaPalette.of(context).infoBg, textColor: AzzaPalette.of(context).info),
+                        if (!c.isRecorded && sessions != null && sessions > 0) StatusChip(label: f.n(l.liveSessionsN(sessions)), color: AzzaPalette.of(context).infoBg, textColor: AzzaPalette.of(context).info),
+                        if (!c.isRecorded && minutes > 0)
                           StatusChip(
                             key: const Key('total-hours'),
                             label: l.totalHoursLive(f.n(_hours(minutes))),
                             look: ChipLook.outline,
                             color: p.muted,
                           ),
-                        StatusChip(label: l.recordings, look: ChipLook.outline, color: p.muted),
+                        if (!c.isRecorded) StatusChip(label: l.recordings, look: ChipLook.outline, color: p.muted),
                         StatusChip(label: l.certificate, look: ChipLook.outline, color: p.muted),
                       ],
                     ),
+                    if (c.isRecorded) PlanPicker(course: c, subscription: subscriptionFor(mySubs, c.id)),
                     if (teachers.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       CardGroup(
@@ -178,7 +186,7 @@ class CourseDetailScreen extends ConsumerWidget {
                         ),
                     if (c.modules.isNotEmpty)
                       SectionCard(
-                        title: l.syllabusN(f.n(c.modules.length)),
+                        title: f.n(l.syllabusN(c.modules.length)),
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 2),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -253,7 +261,9 @@ class CourseDetailScreen extends ConsumerWidget {
           );
         },
       ),
-      bottomNavigationBar: course.hasValue
+      bottomNavigationBar: course.hasValue && course.requireValue.isRecorded
+          ? PlanStartBar(course: course.requireValue, subscription: subscriptionFor(mySubs, course.requireValue.id))
+          : course.hasValue
           ? BottomActionBar(
               children: [
                 Row(
@@ -271,7 +281,11 @@ class CourseDetailScreen extends ConsumerWidget {
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.6),
                       child: FilledButton(
-                        onPressed: () => context.push(Routes.batchPicker(course.requireValue.id)),
+                        key: const Key('course-enroll'),
+                        // Enrolling needs an account: a guest signs in (or up) and comes back to this course.
+                        onPressed: () {
+                          if (requireAccount(context, ref)) context.push(Routes.batchPicker(course.requireValue.id));
+                        },
                         child: Text(
                           l.chooseBatchN(f.n(ref.watch(courseBatchesProvider(course.requireValue.id)).value?.length ?? 0)),
                           maxLines: 1,

@@ -45,6 +45,8 @@ export class BatchService {
     private readonly access: BatchAccessPolicy,
     private readonly notifier: Notifier,
     private readonly clock: Clock,
+    /** Creates the App Store seat product for a price (fire-and-forget; omitted in most tests). */
+    private readonly appleSync?: { seatPriceChanged(priceFils: number): void },
   ) {}
 
   list(filter: BatchFilter, viewer: { id: string; role: Role } | null) {
@@ -78,6 +80,7 @@ export class BatchService {
   async create(input: CreateBatchInput, actor: { id: string; role: Role }) {
     const course = await this.courses.findById(input.courseId);
     if (!course) throw new NotFoundError('Course', input.courseId);
+    if (course.type === 'RECORDED') throw new BusinessRuleError('Recorded courses are sold as plans, not batches', 'RECORDED_HAS_NO_BATCHES');
     const teacherId = actor.role === 'TEACHER' ? actor.id : input.teacherId;
     if (!teacherId) throw new BusinessRuleError('Pick a teacher for this batch', 'TEACHER_REQUIRED');
     if (actor.role === 'TEACHER' && course.status !== 'PUBLISHED' && course.createdById !== actor.id) throw new NotFoundError('Course', input.courseId);
@@ -119,6 +122,7 @@ export class BatchService {
       sessions: plan.sessions.map((s, i) => ({ ...s, title: titles[i] ?? `Session ${s.number}` })),
     });
     await this.courses.refreshFromPrice(input.courseId);
+    this.appleSync?.seatPriceChanged(aedToFils(input.priceAed));
     return created;
   }
 
@@ -144,6 +148,7 @@ export class BatchService {
       ...(enrollmentClosesOn && { enrollmentClosesOn: new Date(enrollmentClosesOn) }),
     });
     if (priceAed !== undefined || input.status) await this.courses.refreshFromPrice(batch.courseId);
+    if (priceAed !== undefined) this.appleSync?.seatPriceChanged(aedToFils(priceAed));
     return updated;
   }
 

@@ -147,6 +147,50 @@ void main() {
     expect(find.textContaining('reset link is on its way'), findsOneWidget);
   });
 
+  testWidgets('sign-up fields autofill as one group, move on with next, and check themselves after the first try', (tester) async {
+    await pumpScreen(tester, const SignInScreen(signUp: true), overrides: [authRepositoryProvider.overrideWithValue(FakeAuthRepository())]);
+    await settle(tester);
+
+    expect(find.byType(AutofillGroup), findsOneWidget);
+    final fields = tester.widgetList<TextField>(find.byType(TextField)).toList();
+    expect([for (final f in fields) f.autofillHints], [
+      [AutofillHints.name],
+      [AutofillHints.email],
+      [AutofillHints.newPassword],
+    ]);
+    expect([for (final f in fields) f.textInputAction], [TextInputAction.next, TextInputAction.next, TextInputAction.done]);
+    // Input groups without placeholders.
+    expect([for (final f in fields) f.decoration?.hintText], [null, null, null]);
+
+    // Quiet until the first submit; then each edit re-checks its field.
+    final form = find.byType(Form);
+    expect(tester.widget<Form>(form).autovalidateMode, AutovalidateMode.disabled);
+    final submit = find.widgetWithText(FilledButton, 'Create account');
+    await tester.ensureVisible(submit);
+    await settle(tester);
+    await tester.tap(submit);
+    await settle(tester);
+    expect(tester.widget<Form>(form).autovalidateMode, AutovalidateMode.onUserInteraction);
+    expect(find.text('Enter a valid email'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('email')), 'sara@example.com');
+    await settle(tester);
+    expect(find.text('Enter a valid email'), findsNothing);
+    await tester.enterText(find.byKey(const Key('email')), 'sara@');
+    await settle(tester);
+    expect(find.text('Enter a valid email'), findsOneWidget);
+  });
+
+  testWidgets('sign-in: email then current password, which submits', (tester) async {
+    await pumpScreen(tester, const SignInScreen(), overrides: [authRepositoryProvider.overrideWithValue(FakeAuthRepository())]);
+    await settle(tester);
+    final fields = tester.widgetList<TextField>(find.byType(TextField)).toList();
+    expect([for (final f in fields) f.autofillHints], [
+      [AutofillHints.email, AutofillHints.username],
+      [AutofillHints.password],
+    ]);
+    expect([for (final f in fields) f.textInputAction], [TextInputAction.next, TextInputAction.done]);
+  });
+
   testWidgets('errors read in the app language; server English is not shown in Arabic', (tester) async {
     late BuildContext ar;
     await tester.pumpWidget(MaterialApp(

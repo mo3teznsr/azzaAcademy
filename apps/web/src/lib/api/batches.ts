@@ -1,5 +1,5 @@
-import type { AddSessionInput, BatchStatus, CreateBatchInput, PreviewScheduleInput, ReviewDecisionInput, SessionLanguage, UpdateBatchInput } from '@azza/shared';
-import { http, items } from './client';
+import type { AddSessionInput, BatchStatus, CreateBatchInput, PreviewScheduleInput, ReviewDecisionInput, SessionLanguage, UpdateAssignmentInput, UpdateBatchInput } from '@azza/shared';
+import { http, items, uploadWithProgress, type UploadOptions } from './client';
 import type {
   Assignment,
   BatchDetail,
@@ -13,6 +13,7 @@ import type {
   Roster,
   SchedulePreview,
   Submission,
+  UploadedFile,
 } from './types';
 
 export interface BatchListParams {
@@ -45,8 +46,18 @@ export const batchesApi = {
   materials: (id: string) => items(http.get<Items<Material>>(`/api/v1/batches/${id}/materials`)),
   addMaterial: (id: string, input: { sessionId?: string; title: string; url: string; kind: Material['kind'] }) =>
     http.post<Material>(`/api/v1/batches/${id}/materials`, input),
+  /** The batch teacher or ADMIN: one class file (≤ 50 MB) → its `materials/` URL, then `addMaterial` with kind FILE. */
+  uploadMaterialFile: (id: string, file: File, opts?: UploadOptions) => {
+    const form = new FormData();
+    form.append('file', file);
+    return uploadWithProgress<UploadedFile>(`/api/v1/batches/${id}/materials/file`, form, opts);
+  },
   assignments: (id: string) => items(http.get<Items<Assignment>>(`/api/v1/batches/${id}/assignments`)),
   addAssignment: (id: string, input: { sessionId?: string; title: string; description: string; dueAt: string; maxScore: number }) =>
     http.post<Assignment>(`/api/v1/batches/${id}/assignments`, input),
+  /** 422 `SCORE_TOO_HIGH` when `maxScore` drops below a grade already given; `sessionId: null` detaches. */
+  updateAssignment: (assignmentId: string, input: UpdateAssignmentInput) => http.patch<Assignment>(`/api/v1/assignments/${assignmentId}`, input),
+  /** 409 `ASSIGNMENT_HAS_SUBMISSIONS` once anyone has submitted. */
+  deleteAssignment: (assignmentId: string) => http.del<{ ok: true }>(`/api/v1/assignments/${assignmentId}`),
   submissions: (assignmentId: string) => items(http.get<Items<Submission>>(`/api/v1/assignments/${assignmentId}/submissions`)),
 };

@@ -32,20 +32,22 @@ class TeacherBatchesScreen extends ConsumerWidget {
     final now = DateTime.now();
     return Scaffold(
       appBar: AppBar(title: Text(l.navBatches), actions: [
+        // Icon buttons: two labelled actions overflow the bar at phone widths. Tooltips carry the names.
         IconButton(
           key: const Key('teacher-recordings'),
-          tooltip: l.teacherRecordingsTitle,
+          tooltip: l.recordings,
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           onPressed: () => context.push(Routes.teacherRecordings),
           icon: const Icon(Icons.video_library_outlined),
         ),
-        TextButton.icon(
+        IconButton(
           key: const Key('my-courses'),
-          style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+          tooltip: l.myCoursesTitle,
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           onPressed: () => context.push(Routes.teacherCourses),
-          icon: const Icon(Icons.auto_stories_outlined, size: 20),
-          label: Text(l.myCoursesTitle),
+          icon: const Icon(Icons.auto_stories_outlined),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
       ]),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('new-batch-fab'),
@@ -60,7 +62,17 @@ class TeacherBatchesScreen extends ConsumerWidget {
         value: batches,
         onRetry: () => ref.invalidate(teacherBatchesProvider),
         isEmpty: (list) => list.isEmpty,
-        empty: EmptyState(title: l.noTeacherBatches),
+        empty: EmptyState(
+          key: const Key('teacher-batches-empty'),
+          title: l.noTeacherBatches,
+          body: l.teacherFirstClassBody,
+          icon: Icons.class_outlined,
+          action: l.teacherCreateFirstClass,
+          onAction: () async {
+            await context.push(Routes.teacherNewBatch);
+            ref.invalidate(teacherBatchesProvider);
+          },
+        ),
         data: (list) => RefreshList(
           onRefresh: () async => ref.invalidate(teacherBatchesProvider),
           children: [

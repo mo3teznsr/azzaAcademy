@@ -45,12 +45,12 @@ class QuizResultScreen extends ConsumerWidget {
               child: RefreshList(
                 onRefresh: () async => ref.invalidate(quizViewProvider(quizId)),
                 children: [
-                  MonoLabel('${v.quiz.title} · ${l.quizAttemptN(f.n(a.number))}'),
+                  Kicker('${v.quiz.title} · ${l.quizAttemptN(f.n(a.number))}'),
                   SectionCard(
                     key: const Key('quiz-score'),
                     margin: const EdgeInsets.only(top: 12),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      MonoLabel(l.quizYourScore, color: p.muted),
+                      Kicker(l.quizYourScore, color: p.muted),
                       const SizedBox(height: 4),
                       DisplayText(f.percent(a.percent), size: 44),
                       Text(l.quizPointsOf(fmtPoints(f, a.score), fmtPoints(f, a.maxScore)), style: t.bodyLarge),
@@ -117,7 +117,7 @@ class _ReviewCard extends StatelessWidget {
       key: Key('review-${question.id}'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Row(children: [
-          Expanded(child: MonoLabel(l.quizQuestionN(f.n(index + 1)))),
+          Expanded(child: Kicker(l.quizQuestionN(f.n(index + 1)))),
           if (g == null || selected.isEmpty)
             StatusChip(label: l.quizNotAnswered, color: p.muted, look: ChipLook.outline)
           else
@@ -142,7 +142,7 @@ class _ReviewCard extends StatelessWidget {
         if (g != null)
           Align(
             alignment: AlignmentDirectional.centerEnd,
-            child: MonoLabel(l.quizPointsOf(fmtPoints(f, g.earned), fmtPoints(f, g.points)), color: p.muted),
+            child: Kicker(l.quizPointsOf(fmtPoints(f, g.earned), fmtPoints(f, g.points)), color: p.muted),
           ),
       ]),
     );

@@ -53,7 +53,7 @@ class _BatchPickerScreenState extends ConsumerState<BatchPickerScreen> {
             children: [
               DisplayText(l.pickBatch, size: 38),
               const SizedBox(height: 6),
-              MonoLabel(l.timesShownIn(tz)),
+              Kicker(l.timesShownIn(tz)),
               const SizedBox(height: 12),
               Wrap(spacing: 8, children: [
                 for (final opt in [null, SessionLanguage.ar, SessionLanguage.en])
@@ -155,7 +155,7 @@ class _BatchOption extends StatelessWidget {
               const SizedBox(height: 10),
               Row(children: [
                 Expanded(child: Text(b.teacher?.name ?? '', style: t.bodyMedium)),
-                if (b.seatsLeft > 0 && b.seatsLeft <= 5) ...[MonoLabel(l.seatsLeft(fmt.n(b.seatsLeft)), color: AzzaPalette.of(context).warning), const SizedBox(width: 10)],
+                if (b.seatsLeft > 0 && b.seatsLeft <= 5) ...[Kicker(fmt.n(l.seatsLeft(b.seatsLeft)), color: AzzaPalette.of(context).warning), const SizedBox(width: 10)],
                 Price(priceFils, style: t.titleSmall, showCharged: true, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end),
               ]),
             ]),

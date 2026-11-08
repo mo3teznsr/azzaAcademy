@@ -30,6 +30,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get back => 'Back';
+
+  @override
   String get noOpenBatchesShort => 'No open classes';
 
   @override
@@ -184,8 +187,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String editSeatsLead(String count) {
-    return '$count students are enrolled. Seats can\'t go below that.';
+  String editSeatsLead(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students are enrolled.',
+      one: '$count student is enrolled.',
+    );
+    return '$_temp0 Seats can\'t go below that.';
   }
 
   @override
@@ -292,6 +301,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String statusStartsIn(String minutes) {
     return 'Starts in ${minutes}m';
+  }
+
+  @override
+  String fmtInMinutes(String minutes) {
+    return 'in $minutes min';
+  }
+
+  @override
+  String fmtInHours(String hours) {
+    return 'in $hours h';
   }
 
   @override
@@ -559,8 +578,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allFilter => 'All';
 
   @override
-  String coursesCount(String count) {
-    return '$count courses';
+  String coursesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count courses',
+      one: '$count course',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -572,8 +597,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String liveSessionsN(String n) {
-    return '$n live sessions';
+  String liveSessionsN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n live sessions',
+      one: '$n live session',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -591,8 +622,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outcomesTitle => 'You\'ll leave able to';
 
   @override
-  String syllabusN(String n) {
-    return 'Syllabus · $n modules';
+  String syllabusN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n modules',
+      one: '$n module',
+    );
+    return 'Syllabus · $_temp0';
   }
 
   @override
@@ -622,8 +659,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String seatsLeft(String n) {
-    return '$n places left';
+  String seatsLeft(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n places left',
+      one: '$n place left',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -635,8 +678,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noOpenBatches => 'No classes are open right now. Check back soon.';
 
   @override
-  String joiningLate(String ran, String left) {
-    return 'Joining late? $ran sessions already ran — catch up on their recordings in your library. $left live sessions left.';
+  String joiningLate(int ran, int left) {
+    String _temp0 = intl.Intl.pluralLogic(
+      ran,
+      locale: localeName,
+      other: '$ran sessions already ran',
+      one: '$ran session already ran',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      left,
+      locale: localeName,
+      other: '$left live sessions left.',
+      one: '$left live session left.',
+    );
+    return 'Joining late? $_temp0 — catch up on the recordings in your library. $_temp1';
   }
 
   @override
@@ -835,8 +890,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get youreIn => 'You\'re in.';
 
   @override
-  String enrolledBody(String course, String code, String n) {
-    return 'Your place in $course · $code is confirmed. Start with the lessons; your $n live sessions are in your schedule.';
+  String enrolledBody(String course, String code, int count, String n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'your $n live sessions are in your schedule.',
+      one: 'your $n live session is in your schedule.',
+      zero: 'your live sessions will appear in your schedule.',
+    );
+    return 'Your place in $course · $code is confirmed. Start with the lessons; $_temp0';
   }
 
   @override
@@ -857,8 +919,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String syncCalendar(String n) {
-    return 'Sync $n sessions to calendar';
+  String syncCalendar(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Sync $n sessions to calendar',
+      one: 'Sync $n session to calendar',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -919,8 +987,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordSessionSub => 'Saved to the batch library after processing';
 
   @override
-  String waitingN(String n) {
-    return '$n waiting';
+  String waitingN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n waiting',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1115,8 +1188,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wrapTitle => 'Session complete.';
 
   @override
-  String endedStayed(String time, String min) {
-    return 'Ended $time · you stayed $min min';
+  String endedStayed(String time, int min) {
+    String _temp0 = intl.Intl.pluralLogic(
+      min,
+      locale: localeName,
+      other: '$min min',
+    );
+    return 'Ended $time · you stayed $_temp0';
   }
 
   @override
@@ -1249,8 +1327,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get account => 'Account';
 
   @override
-  String batchesN(String n) {
-    return '$n classes';
+  String batchesN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n classes',
+      one: '$n class',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1289,8 +1373,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterLobby => 'Enter lobby';
 
   @override
-  String studentsN(String n) {
-    return '$n students';
+  String studentsN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n students',
+      one: '$n student',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1307,6 +1397,631 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get laterToday => 'Later today';
+
+  @override
+  String teacherHubTitle(String course, String code) {
+    return '$course · $code';
+  }
+
+  @override
+  String get teacherHubSessions => 'Sessions';
+
+  @override
+  String get teacherHubStudents => 'Students';
+
+  @override
+  String get teacherHubPractice => 'Practice';
+
+  @override
+  String get teacherNewAssignment => 'New assignment';
+
+  @override
+  String get teacherNoAssignments =>
+      'No assignments yet. Add one so students can practise after a session.';
+
+  @override
+  String teacherSubmittedCount(String count) {
+    return '$count handed in';
+  }
+
+  @override
+  String get teacherNewQuiz => 'New quiz';
+
+  @override
+  String get teacherEditQuiz => 'Edit quiz';
+
+  @override
+  String get teacherQuizResults => 'Results';
+
+  @override
+  String get teacherNoQuizzesBody =>
+      'Write a short quiz to check what your students learned.';
+
+  @override
+  String get teacherMaterialSlides => 'Slides';
+
+  @override
+  String get teacherMaterialFile => 'File';
+
+  @override
+  String get teacherMaterialVideo => 'Video';
+
+  @override
+  String get teacherAddMaterial => 'Add material';
+
+  @override
+  String get teacherAddMaterialLede =>
+      'Upload a file or a video from your phone, or share a link to slides, a web page or a video. Students open it from their library.';
+
+  @override
+  String get teacherMaterialAdded =>
+      'Material added. Your students can open it now.';
+
+  @override
+  String get teacherNoMaterials =>
+      'No materials yet. Add slides, files or links for this class.';
+
+  @override
+  String get teacherNoClassRecordings =>
+      'No recordings yet. Each session is recorded when you start it.';
+
+  @override
+  String teacherMinutesShort(String count) {
+    return '$count min';
+  }
+
+  @override
+  String get teacherVideoTooLarge =>
+      'That video is over 200 MB. Share it as a link instead.';
+
+  @override
+  String get teacherUploading => 'Uploading…';
+
+  @override
+  String get teacherUploadVideo => 'Upload a video';
+
+  @override
+  String teacherUploadedFile(String name) {
+    return 'Uploaded: $name';
+  }
+
+  @override
+  String get teacherUploadVideoHint => 'MP4, MOV or WEBM, up to 200 MB.';
+
+  @override
+  String get teacherMaterialTitleHint => 'e.g. Week 2 slides';
+
+  @override
+  String get teacherTitleRequired => 'Add a title of at least 2 characters.';
+
+  @override
+  String get teacherMaterialUrlHelper =>
+      'A link students can open, starting with https://';
+
+  @override
+  String get filesAttach => 'Attach files';
+
+  @override
+  String filesAttachHint(int count, String n, String types, String mb) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$n files',
+      one: '$n file',
+    );
+    return 'Up to $_temp0 · $types · $mb MB each';
+  }
+
+  @override
+  String filesUploadingPercent(String percent) {
+    return 'Uploading $percent%';
+  }
+
+  @override
+  String filesRemove(String name) {
+    return 'Remove $name';
+  }
+
+  @override
+  String filesOpen(String name) {
+    return 'Open $name';
+  }
+
+  @override
+  String get filesYourFiles => 'Your files';
+
+  @override
+  String get filesSubmitted => 'Files';
+
+  @override
+  String filesTooMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You can attach up to $count files.',
+      one: 'You can attach up to $count file.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get filesWaitForUpload => 'Wait for your files to finish uploading.';
+
+  @override
+  String filesTypeRefused(String name, String types) {
+    return '$name can\'t be attached. Use $types.';
+  }
+
+  @override
+  String filesTooLargeRefused(String name, String mb) {
+    return '$name is larger than $mb MB.';
+  }
+
+  @override
+  String filesEmptyRefused(String name) {
+    return '$name is empty.';
+  }
+
+  @override
+  String get filesErrType =>
+      'This file type isn\'t supported. Try PDF, Word, PowerPoint, Excel, an image, ZIP or text.';
+
+  @override
+  String get filesErrEmpty => 'This file is empty. Choose another one.';
+
+  @override
+  String get filesErrTooLarge => 'This file is too large to upload.';
+
+  @override
+  String get filesErrMissing => 'Choose a file to upload.';
+
+  @override
+  String get filesErrForeignUrl => 'Upload the file here first, then add it.';
+
+  @override
+  String get filesErrEmptySubmission => 'Add a link, some text or a file.';
+
+  @override
+  String get filesUploadMaterial => 'Upload file';
+
+  @override
+  String filesUploadMaterialHint(String types, String mb) {
+    return '$types, up to $mb MB. Students open it from their library.';
+  }
+
+  @override
+  String get filesLinkKindsNote =>
+      'To share a document, upload it. Links are for slides, web pages and videos.';
+
+  @override
+  String get filesEditAssignment => 'Edit assignment';
+
+  @override
+  String get filesSaveChanges => 'Save changes';
+
+  @override
+  String get filesAssignmentSaved => 'Assignment updated.';
+
+  @override
+  String get filesAssignmentActions => 'Assignment options';
+
+  @override
+  String get filesDeleteAssignment => 'Delete assignment';
+
+  @override
+  String filesDeleteAssignmentTitle(String title) {
+    return 'Delete “$title”?';
+  }
+
+  @override
+  String get filesDeleteAssignmentBody =>
+      'This can\'t be undone. Once a student has submitted, the assignment can\'t be deleted, but you can still edit it.';
+
+  @override
+  String get filesDelete => 'Delete';
+
+  @override
+  String get filesAssignmentDeleted => 'Assignment deleted.';
+
+  @override
+  String get filesErrHasSubmissions =>
+      'Students have already submitted this assignment, so it can\'t be deleted. You can still edit it.';
+
+  @override
+  String filesErrScoreTooHigh(String score) {
+    return 'A submission is already graded $score, so the max score can\'t go below that.';
+  }
+
+  @override
+  String get teacherUrlInvalid => 'Enter a full link, like https://example.com';
+
+  @override
+  String get teacherLinkSession => 'Session';
+
+  @override
+  String get teacherOptional => 'Optional';
+
+  @override
+  String get teacherNoSessionLink => 'Not linked to a session';
+
+  @override
+  String get teacherAssignmentCreated =>
+      'Assignment created. Students can see it now.';
+
+  @override
+  String get teacherAssignmentLede =>
+      'Students hand in text or a link before the due time. Late work is still accepted and marked late.';
+
+  @override
+  String get teacherAssignmentTitleHint => 'e.g. Build a budget spreadsheet';
+
+  @override
+  String get teacherInstructions => 'Instructions';
+
+  @override
+  String get teacherInstructionsHint =>
+      'What should students do, and what does good work look like?';
+
+  @override
+  String get teacherDueHelper => 'Tap to choose the date and time.';
+
+  @override
+  String get teacherChangeDue => 'Choose due date';
+
+  @override
+  String get teacherDueInPast => 'Pick a time in the future.';
+
+  @override
+  String get teacherMaxScore => 'Max score';
+
+  @override
+  String get teacherMaxScoreHelper => 'The top score for this assignment.';
+
+  @override
+  String get teacherMaxScoreInvalid => 'Enter a whole number from 1 to 1000.';
+
+  @override
+  String get teacherCreateAssignment => 'Create assignment';
+
+  @override
+  String teacherGradedScore(String score, String max) {
+    return 'Graded $score/$max';
+  }
+
+  @override
+  String get teacherToGrade => 'To grade';
+
+  @override
+  String get teacherSubmissionsTitle => 'Submissions';
+
+  @override
+  String teacherOutOf(String max) {
+    return 'Out of $max';
+  }
+
+  @override
+  String get teacherNoSubmissions => 'Nothing handed in yet.';
+
+  @override
+  String teacherHandedIn(String when) {
+    return 'Handed in $when';
+  }
+
+  @override
+  String get teacherGradeSaved => 'Grade saved. The student has been told.';
+
+  @override
+  String get teacherTheirWork => 'Their work';
+
+  @override
+  String get teacherScore => 'Score';
+
+  @override
+  String teacherScoreHint(String max) {
+    return '0 to $max';
+  }
+
+  @override
+  String teacherScoreInvalid(String max) {
+    return 'Enter a whole number from 0 to $max.';
+  }
+
+  @override
+  String get teacherFeedback => 'Feedback';
+
+  @override
+  String get teacherFeedbackHint => 'What went well, and one thing to improve.';
+
+  @override
+  String get teacherSaveGrade => 'Save grade';
+
+  @override
+  String get teacherGradingTitle => 'Grading';
+
+  @override
+  String get teacherGradingLede =>
+      'Work handed in across your classes, oldest first.';
+
+  @override
+  String get teacherAllGraded => 'All caught up. Nothing to grade.';
+
+  @override
+  String get teacherQuizSaved => 'Quiz saved.';
+
+  @override
+  String get teacherQuizNeedsQuestion =>
+      'Add at least one question before publishing.';
+
+  @override
+  String get teacherPublishQuizTitle => 'Publish this quiz?';
+
+  @override
+  String get teacherPublishQuizBody =>
+      'Your students will be notified and can start it. Once someone starts, the questions can\'t change.';
+
+  @override
+  String get teacherPublish => 'Publish';
+
+  @override
+  String get teacherQuizPublished =>
+      'Quiz published. Students have been notified.';
+
+  @override
+  String get teacherQuizUnpublished => 'Quiz moved back to draft.';
+
+  @override
+  String get teacherDeleteQuizTitle => 'Delete this quiz?';
+
+  @override
+  String get teacherDeleteQuizBody =>
+      'The quiz and its questions will be removed. This can\'t be undone.';
+
+  @override
+  String get teacherDelete => 'Delete';
+
+  @override
+  String get teacherQuizDeleted => 'Quiz deleted.';
+
+  @override
+  String get teacherTrue => 'True';
+
+  @override
+  String get teacherFalse => 'False';
+
+  @override
+  String get teacherSingleChoice => 'Single choice';
+
+  @override
+  String get teacherChooseAll => 'Choose all';
+
+  @override
+  String get teacherTrueFalse => 'True / false';
+
+  @override
+  String teacherQuizTotals(int questions, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      questions,
+      locale: localeName,
+      other: '$questions questions',
+      one: '$questions question',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points pts',
+      one: '$points pt',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get teacherQuizLocked =>
+      'Students have started this quiz, so its questions are locked. You can still change the details.';
+
+  @override
+  String get teacherQuizDetails => 'Details';
+
+  @override
+  String get teacherQuizTitleHint => 'e.g. Module 1 check';
+
+  @override
+  String get teacherQuizInstructionsHint =>
+      'Anything students should know before they start.';
+
+  @override
+  String get teacherQuizModule => 'Module';
+
+  @override
+  String get teacherQuizModuleHelper =>
+      'Students see the quiz with this module\'s lessons.';
+
+  @override
+  String get teacherNoModule => 'No module';
+
+  @override
+  String get teacherNoDueDate => 'No due date';
+
+  @override
+  String get teacherTimeLimit => 'Time limit (minutes)';
+
+  @override
+  String get teacherUntimed => 'Untimed';
+
+  @override
+  String get teacherTimeLimitHelper => 'Leave empty for no time limit.';
+
+  @override
+  String get teacherTimeLimitInvalid =>
+      'Enter 1 to 600 minutes, or leave it empty.';
+
+  @override
+  String get teacherAttempts => 'Attempts';
+
+  @override
+  String get teacherAttemptsHelper =>
+      'How many times each student can take it.';
+
+  @override
+  String get teacherAddQuestion => 'Add question';
+
+  @override
+  String get teacherSaveDraft => 'Save draft';
+
+  @override
+  String get teacherUnpublish => 'Unpublish';
+
+  @override
+  String teacherQuestionN(String n) {
+    return 'Question $n';
+  }
+
+  @override
+  String get teacherRemoveQuestion => 'Remove question';
+
+  @override
+  String get teacherQuestionPrompt => 'Question';
+
+  @override
+  String get teacherQuestionPromptHint =>
+      'Write the question students will answer.';
+
+  @override
+  String get teacherQuestionRequired => 'Write the question.';
+
+  @override
+  String get teacherMarkAllCorrect => 'Mark every correct answer.';
+
+  @override
+  String get teacherMarkOneCorrect => 'Mark the one correct answer.';
+
+  @override
+  String get teacherCorrectAnswer => 'Correct answer';
+
+  @override
+  String get teacherMarkCorrect => 'Mark as correct';
+
+  @override
+  String teacherOptionN(String n) {
+    return 'Option $n';
+  }
+
+  @override
+  String get teacherOptionRequired => 'Fill in this option or remove it.';
+
+  @override
+  String get teacherRemoveOption => 'Remove option';
+
+  @override
+  String get teacherAddOption => 'Add option';
+
+  @override
+  String get teacherPoints => 'Points';
+
+  @override
+  String get teacherAttendanceBreakdown => 'Breakdown';
+
+  @override
+  String teacherAttendanceRate(String rate) {
+    return '$rate attended';
+  }
+
+  @override
+  String teacherAttendanceFiltered(String mark) {
+    return 'Showing $mark only. Tap again to show everyone.';
+  }
+
+  @override
+  String teacherTodayAt(String time) {
+    return 'Today $time';
+  }
+
+  @override
+  String teacherTomorrowAt(String time) {
+    return 'Tomorrow $time';
+  }
+
+  @override
+  String get teacherNoUpcomingSessions =>
+      'No sessions coming up this week. Add one from your class.';
+
+  @override
+  String get teacherNextSession => 'Next session';
+
+  @override
+  String get teacherReschedule => 'Move';
+
+  @override
+  String get teacherNeedsAtRisk => 'Students falling behind';
+
+  @override
+  String get teacherNeedsYou => 'Needs you';
+
+  @override
+  String get teacherNeedsGrade => 'Work to grade';
+
+  @override
+  String get teacherNeedsReschedule => 'Replies to your move requests';
+
+  @override
+  String get teacherNeedsProposals => 'Proposals with review notes';
+
+  @override
+  String get teacherNeedClassFirst => 'Create a class first.';
+
+  @override
+  String get teacherProposeCourse => 'Propose a course';
+
+  @override
+  String get teacherPostAnnouncement => 'Post an announcement';
+
+  @override
+  String get teacherUploadMaterial => 'Upload material';
+
+  @override
+  String get teacherQuickActions => 'Quick actions';
+
+  @override
+  String get teacherMyClasses => 'My classes';
+
+  @override
+  String get teacherSeeAll => 'See all';
+
+  @override
+  String teacherStudentsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students',
+      one: '$count student',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get teacherEarningsSnapshot => 'Earnings';
+
+  @override
+  String get teacherEarningsUnavailable =>
+      'Earnings couldn\'t load. Pull to refresh.';
+
+  @override
+  String get teacherThisPeriod => 'This month';
+
+  @override
+  String get teacherNextPayout => 'Next payout';
+
+  @override
+  String get teacherPayoutMissing => 'Add a payout method so we can pay you.';
+
+  @override
+  String get teacherAddPayoutMethod => 'Add';
+
+  @override
+  String get teacherFirstClassBody =>
+      'Pick a course, set the schedule and send it for review.';
+
+  @override
+  String get teacherCreateFirstClass => 'Create your first class';
 
   @override
   String get noSessionsToday => 'No sessions today. Enjoy the quiet.';
@@ -1349,8 +2064,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prepTitle => 'Session prep';
 
   @override
-  String runOfShow(String min) {
-    return 'Run of show · $min min';
+  String runOfShow(int min) {
+    String _temp0 = intl.Intl.pluralLogic(
+      min,
+      locale: localeName,
+      other: '$min min',
+    );
+    return 'Run of show · $_temp0';
   }
 
   @override
@@ -1510,8 +2230,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get swiftInvalid => '8 or 11 letters/digits';
 
   @override
-  String sessionsDelivered(String n) {
-    return '$n sessions delivered';
+  String sessionsDelivered(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n sessions delivered',
+      one: '$n session delivered',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1523,8 +2249,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onAirLabel => 'Live now';
 
   @override
-  String roomsPeople(String rooms, String people) {
-    return '$rooms rooms · $people people';
+  String roomsPeople(int rooms, int people) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rooms,
+      locale: localeName,
+      other: '$rooms rooms',
+      one: '$rooms room',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      people,
+      locale: localeName,
+      other: '$people people',
+      one: '$people person',
+    );
+    return '$_temp0 · $_temp1';
   }
 
   @override
@@ -1565,8 +2303,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noLiveRooms => 'No sessions are live right now.';
 
   @override
-  String participantsN(String n) {
-    return '$n people';
+  String participantsN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n people',
+      one: '$n person',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1585,8 +2329,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get teacherLabel => 'Teacher';
 
   @override
-  String sessionsRun(String done, String total) {
-    return '$done of $total sessions run';
+  String sessionsRun(int done, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total sessions run',
+      one: '$total session run',
+    );
+    return '$done of $_temp0';
   }
 
   @override
@@ -1669,8 +2419,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get awaitingApproval => 'Awaiting approval';
 
   @override
-  String totalTeachers(String n) {
-    return 'Total · $n teachers';
+  String totalTeachers(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n teachers',
+      one: '$n teacher',
+    );
+    return 'Total · $_temp0';
   }
 
   @override
@@ -1679,8 +2435,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String approvePayouts(String n, String amount) {
-    return 'Approve $n payouts · $amount';
+  String approvePayouts(int n, String amount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Approve $n payouts · $amount',
+      one: 'Approve $n payout · $amount',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1702,23 +2464,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get carriedOver => 'Carried over';
 
   @override
-  String alertTransfersToVerify(String n) {
-    return '$n bank transfers to verify';
+  String alertTransfersToVerify(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n bank transfers to verify',
+      one: '$n bank transfer to verify',
+    );
+    return '$_temp0';
   }
 
   @override
-  String alertSeatHoldsExpiring(String n) {
-    return '$n seat holds expire within 24 h';
+  String alertSeatHoldsExpiring(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n seat holds expire within 24 h',
+      one: '$n seat hold expires within 24 h',
+    );
+    return '$_temp0';
   }
 
   @override
-  String alertTeacherBankUnverified(String n) {
-    return '$n teacher bank details to verify';
+  String alertTeacherBankUnverified(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n teachers\' bank details to verify',
+      one: '$n teacher\'s bank details to verify',
+    );
+    return '$_temp0';
   }
 
   @override
-  String alertPayoutsHeld(String n) {
-    return '$n payouts on hold';
+  String alertPayoutsHeld(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n payouts on hold',
+      one: '$n payout on hold',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1772,8 +2558,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String certificateSessionsNeeded(String n) {
-    return '$n more sessions needed';
+  String certificateSessionsNeeded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n more sessions needed',
+      one: '$n more session needed',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1788,8 +2580,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Not enough sessions left to reach 80% in this class.';
 
   @override
-  String certificateAttendedOfRequired(String attended, String required) {
-    return '$attended of $required sessions to earn it';
+  String certificateAttendedOfRequired(int attended, int required) {
+    String _temp0 = intl.Intl.pluralLogic(
+      required,
+      locale: localeName,
+      other: '$required sessions to earn it',
+      one: '$required session to earn it',
+    );
+    return '$attended of $_temp0';
   }
 
   @override
@@ -1829,8 +2627,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get certificateCompleteTitle => 'Course complete.';
 
   @override
-  String certificateCompleteBody(String attended, String total) {
-    return 'You attended $attended of $total live sessions.';
+  String certificateCompleteBody(int attended, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total live sessions.',
+      one: '$total live session.',
+    );
+    return 'You attended $attended of $_temp0';
   }
 
   @override
@@ -2545,16 +3349,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String ratingSemantics(String avg, String count) {
-    return 'Rated $avg out of 5 from $count reviews';
+  String ratingSemantics(String avg, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reviews',
+      one: '$count review',
+    );
+    return 'Rated $avg out of 5 from $_temp0';
   }
 
   @override
   String get reviewsTitle => 'Reviews';
 
   @override
-  String reviewsCount(String count) {
-    return '$count reviews';
+  String reviewsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reviews',
+      one: '$count review',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2594,8 +3410,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewDeleted => 'Review deleted.';
 
   @override
-  String starsN(String n) {
-    return '$n stars';
+  String starsN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n stars',
+      one: '$n star',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2800,13 +3622,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allInstructors => 'All instructors';
 
   @override
-  String instructorCoursesN(String count) {
-    return '$count courses';
+  String instructorCoursesN(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count courses',
+      one: '$count course',
+    );
+    return '$_temp0';
   }
 
   @override
-  String instructorOpenBatchesN(String count) {
-    return '$count open classes';
+  String instructorOpenBatchesN(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open classes',
+      one: '$count open class',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2990,8 +3824,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonsTitle => 'Lessons';
 
   @override
-  String lessonsCountN(String n) {
-    return '$n lessons';
+  String lessonsCountN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n lessons',
+      one: '$n lesson',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3003,8 +3843,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonHasVideo => 'Video';
 
   @override
-  String lessonAttachmentsN(String n) {
-    return '$n attachments';
+  String lessonAttachmentsN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n attachments',
+      one: '$n attachment',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3076,13 +3922,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quizMissed => 'Missed';
 
   @override
-  String quizQuestionsN(String n) {
-    return '$n questions';
+  String quizQuestionsN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n questions',
+      one: '$n question',
+    );
+    return '$_temp0';
   }
 
   @override
-  String quizMinutesN(String n) {
-    return '$n min';
+  String quizMinutesN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n min',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3149,8 +4006,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quizStartTimedTitle => 'Start the timer?';
 
   @override
-  String quizStartTimedBody(String minutes) {
-    return 'You\'ll have $minutes minutes once you start. When time runs out, your answers are submitted automatically.';
+  String quizStartTimedBody(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '$minutes minute',
+    );
+    return 'You\'ll have $_temp0 once you start. When time runs out, your answers are submitted automatically.';
   }
 
   @override
@@ -3187,8 +4050,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quizSubmitTitle => 'Submit your answers?';
 
   @override
-  String quizAnsweredOf(String answered, String total) {
-    return 'You answered $answered of $total questions.';
+  String quizAnsweredOf(int answered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total questions.',
+      one: '$total question.',
+    );
+    return 'You answered $answered of $_temp0';
   }
 
   @override
@@ -3260,8 +4129,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quizResultsTitle => 'Quiz results';
 
   @override
-  String quizStudentsAttempted(String students, String attempts) {
-    return '$students students tried · $attempts attempts';
+  String quizStudentsAttempted(int students, int attempts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      students,
+      locale: localeName,
+      other: '$students students tried',
+      one: '$students student tried',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      attempts,
+      locale: localeName,
+      other: '$attempts attempts',
+      one: '$attempts attempt',
+    );
+    return '$_temp0 · $_temp1';
   }
 
   @override
@@ -3274,8 +4155,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quizNoAttemptsYet => 'No attempts yet';
 
   @override
-  String quizAttemptsN(String n) {
-    return '$n attempts';
+  String quizAttemptsN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n attempts',
+      one: '$n attempt',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3346,8 +4233,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatSending => 'Sending…';
 
   @override
-  String chatUnreadN(String n) {
-    return '$n unread';
+  String chatUnreadN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n unread',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3584,4 +4476,1908 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errInvalidAssignee => 'That person can\'t take this request.';
+
+  @override
+  String get studentContinueLearning => 'Continue learning';
+
+  @override
+  String studentModulesN(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n modules',
+      one: '$n module',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get studentOpenLessons => 'Open lessons';
+
+  @override
+  String get studentPracticeQuiz => 'Quiz';
+
+  @override
+  String get studentPracticeAssignment => 'Assignment';
+
+  @override
+  String get studentOverdue => 'Overdue';
+
+  @override
+  String studentWasDue(String when) {
+    return 'Was due $when';
+  }
+
+  @override
+  String get studentNoDueDate => 'No due date';
+
+  @override
+  String studentSessionN(String n) {
+    return 'Session $n';
+  }
+
+  @override
+  String get studentCertificateReadyTitle => 'Your certificate is ready';
+
+  @override
+  String studentCertificateReadyBody(String course) {
+    return '$course: proof you learned it. Open it to view and share.';
+  }
+
+  @override
+  String get studentHowWasToday => 'How was today\'s session?';
+
+  @override
+  String get studentSessionPractice => 'Practise what you covered';
+
+  @override
+  String get studentPractiseNow => 'Practise now';
+
+  @override
+  String get studentNextModule => 'Next module';
+
+  @override
+  String studentModuleDone(String module) {
+    return 'You\'ve reached the end of $module.';
+  }
+
+  @override
+  String studentModuleQuizHint(String quiz) {
+    return 'Check what you learned with “$quiz”.';
+  }
+
+  @override
+  String get studentModuleNextHint => 'Keep going with the next module.';
+
+  @override
+  String get studentClassLabel => 'Class';
+
+  @override
+  String get studentAddToCalendar => 'Add to my calendar';
+
+  @override
+  String get studentCalendarCopied =>
+      'Calendar link copied. Paste it into your calendar app to subscribe.';
+
+  @override
+  String studentSubmittedOn(String when) {
+    return 'Submitted $when';
+  }
+
+  @override
+  String get studentSubmittedLate => 'Submitted late';
+
+  @override
+  String get studentOverdueHint =>
+      'You can still hand it in. It will be marked late.';
+
+  @override
+  String get adminNavManage => 'Manage';
+
+  @override
+  String get adminManageTitle => 'Manage';
+
+  @override
+  String get adminHubPeopleSection => 'People and support';
+
+  @override
+  String get adminHubMoneySection => 'Money';
+
+  @override
+  String get adminHubCatalogSection => 'Catalog';
+
+  @override
+  String get adminHubInsightSection => 'Insight and platform';
+
+  @override
+  String get adminHubSupportSub => 'Tickets from students and teachers';
+
+  @override
+  String get adminHubPeopleSub => 'Accounts, roles, bans and teacher profiles';
+
+  @override
+  String get adminHubPaymentsSub => 'Every order, with refunds';
+
+  @override
+  String get adminHubPayoutsSub => 'Monthly payouts to teachers';
+
+  @override
+  String get adminHubCouponsSub => 'Discount codes and who used them';
+
+  @override
+  String get adminHubBankSub => 'Where students send bank transfers';
+
+  @override
+  String get adminHubCurrenciesSub => 'Display rates for SAR, QAR and USD';
+
+  @override
+  String get adminHubCoursesSub => 'Create, edit, publish and feature';
+
+  @override
+  String get adminHubBatchesSub => 'Classes, schedules and enrolments';
+
+  @override
+  String get adminHubCategoriesSub => 'Order, names and visibility';
+
+  @override
+  String get adminHubReportsSub => 'Revenue, fill, attendance, completion';
+
+  @override
+  String get adminHubLiveSub => 'Every room on air right now';
+
+  @override
+  String get adminHubSettingsSub => 'Platform rules and integrations';
+
+  @override
+  String get adminHubNoSettings =>
+      'Arabic course text is edited inside each course; there is no separate translations area.';
+
+  @override
+  String get adminSettingsTitle => 'Settings';
+
+  @override
+  String get adminSettingsBody =>
+      'These rules come from the server configuration. Change them there.';
+
+  @override
+  String get adminRules => 'Rules';
+
+  @override
+  String get adminIntegrations => 'Integrations';
+
+  @override
+  String get adminConfigured => 'Configured';
+
+  @override
+  String get adminNotConfigured => 'Not configured';
+
+  @override
+  String get adminRuleTeacherShare => 'Teacher share';
+
+  @override
+  String get adminRuleEarningHold => 'Earnings hold';
+
+  @override
+  String get adminRuleMinPayout => 'Minimum payout';
+
+  @override
+  String get adminRuleTransferHold => 'Bank transfer hold';
+
+  @override
+  String get adminRuleVat => 'VAT';
+
+  @override
+  String adminDaysValue(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n days',
+      one: '$n day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminHoursValue(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n hours',
+      one: '$n hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminRoleStudent => 'Student';
+
+  @override
+  String get adminRoleTeacher => 'Teacher';
+
+  @override
+  String get adminRoleAdmin => 'Admin';
+
+  @override
+  String adminNeedsYouCount(String n) {
+    return 'Needs you · $n';
+  }
+
+  @override
+  String get adminAllClear => 'Nothing is waiting on you. Nice.';
+
+  @override
+  String get adminQueueProposals => 'Proposals to review';
+
+  @override
+  String get adminQueueProposalsSub => 'Courses and classes from teachers';
+
+  @override
+  String get adminQueueTransfers => 'Transfers to verify';
+
+  @override
+  String get adminQueueTransfersSub => 'Receipts waiting; seats are on hold';
+
+  @override
+  String get adminQueuePayouts => 'Payout runs';
+
+  @override
+  String get adminQueuePayoutsSub => 'To approve or mark paid';
+
+  @override
+  String get adminQueueReschedules => 'Reschedule requests';
+
+  @override
+  String get adminQueueReschedulesSub => 'Teachers asking to move a session';
+
+  @override
+  String get adminQueueTickets => 'Open support tickets';
+
+  @override
+  String get adminQueueTicketsSub => 'People waiting for an answer';
+
+  @override
+  String get adminQueueApplications => 'Instructor applications';
+
+  @override
+  String get adminQueueApplicationsSub => 'People who want to teach';
+
+  @override
+  String get adminQueueAlerts => 'Other alerts';
+
+  @override
+  String get adminQueueAlertsSub => 'Held payouts, bank checks, expiring holds';
+
+  @override
+  String get adminLiveNow => 'Live now';
+
+  @override
+  String adminRoomIssues(String n) {
+    return '$n with issues';
+  }
+
+  @override
+  String adminPeopleInRoom(String n) {
+    return '$n in the room';
+  }
+
+  @override
+  String adminQualityIssue(String quality) {
+    return 'quality: $quality';
+  }
+
+  @override
+  String get adminHealth => 'Health';
+
+  @override
+  String get adminPaymentsTitle => 'Payments';
+
+  @override
+  String get adminSearchOrders => 'Search orders';
+
+  @override
+  String get adminSearchOrdersHint => 'Reference, student name or email';
+
+  @override
+  String get adminAnyMethod => 'Any method';
+
+  @override
+  String get adminNoOrders => 'No orders here';
+
+  @override
+  String get adminNoOrdersBody =>
+      'Try another status or method, or clear the search.';
+
+  @override
+  String get adminOrderTitle => 'Order';
+
+  @override
+  String adminRefundedSoFar(String amount) {
+    return '$amount refunded so far';
+  }
+
+  @override
+  String get adminOrderAmounts => 'Amounts';
+
+  @override
+  String get adminSubtotal => 'Subtotal';
+
+  @override
+  String get adminDiscount => 'Discount';
+
+  @override
+  String get adminVat => 'VAT';
+
+  @override
+  String get adminProcessorFee => 'Card fee';
+
+  @override
+  String get adminReceived => 'Received';
+
+  @override
+  String get adminTotal => 'Total';
+
+  @override
+  String get adminOrderPeople => 'Student and class';
+
+  @override
+  String get adminClass => 'Class';
+
+  @override
+  String get adminOrderTrail => 'Payment';
+
+  @override
+  String get adminMethod => 'Method';
+
+  @override
+  String get adminCreated => 'Created';
+
+  @override
+  String get adminPaidAt => 'Paid';
+
+  @override
+  String get adminVerifiedBy => 'Verified by';
+
+  @override
+  String get adminAppleRefundNote =>
+      'App Store purchases are refunded by Apple. The refund is recorded here when Apple tells us.';
+
+  @override
+  String get adminRefund => 'Refund';
+
+  @override
+  String get adminRefundTitle => 'Refund this order';
+
+  @override
+  String adminRefundSubtitle(String reference, String amount) {
+    return '$reference · up to $amount';
+  }
+
+  @override
+  String get adminRefundAmount => 'Amount to refund';
+
+  @override
+  String get adminRefundAmountHelper =>
+      'A partial refund keeps the student enrolled.';
+
+  @override
+  String get adminRefundReasonHint =>
+      'e.g. Student asked to cancel before the class started';
+
+  @override
+  String get adminRefundBankNote =>
+      'This was a bank transfer: finance sends the money back by hand after you confirm.';
+
+  @override
+  String get adminAmountInvalid => 'Enter an amount above zero.';
+
+  @override
+  String adminRefundTooLarge(String amount) {
+    return 'You can refund up to $amount.';
+  }
+
+  @override
+  String get adminReasonRequired =>
+      'Add a short reason (3 characters or more).';
+
+  @override
+  String adminRefundConfirmTitle(String amount) {
+    return 'Refund $amount?';
+  }
+
+  @override
+  String get adminRefundConfirmFull =>
+      'This refunds the whole order. The student loses their seat and the teacher\'s earnings are adjusted. This can\'t be undone.';
+
+  @override
+  String get adminRefundConfirmPartial =>
+      'The student keeps their seat. The teacher\'s earnings are adjusted. This can\'t be undone.';
+
+  @override
+  String adminRefundDone(String amount) {
+    return 'Refunded $amount.';
+  }
+
+  @override
+  String adminRefundManualDone(String amount) {
+    return 'Refund of $amount recorded. Finance will send the transfer.';
+  }
+
+  @override
+  String get adminPeopleTitle => 'People';
+
+  @override
+  String get adminSearchPeople => 'Search people';
+
+  @override
+  String get adminSearchPeopleHint => 'Name or email';
+
+  @override
+  String get adminNoPeople => 'No one matches';
+
+  @override
+  String adminPeopleCount(String n) {
+    return '$n shown';
+  }
+
+  @override
+  String get adminBanned => 'Banned';
+
+  @override
+  String get adminInviteUser => 'Invite someone';
+
+  @override
+  String get adminInviteBody =>
+      'They get an email with a link to set their password.';
+
+  @override
+  String adminInviteSent(String email) {
+    return 'Invite sent to $email.';
+  }
+
+  @override
+  String get adminSendInvite => 'Send invite';
+
+  @override
+  String get adminNameHint => 'e.g. Lina Haddad';
+
+  @override
+  String get adminNameRequired => 'Add a name (2 characters or more).';
+
+  @override
+  String get adminEmailInvalid => 'Enter a valid email address.';
+
+  @override
+  String get adminRole => 'Role';
+
+  @override
+  String get adminEmailLanguage => 'Email language';
+
+  @override
+  String get adminLanguageEnglish => 'English';
+
+  @override
+  String get adminLanguageArabic => 'Arabic';
+
+  @override
+  String get adminAccount => 'Account';
+
+  @override
+  String get adminEmailVerified => 'Email verified';
+
+  @override
+  String get adminYes => 'Yes';
+
+  @override
+  String get adminNo => 'No';
+
+  @override
+  String get adminJoined => 'Joined';
+
+  @override
+  String get adminActiveEnrollments => 'Active enrolments';
+
+  @override
+  String get adminTeachingBatches => 'Classes taught';
+
+  @override
+  String get adminCannotEditSelf =>
+      'You can\'t change your own role or ban yourself.';
+
+  @override
+  String get adminChangeRole => 'Change role';
+
+  @override
+  String adminChangeRoleTitle(String name, String role) {
+    return 'Make $name a $role?';
+  }
+
+  @override
+  String get adminChangeRoleBody =>
+      'Their tabs and permissions change the next time they open the app.';
+
+  @override
+  String get adminChangeRoleAdminBody =>
+      'Admins can see every payment and account and change them. Only give this to people who run Azza.';
+
+  @override
+  String adminRoleChanged(String role) {
+    return 'Role changed to $role.';
+  }
+
+  @override
+  String get adminBan => 'Ban account';
+
+  @override
+  String get adminUnban => 'Lift ban';
+
+  @override
+  String adminBanTitle(String name) {
+    return 'Ban $name?';
+  }
+
+  @override
+  String adminUnbanTitle(String name) {
+    return 'Lift the ban on $name?';
+  }
+
+  @override
+  String get adminBanBody =>
+      'They are signed out everywhere and can\'t sign in until you lift the ban.';
+
+  @override
+  String get adminUnbanBody => 'They can sign in again straight away.';
+
+  @override
+  String get adminBannedDone => 'Account banned.';
+
+  @override
+  String get adminUnbannedDone => 'Ban lifted.';
+
+  @override
+  String get adminPublicProfile => 'Public teacher profile';
+
+  @override
+  String get adminHeadline => 'Headline';
+
+  @override
+  String get adminHeadlineHint => 'e.g. Data analyst teaching Excel and SQL';
+
+  @override
+  String get adminBio => 'Bio';
+
+  @override
+  String get adminBioHint => 'What they do, who they help, and how they teach';
+
+  @override
+  String get adminProfileSaved => 'Profile saved.';
+
+  @override
+  String get adminMarkPaid => 'Mark as paid';
+
+  @override
+  String adminMarkPaidBody(int count, String total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count teachers',
+      one: '$count teacher',
+    );
+    return '$_temp0 · $total. Add the bank\'s reference for the transfer.';
+  }
+
+  @override
+  String get adminTransferRef => 'Transfer reference';
+
+  @override
+  String get adminTransferRefHint => 'e.g. ENBD-2026-11-05';
+
+  @override
+  String get adminTransferRefRequired =>
+      'Add the transfer reference (3 characters or more).';
+
+  @override
+  String adminMarkPaidConfirmTitle(String total) {
+    return 'Mark $total as paid?';
+  }
+
+  @override
+  String get adminMarkPaidConfirmBody =>
+      'Teachers are emailed that their payout is on the way. Held and carried-over amounts roll into next month.';
+
+  @override
+  String get adminRunMarkedPaid => 'Payout run marked as paid.';
+
+  @override
+  String get adminAdjustHint =>
+      'Tap a teacher to add a bonus or a deduction before you approve.';
+
+  @override
+  String adminAdjustTitle(String name) {
+    return 'Adjust $name';
+  }
+
+  @override
+  String adminAdjustSubtitle(String amount) {
+    return 'Currently $amount';
+  }
+
+  @override
+  String get adminBonus => 'Bonus';
+
+  @override
+  String get adminDeduction => 'Deduction';
+
+  @override
+  String get adminAdjustAmount => 'Amount';
+
+  @override
+  String get adminAdjustReasonHint => 'e.g. Extra catch-up session on 12 Nov';
+
+  @override
+  String get adminSaveAdjustment => 'Save adjustment';
+
+  @override
+  String get adminAdjustmentSaved => 'Adjustment saved.';
+
+  @override
+  String get adminVerifyBank => 'Verify bank details';
+
+  @override
+  String adminVerifyBankTitle(String name) {
+    return 'Verify $name\'s bank details?';
+  }
+
+  @override
+  String adminVerifyBankBody(String bank, String holder, String iban) {
+    return '$bank\n$holder\n$iban\n\nCheck these match the teacher\'s documents. Their held payouts are released.';
+  }
+
+  @override
+  String adminBankVerified(String name) {
+    return '$name\'s bank details are verified.';
+  }
+
+  @override
+  String get adminCoursesTitle => 'Courses';
+
+  @override
+  String get adminNoCourses => 'No courses here';
+
+  @override
+  String adminFromPrice(String price) {
+    return 'from $price';
+  }
+
+  @override
+  String adminFeaturedAt(String rank) {
+    return 'featured #$rank';
+  }
+
+  @override
+  String get adminCourseVisibility => 'Status and visibility';
+
+  @override
+  String get adminCourseStatus => 'Status';
+
+  @override
+  String get adminCourseStatusHelper =>
+      'Published courses show in the catalog. Archived ones are hidden.';
+
+  @override
+  String get adminFeaturedRank => 'Featured rank';
+
+  @override
+  String get adminFeaturedRankHint => 'Leave empty to keep it off the rail';
+
+  @override
+  String get adminFeaturedRankHelper =>
+      '0–999. Lower numbers come first on the home rail.';
+
+  @override
+  String get adminFeaturedRankInvalid =>
+      'Featured rank must be a whole number from 0 to 999.';
+
+  @override
+  String adminLastReviewNote(String note) {
+    return 'Last review note: $note';
+  }
+
+  @override
+  String get adminPublish => 'Publish';
+
+  @override
+  String get adminCoursePublished =>
+      'Course published. It\'s in the catalog now.';
+
+  @override
+  String get adminCourseSaved => 'Course saved.';
+
+  @override
+  String get adminPickTeacher => 'Pick the teacher';
+
+  @override
+  String get adminBatchDraftBody =>
+      'Saved as a draft. Open enrolment when it\'s ready for students.';
+
+  @override
+  String get adminBatchOpenBody =>
+      'Enrolment is open. Students can book a seat.';
+
+  @override
+  String get adminOpenEnrolment => 'Open enrolment';
+
+  @override
+  String get adminEnrolmentOpened => 'Enrolment is open.';
+
+  @override
+  String get adminBatchTools => 'Admin tools';
+
+  @override
+  String get adminShiftSchedule => 'Shift schedule';
+
+  @override
+  String get adminShiftBody =>
+      'Moves every scheduled session from the one you pick, keeping the same time of day. Students are told.';
+
+  @override
+  String get adminShiftFrom => 'From session';
+
+  @override
+  String get adminShiftDays => 'Days to move';
+
+  @override
+  String get adminShiftDaysHelper =>
+      'Negative moves earlier, positive moves later (−60 to 60).';
+
+  @override
+  String get adminShiftZero => 'Pick a number of days other than 0.';
+
+  @override
+  String adminShiftConfirmTitle(String code) {
+    return 'Shift $code\'s schedule?';
+  }
+
+  @override
+  String adminShiftConfirmBody(int sessions, String days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sessions,
+      locale: localeName,
+      other: '$sessions sessions move by $days days.',
+      one: '$sessions session moves by $days days.',
+    );
+    return '$_temp0 Students get a notification.';
+  }
+
+  @override
+  String get adminScheduleShifted =>
+      'Schedule shifted. Students have been told.';
+
+  @override
+  String get adminAttendance => 'Attendance';
+
+  @override
+  String get adminEnrollments => 'Enrolments';
+
+  @override
+  String get adminNoEnrollments => 'No one has enrolled yet.';
+
+  @override
+  String adminEnrollmentSummary(String active, String total) {
+    return '$active active of $total';
+  }
+
+  @override
+  String get adminEnrolPending => 'Awaiting payment';
+
+  @override
+  String get adminEnrolAwaitingTransfer => 'Awaiting transfer';
+
+  @override
+  String get adminEnrolActive => 'Active';
+
+  @override
+  String get adminEnrolCancelled => 'Cancelled';
+
+  @override
+  String get adminCouponsTitle => 'Coupons';
+
+  @override
+  String get adminNewCoupon => 'New coupon';
+
+  @override
+  String get adminNoCoupons => 'No coupons yet';
+
+  @override
+  String get adminNoCouponsBody =>
+      'Create a code for a launch, a partner or a season.';
+
+  @override
+  String get adminCouponActive => 'Active';
+
+  @override
+  String get adminCouponScheduled => 'Scheduled';
+
+  @override
+  String get adminCouponExpired => 'Expired';
+
+  @override
+  String get adminCouponPaused => 'Paused';
+
+  @override
+  String get adminCouponExhausted => 'Used up';
+
+  @override
+  String adminPercentOff(String n) {
+    return '$n% off';
+  }
+
+  @override
+  String adminAmountOff(String amount) {
+    return '$amount off';
+  }
+
+  @override
+  String get adminAllCourses => 'All courses';
+
+  @override
+  String adminUntil(String date) {
+    return 'until $date';
+  }
+
+  @override
+  String adminUsedCount(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Used $n times',
+      one: 'Used once',
+      zero: 'Not used yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminUsedOf(String n, String max) {
+    return 'Used $n of $max';
+  }
+
+  @override
+  String get adminUsage => 'Usage';
+
+  @override
+  String get adminCouponCodeSection => 'Code and discount';
+
+  @override
+  String get adminCouponCode => 'Code';
+
+  @override
+  String get adminCouponCodeHelper =>
+      '3–20 capital letters, numbers or dashes. It can\'t change later.';
+
+  @override
+  String get adminCouponCodeFixed => 'The code can\'t change once created.';
+
+  @override
+  String get adminCouponCodeInvalid =>
+      'Use 3–20 capital letters, numbers or dashes.';
+
+  @override
+  String get adminPercent => 'Percent';
+
+  @override
+  String get adminFixedAmount => 'Fixed amount';
+
+  @override
+  String get adminPercentOffLabel => 'Percent off';
+
+  @override
+  String get adminAmountOffLabel => 'Amount off';
+
+  @override
+  String get adminPercentInvalid => 'Enter a percent from 1 to 100.';
+
+  @override
+  String get adminCouponLimits => 'Limits';
+
+  @override
+  String get adminMaxRedemptions => 'Total uses';
+
+  @override
+  String get adminPerUserLimit => 'Uses per student';
+
+  @override
+  String get adminMinOrder => 'Minimum order';
+
+  @override
+  String get adminUnlimited => 'Unlimited';
+
+  @override
+  String get adminNoMinimum => 'No minimum';
+
+  @override
+  String get adminCouponWhen => 'When and where';
+
+  @override
+  String get adminStartsOn => 'Valid from';
+
+  @override
+  String get adminExpiresOn => 'Valid through';
+
+  @override
+  String get adminNoDate => 'No date';
+
+  @override
+  String get adminDatesInvalid =>
+      'The end date must be on or after the start date.';
+
+  @override
+  String get adminCouponScope => 'Applies to';
+
+  @override
+  String get adminCouponScopeHelper => 'One course, or every course.';
+
+  @override
+  String get adminCouponActiveSwitch => 'Active';
+
+  @override
+  String get adminCouponActiveHelper =>
+      'Turn off to pause the code at checkout.';
+
+  @override
+  String get adminCreateCoupon => 'Create coupon';
+
+  @override
+  String adminCouponCreated(String code) {
+    return '$code is ready to use.';
+  }
+
+  @override
+  String get adminCouponSaved => 'Coupon saved.';
+
+  @override
+  String get adminTotalDiscount => 'Total discount given';
+
+  @override
+  String get adminNoRedemptions => 'No one has used this code yet.';
+
+  @override
+  String get adminCategoriesTitle => 'Categories';
+
+  @override
+  String get adminNewCategory => 'New category';
+
+  @override
+  String get adminEditCategory => 'Edit category';
+
+  @override
+  String get adminNoCategories => 'No categories yet';
+
+  @override
+  String adminCourseCount(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n courses',
+      one: '$n course',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminHidden => 'hidden';
+
+  @override
+  String get adminHide => 'Hide from the catalog';
+
+  @override
+  String get adminShow => 'Show in the catalog';
+
+  @override
+  String get adminDelete => 'Delete';
+
+  @override
+  String adminDeleteCategoryTitle(String name) {
+    return 'Delete $name?';
+  }
+
+  @override
+  String get adminDeleteCategoryBody =>
+      'This removes the category for good. It can\'t be undone.';
+
+  @override
+  String adminCategoryDeleted(String name) {
+    return '$name deleted.';
+  }
+
+  @override
+  String get adminCategoryInUseTitle => 'This category still has courses';
+
+  @override
+  String adminCategoryInUseBody(String name) {
+    return 'Move the courses in $name to another category first, or hide it so students stop seeing it.';
+  }
+
+  @override
+  String get adminHideInstead => 'Hide it instead';
+
+  @override
+  String get adminCategoryHidden => 'Category hidden.';
+
+  @override
+  String get adminCategoryShown => 'Category is visible again.';
+
+  @override
+  String get adminCategorySaved => 'Category saved.';
+
+  @override
+  String get adminSlug => 'Slug';
+
+  @override
+  String get adminSlugHelper =>
+      'Lowercase letters, numbers and dashes. Used in links; it can\'t change later.';
+
+  @override
+  String get adminSlugFixed => 'The slug can\'t change once created.';
+
+  @override
+  String get adminSlugInvalid =>
+      'Use 2–40 lowercase letters, numbers or dashes.';
+
+  @override
+  String get adminNameEn => 'Name in English';
+
+  @override
+  String get adminNameAr => 'Name in Arabic';
+
+  @override
+  String get adminOrder => 'Order';
+
+  @override
+  String get adminOrderHelper => 'Lower numbers come first.';
+
+  @override
+  String get adminVisibleInCatalog => 'Visible in the catalog';
+
+  @override
+  String get adminReportsTitle => 'Reports';
+
+  @override
+  String adminLastDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n days',
+      one: '$n day',
+    );
+    return 'Last $_temp0';
+  }
+
+  @override
+  String get adminVsPrevious => 'vs the period before';
+
+  @override
+  String get adminRevenue => 'Revenue';
+
+  @override
+  String get adminNewEnrollments => 'New enrolments';
+
+  @override
+  String get adminCompletion => 'Completion';
+
+  @override
+  String get adminRefunds => 'Refunds';
+
+  @override
+  String get adminRevenueByCourse => 'Revenue by course';
+
+  @override
+  String get adminTeachersReport => 'Teachers';
+
+  @override
+  String adminTeacherStats(int sessions, String attendance, String onTime) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sessions,
+      locale: localeName,
+      other: '$sessions sessions',
+      one: '$sessions session',
+    );
+    return '$_temp0 · $attendance attendance · $onTime on time';
+  }
+
+  @override
+  String get adminBankAccountsTitle => 'Bank accounts';
+
+  @override
+  String get adminNewBankAccount => 'New bank account';
+
+  @override
+  String get adminEditBankAccount => 'Edit bank account';
+
+  @override
+  String get adminNoBankAccounts => 'No bank accounts yet';
+
+  @override
+  String get adminBankAccountSaved => 'Bank account saved.';
+
+  @override
+  String get adminActive => 'Active';
+
+  @override
+  String get adminInactive => 'Hidden';
+
+  @override
+  String get adminBankName => 'Bank';
+
+  @override
+  String get adminAccountName => 'Account name';
+
+  @override
+  String get adminBranch => 'Branch';
+
+  @override
+  String get adminOptional => 'Optional';
+
+  @override
+  String get adminInstructions => 'Instructions for students';
+
+  @override
+  String get adminInstructionsHint =>
+      'e.g. Put the order reference in the transfer note';
+
+  @override
+  String get adminShowAtCheckout => 'Show at checkout';
+
+  @override
+  String get adminIbanInvalid => 'A UAE IBAN is AE followed by 21 digits.';
+
+  @override
+  String get adminSwiftInvalid => 'SWIFT is 8 or 11 letters and numbers.';
+
+  @override
+  String get adminCurrenciesTitle => 'Currencies';
+
+  @override
+  String get adminCurrenciesBody =>
+      'Money always moves in AED. These rates only change the approximate prices students see.';
+
+  @override
+  String adminRatesUpdated(String when) {
+    return 'Updated $when';
+  }
+
+  @override
+  String get adminFxRates => 'Rates per 1 AED';
+
+  @override
+  String adminRateLabel(String currency) {
+    return '$currency per AED';
+  }
+
+  @override
+  String adminRateHelper(String currency) {
+    return 'How many $currency one dirham buys';
+  }
+
+  @override
+  String get adminRateInvalid => 'Enter a rate above zero.';
+
+  @override
+  String adminRateSaved(String currency) {
+    return '$currency rate saved.';
+  }
+
+  @override
+  String get progressMarkComplete => 'Mark as complete';
+
+  @override
+  String get progressCompleted => 'Completed';
+
+  @override
+  String get progressUndoHint => 'Tap to mark it as not done';
+
+  @override
+  String progressLessonsOf(int done, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total lessons',
+      one: '$total lesson',
+    );
+    return '$done of $_temp0';
+  }
+
+  @override
+  String progressResume(String lesson) {
+    return 'Resume: $lesson';
+  }
+
+  @override
+  String progressStart(String lesson) {
+    return 'Start: $lesson';
+  }
+
+  @override
+  String get progressAllDone => 'All lessons done';
+
+  @override
+  String get progressAllDoneBody =>
+      'Revisit any lesson, or practise what you learned.';
+
+  @override
+  String get progressSaveFailed => 'Your progress wasn\'t saved. Try again.';
+
+  @override
+  String get guestBrowseCourses => 'Browse courses';
+
+  @override
+  String get guestResumeNotice => 'Sign in and we\'ll bring you right back.';
+
+  @override
+  String get guestPromptTitle => 'Sign in to continue';
+
+  @override
+  String get guestPromptBody => 'Sign in or create an account to do this.';
+
+  @override
+  String get guestHomeTitle => 'Your learning, in one place';
+
+  @override
+  String get guestHomeBody =>
+      'Sign in to see your next lesson, the practice that\'s due and your live sessions.';
+
+  @override
+  String get guestScheduleTitle => 'Your week of learning';
+
+  @override
+  String get guestScheduleBody =>
+      'Sign in to see your live sessions and add them to your calendar.';
+
+  @override
+  String get guestLibraryTitle => 'Your lessons and recordings';
+
+  @override
+  String get guestLibraryBody =>
+      'Sign in to open your lessons, session recordings and class materials.';
+
+  @override
+  String get guestMeTitle => 'Make it yours';
+
+  @override
+  String get guestMeBody =>
+      'Create an account to save courses, join a class and earn a certificate.';
+
+  @override
+  String get guestReviewCta => 'Sign in to write a review';
+
+  @override
+  String get guestTeachCta => 'Create an account to apply';
+
+  @override
+  String get guestTeachBody =>
+      'Applications are tied to your account, so we can reach you and set up your teaching tools once you\'re approved.';
+
+  @override
+  String get guestVerifyTitle => 'Verify a certificate';
+
+  @override
+  String get guestVerifyValid => 'Certificate verified';
+
+  @override
+  String guestVerifyValidBody(String name, String course) {
+    return 'Azza issued this certificate to $name for completing $course.';
+  }
+
+  @override
+  String get guestVerifyInvalid => 'We couldn\'t verify this certificate';
+
+  @override
+  String get guestVerifyInvalidBody =>
+      'Check the code and try again. Codes look like AZ-CERT-7Q4K.';
+
+  @override
+  String get guestVerifyLearnCta => 'Learn with Azza';
+
+  @override
+  String get courseTypeRecorded => 'Recorded';
+
+  @override
+  String get filterFormat => 'Format';
+
+  @override
+  String get formatLive => 'Live classes';
+
+  @override
+  String get formatRecorded => 'Recorded lessons';
+
+  @override
+  String pricePerMonth(String price) {
+    return '$price / month';
+  }
+
+  @override
+  String pricePerYear(String price) {
+    return '$price / year';
+  }
+
+  @override
+  String fromPricePerMonth(String price) {
+    return 'From $price / month';
+  }
+
+  @override
+  String get planTitle => 'Choose your plan';
+
+  @override
+  String get planIntro => 'Start any time. Learn at your pace.';
+
+  @override
+  String get planMonthly => 'Monthly';
+
+  @override
+  String get planYearly => 'Yearly';
+
+  @override
+  String planYearlyDetail(String price) {
+    return '$price / month, billed yearly';
+  }
+
+  @override
+  String planSaveMonths(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n months',
+      one: '$n month',
+    );
+    return 'Save $_temp0';
+  }
+
+  @override
+  String get planYouGet => 'What you get';
+
+  @override
+  String get planGetLessons => 'All lessons and quizzes';
+
+  @override
+  String get planGetCertificate => 'A certificate when you finish';
+
+  @override
+  String get planGetCancel => 'Cancel any time';
+
+  @override
+  String get planCancelLine =>
+      'Cancel any time. You keep access until the end of the period you paid for.';
+
+  @override
+  String planNextCharge(String date) {
+    return 'Next charge on $date';
+  }
+
+  @override
+  String planPaidUntil(String date) {
+    return 'You\'re covered until $date. This plan doesn\'t renew by itself.';
+  }
+
+  @override
+  String planPaidUntilShort(String date) {
+    return 'Paid until $date';
+  }
+
+  @override
+  String planRenews(String date) {
+    return 'Renews $date';
+  }
+
+  @override
+  String planEnds(String date) {
+    return 'Ends $date';
+  }
+
+  @override
+  String get planYourPlan => 'Your plan';
+
+  @override
+  String get planEnded => 'Your plan has ended. Your progress is saved.';
+
+  @override
+  String get planTransferNote =>
+      'Pay by bank transfer. Your access starts once we confirm it, usually within 1 working day.';
+
+  @override
+  String get planStart => 'Start learning';
+
+  @override
+  String get planWebsiteOnly => 'Available on our website for now';
+
+  @override
+  String get planWebsiteOnlyBody =>
+      'Open our website in your browser to start this plan.';
+
+  @override
+  String get planAppleNote =>
+      'Payment is handled by Apple. Manage or cancel in your App Store subscriptions.';
+
+  @override
+  String get planWatchFree => 'Watch the free lesson';
+
+  @override
+  String get planVatNote =>
+      'Prices are before VAT. Any VAT is added at checkout.';
+
+  @override
+  String get planFreeLesson => 'Free lesson';
+
+  @override
+  String planTransferBefore(String date) {
+    return 'Send it before $date.';
+  }
+
+  @override
+  String get planReceiptSent => 'We\'ve got your receipt';
+
+  @override
+  String get planReceiptSentBody =>
+      'We\'ll confirm your transfer, usually within 1 working day. Your plan starts then.';
+
+  @override
+  String get planBackToCourse => 'Back to the course';
+
+  @override
+  String get returnSettingUp => 'Setting up your access…';
+
+  @override
+  String get returnSettingUpBody => 'This usually takes a few seconds.';
+
+  @override
+  String get returnSlowTitle => 'This is taking longer than usual';
+
+  @override
+  String get returnSlowBody =>
+      'Your payment is safe. Your access will appear as soon as it\'s confirmed.';
+
+  @override
+  String get returnCheckAgain => 'Check again';
+
+  @override
+  String get returnHome => 'Go to home';
+
+  @override
+  String get lessonLocked => 'Locked';
+
+  @override
+  String get lessonLockedBody => 'This lesson is part of the plan.';
+
+  @override
+  String get lessonsLockedTitle => 'Start a plan to unlock every lesson';
+
+  @override
+  String get lessonsSeePlans => 'See plans';
+
+  @override
+  String get errAlreadySubscribed => 'You already have a plan for this course.';
+
+  @override
+  String get errPlanRequired => 'You need a plan to open this.';
+
+  @override
+  String get errAppleProductMissing =>
+      'This plan isn\'t available in the app yet.';
+
+  @override
+  String get plansTitle => 'Your plans';
+
+  @override
+  String get plansRowHint => 'Renew, cancel or change a plan';
+
+  @override
+  String get plansEmptyTitle => 'No plans yet';
+
+  @override
+  String get plansEmptyBody => 'Pick a recorded course and start any time.';
+
+  @override
+  String get plansFind => 'Find a course';
+
+  @override
+  String get plansOpenCourse => 'Open course';
+
+  @override
+  String get planProviderCard => 'Card';
+
+  @override
+  String get planProviderApple => 'App Store';
+
+  @override
+  String get planCancel => 'Cancel plan';
+
+  @override
+  String get planCancelTitle => 'Cancel this plan?';
+
+  @override
+  String planCancelBody(String date) {
+    return 'You can keep learning until $date. Your progress and certificate stay yours.';
+  }
+
+  @override
+  String get planCancelStep2Title => 'Are you sure?';
+
+  @override
+  String planCancelStep2Body(String date) {
+    return 'Your plan will end on $date and won\'t renew.';
+  }
+
+  @override
+  String get planCancelConfirm => 'Yes, cancel my plan';
+
+  @override
+  String get planKeep => 'Keep my plan';
+
+  @override
+  String planCancelledToast(String date) {
+    return 'Done. You can keep learning until $date.';
+  }
+
+  @override
+  String get planResume => 'Resume plan';
+
+  @override
+  String get planResumedToast => 'Your plan will renew as before.';
+
+  @override
+  String get planSwitchToYearly => 'Switch to yearly';
+
+  @override
+  String get planSwitchToMonthly => 'Switch to monthly';
+
+  @override
+  String get planSwitchNote =>
+      'Stripe credits the unused time on your current plan.';
+
+  @override
+  String get planSwitchedToast => 'Plan changed.';
+
+  @override
+  String get planUpdateCard => 'Update card';
+
+  @override
+  String get planManageAppStore => 'Manage it in the App Store';
+
+  @override
+  String get planRenewTransfer => 'Renew by transfer';
+
+  @override
+  String get planSwitchToCard => 'Switch to card';
+
+  @override
+  String get planUploadReceipt => 'Upload receipt';
+
+  @override
+  String get planPendingReceipt => 'Waiting for your receipt';
+
+  @override
+  String get planPendingReview =>
+      'We\'re checking your transfer. This usually takes 1 working day.';
+
+  @override
+  String planPendingRejected(String note) {
+    return 'We couldn\'t confirm your transfer: $note';
+  }
+
+  @override
+  String get planPendingRejectedPlain =>
+      'We couldn\'t confirm your transfer. You can try again.';
+
+  @override
+  String get planPastDue =>
+      'Your last payment didn\'t go through. Update your card to keep learning.';
+
+  @override
+  String planCancellingBanner(String date) {
+    return 'Your plan ends on $date. Your progress and certificate stay yours.';
+  }
+
+  @override
+  String get returnSeePlans => 'See your plans';
+
+  @override
+  String get recordedRenew => 'Renew to continue';
+
+  @override
+  String get recordedCourses => 'Recorded courses';
+
+  @override
+  String recordedNext(String title) {
+    return 'Next: $title';
+  }
+
+  @override
+  String get courseTypeTitle => 'What kind of course?';
+
+  @override
+  String get courseTypeLive => 'Live';
+
+  @override
+  String get courseTypeLiveBody =>
+      'Classes with set dates and a teacher in the room. Learners join a class.';
+
+  @override
+  String get courseTypeRecordedBody =>
+      'Lessons learners watch any time, on a monthly or yearly plan. No classes to schedule.';
+
+  @override
+  String get courseTypeFixed =>
+      'The type can\'t be changed once the course is created.';
+
+  @override
+  String get hubTitle => 'Recorded course';
+
+  @override
+  String get hubSubscribers => 'Subscribers';
+
+  @override
+  String get hubEarnings => 'Your earnings';
+
+  @override
+  String get hubEarningsNote => 'Your share of plan payments for this course.';
+
+  @override
+  String get hubEarningsUnknown =>
+      'Earnings from plans appear here once payments arrive.';
+
+  @override
+  String get hubQuizzes => 'Course quizzes';
+
+  @override
+  String get hubNoQuizzes =>
+      'No quizzes yet. Learners must pass every published quiz to earn the certificate.';
+
+  @override
+  String get hubAddQuiz => 'Add a quiz';
+
+  @override
+  String hubPassMark(String percent) {
+    return 'Pass mark $percent%';
+  }
+
+  @override
+  String get hubPreview => 'Free preview lesson';
+
+  @override
+  String get hubPreviewBody =>
+      'Anyone can watch this lesson, even without an account.';
+
+  @override
+  String get hubPreviewNone => 'No preview lesson';
+
+  @override
+  String get hubPreviewSaved => 'Preview lesson saved.';
+
+  @override
+  String get hubNoLessons => 'Add lessons on the web to choose a preview.';
+
+  @override
+  String get hubEditDetails => 'Edit course details';
+
+  @override
+  String get quizPassPercent => 'Pass mark (%)';
+
+  @override
+  String get quizPassHelper => 'The share of the points needed to pass.';
+
+  @override
+  String get quizPassInvalid => 'Enter a number from 0 to 100.';
+
+  @override
+  String get quizCourseNote =>
+      'Learners can retake this quiz as many times as they like.';
+
+  @override
+  String get adminCutsTitle => 'Teacher cuts';
+
+  @override
+  String get adminCutsBody =>
+      'The share of each payment, after VAT and fees, that goes to the teacher. It is read when the payment is made and never changed afterwards.';
+
+  @override
+  String get adminCutLive => 'Live courses (%)';
+
+  @override
+  String get adminCutRecorded => 'Recorded courses (%)';
+
+  @override
+  String get adminCutsSave => 'Save cuts';
+
+  @override
+  String get adminCutsSaved => 'Cuts saved.';
+
+  @override
+  String get adminCutInvalid => 'Enter a whole number from 0 to 100.';
+
+  @override
+  String get adminCourseCut => 'Teacher cut for this course (%)';
+
+  @override
+  String adminCourseCutHelp(String percent) {
+    return 'For rare cases. Leave empty to use the default, $percent%.';
+  }
+
+  @override
+  String get adminCourseCutSaved => 'Course cut saved.';
+
+  @override
+  String get adminRecordedPrices => 'Recorded prices';
+
+  @override
+  String get adminMonthlyPrice => 'Monthly price (AED, before VAT)';
+
+  @override
+  String get adminYearlyPrice => 'Yearly price (AED, before VAT)';
+
+  @override
+  String get adminPricesInvalid =>
+      'The yearly price must be lower than 12 monthly payments.';
+
+  @override
+  String get adminPricesSaved => 'Prices saved.';
+
+  @override
+  String get adminAppleIds => 'App Store product ids';
+
+  @override
+  String get adminAppleMonthly => 'Monthly product id';
+
+  @override
+  String get adminAppleYearly => 'Yearly product id';
+
+  @override
+  String get adminAppleSaved => 'Product ids saved.';
+
+  @override
+  String get adminSubsTitle => 'Subscriptions';
+
+  @override
+  String get adminHubSubsSub => 'Plans on recorded courses';
+
+  @override
+  String get adminSubsEmpty => 'No subscriptions match.';
+
+  @override
+  String get adminSubsAll => 'All';
+
+  @override
+  String get adminSubCancel => 'Cancel plan';
+
+  @override
+  String get adminSubCancelTitle => 'Cancel this plan now?';
+
+  @override
+  String get adminSubCancelBody =>
+      'The learner loses access straight away. Their progress and certificate stay.';
+
+  @override
+  String get adminRefundNone => 'Cancel only';
+
+  @override
+  String get adminRefundFull => 'Cancel and refund the last payment';
+
+  @override
+  String get adminSubCancelled => 'Plan cancelled.';
+
+  @override
+  String get adminSubApple => 'Managed by Apple';
+
+  @override
+  String adminSubLastPayment(String amount) {
+    return 'Last payment $amount';
+  }
+
+  @override
+  String get adminTransferPlan => 'Plan';
+
+  @override
+  String get adminTransferCourse => 'Course';
+
+  @override
+  String get adminTransferPlanChip => 'Plan transfer';
+
+  @override
+  String get planPastDueChip => 'Payment failed';
+
+  @override
+  String get planCancellingChip => 'Ending';
+
+  @override
+  String get planExpiredChip => 'Ended';
+
+  @override
+  String get planSettingUpChip => 'Setting up';
+
+  @override
+  String get planActiveChip => 'Active';
+
+  @override
+  String get certificateRecordedCompletion =>
+      'Completed every lesson and passed every quiz';
+
+  @override
+  String get certificateCompletion => 'Completed';
+
+  @override
+  String get earningsRecordedCourses => 'Recorded courses';
+
+  @override
+  String get hubSubscribersUnavailable =>
+      'Subscriber numbers aren\'t available right now.';
+
+  @override
+  String get adminSubReceiptReturnByHand =>
+      'A transfer receipt was under review; return that money by hand.';
+
+  @override
+  String get appStoreTitle => 'App Store';
+
+  @override
+  String get appStoreSyncNow => 'Sync now';
+
+  @override
+  String get appStoreSyncStarted =>
+      'Sync started. The list updates in a few seconds.';
+
+  @override
+  String get appStoreNotConfigured =>
+      'Add your App Store Connect API key to enable automatic product setup.';
+
+  @override
+  String get appStoreNothingYet => 'No products yet. Sync to create them.';
+
+  @override
+  String get appStoreSeats => 'Seat prices';
+
+  @override
+  String get appStoreCourses => 'Recorded courses';
+
+  @override
+  String get appleSyncSynced => 'Synced';
+
+  @override
+  String get appleSyncSkipped => 'Skipped';
+
+  @override
+  String get appleSyncFailed => 'Failed';
+
+  @override
+  String get appleSyncNever => 'Not synced yet';
+
+  @override
+  String get adminPricesRequired => 'Enter a monthly and a yearly price.';
+
+  @override
+  String get planTransferNotOnIos =>
+      'Bank transfer isn\'t available on iPhone. Manage your plan in the App Store.';
+
+  @override
+  String get reportsRecordedTitle => 'Recorded courses';
+
+  @override
+  String get reportsRecordedNone =>
+      'No recorded-course payments in this range.';
+
+  @override
+  String get reportsGross => 'Gross';
+
+  @override
+  String get reportsFees => 'Fees';
+
+  @override
+  String get reportsVat => 'VAT';
+
+  @override
+  String get reportsNet => 'Net';
+
+  @override
+  String get transferNotFound =>
+      'We couldn\'t find this transfer. It may already be reviewed.';
+
+  @override
+  String get transferBackToQueue => 'Back to transfers';
 }

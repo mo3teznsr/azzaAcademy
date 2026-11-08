@@ -6,6 +6,7 @@ import { appEmails } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { EarningsAccrual } from '../sessions/session.service';
 import type { EarningsCalculator } from './earnings-calculator';
+import { cutFor, type SettingsService } from '../settings/settings.service';
 import type { PayoutRepository } from './payout.repository';
 
 export interface PayoutRules {
@@ -34,6 +35,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
   constructor(
     private readonly repo: PayoutRepository,
     private readonly calculator: EarningsCalculator,
+    private readonly settings: Pick<SettingsService, 'cuts'>,
     private readonly notifier: Notifier,
     private readonly clock: Clock,
     private readonly rules: PayoutRules,
@@ -41,13 +43,74 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
 
   // ───────── accrual ─────────
 
+  /**
+   * The teacher's share of one paid subscription charge. Idempotent per payment (unique key).
+   * Never accrues for unpaid payments, Apple tombstones (REFUNDED, no money), manual-refund cases or admin-authored courses.
+   */
+  async accrueForSubscriptionPayment(paymentId: string) {
+    const p = await this.repo.subscriptionPaymentForAccrual(paymentId);
+    if (!p || p.status !== 'PAID' || p.reviewNote === 'MANUAL_REFUND_NEEDED' || p.totalFils <= 0 || !p.paidAt) return null;
+    const course = p.subscription.course;
+    if (!course.createdById) return null;
+    const net = this.calculator.orderNet({ totalFils: p.totalFils, vatFils: p.vatFils, refundedFils: 0, feeFils: p.feeFils });
+    const amountFils = this.calculator.paymentShare(net, cutFor(course, await this.settings.cuts()));
+    return this.repo.upsertSubscriptionEarning({
+      teacherId: course.createdById,
+      courseId: course.id,
+      subscriptionPaymentId: p.id,
+      amountFils,
+      status: 'PENDING',
+      availableAt: new Date(p.paidAt.getTime() + this.rules.earningHoldDays * DAY_MS),
+    });
+  }
+
+  /**
+   * Takes back round(earning × refunded ÷ total) of a refunded charge, given the cumulative refunded amount.
+   * Not yet in a payout: the earning is voided (full) or a pending negative row rides with it (partial).
+   * Already in a payout: a new negative REFUND_ADJUSTMENT for the difference; the paid earning is untouched.
+   * Idempotent: the same cumulative amount changes nothing.
+   */
+  async reverseSubscriptionPayment(paymentId: string, refundedFils: number) {
+    const earning = await this.repo.subscriptionEarningFor(paymentId);
+    const p = earning ? await this.repo.subscriptionPaymentForAccrual(paymentId) : null;
+    if (!earning || !p || earning.status === 'REVERSED' || earning.amountFils <= 0 || p.totalFils <= 0 || refundedFils <= 0) return null;
+
+    const target = refundedFils >= p.totalFils ? earning.amountFils : Math.min(earning.amountFils, Math.round((earning.amountFils * refundedFils) / p.totalFils));
+    const adjustments = (await this.repo.adjustmentsForPayment(paymentId)).filter((a) => a.status !== 'REVERSED');
+    const unpaid = earning.payoutId === null && earning.status !== 'PAID';
+
+    if (unpaid && target >= earning.amountFils) {
+      for (const a of adjustments.filter((x) => x.payoutId === null)) await this.repo.updateEarning(a.id, { status: 'REVERSED' });
+      return this.repo.updateEarning(earning.id, { status: 'REVERSED' });
+    }
+
+    const reversed = -adjustments.reduce((s, a) => s + a.amountFils, 0);
+    const delta = target - reversed;
+    if (delta <= 0) return null;
+
+    const open = adjustments.find((a) => a.payoutId === null && a.status !== 'PAID');
+    if (open) return this.repo.updateEarning(open.id, { amountFils: open.amountFils - delta });
+    return this.repo.createEarning({
+      teacherId: earning.teacherId,
+      courseId: earning.courseId ?? undefined,
+      // the unique key allows one keyed adjustment per payment; later ones are found again through the note
+      ...(adjustments.length === 0 ? { subscriptionPaymentId: paymentId } : {}),
+      kind: 'REFUND_ADJUSTMENT',
+      amountFils: -delta,
+      status: unpaid ? earning.status : 'AVAILABLE',
+      availableAt: unpaid ? earning.availableAt : this.clock.now(),
+      note: `Subscription refund ${paymentId}`,
+    });
+  }
+
   /** Idempotent thanks to the unique (sessionId, teacherId, kind) key. */
   async accrueForSession(sessionId: string) {
     const s = await this.repo.sessionForAccrual(sessionId);
     if (!s || s.status !== 'ENDED') return null;
     const sessionCount = s.batch.schedule?.sessionCount ?? s.batch._count.sessions;
     const net = this.calculator.batchNet(await this.repo.batchOrders(s.batchId));
-    const amountFils = this.calculator.sessionShare(net, sessionCount);
+    const cutPercent = cutFor(s.batch.course, await this.settings.cuts());
+    const amountFils = this.calculator.sessionShare(net, sessionCount, cutPercent);
     const endedAt = s.endedAt ?? s.endsAt;
     return this.repo.upsertSessionEarning({
       teacherId: s.hostId ?? s.batch.teacherId,
@@ -62,7 +125,10 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     const batch = await this.repo.batchForRefund(args.batchId);
     if (!batch) return null;
     const refundNet = this.calculator.orderNet({ totalFils: args.totalFils, vatFils: args.vatFils, refundedFils: args.totalFils - args.refundFils, feeFils: 0 });
-    const amount = this.calculator.refundReversal(refundNet, batch._count.sessions, batch.schedule?.sessionCount ?? 0);
+    // The refund is already booked on the order, so the net before it is today's net plus the refunded part.
+    const netBefore = this.calculator.batchNet(await this.repo.batchOrders(batch.id)) + refundNet;
+    const accrued = await this.repo.netAccruedForBatch(batch.id, batch.teacherId);
+    const amount = this.calculator.refundReversal(refundNet, netBefore, accrued);
     if (amount === 0) return null;
     return this.repo.createEarning({
       teacherId: batch.teacherId,
@@ -88,7 +154,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     const thisMonth = monthStart(now, tz);
     const nextMonth = monthStart(now, tz, 1);
 
-    const [earnedThisMonthFils, availableFils, pendingFils, lifetimePaidFils, maturingFils, batches, earnedByBatch, upcoming, ledger] =
+    const [earnedThisMonthFils, availableFils, pendingFils, lifetimePaidFils, maturingFils, batches, earnedByBatch, upcoming, ledger, courses] =
       await Promise.all([
         this.repo.sumEarnings({ teacherId, createdAt: { gte: thisMonth, lt: nextMonth }, status: { not: 'REVERSED' } }),
         this.repo.sumEarnings({ teacherId, status: 'AVAILABLE' }),
@@ -99,15 +165,17 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
         this.repo.earnedByBatch(teacherId),
         this.repo.scheduledSessions(teacherId, now, nextMonth),
         this.repo.ledger(teacherId, 100),
+        this.repo.earnedByCourse(teacherId),
       ]);
 
+    const cuts = await this.settings.cuts();
     const perSession = new Map<string, number>();
     const batchRows = await Promise.all(
       batches.map(async (b) => {
         const sessionCount = b.schedule?.sessionCount ?? 0;
         const money = this.calculator.batchBreakdown(await this.repo.batchOrders(b.id));
         const netRevenueFils = money.netFils;
-        const perSessionFils = this.calculator.sessionShare(netRevenueFils, sessionCount);
+        const perSessionFils = this.calculator.sessionShare(netRevenueFils, sessionCount, cutFor(b.course, cuts));
         perSession.set(b.id, perSessionFils);
         return {
           batchId: b.id,
@@ -143,6 +211,8 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
         nextPayout: { expectedOn, estimatedFils: availableFils + maturingFils },
       },
       batches: batchRows,
+      /** Recorded (subscription) earnings, grouped by course. */
+      courses,
       ledger,
     };
   }
@@ -233,7 +303,12 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
   async getRun(id: string) {
     const run = await this.repo.findRun(id);
     if (!run) throw new NotFoundError('Payout run', id);
-    const payouts = run.payouts.map((p) => ({ ...p, totalFils: p.amountFils + p.adjustmentsFils }));
+    const byCourse = await this.repo.runEarningsByCourse(run.payouts.map((p) => p.id));
+    const payouts = run.payouts.map((p) => ({
+      ...p,
+      totalFils: p.amountFils + p.adjustmentsFils,
+      courses: byCourse.filter((c) => c.payoutId === p.id).map(({ payoutId: _p, ...c }) => c),
+    }));
     return {
       ...run,
       payouts,
@@ -252,12 +327,15 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     if (payout.run.status !== 'DRAFT') throw new BusinessRuleError('Only draft runs can be adjusted', 'RUN_NOT_DRAFT');
     const amountFils = aedToFils(input.amountAed);
     if (amountFils === 0) throw new BusinessRuleError('Adjustment cannot be zero', 'ZERO_ADJUSTMENT');
-    const batchId = payout.earnings[0]?.batchId ?? (await this.repo.latestBatchOfTeacher(payout.teacherId))?.id;
-    if (!batchId) throw new BusinessRuleError('Teacher has no batch to attach the adjustment to', 'NO_BATCH');
+    const first = payout.earnings[0];
+    const batchId = first?.batchId ?? (first?.courseId ? undefined : (await this.repo.latestBatchOfTeacher(payout.teacherId))?.id);
+    const courseId = first?.batchId ? undefined : (first?.courseId ?? undefined);
+    if (!batchId && !courseId) throw new BusinessRuleError('Teacher has no batch to attach the adjustment to', 'NO_BATCH');
 
     await this.repo.createEarning({
       teacherId: payout.teacherId,
       batchId,
+      courseId,
       kind: amountFils > 0 ? 'BONUS' : 'DEDUCTION',
       amountFils,
       status: 'AVAILABLE',

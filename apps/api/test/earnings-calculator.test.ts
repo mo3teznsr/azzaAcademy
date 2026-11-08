@@ -1,14 +1,20 @@
 import { describe, expect, test } from 'bun:test';
 import { EarningsCalculator } from '../src/modules/payouts/earnings-calculator';
 
-const calc = new EarningsCalculator(60);
+const calc = new EarningsCalculator();
 
 describe('EarningsCalculator', () => {
   test('per-session share = round(60% × net / sessionCount)', () => {
-    expect(calc.sessionShare(2_000_000, 12)).toBe(100_000);
-    expect(calc.sessionShare(1_000_001, 12)).toBe(Math.round(0.6 * (1_000_001 / 12)));
-    expect(calc.sessionShare(0, 12)).toBe(0);
-    expect(calc.sessionShare(100_000, 0)).toBe(0);
+    expect(calc.sessionShare(2_000_000, 12, 60)).toBe(100_000);
+    expect(calc.sessionShare(1_000_001, 12, 60)).toBe(Math.round(0.6 * (1_000_001 / 12)));
+    expect(calc.sessionShare(0, 12, 60)).toBe(0);
+    expect(calc.sessionShare(100_000, 0, 60)).toBe(0);
+  });
+
+  test('paymentShare = round(cut% × net)', () => {
+    expect(calc.paymentShare(10_000, 60)).toBe(6_000);
+    expect(calc.paymentShare(0, 60)).toBe(0);
+    expect(calc.paymentShare(10_000, 85)).toBe(8_500);
   });
 
   test('order net excludes VAT, refunds and processor fees', () => {
@@ -36,13 +42,15 @@ describe('EarningsCalculator', () => {
   test('batch net sums orders', () => {
     const orders = Array.from({ length: 23 }, () => ({ totalFils: 92_400, vatFils: 4_400, refundedFils: 0, feeFils: 0 }));
     expect(calc.batchNet(orders)).toBe(23 * 88_000);
-    expect(calc.sessionShare(calc.batchNet(orders), 12)).toBe(101_200);
+    expect(calc.sessionShare(calc.batchNet(orders), 12, 60)).toBe(101_200);
   });
 
   test('refund reversal claws back the delivered part only (negative)', () => {
-    expect(calc.refundReversal(88_000, 4, 12)).toBe(-17_600);
-    expect(calc.refundReversal(88_000, 0, 12)).toBe(0);
-    expect(calc.refundReversal(88_000, 20, 12)).toBe(-52_800); // capped at sessionCount
+    // 4 of 12 sessions accrued at 60% of 1_056_000 net → 4 × 52_800; refunding 88_000 of it
+    const accrued = 4 * Math.round(0.6 * (1_056_000 / 12));
+    expect(calc.refundReversal(88_000, 1_056_000, accrued)).toBe(-17_600);
+    expect(calc.refundReversal(88_000, 1_056_000, 0)).toBe(0); // nothing accrued, nothing to claw back
+    expect(calc.refundReversal(2_000_000, 1_056_000, accrued)).toBe(-accrued); // capped at the whole accrual
   });
 
   test('payout decision: HELD without verified bank, CARRIED_OVER below minimum, else READY', () => {

@@ -10,6 +10,39 @@ datasource db {
 
 // ───────────────────────── Enums ─────────────────────────
 
+enum CourseType {
+  LIVE
+  RECORDED
+}
+
+enum SubscriptionPlan {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionProvider {
+  STRIPE
+  APPLE
+  BANK_TRANSFER
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  ACTIVE
+  PAST_DUE
+  CANCELLING
+  EXPIRED
+}
+
+enum SubscriptionPaymentStatus {
+  AWAITING_RECEIPT
+  AWAITING_REVIEW
+  PAID
+  REJECTED
+  EXPIRED
+  REFUNDED
+}
+
 enum Role {
   STUDENT
   TEACHER
@@ -143,40 +176,45 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  sessions               AuthSession[]
-  accounts               Account[]
-  teaching               Batch[]                 @relation("BatchTeacher")
-  coursesProposed        Course[]                @relation("CourseAuthor")
-  courseReviews          CourseReview[]
-  instructorApplications InstructorApplication[] @relation("Applicant")
-  savedCourses           SavedCourse[]
-  enrollments            Enrollment[]
-  orders                 Order[]                 @relation("OrderStudent")
-  verifiedOrders         Order[]                 @relation("OrderVerifier")
-  attendance             Attendance[]
-  messages               ChatMessage[]
-  earnings               Earning[]
-  payouts                Payout[]
-  bankDetails            TeacherBankDetails?
-  devices                DeviceToken[]
-  notifications          Notification[]
-  submissions            Submission[]
-  feedback               SessionFeedback[]
-  hostedSessions         LiveSession[]           @relation("SessionHost")
-  attendanceMarks        AttendanceMark[]        @relation("AttendanceMarkStudent")
-  rescheduleRequests     RescheduleRequest[]     @relation("RescheduleRequester")
-  rescheduleDecisions    RescheduleRequest[]     @relation("RescheduleDecider")
-  certificates           Certificate[]
-  couponRedemptions      CouponRedemption[]
-  quizAttempts           QuizAttempt[]
-  announcements          Announcement[]          @relation("AnnouncementAuthor")
-  directConversations    Conversation[]          @relation("ConversationStudent")
-  sentMessages           Message[]               @relation("MessageSender")
-  deletedMessages        Message[]               @relation("MessageDeleter")
-  conversationReads      ConversationRead[]
-  supportTickets         SupportTicket[]         @relation("SupportTicketOwner")
-  assignedTickets        SupportTicket[]         @relation("SupportTicketAssignee")
-  supportMessages        SupportMessage[]
+  sessions                     AuthSession[]
+  accounts                     Account[]
+  teaching                     Batch[]                 @relation("BatchTeacher")
+  coursesProposed              Course[]                @relation("CourseAuthor")
+  courseReviews                CourseReview[]
+  instructorApplications       InstructorApplication[] @relation("Applicant")
+  lessonProgress               LessonProgress[]
+  videoPositions               LessonVideoPosition[]
+  subscriptions                Subscription[]
+  reviewedSubscriptionPayments SubscriptionPayment[]   @relation("SubscriptionPaymentReviewer")
+  savedCourses                 SavedCourse[]
+  enrollments                  Enrollment[]
+  orders                       Order[]                 @relation("OrderStudent")
+  verifiedOrders               Order[]                 @relation("OrderVerifier")
+  attendance                   Attendance[]
+  messages                     ChatMessage[]
+  earnings                     Earning[]
+  payouts                      Payout[]
+  bankDetails                  TeacherBankDetails?
+  devices                      DeviceToken[]
+  notifications                Notification[]
+  submissions                  Submission[]
+  feedback                     SessionFeedback[]
+  hostedSessions               LiveSession[]           @relation("SessionHost")
+  attendanceMarks              AttendanceMark[]        @relation("AttendanceMarkStudent")
+  rescheduleRequests           RescheduleRequest[]     @relation("RescheduleRequester")
+  rescheduleDecisions          RescheduleRequest[]     @relation("RescheduleDecider")
+  certificates                 Certificate[]
+  couponRedemptions            CouponRedemption[]
+  quizAttempts                 QuizAttempt[]
+  announcements                Announcement[]          @relation("AnnouncementAuthor")
+  directConversations          Conversation[]          @relation("ConversationStudent")
+  sentMessages                 Message[]               @relation("MessageSender")
+  deletedMessages              Message[]               @relation("MessageDeleter")
+  conversationReads            ConversationRead[]
+  supportTickets               SupportTicket[]         @relation("SupportTicketOwner")
+  assignedTickets              SupportTicket[]         @relation("SupportTicketAssignee")
+  supportMessages              SupportMessage[]
+  subscriptionPayments         SubscriptionPayment[]
 
   @@map("user")
 }
@@ -232,53 +270,75 @@ model Verification {
 // ───────────────────────── Catalog ─────────────────────────
 
 model Course {
-  id             String       @id @default(cuid())
-  slug           String       @unique
-  titleEn        String
-  titleAr        String?
-  descriptionEn  String       @default("")
-  descriptionAr  String?
+  id                    String       @id @default(cuid())
+  slug                  String       @unique
+  titleEn               String
+  titleAr               String?
+  descriptionEn         String       @default("")
+  descriptionAr         String?
   /// Category slug (managed list in `Category`).
-  category       String
-  categoryRef    Category     @relation(fields: [category], references: [slug], onUpdate: Cascade, onDelete: Restrict)
-  level          CourseLevel
-  coverStyle     String       @default("sun")
+  category              String
+  categoryRef           Category     @relation(fields: [category], references: [slug], onUpdate: Cascade, onDelete: Restrict)
+  level                 CourseLevel
+  /// Fixed at creation. LIVE courses sell seats in batches; RECORDED courses sell a monthly or yearly plan.
+  type                  CourseType   @default(LIVE)
+  coverStyle            String       @default("sun")
   /// Photo cover: a path under the API's `/media/` (bundled art) or an uploaded file URL. Null = typographic cover.
-  coverImageUrl  String?
+  coverImageUrl         String?
   /// Intro video: an uploaded file URL (mp4/mov/webm) or an https link (YouTube, Vimeo or a direct video file).
-  introVideoUrl  String?
+  introVideoUrl         String?
   /// "From" price: the lowest price among the course's public batches, kept in step by the API.
   /// Students buy a seat in a batch; the batch carries the real price. Null while no batch is public.
-  priceFils      Int?
+  priceFils             Int?
+  /// RECORDED only: plan prices in fils before VAT.
+  monthlyPriceFils      Int?
+  yearlyPriceFils       Int?
+  /// Per-course override of the teacher's cut (percent); null = the platform default. Read at payment time.
+  teacherCutPercent     Int?
+  /// RECORDED only: the one lesson anyone can open without a plan.
+  previewLessonId       String?
+  stripeProductId       String?
+  stripeMonthlyPriceId  String?
+  stripeYearlyPriceId   String?
+  appleMonthlyProductId String?      @unique
+  appleYearlyProductId  String?      @unique
+  /// Last App Store product sync: SYNCED | SKIPPED | FAILED, its detail and when it ran.
+  appleSyncStatus       String?
+  appleSyncDetail       String?
+  appleSyncedAt         DateTime?
   /// "What you'll learn", "Requirements", "Who it's for" — one bullet per entry.
-  outcomesEn     String[]     @default([])
-  outcomesAr     String[]     @default([])
-  requirementsEn String[]     @default([])
-  requirementsAr String[]     @default([])
-  audienceEn     String[]     @default([])
-  audienceAr     String[]     @default([])
+  outcomesEn            String[]     @default([])
+  outcomesAr            String[]     @default([])
+  requirementsEn        String[]     @default([])
+  requirementsAr        String[]     @default([])
+  audienceEn            String[]     @default([])
+  audienceAr            String[]     @default([])
   /// `[{ qEn, aEn, qAr?, aAr? }]`
-  faq            Json         @default("[]")
+  faq                   Json         @default("[]")
   /// Admin-curated order on the home rail (null = not featured).
-  featuredRank   Int?
+  featuredRank          Int?
   /// Kept in step with visible `CourseReview`s.
-  ratingAvg      Float        @default(0)
-  ratingCount    Int          @default(0)
-  status         CourseStatus @default(DRAFT)
+  ratingAvg             Float        @default(0)
+  ratingCount           Int          @default(0)
+  status                CourseStatus @default(DRAFT)
   /// Teacher who proposed the course (null = created by an admin).
-  createdById    String?
-  createdBy      User?        @relation("CourseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  createdById           String?
+  createdBy             User?        @relation("CourseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
   /// Why an admin sent the proposal back (cleared on resubmit).
-  reviewNote     String?
-  submittedAt    DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  reviewNote            String?
+  submittedAt           DateTime?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 
-  modules CourseModule[]
-  batches Batch[]
-  coupons Coupon[]
-  reviews CourseReview[]
-  savedBy SavedCourse[]
+  modules       CourseModule[]
+  batches       Batch[]
+  coupons       Coupon[]
+  reviews       CourseReview[]
+  savedBy       SavedCourse[]
+  subscriptions Subscription[]
+  quizzes       Quiz[]
+  earnings      Earning[]
+  certificates  Certificate[]
 
   @@index([status, category])
   @@index([createdById])
@@ -471,7 +531,8 @@ model BankAccount {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  orders Order[]
+  orders               Order[]
+  subscriptionPayments SubscriptionPayment[]
 }
 
 model FxRate {
@@ -639,6 +700,8 @@ model Submission {
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   url          String?
   text         String?
+  /// `[{ url, name, size, type }]`, at most 5, each uploaded via `POST /assignments/:id/submission/file` (`submissions/` keys only).
+  files        Json       @default("[]")
   score        Int?
   feedback     String?
   submittedAt  DateTime   @default(now())
@@ -653,35 +716,44 @@ model Certificate {
   code     String   @unique
   userId   String
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  batchId  String
-  batch    Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  attended Int
-  total    Int
+  batchId  String?
+  batch    Batch?   @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  /// Set for recorded-course certificates (batchId is null then).
+  courseId String?
+  course   Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  attended Int      @default(0)
+  total    Int      @default(0)
   issuedAt DateTime @default(now())
 
   @@unique([userId, batchId])
+  @@unique([userId, courseId])
 }
 
 // ───────────────────────── Earnings & payouts ─────────────────────────
 
 model Earning {
-  id          String        @id @default(cuid())
-  teacherId   String
-  teacher     User          @relation(fields: [teacherId], references: [id])
-  batchId     String
-  batch       Batch         @relation(fields: [batchId], references: [id])
-  sessionId   String?
-  session     LiveSession?  @relation(fields: [sessionId], references: [id])
-  kind        String        @default("SESSION") // SESSION | REFUND_ADJUSTMENT | BONUS | DEDUCTION
-  amountFils  Int
-  status      EarningStatus @default(PENDING)
-  availableAt DateTime
-  payoutId    String?
-  payout      Payout?       @relation(fields: [payoutId], references: [id])
-  note        String?
-  createdAt   DateTime      @default(now())
+  id                    String               @id @default(cuid())
+  teacherId             String
+  teacher               User                 @relation(fields: [teacherId], references: [id])
+  batchId               String?
+  batch                 Batch?               @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  courseId              String?
+  course                Course?              @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  subscriptionPaymentId String?
+  subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Restrict)
+  sessionId             String?
+  session               LiveSession?         @relation(fields: [sessionId], references: [id])
+  kind                  String               @default("SESSION") // SESSION | REFUND_ADJUSTMENT | BONUS | DEDUCTION
+  amountFils            Int
+  status                EarningStatus        @default(PENDING)
+  availableAt           DateTime
+  payoutId              String?
+  payout                Payout?              @relation(fields: [payoutId], references: [id])
+  note                  String?
+  createdAt             DateTime             @default(now())
 
   @@unique([sessionId, teacherId, kind])
+  @@unique([subscriptionPaymentId, kind])
   @@index([teacherId, status])
 }
 
@@ -840,23 +912,134 @@ model InstructorApplication {
  * Self-paced reading for a course module: markdown, an optional video and links. Part of the course curriculum.
  */
 model Lesson {
-  id          String       @id @default(cuid())
+  id          String                @id @default(cuid())
   moduleId    String
-  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module      CourseModule          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   order       Int
   titleEn     String
   titleAr     String?
   /// Markdown.
-  bodyEn      String       @default("")
+  bodyEn      String                @default("")
   bodyAr      String?
   /// Uploaded course video, YouTube / Vimeo link or https mp4 / mov / webm (`parseCourseVideoUrl`).
   videoUrl    String?
   /// `[{ title, url }]`
-  attachments Json         @default("[]")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  attachments Json                  @default("[]")
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  progress    LessonProgress[]
+  positions   LessonVideoPosition[]
 
   @@index([moduleId, order])
+}
+
+/// A learner marked this lesson complete. Drives "Continue learning" (next lesson + lesson-based progress).
+model LessonProgress {
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@id([userId, lessonId])
+  @@index([lessonId])
+}
+
+/// Where a learner stopped in a lesson's video.
+model LessonVideoPosition {
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  positionSec Int
+  updatedAt   DateTime @updatedAt
+
+  @@id([userId, lessonId])
+}
+
+/// Platform-wide settings: a single row with id 'default'.
+model PlatformSettings {
+  id                 String   @id @default("default")
+  /// Default teacher cuts, in percent. A course's own `teacherCutPercent` wins when set.
+  liveCutPercent     Int
+  recordedCutPercent Int
+  updatedAt          DateTime @updatedAt
+}
+
+/// A learner's plan on a recorded course. At most one live (INCOMPLETE/ACTIVE/PAST_DUE/CANCELLING) per user and course:
+/// the partial unique index "subscription_one_live_per_course" lives in the migration (Prisma can't express it).
+model Subscription {
+  id                         String               @id @default(cuid())
+  userId                     String
+  user                       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId                   String
+  course                     Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  plan                       SubscriptionPlan
+  provider                   SubscriptionProvider
+  status                     SubscriptionStatus
+  /// Stripe subscription id (null for bank transfers).
+  providerSubscriptionId     String?              @unique
+  stripeCustomerId           String?
+  /// The open Checkout Session of an INCOMPLETE card plan, so an unfinished checkout can be reused or expired.
+  stripeCheckoutSessionId    String?
+  appleOriginalTransactionId String?              @unique
+  appleAppAccountToken       String?              @unique
+  /// Apple only: the plan the learner chose for the next renewal (DID_CHANGE_RENEWAL_PREF); applied on DID_RENEW.
+  pendingPlan                SubscriptionPlan?
+  currentPeriodEnd           DateTime?
+  cancelAtPeriodEnd          Boolean              @default(false)
+  /// The `currentPeriodEnd` the 7-day renewal reminder was sent for (once per period).
+  reminderSentForPeriodEnd   DateTime?
+  /// The `currentPeriodEnd` the end-day reminder (bank transfers) was sent for.
+  reminderEndDaySentFor      DateTime?
+  /// Price locked in at signup, in fils before VAT.
+  priceFils                  Int
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  payments SubscriptionPayment[]
+
+  @@index([userId, courseId])
+  @@index([status, currentPeriodEnd])
+}
+
+/// One charge of a plan (card invoice, Apple transaction or bank transfer).
+model SubscriptionPayment {
+  id                String                    @id @default(cuid())
+  subscriptionId    String
+  subscription      Subscription              @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User                      @relation(fields: [userId], references: [id])
+  reference         String                    @unique
+  /// Stripe invoice id or Apple transaction id; null for bank transfers.
+  providerPaymentId String?                   @unique
+  plan              SubscriptionPlan
+  periodStart       DateTime
+  periodEnd         DateTime
+  subtotalFils      Int
+  vatFils           Int
+  totalFils         Int
+  feeFils           Int                       @default(0)
+  refundedFils      Int                       @default(0)
+  displayCurrency   String                    @default("AED")
+  fxRate            Decimal                   @default(1) @db.Decimal(12, 6)
+  status            SubscriptionPaymentStatus
+  paidAt            DateTime?
+  /// Bank transfer only.
+  bankAccountId     String?
+  bankAccount       BankAccount?              @relation(fields: [bankAccountId], references: [id])
+  receiptUrl        String?
+  expiresAt         DateTime?
+  reviewNote        String?
+  reviewedById      String?
+  reviewedBy        User?                     @relation("SubscriptionPaymentReviewer", fields: [reviewedById], references: [id])
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  earnings Earning[]
+
+  @@index([subscriptionId])
+  @@index([status])
 }
 
 enum QuizStatus {
@@ -870,8 +1053,11 @@ enum QuizStatus {
 /// stores its own per-question results, so reports never join back into question rows.
 model Quiz {
   id           String        @id @default(cuid())
-  batchId      String
-  batch        Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  /// Exactly one of `batchId` and `courseId` is set (checked in the service).
+  batchId      String?
+  batch        Batch?        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  courseId     String?
+  course       Course?       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   moduleId     String?
   module       CourseModule? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   title        String
@@ -883,6 +1069,8 @@ model Quiz {
   /// Minutes; null = untimed.
   timeLimitMin Int?
   maxAttempts  Int           @default(1)
+  /// Percent of the points needed to pass.
+  passPercent  Int           @default(70)
   publishedAt  DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -890,6 +1078,7 @@ model Quiz {
   attempts QuizAttempt[]
 
   @@index([batchId, status])
+  @@index([courseId, status])
 }
 
 /// One try at a quiz. Open while `submittedAt` is null.
@@ -1054,4 +1243,13 @@ model SupportMessage {
   createdAt DateTime      @default(now())
 
   @@index([ticketId, createdAt])
+}
+
+/// Last App Store sync of the class-seat consumable for one whole-dirham price (fils, before VAT).
+model AppleSeatProduct {
+  priceFils Int      @id
+  productId String
+  status    String
+  detail    String?
+  syncedAt  DateTime
 }
