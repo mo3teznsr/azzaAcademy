@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import type { AuditEntry, AuditLog } from '../src/modules/audit/audit-log';
+import { InvestorService, type InvestorRepository, type MarketingSpendRecord } from '../src/modules/growth/investor.service';
 import { addMonths, channelOf, investorCsv, investorMetrics, monthRange, netRevenue, type Payment } from '../src/modules/growth/investor-math';
 
 // "Now" is mid-November 2026: November is the running month, October the last complete one.
@@ -151,5 +153,52 @@ describe('CSV export', () => {
     expect(col('gross_margin_aed')).toBe('97.00');
     expect(col('new_snapchat')).toBe('1');
     expect(rows.at(-1)!.startsWith('2026-11,yes')).toBe(true);
+  });
+});
+
+describe('InvestorService', () => {
+  const make = () => {
+    const rows: MarketingSpendRecord[] = [];
+    const audit: AuditEntry[] = [];
+    const repo: InvestorRepository = {
+      payments: async () => [pay('a', '2026-10')],
+      teacherByMonth: async () => new Map([['2026-10', 4_000]]),
+      attribution: async (ids) => new Map(ids.map((id) => [id, { utm_source: 'instagram' }])),
+      spend: async (from) => rows.filter((r) => !from || r.month >= from),
+      saveSpend: async (input) => {
+        const existing = rows.find((r) => r.month === input.month && r.channel === input.channel);
+        if (existing) return Object.assign(existing, { amountFils: input.amountFils });
+        const row = { id: `s${rows.length + 1}`, month: input.month, channel: input.channel, amountFils: input.amountFils, note: input.note ?? null, updatedAt: NOW };
+        rows.push(row);
+        return row;
+      },
+      deleteSpend: async (id) => {
+        const i = rows.findIndex((r) => r.id === id);
+        return i < 0 ? null : rows.splice(i, 1)[0]!;
+      },
+    };
+    const log: AuditLog = { record: async (e) => void audit.push(e), forEntity: async () => [] };
+    return { service: new InvestorService(repo, { now: () => NOW }, log), rows, audit };
+  };
+
+  test('spend saved per month and channel feeds CAC; saving again replaces it; changes are audited', async () => {
+    const { service, audit } = make();
+    await service.saveSpend({ month: '2026-10', channel: 'instagram', amountFils: 1_000 }, 'admin');
+    await service.saveSpend({ month: '2026-10', channel: 'instagram', amountFils: 3_000 }, 'admin');
+    expect((await service.spend(12)).items).toHaveLength(1);
+    const m = await service.metrics(12);
+    expect(m.channels.find((c) => c.channel === 'instagram')).toMatchObject({ newCustomers: 1, spendFils: 3_000, cacFils: 3_000 });
+    expect(m.monthly.find((r) => r.month === '2026-10')!.grossMarginFils).toBe(10_000 - 300 - 4_000);
+    expect(audit.map((a) => a.action)).toEqual(['MARKETING_SPEND_SAVED', 'MARKETING_SPEND_SAVED']);
+    expect((await service.csv(12)).split('\n')[0]).toStartWith('month,');
+  });
+
+  test('deleting removes the row and is audited; a missing row is a 404', async () => {
+    const { service, rows, audit } = make();
+    const row = await service.saveSpend({ month: '2026-09', channel: 'tiktok', amountFils: 500 }, 'admin');
+    await service.deleteSpend(row.id, 'admin');
+    expect(rows).toHaveLength(0);
+    expect(audit.at(-1)!.action).toBe('MARKETING_SPEND_DELETED');
+    await expect(service.deleteSpend('nope', 'admin')).rejects.toMatchObject({ status: 404 });
   });
 });

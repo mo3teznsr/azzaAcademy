@@ -37,7 +37,7 @@ import { conversationRoutes } from './modules/conversations/conversation.routes'
 import { supportRoutes } from './modules/support/support.routes';
 import { adminSubscriptionRoutes, teacherSubscriberRoutes } from './modules/subscriptions/subscription-admin.routes';
 import { subscriptionRoutes } from './modules/subscriptions/subscription.routes';
-import { adminGrowthRoutes } from './modules/growth/growth.routes';
+import { adminGrowthRoutes, adminInvestorRoutes } from './modules/growth/growth.routes';
 import { adminTaxDocumentRoutes, taxDocumentRoutes } from './modules/invoices/tax-document.routes';
 import { adminReferralRoutes, referralRoutes } from './modules/referrals/referral.routes';
 
@@ -127,6 +127,7 @@ export function createApp(container: Container) {
     .route('/admin', adminAppStoreRoutes(services.appStoreSync))
     .route('/admin', adminSubscriptionRoutes(services.subscriptions))
     .route('/admin', adminGrowthRoutes(services.growth))
+    .route('/admin', adminInvestorRoutes(services.investors))
     .route('/admin', adminTaxDocumentRoutes(services.taxDocuments))
     .route('/admin', adminReferralRoutes(services.referrals))
     .route('/referrals', referralRoutes(services.referrals))

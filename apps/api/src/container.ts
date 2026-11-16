@@ -110,6 +110,7 @@ import { PrismaReferralRepository } from './modules/referrals/referral.repositor
 import { ReferralService } from './modules/referrals/referral.service';
 import { PrismaSessionReminderRepository, SessionReminderService } from './modules/sessions/session-reminders';
 import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.service';
+import { InvestorService, PrismaInvestorRepository } from './modules/growth/investor.service';
 import { PrismaAuditLog } from './modules/audit/audit-log';
 import { LifecycleService, PrismaLifecycleRepository } from './modules/lifecycle/lifecycle.service';
 import { TaxDocumentService } from './modules/invoices/tax-document.service';
@@ -392,6 +393,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     certificates,
     reports: new ReportService(new PrismaReportRepository(db), clock),
     growth: new GrowthService(new PrismaGrowthRepository(db), clock),
+    investors: new InvestorService(new PrismaInvestorRepository(db), clock, new PrismaAuditLog(db)),
     taxDocuments,
     referrals,
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
