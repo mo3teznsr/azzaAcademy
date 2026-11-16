@@ -23,7 +23,8 @@ import '../domain/subscription_models.dart';
 /// What the learner has picked on a recorded course's page. Shared by the [PlanPicker] and the [PlanStartBar].
 @immutable
 class PlanChoice {
-  const PlanChoice({this.plan = SubscriptionPlan.monthly, this.method = SubscribeMethod.stripe});
+  /// Yearly first: it saves the learner money and is paid up front. A course without a yearly price falls back to monthly.
+  const PlanChoice({this.plan = SubscriptionPlan.yearly, this.method = SubscribeMethod.stripe});
   final SubscriptionPlan plan;
 
   /// Card or bank transfer. Only meaningful off iOS: there, the App Store is the only way.
@@ -89,6 +90,10 @@ class PlanPicker extends ConsumerWidget {
 
     final monthly = course.monthlyPriceFils ?? course.priceFils;
     final yearly = course.yearlyPriceFils;
+    if (yearly == null && choice.plan == SubscriptionPlan.yearly) {
+      // No yearly price on this course: start on monthly instead (after this frame, not during build).
+      Future.microtask(() => controller.plan(SubscriptionPlan.monthly));
+    }
     final saving = monthly != null && yearly != null ? yearlySavingMonths(monthly, yearly) : 0;
     final availability = planAvailability(ref, course, choice);
     final onIos = usesAppStorePayments;
