@@ -634,7 +634,7 @@ export interface EarningsBatch {
 
 export interface LedgerEntry {
   id: string;
-  kind: 'SESSION' | 'REFUND_ADJUSTMENT' | 'BONUS' | 'DEDUCTION' | string;
+  kind: 'SESSION' | 'REFUND_ADJUSTMENT' | 'TRUE_UP' | 'BONUS' | 'DEDUCTION' | string;
   amountFils: number;
   status: EarningStatus;
   availableAt: ISODate;

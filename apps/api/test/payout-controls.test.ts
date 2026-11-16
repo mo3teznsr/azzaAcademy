@@ -74,3 +74,33 @@ describe('payout runs', () => {
     expect(audit.entries.map((e) => e.action)).toEqual(['PAYOUT_RUN_EXPORTED', 'PAYOUT_RUN_PAID']);
   });
 });
+
+describe('batch true-up', () => {
+  const calc = new EarningsCalculator();
+
+  test('the delivered sessions earn their share of the final net, less what was accrued', () => {
+    // 10 sessions, 70% cut. Early sessions saw 5,000 of net; late joiners took the final net to 10,000.
+    expect(calc.trueUp({ netFils: 1_000_000, cutPercent: 70, sessionCount: 10, deliveredSessions: 10, accruedFils: 500_000 })).toBe(200_000);
+    // Two sessions cancelled: only eight are paid for.
+    expect(calc.trueUp({ netFils: 1_000_000, cutPercent: 70, sessionCount: 10, deliveredSessions: 8, accruedFils: 500_000 })).toBe(60_000);
+    // Overshoot is clawed back; rounding under 1 AED is ignored.
+    expect(calc.trueUp({ netFils: 1_000_000, cutPercent: 70, sessionCount: 10, deliveredSessions: 10, accruedFils: 750_000 })).toBe(-50_000);
+    expect(calc.trueUp({ netFils: 1_000_000, cutPercent: 70, sessionCount: 10, deliveredSessions: 10, accruedFils: 699_950 })).toBe(0);
+    expect(calc.trueUp({ netFils: 0, cutPercent: 70, sessionCount: 0, deliveredSessions: 0, accruedFils: 0 })).toBe(0);
+  });
+
+  test('a completed batch gets one TRUE_UP earning; a rerun adds nothing', async () => {
+    const earnings: Array<{ kind: string; amountFils: number; teacherId: string }> = [];
+    const repo = {
+      batchForTrueUp: async () => ({ id: 'b1', code: 'B08', status: 'COMPLETED', teacherId: 'lina', course: { type: 'LIVE', teacherCutPercent: null }, schedule: { sessionCount: 4 }, _count: { sessions: 4 }, sessions: [{}, {}, {}, {}] }),
+      batchOrders: async () => [{ totalFils: 105_000, vatFils: 5_000, refundedFils: 0, feeFils: 0 }, { totalFils: 105_000, vatFils: 5_000, refundedFils: 0, feeFils: 0 }],
+      batchAccrued: async () => 70_000 + earnings.reduce((s, e) => s + e.amountFils, 0), // sessions saw only the first student
+      createEarning: async (e: { kind: string; amountFils: number; teacherId: string }) => (earnings.push(e), e),
+    };
+    const service = new PayoutService(repo as never, calc, { cuts: async () => ({ liveCutPercent: 70, recordedCutPercent: 60 }) }, {} as never, { now: () => new Date('2026-11-16') }, { earningHoldDays: 14, minPayoutFils: 0 });
+    await service.trueUpBatch('b1');
+    expect(earnings).toEqual([expect.objectContaining({ kind: 'TRUE_UP', teacherId: 'lina', amountFils: 70_000 })]);
+    expect(await service.trueUpBatch('b1')).toBeNull();
+    expect(earnings).toHaveLength(1);
+  });
+});

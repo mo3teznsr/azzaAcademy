@@ -134,6 +134,33 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     });
   }
 
+  /**
+   * When a batch completes: pays the teacher what the delivered sessions earn from the batch's final net, less what was
+   * accrued (a TRUE_UP earning, positive or negative, on the usual hold). Idempotent: a rerun finds nothing left to add.
+   */
+  async trueUpBatch(batchId: string) {
+    const rules = await this.currentRules();
+    const b = await this.repo.batchForTrueUp(batchId);
+    if (!b || b.status !== 'COMPLETED') return null;
+    const amountFils = this.calculator.trueUp({
+      netFils: this.calculator.batchNet(await this.repo.batchOrders(b.id)),
+      cutPercent: cutFor(b.course, await this.settings.cuts()),
+      sessionCount: b.schedule?.sessionCount ?? b._count.sessions,
+      deliveredSessions: b.sessions.length,
+      accruedFils: await this.repo.batchAccrued(b.id),
+    });
+    if (amountFils === 0) return null;
+    return this.repo.createEarning({
+      teacherId: b.teacherId,
+      batchId: b.id,
+      kind: 'TRUE_UP',
+      amountFils,
+      status: 'PENDING',
+      availableAt: new Date(this.clock.now().getTime() + rules.earningHoldDays * DAY_MS),
+      note: `Batch ${b.code} final share`,
+    });
+  }
+
   async reverseForRefund(args: { batchId: string; refundFils: number; totalFils: number; vatFils: number; reference: string }) {
     const batch = await this.repo.batchForRefund(args.batchId);
     if (!batch) return null;

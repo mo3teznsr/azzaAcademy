@@ -34,6 +34,8 @@ export interface RescheduleRequestLog {
 /** Called when a session is delivered (ENDED). Implemented by the payouts module (DIP). */
 export interface EarningsAccrual {
   accrueForSession(sessionId: string): Promise<unknown>;
+  /** When the batch completes: the teacher's final share from the batch's final net. */
+  trueUpBatch?(batchId: string): Promise<unknown>;
 }
 
 export class SessionService {
@@ -333,6 +335,7 @@ export class SessionService {
     await this.earnings.accrueForSession(s.id);
     if ((await this.repo.remainingSessions(s.batchId)) === 0 && s.batch.status === 'RUNNING') {
       await this.repo.setBatchStatus(s.batchId, 'COMPLETED');
+      await this.earnings.trueUpBatch?.(s.batchId);
     }
     return updated;
   }

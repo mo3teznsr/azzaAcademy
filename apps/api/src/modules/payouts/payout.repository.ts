@@ -117,10 +117,35 @@ export class PrismaPayoutRepository {
   /** What the teacher still holds from the batch's sessions: SESSION earnings plus earlier (negative) refund adjustments, reversed rows excluded. */
   async netAccruedForBatch(batchId: string, teacherId: string) {
     const r = await this.db.earning.aggregate({
-      where: { batchId, teacherId, kind: { in: ['SESSION', 'REFUND_ADJUSTMENT'] }, status: { not: 'REVERSED' } },
+      where: { batchId, teacherId, kind: { in: ['SESSION', 'REFUND_ADJUSTMENT', 'TRUE_UP'] }, status: { not: 'REVERSED' } },
       _sum: { amountFils: true },
     });
     return r._sum.amountFils ?? 0;
+  }
+
+  /** Everything accrued for the batch's sessions by any teacher (a substitute host earns under their own id). */
+  async batchAccrued(batchId: string) {
+    const r = await this.db.earning.aggregate({
+      where: { batchId, kind: { in: ['SESSION', 'REFUND_ADJUSTMENT', 'TRUE_UP'] }, status: { not: 'REVERSED' } },
+      _sum: { amountFils: true },
+    });
+    return r._sum.amountFils ?? 0;
+  }
+
+  batchForTrueUp(batchId: string) {
+    return this.db.batch.findUnique({
+      where: { id: batchId },
+      select: {
+        id: true,
+        code: true,
+        status: true,
+        teacherId: true,
+        course: { select: { type: true, teacherCutPercent: true } },
+        schedule: { select: { sessionCount: true } },
+        _count: { select: { sessions: { where: { status: { not: 'CANCELLED' } } } } },
+        sessions: { where: { status: 'ENDED' }, select: { id: true } },
+      },
+    });
   }
 
   batchForRefund(batchId: string) {
