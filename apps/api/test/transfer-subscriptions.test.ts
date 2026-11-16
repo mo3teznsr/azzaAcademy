@@ -87,9 +87,9 @@ class MemRepo implements SubscriptionRepository, SubscriptionTransferRepository 
     this.tpay[i] = { ...this.tpay[i]!, ...patch, updatedAt: this.clock() };
     return this.tpay[i]!;
   }
-  async reviewTransferPayment(id: string, patch: TransferPaymentPatch, sub?: { id: string; patch: SubscriptionPatch }) {
+  async reviewTransferPayment(id: string, patch: TransferPaymentPatch, sub?: { id: string; patch: SubscriptionPatch }, from: string[] = ['AWAITING_REVIEW']) {
     const i = this.tpay.findIndex((p) => p.id === id);
-    if (i < 0 || this.tpay[i]!.status !== 'AWAITING_REVIEW') return null; // checked and set with no await in between: atomic
+    if (i < 0 || !from.includes(this.tpay[i]!.status)) return null; // checked and set with no await in between: atomic
     this.tpay[i] = { ...this.tpay[i]!, ...patch, updatedAt: this.clock() };
     if (sub) await this.update(sub.id, sub.patch);
     return this.tpay[i]!;

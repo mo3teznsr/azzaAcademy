@@ -216,7 +216,13 @@ export interface SubscriptionTransferRepository {
    * Atomic review: claims the payment only while it is AWAITING_REVIEW (`patch` is applied to it) and, in the same transaction,
    * applies `sub` to the subscription. Returns null, changing nothing, when another review got there first.
    */
-  reviewTransferPayment(id: string, patch: TransferPaymentPatch, sub?: { id: string; patch: SubscriptionPatch }): Promise<TransferPaymentRow | null>;
+  /** Applies `patch` only while the payment is in one of `from` (AWAITING_REVIEW by default); null when it moved on. */
+  reviewTransferPayment(
+    id: string,
+    patch: TransferPaymentPatch,
+    sub?: { id: string; patch: SubscriptionPatch },
+    from?: SubscriptionPaymentStatus[],
+  ): Promise<TransferPaymentRow | null>;
   /** Expires the subscription's payments that are in one of `statuses` (guarded: a payment that moved on is left alone). Returns what it closed. */
   expireTransferPayments(subscriptionId: string, statuses: SubscriptionPaymentStatus[]): Promise<TransferPaymentRow[]>;
   /** Sets `stripeCheckoutSessionId` to `value` only while it still equals `expected`; false when another call got there first. */
@@ -386,9 +392,9 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository, Sub
     return this.db.subscriptionPayment.findMany({ where: { subscriptionId: { in: subscriptionIds } }, orderBy: { createdAt: 'desc' }, select: transferSelect });
   }
 
-  reviewTransferPayment(id: string, patch: TransferPaymentPatch, sub?: { id: string; patch: SubscriptionPatch }) {
+  reviewTransferPayment(id: string, patch: TransferPaymentPatch, sub?: { id: string; patch: SubscriptionPatch }, from: SubscriptionPaymentStatus[] = ['AWAITING_REVIEW']) {
     return this.db.$transaction(async (tx) => {
-      const claimed = await tx.subscriptionPayment.updateMany({ where: { id, status: 'AWAITING_REVIEW' }, data: patch });
+      const claimed = await tx.subscriptionPayment.updateMany({ where: { id, status: { in: from } }, data: patch });
       if (claimed.count !== 1) return null;
       if (sub) await tx.subscription.update({ where: { id: sub.id }, data: sub.patch });
       return tx.subscriptionPayment.findUniqueOrThrow({ where: { id }, select: transferSelect });

@@ -8,3 +8,4 @@ export * from './subscriptions';
 export * from './countries';
 export * from './phone';
 export * from './attribution';
+export * from './bank-statements';

@@ -29,15 +29,22 @@ export class FinanceAdminService {
     return order;
   }
 
-  async review(orderId: string, input: ReviewTransferInput, adminId: string) {
+  /**
+   * `fromBankStatement`: the money was seen on the bank statement, which is proof on its own, so an order still waiting
+   * for its receipt can be approved (only approved: rejecting still needs a receipt to look at).
+   */
+  async review(orderId: string, input: ReviewTransferInput, adminId: string, opts: { fromBankStatement?: boolean } = {}) {
     const order = await this.loadOrder(orderId);
     if (order.method !== 'BANK_TRANSFER') throw new BusinessRuleError('Only bank transfers are reviewed', 'NOT_BANK_TRANSFER');
-    if (order.status !== 'VERIFYING' && order.status !== 'AMOUNT_MISMATCH') {
+    const awaitingReceipt = order.status === 'AWAITING_RECEIPT' && opts.fromBankStatement && input.decision === 'APPROVE';
+    if (order.status !== 'VERIFYING' && order.status !== 'AMOUNT_MISMATCH' && !awaitingReceipt) {
       throw new BusinessRuleError(`Order is ${order.status}, nothing to review`, 'ORDER_NOT_REVIEWABLE');
     }
-    const enrollment = await this.repo.findEnrollmentById(order.enrollmentId);
+    let enrollment = await this.repo.findEnrollmentById(order.enrollmentId);
     if (!enrollment) throw new NotFoundError('Enrollment', order.enrollmentId);
     const now = this.lifecycle.now();
+    // No receipt was uploaded: the seat moves on as if it had been (AWAITING_TRANSFER -> VERIFYING), then is decided below.
+    if (awaitingReceipt && enrollment.status === 'AWAITING_TRANSFER') enrollment = await this.lifecycle.move(enrollment, 'VERIFYING');
 
     if (input.decision === 'APPROVE') {
       const receivedFils = aedToFils(input.receivedAed);
