@@ -1,6 +1,6 @@
 import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { randomUUID } from 'node:crypto';
-import { filsToAed, formatMoney, YEARLY_REMINDER_DAYS, type Role, type SubscribeInput, type SubscriptionProvider, type SubscriptionPlan, type SubscriptionStatus } from '@azza/shared';
+import { filsToAed, formatMoney, YEARLY_REMINDER_DAYS, type Role, type SubscribeInput, type SubscriptionPaymentStatus, type SubscriptionProvider, type SubscriptionPlan, type SubscriptionStatus } from '@azza/shared';
 import { AppError, BusinessRuleError, ForbiddenError, NotFoundError } from '../../core/errors';
 import { addHours, formatInZone } from '../../core/time';
 import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction, Clock, PaymentGateway, PaymentWebhookEvent, WebhookInvoice, WebhookSubscription } from '../../core/ports';
@@ -359,11 +359,17 @@ export class SubscriptionService {
    * Reject: the learner is told why; a first transfer or a lapsed plan ends so they can start again.
    * `newReceipt`: back to AWAITING_RECEIPT with a fresh hold.
    */
-  async reviewTransfer(paymentId: string, input: TransferReviewInput, adminId: string) {
+  /**
+   * `fromBankStatement`: the money was seen on the bank statement, which is proof on its own, so a payment still waiting
+   * for its receipt can be approved (only approved).
+   */
+  async reviewTransfer(paymentId: string, input: TransferReviewInput, adminId: string, opts: { fromBankStatement?: boolean } = {}) {
     const T = this.T;
     const payment = await T.repo.transferPayment(paymentId);
     if (!payment) throw new NotFoundError('Payment', paymentId);
-    if (payment.status !== 'AWAITING_REVIEW') throw new BusinessRuleError(`Payment is ${payment.status}, nothing to review`, 'PAYMENT_NOT_REVIEWABLE');
+    const fromStatuses: SubscriptionPaymentStatus[] =
+      opts.fromBankStatement && input.approve ? ['AWAITING_REVIEW', 'AWAITING_RECEIPT'] : ['AWAITING_REVIEW'];
+    if (!fromStatuses.includes(payment.status)) throw new BusinessRuleError(`Payment is ${payment.status}, nothing to review`, 'PAYMENT_NOT_REVIEWABLE');
     const sub = await this.repo.findById(payment.subscriptionId);
     if (!sub) throw new NotFoundError('Subscription', payment.subscriptionId);
     const now = this.clock.now();
@@ -395,6 +401,7 @@ export class SubscriptionService {
               ...(payment.plan !== sub.plan || payment.subtotalFils !== sub.priceFils ? { plan: payment.plan, priceFils: payment.subtotalFils } : {}),
             },
           },
+          fromStatuses,
         );
       } catch (e) {
         if (!isUniqueViolation(e)) throw e;

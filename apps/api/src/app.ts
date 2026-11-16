@@ -40,6 +40,7 @@ import { courseAnalyticsRoutes } from './modules/course-analytics/analytics.rout
 import { adminSubscriptionRoutes, teacherSubscriberRoutes } from './modules/subscriptions/subscription-admin.routes';
 import { subscriptionRoutes } from './modules/subscriptions/subscription.routes';
 import { adminGrowthRoutes } from './modules/growth/growth.routes';
+import { adminReconciliationRoutes } from './modules/reconciliation/reconciliation.routes';
 import { adminTaxDocumentRoutes, taxDocumentRoutes } from './modules/invoices/tax-document.routes';
 import { adminReferralRoutes, referralRoutes } from './modules/referrals/referral.routes';
 
@@ -138,6 +139,7 @@ export function createApp(container: Container) {
     .route('/courses', adminMediaRoutes(services.courseMedia, ['TEACHER', 'ADMIN']))
     .route('/admin', adminFinanceRoutes(services))
     .route('/admin', adminPayoutRoutes(services.payouts))
+    .route('/admin', adminReconciliationRoutes(services.reconciliation))
     .route('/admin', adminReportRoutes(services.reports))
     .route('/', siteSettingsRoutes(services.siteSettings))
     .route('/', currencyRoutes(services.currencies))

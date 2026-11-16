@@ -1,3 +1,4 @@
+import type { StatementLineStatus, StatementMapping, StatementMatchKind } from '@azza/shared';
 import type {
   BatchStatus,
   CourseLevel,
@@ -1078,4 +1079,51 @@ export interface AdminSubscriptionParams {
   provider?: 'STRIPE' | 'APPLE' | 'BANK_TRANSFER';
   page?: number;
   pageSize?: number;
+}
+
+/** A bank transfer as shown next to a statement line. */
+export interface StatementTransfer {
+  kind: 'SEAT' | 'PLAN';
+  id: string;
+  reference: string;
+  totalFils: number;
+  status: string;
+  userName: string;
+  createdAt: string;
+}
+
+export interface StatementImport {
+  id: string;
+  bankAccountId: string;
+  bankName: string;
+  fileName: string;
+  creditCount: number;
+  newCount: number;
+  duplicateCount: number;
+  skippedCount: number;
+  openCount: number;
+  createdAt: string;
+}
+
+export interface StatementLine {
+  id: string;
+  row: number;
+  postedOn: string;
+  amountFils: number;
+  description: string;
+  status: StatementLineStatus;
+  outcome: string | null;
+  decidedAt: string | null;
+  match: StatementMatchKind | null;
+  transfer: StatementTransfer | null;
+  suggestions: (StatementTransfer & { score: number })[];
+}
+
+export type StatementImportDetail = StatementImport & { lines: StatementLine[] };
+
+export interface StatementPreview {
+  headers: string[];
+  mapping: StatementMapping | null;
+  savedMappingFits: boolean;
+  sample: string[][];
 }

@@ -87,9 +87,9 @@ class MemRepo implements SubscriptionRepository, SubscriptionTransferRepository 
     this.tpay[i] = { ...this.tpay[i]!, ...patch, updatedAt: this.clock() };
     return this.tpay[i]!;
   }
-  async reviewTransferPayment(id: string, patch: TransferPaymentPatch, sub?: { id: string; patch: SubscriptionPatch }) {
+  async reviewTransferPayment(id: string, patch: TransferPaymentPatch, sub?: { id: string; patch: SubscriptionPatch }, from: string[] = ['AWAITING_REVIEW']) {
     const i = this.tpay.findIndex((p) => p.id === id);
-    if (i < 0 || this.tpay[i]!.status !== 'AWAITING_REVIEW') return null; // checked and set with no await in between: atomic
+    if (i < 0 || !from.includes(this.tpay[i]!.status)) return null; // checked and set with no await in between: atomic
     this.tpay[i] = { ...this.tpay[i]!, ...patch, updatedAt: this.clock() };
     if (sub) await this.update(sub.id, sub.patch);
     return this.tpay[i]!;
@@ -234,6 +234,15 @@ describe('approval', () => {
     expect(repo.tpay[1]?.periodStart).toEqual(end);
     expect(repo.tpay[1]?.periodEnd).toEqual(new Date('2027-01-20T10:00:00Z'));
     expect(repo.subs[0]?.currentPeriodEnd).toEqual(new Date('2027-01-20T10:00:00Z'));
+  });
+
+  test('a bank statement line approves a payment that never got a receipt; without it, no', async () => {
+    const { service, res, repo } = await subscribed();
+    expect(await codeOf(service.reviewTransfer(res.paymentId, { approve: true }, 'admin1'))).toBe('PAYMENT_NOT_REVIEWABLE');
+    expect(await codeOf(service.reviewTransfer(res.paymentId, { approve: false, note: 'x' }, 'admin1', { fromBankStatement: true }))).toBe('PAYMENT_NOT_REVIEWABLE');
+    await service.reviewTransfer(res.paymentId, { approve: true, receivedFils: repo.tpay[0]!.totalFils }, 'admin1', { fromBankStatement: true });
+    expect(repo.tpay[0]).toMatchObject({ status: 'PAID', reviewedById: 'admin1' });
+    expect(repo.subs[0]).toMatchObject({ status: 'ACTIVE' });
   });
 
   test('an amount that differs from the total is refused', async () => {

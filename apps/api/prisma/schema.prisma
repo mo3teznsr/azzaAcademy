@@ -556,8 +556,59 @@ model BankAccount {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  /// How this bank's CSV statement maps to date, credit/amount and description columns (see StatementMapping).
+  statementMapping     Json?
+
   orders               Order[]
   subscriptionPayments SubscriptionPayment[]
+  statementImports     BankStatementImport[]
+  statementLines       BankStatementLine[]
+}
+
+/// One uploaded bank statement CSV. Lines already imported from an earlier file are not stored again.
+model BankStatementImport {
+  id             String              @id @default(cuid())
+  bankAccountId  String
+  bankAccount    BankAccount         @relation(fields: [bankAccountId], references: [id])
+  fileName       String
+  importedById   String?
+  creditCount    Int
+  newCount       Int
+  duplicateCount Int
+  skippedCount   Int
+  createdAt      DateTime            @default(now())
+  lines          BankStatementLine[]
+
+  @@index([bankAccountId, createdAt])
+}
+
+/// One credit on a bank statement. OPEN until an admin confirms it against a transfer or ignores it.
+model BankStatementLine {
+  id                    String              @id @default(cuid())
+  importId              String
+  statementImport       BankStatementImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  bankAccountId         String
+  bankAccount           BankAccount         @relation(fields: [bankAccountId], references: [id])
+  /// sha256 of account, date, amount, description and occurrence: re-importing a statement adds nothing.
+  lineHash              String              @unique
+  row                   Int
+  postedOn              DateTime            @db.Date
+  amountFils            Int
+  description           String
+  /// OPEN | CONFIRMED | IGNORED
+  status                String              @default("OPEN")
+  /// What confirming did: PAID, AMOUNT_MISMATCH.
+  outcome               String?
+  orderId               String?
+  subscriptionPaymentId String?
+  decidedById           String?
+  decidedAt             DateTime?
+  createdAt             DateTime            @default(now())
+
+  @@index([importId])
+  @@index([status])
+  @@index([orderId])
+  @@index([subscriptionPaymentId])
 }
 
 /// Display currencies (admin-managed). AED is the base: always present, enabled, rate 1. Display only — charges are always AED.

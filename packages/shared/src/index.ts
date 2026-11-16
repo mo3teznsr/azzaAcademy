@@ -11,3 +11,4 @@ export * from './attribution';
 export * from './referrals';
 export * from './tabby';
 export * from './lesson-qa';
+export * from './bank-statements';
