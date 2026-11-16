@@ -215,6 +215,22 @@ const en = {
       email: 'Enter a valid email.',
       name: 'Enter your name.',
     },
+    social: {
+      google: 'Continue with Google',
+      apple: 'Continue with Apple',
+      or: 'or with email',
+      redirecting: 'Opening {provider}…',
+      failed: 'We couldn’t sign you in with that account. Try again, or use your email and password.',
+      linkRefused: 'An account with this email already exists. Sign in with your email and password first.',
+    },
+    phoneGate: {
+      kicker: 'One more step',
+      title: 'Add your mobile number',
+      body: 'We need it before your first payment, for receipts and class updates. You only do this once.',
+      label: 'Mobile number',
+      save: 'Save and continue',
+      saving: 'Saving…',
+    },
   },
   catalog: {
     catalogTitle: 'All courses',

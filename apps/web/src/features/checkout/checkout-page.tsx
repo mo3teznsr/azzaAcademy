@@ -22,6 +22,7 @@ import { useMoney } from '@/lib/money';
 import { describeRule } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
 import { BankTransferDetails } from './bank-details';
+import { PhoneGate } from '../auth/phone-gate';
 import { useCategoryLabel } from '@/components/brand/category';
 import { WhatsAppButton } from '@/components/brand/whatsapp-button';
 import { readAttribution, track } from '@/lib/analytics';
@@ -36,7 +37,12 @@ export function CheckoutPage({ batchId }: { batchId: string }) {
   if (batch.isPending) return <LoadingBlock rows={3} height={160} />;
   if (batch.isError) return <ErrorState error={batch.error} onRetry={() => void batch.refetch()} />;
   if (!['ENROLLING', 'RUNNING', 'FULL'].includes(batch.data.status)) return <ErrorState error={new ApiError(409, 'NOT_OPEN', t.checkout.notOpen)} />;
-  return <Checkout batch={batch.data} />;
+  // Google/Apple accounts start without a phone: asked once, before the first payment.
+  return (
+    <PhoneGate>
+      <Checkout batch={batch.data} />
+    </PhoneGate>
+  );
 }
 
 function Checkout({ batch }: { batch: BatchDetail }) {

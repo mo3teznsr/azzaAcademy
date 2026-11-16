@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import type { Container } from './container';
 import { errorHandler } from './http/error-handler';
 import { sessionMiddleware } from './http/middleware';
+import { enabledSocialProviders } from './auth/social';
 import type { AppEnv } from './http/types';
 import { adminAppStoreRoutes } from './modules/appstore-sync/appstore-sync.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
@@ -61,6 +62,8 @@ export function createApp(container: Container) {
   );
   app.onError(errorHandler);
 
+  // Which "Continue with Google / Apple" buttons to show: public, and outside /api/auth so better-auth never shadows it.
+  app.get('/api/v1/auth-providers', (c) => c.json(enabledSocialProviders(config.socialAuth), 200, { 'Cache-Control': 'public, max-age=300' }));
   app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
   // Webhooks are registered before the session middleware: they authenticate by signature, not by user.
   app.route(

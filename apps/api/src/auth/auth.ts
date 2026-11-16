@@ -7,6 +7,7 @@ import type { AppConfig } from '../core/config';
 import type { Mailer } from '../core/ports';
 import type { Db } from '../infrastructure/db';
 import { authEmailsIn, emailsIn } from '../modules/notifications/email-templates';
+import { createSocialSignUpHook, socialAuthOptions } from './social';
 import type { InviteRegistry } from './user-provisioner';
 
 /** The user's language for auth emails (better-auth passes the user row, which has `locale`). */
@@ -33,6 +34,8 @@ export interface CurrencyCheck {
 /**
  * better-auth `before` hook for the user-writing endpoints, so they cannot bypass our validation:
  * - `POST /sign-up/email` (HTTP only): `phone` required and stored in E.164; an unavailable `displayCurrency` becomes AED.
+ *   Google/Apple sign-ups (`/sign-in/social`, `/callback/:id`) are not checked here: they create the account without a phone,
+ *   and the web app asks for it before the first purchase (see `./social.ts`).
  * - `POST /update-user`: `phone`, when sent, must be valid (stored in E.164; `null`/`''` clears it); `displayCurrency`,
  *   when sent, must be an enabled currency (400 `CURRENCY_UNAVAILABLE`).
  */
@@ -94,11 +97,13 @@ function updatePhone(raw: unknown): string | null {
 export type OnUserCreated = (user: { id: string; acquisition?: unknown }) => Promise<unknown>;
 
 export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: InviteRegistry, currencies?: CurrencyCheck, onUserCreated?: OnUserCreated) {
+  const social = socialAuthOptions(config.socialAuth);
   return betterAuth({
     secret: config.BETTER_AUTH_SECRET,
     baseURL: config.BETTER_AUTH_URL,
     basePath: '/api/auth',
-    trustedOrigins: config.trustedOrigins,
+    // Apple posts its callback from appleid.apple.com, so that origin is trusted only when Sign in with Apple is on.
+    trustedOrigins: [...config.trustedOrigins, ...social.trustedOrigins],
     // The web app (azza.academy) and API (api.azza.academy) are different hosts; the web
     // proxy reads the session cookie, so it must be scoped to the shared parent domain.
     advanced: {
@@ -135,10 +140,16 @@ export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: 
         void mailer.send({ to: user.email, ...authEmailsIn(localeOf(user)).verifyEmail(user.name, url) });
       },
     },
+    // Google and Apple, each only when configured (see config.ts). Linking by email keeps better-auth's safe defaults: both the
+    // provider's email and the existing account's email must be verified, and no provider is trusted blindly.
+    socialProviders: social.socialProviders,
+    account: { accountLinking: { enabled: true, allowDifferentEmails: false } },
     hooks: { before: createUserHooks(currencies) },
     databaseHooks: {
       user: {
         create: {
+          // Social sign-ups: role, locale, timezone, currency and first-touch attribution (email sign-ups use the hook above).
+          before: createSocialSignUpHook((code) => isSelectable(currencies, code)),
           after: async (user) => {
             if (onUserCreated) await onUserCreated({ id: user.id, acquisition: user.acquisition }).catch(() => undefined);
           },

@@ -22,6 +22,32 @@ const envSchema = z.object({
   COOKIE_DOMAIN: z.string().optional(),
   CLIENT_IP_HEADER: z.string().optional(),
 
+  /**
+   * Sign in with Google (optional; off unless both are set). From Google Cloud Console → APIs & Services → Credentials →
+   * "OAuth client ID" of type *Web application*. Its "Authorized redirect URI" must be `${BETTER_AUTH_URL}/api/auth/callback/google`
+   * (e.g. https://api.azza.academy/api/auth/callback/google) and its "Authorized JavaScript origin" the web app (WEB_URL).
+   */
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  /** Extra Google OAuth client ids (comma-separated) whose ID tokens are accepted, for native sign-in from the iOS and Android apps. */
+  GOOGLE_NATIVE_CLIENT_IDS: z.string().default(''),
+
+  /**
+   * Sign in with Apple (optional; off unless the Services ID, team, key id and key are all set). From Apple Developer →
+   * Certificates, Identifiers & Profiles:
+   * - APPLE_SIGNIN_CLIENT_ID: a *Services ID* (e.g. `academy.azza.signin`) with Sign in with Apple enabled, its domain set to the
+   *   API host and its Return URL to `${BETTER_AUTH_URL}/api/auth/callback/apple`.
+   * - APPLE_TEAM_ID: the 10-character Team ID (top right of the developer account).
+   * - APPLE_SIGNIN_KEY_ID + the key: a *Key* with "Sign in with Apple" enabled, downloaded once as a .p8. Give it by path
+   *   (preferred) or inline with literal `\n` for newlines. The client secret is signed from it at runtime (no expiry to manage).
+   * ID tokens from the iOS app (audience = APPLE_BUNDLE_ID) are accepted too.
+   */
+  APPLE_SIGNIN_CLIENT_ID: z.string().optional(),
+  APPLE_TEAM_ID: z.string().optional(),
+  APPLE_SIGNIN_KEY_ID: z.string().optional(),
+  APPLE_SIGNIN_PRIVATE_KEY_PATH: z.string().optional(),
+  APPLE_SIGNIN_PRIVATE_KEY: z.string().optional(),
+
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USER: z.string().optional(),
@@ -75,11 +101,62 @@ export interface AppStoreConnectConfig {
   appAppleId: string;
 }
 
+/** Social sign-in providers that are fully configured; `null` = that button is hidden and the provider is off. */
+export interface SocialAuthConfig {
+  google: { clientIds: string[]; clientSecret: string } | null;
+  apple: { clientId: string; teamId: string; keyId: string; privateKey: string; audience: string[] } | null;
+}
+
 export type AppConfig = z.infer<typeof envSchema> & {
   trustedOrigins: string[];
   appleEnvironments: AppleEnvironment[];
   appStoreConnect: AppStoreConnectConfig | null;
+  socialAuth: SocialAuthConfig;
 };
+
+const csv = (v: string | undefined) => (v ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+
+/** Never throws: a provider with missing pieces (or an unreadable Apple key) is simply off. Keys are never logged. */
+export function resolveSocialAuth(
+  env: Pick<
+    z.infer<typeof envSchema>,
+    | 'GOOGLE_CLIENT_ID'
+    | 'GOOGLE_CLIENT_SECRET'
+    | 'GOOGLE_NATIVE_CLIENT_IDS'
+    | 'APPLE_SIGNIN_CLIENT_ID'
+    | 'APPLE_TEAM_ID'
+    | 'APPLE_SIGNIN_KEY_ID'
+    | 'APPLE_SIGNIN_PRIVATE_KEY_PATH'
+    | 'APPLE_SIGNIN_PRIVATE_KEY'
+    | 'APPLE_BUNDLE_ID'
+  >,
+  readFile: (path: string) => string = (p) => readFileSync(p, 'utf8'),
+): SocialAuthConfig {
+  const googleId = env.GOOGLE_CLIENT_ID?.trim();
+  const googleSecret = env.GOOGLE_CLIENT_SECRET?.trim();
+  // The web client id comes first: better-auth uses the first one for the redirect flow, all of them as ID-token audiences.
+  const google = googleId && googleSecret ? { clientIds: [...new Set([googleId, ...csv(env.GOOGLE_NATIVE_CLIENT_IDS)])], clientSecret: googleSecret } : null;
+
+  const clientId = env.APPLE_SIGNIN_CLIENT_ID?.trim();
+  const teamId = env.APPLE_TEAM_ID?.trim();
+  const keyId = env.APPLE_SIGNIN_KEY_ID?.trim();
+  let privateKey: string | undefined;
+  if (clientId && teamId && keyId) {
+    if (env.APPLE_SIGNIN_PRIVATE_KEY_PATH?.trim()) {
+      try {
+        privateKey = readFile(env.APPLE_SIGNIN_PRIVATE_KEY_PATH.trim());
+      } catch {
+        console.warn('[auth] APPLE_SIGNIN_PRIVATE_KEY_PATH could not be read; Sign in with Apple is off');
+      }
+    }
+    if (!privateKey && env.APPLE_SIGNIN_PRIVATE_KEY?.trim()) privateKey = env.APPLE_SIGNIN_PRIVATE_KEY.replace(/\\n/g, '\n');
+  }
+  const apple =
+    clientId && teamId && keyId && privateKey?.includes('PRIVATE KEY')
+      ? { clientId, teamId, keyId, privateKey, audience: [...new Set([clientId, env.APPLE_BUNDLE_ID])] }
+      : null;
+  return { google, apple };
+}
 
 /** Never throws: a missing or unreadable key just leaves the sync disabled. The key is never logged. */
 export function resolveAppStoreConnect(
@@ -124,6 +201,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     ...parsed.data,
     appleEnvironments: appleEnvironments as AppleEnvironment[],
     appStoreConnect: resolveAppStoreConnect(parsed.data),
+    socialAuth: resolveSocialAuth(parsed.data),
     trustedOrigins: parsed.data.TRUSTED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean),
   };
 }
