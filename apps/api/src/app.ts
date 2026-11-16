@@ -72,6 +72,7 @@ export function createApp(container: Container) {
       subscriptions: services.subscriptions,
       sessions: services.sessions,
       appleIap: services.appleIap,
+      tabby: services.tabby,
     }),
   );
   // Public, token-signed ICS feed (calendar apps send no cookies).

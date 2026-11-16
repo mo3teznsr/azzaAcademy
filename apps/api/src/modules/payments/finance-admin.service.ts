@@ -1,13 +1,14 @@
 import { aedToFils, formatMoney, type ReviewTransferInput } from '@azza/shared';
 import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { BusinessRuleError, NotFoundError } from '../../core/errors';
-import type { PaymentGateway, PaymentWebhookEvent } from '../../core/ports';
+import type { PaymentGateway, PaymentWebhookEvent, TabbyGateway } from '../../core/ports';
 import { addHours, formatInZone } from '../../core/time';
 import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { RefundEarningsReverser } from '../payouts/payout.service';
 import type { EnrollmentLifecycle } from './enrollment-lifecycle';
 import type { OrderRecord, PaymentsRepository } from './payments.repository';
+import { tabbyRefundKey } from './tabby/tabby-payment.service';
 
 const aed = (fils: number) => formatMoney(fils / 100, 'AED');
 
@@ -21,6 +22,8 @@ export class FinanceAdminService {
     private readonly notifier: Notifier,
     /** Fixed, or read per use (the admin-editable rule). */
     private readonly bankTransferHoldHours: RuleValue<number>,
+    /** Refunds of TABBY orders; null when Tabby is not configured. */
+    private readonly tabby: Pick<TabbyGateway, 'refund'> | null = null,
   ) {}
 
   private async loadOrder(id: string) {
@@ -127,7 +130,13 @@ export class FinanceAdminService {
       const unbooked = bookedBefore + amountFils - fresh.refundedFils;
       return { order: unbooked > 0 ? await this.recordRefund(fresh, unbooked, input.reason) : fresh, refundFils: amountFils, manual };
     }
-    manual = true; // bank refund is sent by finance; we record it
+    if (order.method === 'TABBY') {
+      // Tabby returns the money to the customer (cancelling instalments first); we book it once Tabby accepted it.
+      if (!this.tabby || !order.tabbyPaymentId) throw new BusinessRuleError('Tabby is not configured, refund from the Tabby dashboard', 'TABBY_NOT_CONFIGURED');
+      await this.tabby.refund(order.tabbyPaymentId, amountFils, tabbyRefundKey(order.id, order.refundedFils), input.reason);
+    } else {
+      manual = true; // bank refund is sent by finance; we record it
+    }
     return { order: await this.recordRefund(order, amountFils, input.reason), refundFils: amountFils, manual };
   }
 

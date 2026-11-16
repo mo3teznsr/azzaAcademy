@@ -39,6 +39,17 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
+  /** Tabby "pay in 4" (UAE). The method is offered only when the secret key and merchant code are set.
+   * `sk_test_…` keys hit Tabby's test environment on the same base URL. The public key is not used by the
+   * API (no Tabby JS on the web) but is kept with the others. Webhooks are registered with
+   * `header: { title: TABBY_WEBHOOK_HEADER, value: TABBY_WEBHOOK_SECRET }` and verified by that header. */
+  TABBY_SECRET_KEY: z.string().optional(),
+  TABBY_PUBLIC_KEY: z.string().optional(),
+  TABBY_MERCHANT_CODE: z.string().optional(),
+  TABBY_WEBHOOK_SECRET: z.string().optional(),
+  TABBY_WEBHOOK_HEADER: z.string().min(1).default('X-Tabby-Webhook-Secret'),
+  TABBY_API_URL: z.url().default('https://api.tabby.ai'),
+
   /** Apple In-App Purchase (iOS seats). Environments whose signed transactions are accepted, comma-separated:
    * `Production`, `Sandbox` (TestFlight, App Review and sandbox testers). Production needs APPLE_APP_APPLE_ID. */
   APPLE_BUNDLE_ID: z.string().min(1).default('com.futuretech.azza'),
@@ -81,6 +92,9 @@ export type AppConfig = z.infer<typeof envSchema> & {
   appStoreConnect: AppStoreConnectConfig | null;
 };
 
+/** Tabby is offered only with a secret key and a merchant code. */
+export const tabbyConfigured = (c: Pick<AppConfig, 'TABBY_SECRET_KEY' | 'TABBY_MERCHANT_CODE'>) => !!(c.TABBY_SECRET_KEY?.trim() && c.TABBY_MERCHANT_CODE?.trim());
+
 /** Never throws: a missing or unreadable key just leaves the sync disabled. The key is never logged. */
 export function resolveAppStoreConnect(
   env: Pick<z.infer<typeof envSchema>, 'ASC_ISSUER_ID' | 'ASC_KEY_ID' | 'ASC_PRIVATE_KEY_PATH' | 'ASC_PRIVATE_KEY' | 'APPLE_APP_APPLE_ID'>,
@@ -117,6 +131,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   const appleEnvironments = parsed.data.APPLE_IAP_ENVIRONMENT.split(',').map((e) => e.trim()).filter(Boolean);
   const unknown = appleEnvironments.filter((e) => !(APPLE_ENVIRONMENTS as readonly string[]).includes(e));
   if (unknown.length) throw new Error(`Invalid environment:\n  APPLE_IAP_ENVIRONMENT: unknown ${unknown.join(', ')} (use Production and/or Sandbox)`);
+  if (parsed.data.TABBY_SECRET_KEY && parsed.data.TABBY_MERCHANT_CODE && !parsed.data.TABBY_WEBHOOK_SECRET && parsed.data.NODE_ENV === 'production') {
+    throw new Error('Invalid environment:\n  TABBY_WEBHOOK_SECRET is required when Tabby is configured');
+  }
   if (appleEnvironments.includes('Production') && !parsed.data.APPLE_APP_APPLE_ID) {
     throw new Error('Invalid environment:\n  APPLE_APP_APPLE_ID is required when APPLE_IAP_ENVIRONMENT includes Production');
   }
