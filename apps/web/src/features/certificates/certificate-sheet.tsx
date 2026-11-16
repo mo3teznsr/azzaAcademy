@@ -5,6 +5,21 @@ import type { Certificate } from '@/lib/api/types';
 
 export const verifyUrl = (code: string) => `${typeof window === 'undefined' ? '' : window.location.origin}/verify/${encodeURIComponent(code)}`;
 
+/** LinkedIn's "Add licence or certification" form, filled in: the learner only confirms it on their profile. */
+export function linkedInAddUrl(cert: { code: string; issuedAt: string }, courseName: string) {
+  const issued = new Date(cert.issuedAt);
+  const params = new URLSearchParams({
+    startTask: 'CERTIFICATION_NAME',
+    name: courseName,
+    organizationName: 'Azza',
+    issueYear: String(issued.getUTCFullYear()),
+    issueMonth: String(issued.getUTCMonth() + 1),
+    certUrl: verifyUrl(cert.code),
+    certId: cert.code,
+  });
+  return `https://www.linkedin.com/profile/add?${params}`;
+}
+
 /**
  * Print-only certificate (A4 landscape). Rendered off-screen and revealed by the `.print-sheet`
  * print rules in globals.css, so "Download" is the browser's Save as PDF.

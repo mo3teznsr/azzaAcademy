@@ -19,6 +19,7 @@ import { useMoney } from '@/lib/money';
 import { useAuth } from '@/lib/auth/use-auth';
 import { cn } from '@/lib/utils';
 import { BankTransferDetails } from '../checkout/bank-details';
+import { track } from '@/lib/analytics';
 
 type Method = 'CARD' | 'BANK';
 
@@ -69,6 +70,7 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
   const start = useMutation({
     mutationFn: () => subscriptionsApi.subscribe(course.id, { plan, method: method === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE', displayCurrency: money.currency }),
     onSuccess: (r) => {
+      track('subscribe', { item_id: course.slug, item_name: course.titleEn, method: plan, ...(chosen != null && { value: chosen / 100, currency: 'AED' as const }) });
       if (isCardResult(r)) {
         // Stripe's hosted page takes over; the webhook activates the plan and /learn/recorded/return waits for it.
         setRedirecting(true);

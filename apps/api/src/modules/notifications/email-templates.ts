@@ -126,6 +126,16 @@ const enApp = {
     html: layout('en', `You’re on the list, ${name}`, `<p>${course} · ${batch} is full. We’ll email you the moment a seat opens.</p>`),
     text: `Waitlisted for ${course} ${batch}.`,
   }),
+  transferReminder: (name: string, reference: string, amount: string, expires: string, url: string) => ({
+    subject: `Your seat is held until ${expires} · ${reference}`,
+    html: layout('en', `Still want your seat, ${name}?`, `<p>We're holding your seat until <b>${expires}</b>. Transfer <b>${amount}</b> with reference <b>${reference}</b> and upload the receipt to keep it.</p>${button(url, 'Upload my receipt')}`),
+    text: `Seat held until ${expires}. Transfer ${amount}, reference ${reference}, and upload the receipt: ${url}`,
+  }),
+  checkoutLapsed: (name: string, course: string, batch: string, url: string) => ({
+    subject: `Your checkout didn’t finish · ${course} ${batch}`,
+    html: layout('en', `Still interested, ${name}?`, `<p>Your payment for ${course} · ${batch} didn't go through, so we released the seat. Seats are still open: you can finish in a minute.</p>${button(url, 'Finish checkout')}`),
+    text: `Your checkout for ${course} ${batch} didn't finish. Seats are still open: ${url}`,
+  }),
   invite: (name: string, role: string, url: string) => ({
     subject: 'You’re invited to Azza',
     html: layout('en', `Welcome, ${name}`, `<p>An administrator created a <b>${role.toLowerCase()}</b> account for you. Choose a password to get started.</p>${button(url, 'Set my password')}`),
@@ -212,6 +222,16 @@ const arApp: typeof enApp = {
     subject: `أنت في قائمة الانتظار · ${course} ${batch}`,
     html: layout('ar', `أنت في القائمة يا ${name}`, `<p>${course} · ${ltr(batch)} مكتمل. سنراسلك فور توفّر مقعد.</p>`),
     text: `أنت في قائمة انتظار ${course} ${batch}.`,
+  }),
+  transferReminder: (name, reference, amount, expires, url) => ({
+    subject: `مقعدك محجوز حتى ${expires} · ${reference}`,
+    html: layout('ar', `ما زلت تريد مقعدك يا ${name}؟`, `<p>نحجز مقعدك حتى <b>${expires}</b>. حوّل <b>${ltr(amount)}</b> بالمرجع <b>${ltr(reference)}</b> وارفع الإيصال ليبقى لك.</p>${button(url, 'ارفع الإيصال')}`),
+    text: `مقعدك محجوز حتى ${expires}. حوّل ${amount} بالمرجع ${reference} وارفع الإيصال: ${url}`,
+  }),
+  checkoutLapsed: (name, course, batch, url) => ({
+    subject: `لم يكتمل الدفع · ${course} ${batch}`,
+    html: layout('ar', `ما زلت مهتمًا يا ${name}؟`, `<p>لم يكتمل الدفع في ${course} · ${ltr(batch)}، فحرّرنا المقعد. ما زالت المقاعد متاحة ويمكنك الإكمال في دقيقة.</p>${button(url, 'أكمل الدفع')}`),
+    text: `لم يكتمل الدفع في ${course} ${batch}. ما زالت المقاعد متاحة: ${url}`,
   }),
   invite: (name, role, url) => ({
     subject: 'دعوة للانضمام إلى عازة',

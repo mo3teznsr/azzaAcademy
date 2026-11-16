@@ -37,7 +37,7 @@ export class PrismaReportRepository {
         paidAt: { gte: from, lt: to },
         OR: [{ reviewNote: null }, { reviewNote: { not: 'MANUAL_REFUND_NEEDED' } }],
       },
-      select: { totalFils: true, vatFils: true, feeFils: true, refundedFils: true },
+      select: { totalFils: true, vatFils: true, feeFils: true, refundedFils: true, subscription: { select: { provider: true } } },
     });
   }
 

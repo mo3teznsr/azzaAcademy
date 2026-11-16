@@ -20,6 +20,8 @@ PR #7 (`fix/money-leaks`):
 
 ## Phase 1: Quick wins (two weeks)
 
+Status: done. Items 1–4 in PR #8, items 5–8 in PR #9. Still open from this phase: notices older than this plan are English-only in-app and in push (emails are bilingual); certificate Open Graph images; a cookie consent banner before the ad pixels are switched on.
+
 1. **Live class reminders.** A scheduler job every 5 minutes sends `SESSION_STARTING` 24 h, 1 h and 10 min before each live session to enrolled students (push, in-app, email for 24 h). Columns on `LiveSession` remember which reminders went out, so reruns send nothing new. `SESSION_MISSED` after a session ends tells absent students the recording link.
 2. **Emails in the user's language.** `email-templates.ts` takes the recipient's locale and renders Arabic (RTL) or English. New users default to Arabic.
 3. **SEO basics on the web.** `sitemap.ts` (courses, teachers, static pages), `robots.ts`, `metadataBase`, Arabic metadata when the locale is Arabic, JSON-LD (`Course` with `hasCourseInstance` and `AggregateRating`, `FAQPage`, `Person`, `Organization`) and Open Graph images.

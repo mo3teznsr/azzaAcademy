@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { BadgeCheck, CreditCard, Landmark, ShieldCheck } from 'lucide-react';
 import type { CheckoutInput, PaymentMethod } from '@azza/shared';
@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { BankTransferDetails } from './bank-details';
 import { useCategoryLabel } from '@/components/brand/category';
 import { WhatsAppButton } from '@/components/brand/whatsapp-button';
+import { readAttribution, track } from '@/lib/analytics';
 
 /** Card covers Apple Pay and Google Pay too: Stripe's page offers them. */
 type Choice = 'CARD' | 'BANK';
@@ -53,6 +54,9 @@ function Checkout({ batch }: { batch: BatchDetail }) {
   const [redirecting, setRedirecting] = useState(false);
 
   const input: CheckoutInput = { batchId: batch.id, method: methodOf(choice), couponCode: coupon, displayCurrency: money.currency, bankAccountId };
+  useEffect(() => {
+    track('begin_checkout', { item_id: batch.course.slug, item_name: batch.course.titleEn });
+  }, [batch.course.slug, batch.course.titleEn]);
   const quote = useQuery({
     queryKey: ['quote', batch.id, input.method, coupon ?? '', money.currency],
     queryFn: () => checkoutApi.quote(input),
@@ -62,7 +66,7 @@ function Checkout({ batch }: { batch: BatchDetail }) {
   const selectedBank = bankAccountId ?? banks.data?.[0]?.id;
 
   const start = useMutation({
-    mutationFn: () => checkoutApi.checkout({ ...input, bankAccountId: choice === 'BANK' ? selectedBank : undefined }),
+    mutationFn: () => checkoutApi.checkout({ ...input, bankAccountId: choice === 'BANK' ? selectedBank : undefined, attribution: readAttribution() ?? undefined }),
     onSuccess: (r) => {
       // Card / wallets: Stripe's hosted page takes over; the webhook confirms the order, /checkout/return shows it.
       if (isStripeResult(r)) {

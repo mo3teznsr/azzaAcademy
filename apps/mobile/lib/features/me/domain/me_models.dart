@@ -116,6 +116,7 @@ String? notificationRoute(String type, Map<String, dynamic> data) {
   // Reminders before a live class open its lobby; a missed class opens the library, where its recording is.
   if (type == 'SESSION_STARTING' && data['sessionId'] != null) return '/sessions/${data['sessionId']}/lobby';
   if (type == 'SESSION_MISSED') return '/student/library';
+  if (type == 'CERTIFICATE_ISSUED') return '/me/certificates';
   if (data['sessionId'] != null) {
     return type.contains('LIVE') || type.contains('LOBBY') ? '/sessions/${data['sessionId']}/lobby' : null;
   }

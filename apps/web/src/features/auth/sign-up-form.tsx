@@ -15,6 +15,7 @@ import { useApiError } from '@/lib/api-errors';
 import { AuthShell, FormBanner } from './auth-shell';
 import { Field, IconInput, PasswordInput } from './fields';
 import { signUpSchema, type SignUpValues } from './schemas';
+import { readAttribution, track } from '@/lib/analytics';
 
 export function SignUpForm() {
   const { t, locale } = useI18n();
@@ -33,11 +34,14 @@ export function SignUpForm() {
     setError(null);
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const { data, error: err } = await authClient.signUp.email({ ...values, locale, timezone });
+      // Where this visitor first came from (UTM tags, ad click ids), stored once on the account.
+      const attribution = readAttribution();
+      const { data, error: err } = await authClient.signUp.email({ ...values, locale, timezone, ...(attribution && { acquisition: JSON.stringify(attribution) }) });
       if (err || !data) {
         setError(err ? apiError(err) : t.auth.errors.generic);
         return;
       }
+      track('sign_up', { method: 'email' });
       // Same `next` rule as sign-in: only same-origin paths the new role may open (e.g. /teach).
       const role = (data.user as { role?: string }).role;
       const allowed = nextParam ? rolesForPath(nextParam) : null;

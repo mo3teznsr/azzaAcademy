@@ -285,7 +285,9 @@ function RecordedLine({ r }: { r: NonNullable<AdminReport['recorded']> }) {
     [c.gross, r.grossFils],
     [c.refunds, -r.refundsFils],
     [c.fees, -r.feesFils],
-    [c.vat, -r.vatFils],
+    // VAT the platform owes, then the VAT Apple collects and pays itself on App Store sales.
+    [c.vat, -(r.vatFils - (r.appleVatFils ?? 0))],
+    ...(r.appleVatFils ? ([[c.appleVat, -r.appleVatFils]] as Array<[string, number]>) : []),
     [c.net, r.netFils, true],
   ];
   const empty = r.grossFils === 0 && r.refundsFils === 0;

@@ -69,8 +69,14 @@ export class ReportService {
       kpis: kpis.kpis,
       previous: prevKpis.kpis,
       revenueByCourse: kpis.revenueByCourse,
-      /** Recorded-plan revenue, its own line: net = gross − refunds − fees − VAT. */
-      recorded: new EarningsCalculator().batchBreakdown(recordedPayments),
+      /**
+       * Recorded-plan revenue, its own line: net = gross − refunds − fees − VAT. `appleVatFils` is the part of the VAT
+       * Apple collects and pays on App Store sales: not the platform's money, and not VAT the platform owes the FTA.
+       */
+      recorded: {
+        ...new EarningsCalculator().batchBreakdown(recordedPayments),
+        appleVatFils: new EarningsCalculator().batchBreakdown(recordedPayments.filter((p) => p.subscription?.provider === 'APPLE')).vatFils,
+      },
       batches: batchRows.map(withSeats).map((b) => ({
         id: b.id,
         code: b.code,

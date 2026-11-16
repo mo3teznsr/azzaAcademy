@@ -1,4 +1,4 @@
-import type { BatchStatus, EnrollmentStatus, OrderStatus, PaymentMethod } from '@azza/shared';
+import type { Attribution, BatchStatus, EnrollmentStatus, OrderStatus, PaymentMethod } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
 import { SEAT_HOLDING } from './enrollment-state';
 import type { CouponState } from './price-calculator';
@@ -127,7 +127,7 @@ export interface PaymentsRepository {
   staleHolds(before: Date): Promise<EnrollmentRecord[]>;
 
   referenceExists(reference: string): Promise<boolean>;
-  createOrder(data: NewOrder): Promise<OrderRecord>;
+  createOrder(data: NewOrder & { attribution?: Attribution | null }): Promise<OrderRecord>;
   findOrder(id: string): Promise<OrderRecord | null>;
   findOrderByPaymentIntent(paymentIntentId: string): Promise<OrderRecord | null>;
   findOrderByCheckoutSession(sessionId: string): Promise<OrderRecord | null>;
@@ -139,6 +139,9 @@ export interface PaymentsRepository {
   updateOrder(id: string, patch: OrderPatch): Promise<OrderRecord>;
   /** AWAITING_PAYMENT / AWAITING_RECEIPT orders whose hold expired. */
   staleOrders(now: Date): Promise<OrderRecord[]>;
+  /** Bank transfer orders still waiting for a receipt whose hold ends in (now, until], not reminded yet. */
+  transfersExpiringSoon(now: Date, until: Date): Promise<OrderRecord[]>;
+  markReceiptReminded(orderId: string, at: Date): Promise<void>;
 
   findCoupon(code: string): Promise<CouponRecord | null>;
   /** Paid redemptions plus the student's still-open orders carrying this coupon. */
@@ -264,8 +267,8 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
     return (await this.db.order.count({ where: { reference } })) > 0;
   }
 
-  async createOrder(data: NewOrder) {
-    return toOrder(await this.db.order.create({ data, select: orderFields }));
+  async createOrder({ attribution, ...data }: NewOrder & { attribution?: Attribution | null }) {
+    return toOrder(await this.db.order.create({ data: { ...data, ...(attribution && { attribution }) }, select: orderFields }));
   }
 
   async findOrder(id: string) {
@@ -321,6 +324,19 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
       select: orderFields,
     });
     return rows.map(toOrder);
+  }
+
+  async transfersExpiringSoon(now: Date, until: Date) {
+    const rows = await this.db.order.findMany({
+      where: { status: 'AWAITING_RECEIPT', receiptReminderAt: null, expiresAt: { gt: now, lte: until } },
+      select: orderFields,
+      take: 500,
+    });
+    return rows.map(toOrder);
+  }
+
+  async markReceiptReminded(orderId: string, at: Date) {
+    await this.db.order.update({ where: { id: orderId }, data: { receiptReminderAt: at } });
   }
 
   async findCoupon(code: string) {

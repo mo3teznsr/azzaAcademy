@@ -749,7 +749,7 @@ export interface AdminDashboard {
   sessionsToday: { count: number; items: DashboardSession[] };
   activeBatches: number;
   seats: { held: number; capacity: number; filledPercent: number };
-  revenueMonth: { grossFils: number; refundedFils: number; vatFils: number; netFils: number; orders: number };
+  revenueMonth: { grossFils: number; refundedFils: number; vatFils: number; appleVatFils?: number; netFils: number; orders: number };
   alerts: Array<{ type: DashboardAlertType; severity: 'info' | 'warning'; count: number }>;
 }
 
@@ -943,6 +943,8 @@ export interface RecordedRevenue {
   refundsFils: number;
   feesFils: number;
   vatFils: number;
+  /** The part of `vatFils` Apple collects and pays on App Store sales. */
+  appleVatFils?: number;
   netFils: number;
 }
 

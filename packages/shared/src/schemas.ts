@@ -286,6 +286,8 @@ export const checkoutInput = z.object({
   couponCode: z.string().trim().optional(),
   displayCurrency: currencyCode.default('AED'),
   bankAccountId: id.optional(),
+  /** Where the buyer came from (UTM tags, click ids); unknown keys are dropped by the API. */
+  attribution: z.record(z.string(), z.string().max(300)).optional(),
 });
 export type CheckoutInput = z.infer<typeof checkoutInput>;
 

@@ -118,6 +118,17 @@ function notificationHref(type: string, data: unknown, role: Role | null): strin
     case 'RECORDING_READY':
     case 'SESSION_MISSED':
       return sessionId ? `/library/${sessionId}` : '/library';
+    case 'CERTIFICATE_ISSUED':
+      return '/certificates';
+    case 'TRANSFER_HOLD_ENDING': {
+      const orderId = field('orderId');
+      return orderId ? `/orders/${orderId}` : null;
+    }
+    case 'ORDER_EXPIRED': {
+      // A lapsed card checkout on a class that still has room goes back to checkout.
+      const batchId = field('batchId');
+      return batchId ? `/checkout/${batchId}` : null;
+    }
     case 'SESSION_LIVE':
     case 'SESSION_STARTING':
       return sessionId ? `/live/${sessionId}` : null;

@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { bearer } from 'better-auth/plugins';
-import { isValidPhone, toE164 } from '@azza/shared';
+import { cleanAttribution, isValidPhone, toE164 } from '@azza/shared';
 import type { AppConfig } from '../core/config';
 import type { Mailer } from '../core/ports';
 import type { Db } from '../infrastructure/db';
@@ -41,7 +41,10 @@ export function createUserHooks(currencies?: CurrencyCheck) {
     const body = (ctx.body ?? {}) as Record<string, unknown>;
     if (ctx.path === '/sign-up/email') {
       if (!ctx.request) return;
-      const next: Record<string, unknown> = { ...body, phone: signUpPhone(body) };
+      const acquisition = cleanAttribution(body.acquisition);
+      const next: Record<string, unknown> = { ...body, phone: signUpPhone(body), acquisition: acquisition ? JSON.stringify(acquisition) : undefined };
+      // Unknown or empty attribution is dropped (defu ignores undefined in the context, so clear the body itself too).
+      if (!acquisition && ctx.body && typeof ctx.body === 'object') delete (ctx.body as Record<string, unknown>).acquisition;
       if (body.displayCurrency !== undefined) {
         const code = typeof body.displayCurrency === 'string' ? body.displayCurrency.trim().toUpperCase() : '';
         next.displayCurrency = code && (await isSelectable(currencies, code)) ? code : 'AED';
@@ -49,7 +52,10 @@ export function createUserHooks(currencies?: CurrencyCheck) {
       return { context: { body: next } };
     }
     if (ctx.path === '/update-user') {
+      // Attribution is recorded once, at sign-up.
+      if (ctx.body && typeof ctx.body === 'object') delete (ctx.body as Record<string, unknown>).acquisition;
       const next: Record<string, unknown> = { ...body };
+      delete next.acquisition;
       if (body.phone !== undefined) {
         next.phone = updatePhone(body.phone);
         // better-auth merges hook context with defu, which ignores null; set the clear on the body itself too.
@@ -108,6 +114,7 @@ export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: 
         timezone: { type: 'string', required: false, defaultValue: 'Asia/Dubai' },
         displayCurrency: { type: 'string', required: false, defaultValue: 'AED' },
         phone: { type: 'string', required: false },
+        acquisition: { type: 'string', required: false },
       },
     },
     emailAndPassword: {
