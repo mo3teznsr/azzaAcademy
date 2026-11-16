@@ -104,6 +104,9 @@ import { ConversationService } from './modules/conversations/conversation.servic
 import { PrismaSupportRepository } from './modules/support/support.repository';
 import { SupportService } from './modules/support/support.service';
 import { PrismaSubscriptionRepository } from './modules/subscriptions/subscription.repository';
+import { PrismaAllAccessRepository } from './modules/all-access/all-access.repository';
+import { AllAccessEarningsService } from './modules/all-access/all-access-earnings.service';
+import { AllAccessPlanService } from './modules/all-access/all-access-plan.service';
 import { SubscriptionService } from './modules/subscriptions/subscription.service';
 import { SubscriptionTransferQueries } from './modules/subscriptions/transfer-queries';
 import { PrismaReferralRepository } from './modules/referrals/referral.repository';
@@ -322,11 +325,22 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   );
 
   const subscriptionRepo = new PrismaSubscriptionRepository(db);
+  const allAccessRepo = new PrismaAllAccessRepository(db);
+  const allAccessPlan = new AllAccessPlanService(allAccessRepo, payments);
+  const allAccessEarnings = new AllAccessEarningsService(allAccessRepo, new EarningsCalculator(), settings, clock, async () => (await rules()).earningHoldDays);
   const subscriptions = new SubscriptionService(
     subscriptionRepo,
     payments,
     notifications,
-    payouts,
+    // Per-course charges accrue at once; all-access charges are settled when their period ends (job below). Each
+    // reverser ignores the other's payments, so a refund goes through both.
+    {
+      accrueForSubscriptionPayment: (id) => payouts.accrueForSubscriptionPayment(id),
+      reverseSubscriptionPayment: async (id, refundedFils) => {
+        await payouts.reverseSubscriptionPayment(id, refundedFils);
+        await allAccessEarnings.reversePayment(id, refundedFils);
+      },
+    },
     clock,
     new ReferenceGenerator(),
     prices,
@@ -354,7 +368,11 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const meService = new MeService(new PrismaMeRepository(db), clock, lifecycle, adapters.storage, currencies);
   const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator(), undefined, notifications, config.WEB_URL);
   const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
-  resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
+  resyncRecordedPrices = async () => {
+    const r = await courses.resyncRecordedStripePrices();
+    await allAccessPlan.resyncStripePrices().catch((e) => console.error('[stripe] re-syncing the all-access prices failed', e));
+    return r;
+  };
   const taxDocuments = new TaxDocumentService(db, clock);
   const services = {
     settings,
@@ -381,6 +399,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     payouts,
     checkout,
     subscriptions,
+    allAccessPlan,
+    allAccessEarnings,
     finance,
     appleIap: new AppleIapService(paymentsRepo, adapters.apple, checkout, finance, subscriptions, appleCommission),
     tabby,
@@ -436,6 +456,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
     // Referral rewards once the friend's first payment has passed the earning hold without a refund.
     { name: 'referral-rewards', everyMs: 60 * 60_000, run: () => referrals.run() },
+    // All-access teacher shares, once per paid period after it ends (split by minutes watched). Idempotent.
+    { name: 'settle-all-access-periods', everyMs: 60 * 60_000, run: () => allAccessEarnings.run() },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 
