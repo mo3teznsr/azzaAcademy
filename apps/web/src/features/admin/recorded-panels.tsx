@@ -356,6 +356,20 @@ export function SubscribersPanel({ course, admin }: { course: Course; admin: boo
     : [];
   return (
     <div className="flex flex-col gap-5">
+      <Panel className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <SectionHeader title={t.courseInsights.insightsTitle} size="sm" />
+          <p className="text-sm text-muted-foreground">{t.courseInsights.insightsBody}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/studio/courses/${course.id}/questions`}>{t.courseInsights.questions}</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={`/studio/courses/${course.id}/analytics`}>{t.courseInsights.analytics}</Link>
+          </Button>
+        </div>
+      </Panel>
       <Panel>
         <SectionHeader title={c.title} size="sm" />
         {counts.isError ? (
