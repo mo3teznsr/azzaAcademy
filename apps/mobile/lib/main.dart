@@ -9,6 +9,8 @@ import 'core/prefs/app_prefs.dart';
 import 'core/providers.dart';
 import 'core/push/push_service.dart';
 import 'features/auth/presentation/session_hooks.dart';
+import 'features/learn/presentation/lesson_video_player.dart';
+import 'features/learn/presentation/lesson_video_tracker.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +31,10 @@ Future<void> main() async {
         sharedPreferencesProvider.overrideWithValue(prefs),
         pushServiceProvider.overrideWithValue(push),
         ...productionSessionHooks(),
+        // Uploaded lesson videos play in the app, resume where the learner stopped and save progress.
+        lessonPlayerBuilderProvider.overrideWithValue(
+          (context, request) => LessonVideoPlayer(request: request),
+        ),
       ],
       child: const AzzaApp(),
     ),

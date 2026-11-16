@@ -1840,5 +1840,8 @@
   "adminCurrencySymbolTooLong": "يصل الرمز المختصر إلى 8 أحرف.",
   "errPhoneInvalid": "يبدو أن رقم الهاتف غير صحيح.",
   "errCurrencyUnavailable": "هذه العملة لم تعد متاحة.",
-  "errBaseCurrencyLocked": "الدرهم هو العملة الأساسية ولا يمكن تغييرها بهذه الطريقة."
+  "errBaseCurrencyLocked": "الدرهم هو العملة الأساسية ولا يمكن تغييرها بهذه الطريقة.",
+  "lessonVideoPlay": "تشغيل",
+  "lessonVideoPause": "إيقاف مؤقت",
+  "lessonVideoSpeed": "سرعة التشغيل"
 }

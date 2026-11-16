@@ -71,6 +71,15 @@ export function receivedFils(order: Pick<OrderRecord, 'totalFils'>, tx: Pick<App
   return tx.currency === 'AED' && tx.priceMilliunits !== null ? Math.round(tx.priceMilliunits / 10) : order.totalFils;
 }
 
+/**
+ * Apple's commission on an in-app purchase, in fils: `percent` of the price before VAT (Apple charges its cut on the
+ * VAT-exclusive price and remits the VAT itself). Recorded as the payment's `feeFils`, so teacher earnings and the
+ * platform's net exclude it, as they exclude Stripe's fee.
+ */
+export function appleCommissionFils(totalFils: number, vatFils: number, percent: number): number {
+  return Math.max(0, Math.round(((totalFils - vatFils) * percent) / 100));
+}
+
 /** App Store Server Notifications V2 we act on: a refunded or revoked (Family Sharing) purchase gives the seat back. */
 export function appleNotificationAction(notificationType: string): 'refund' | 'ignore' {
   return notificationType === 'REFUND' || notificationType === 'REVOKE' ? 'refund' : 'ignore';

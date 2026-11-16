@@ -1,7 +1,7 @@
 import { aedToFils, formatMoney, type ReviewTransferInput } from '@azza/shared';
 import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { BusinessRuleError, NotFoundError } from '../../core/errors';
-import type { PaymentGateway } from '../../core/ports';
+import type { PaymentGateway, PaymentWebhookEvent } from '../../core/ports';
 import { addHours, formatInZone } from '../../core/time';
 import { appEmails } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
@@ -120,11 +120,66 @@ export class FinanceAdminService {
 
     let manual = false;
     if (order.method === 'STRIPE' && order.stripePaymentIntentId) {
+      const bookedBefore = order.refundedFils;
       await this.gateway.refund(order.stripePaymentIntentId, amountFils);
-    } else {
-      manual = true; // bank refund is sent by finance; we record it
+      // Stripe's `charge.refunded` webhook may have booked this refund already (see handleStripeRefund): book only the rest.
+      const fresh = await this.loadOrder(orderId);
+      const unbooked = bookedBefore + amountFils - fresh.refundedFils;
+      return { order: unbooked > 0 ? await this.recordRefund(fresh, unbooked, input.reason) : fresh, refundFils: amountFils, manual };
     }
+    manual = true; // bank refund is sent by finance; we record it
     return { order: await this.recordRefund(order, amountFils, input.reason), refundFils: amountFils, manual };
+  }
+
+  /**
+   * Stripe `charge.refunded` for a seat order: a refund made in the Stripe dashboard, or the echo of an admin refund.
+   * The event carries the charge's cumulative refunded amount, so only what is not booked yet is recorded (replays and
+   * echoes are no-ops). Plan invoices are left to the subscriptions.
+   */
+  async handleStripeRefund(evt: PaymentWebhookEvent) {
+    if (evt.type !== 'refund.succeeded' || !evt.paymentIntentId || evt.amountRefundedFils == null) return { handled: false };
+    const order = await this.repo.findOrderByPaymentIntent(evt.paymentIntentId);
+    if (!order) return { handled: false };
+    const target = Math.min(Math.max(evt.amountRefundedFils, 0), order.totalFils);
+    const unbooked = target - order.refundedFils;
+    if (unbooked <= 0) return { handled: true, duplicate: true };
+    if (order.status !== 'PAID') {
+      console.warn(`[finance] Stripe refund of ${unbooked} fils on order ${order.reference} (${order.status}) was not booked`);
+      return { handled: true, ignored: order.status };
+    }
+    await this.recordRefund(order, unbooked, 'Refunded through Stripe');
+    return { handled: true };
+  }
+
+  /**
+   * Stripe chargebacks on a seat order. Opened: the admins are alerted, since evidence must reach Stripe before its deadline.
+   * Closed as `lost`: the money is gone, so it is booked like a refund (teacher earnings reversed, seat released when full).
+   * Won or withdrawn: nothing changes. Replays are no-ops (a lost dispute books only what is not booked yet).
+   */
+  async handleStripeDispute(evt: PaymentWebhookEvent) {
+    if ((evt.type !== 'dispute.opened' && evt.type !== 'dispute.closed') || !evt.paymentIntentId) return { handled: false };
+    const order = await this.repo.findOrderByPaymentIntent(evt.paymentIntentId);
+    if (!order) return { handled: false };
+    const amountFils = evt.disputeAmountFils ?? order.totalFils;
+    if (evt.type === 'dispute.opened') {
+      await this.notifier.notifyRole(
+        'ADMIN',
+        {
+          type: 'PAYMENT_DISPUTED',
+          title: `Payment disputed · ${order.reference}`,
+          body: `${aed(amountFils)} disputed with the card issuer. Respond in the Stripe dashboard before the deadline.`,
+          data: { orderId: order.id, reference: order.reference },
+        },
+        { channels: ['in-app', 'realtime', 'email'] },
+      );
+      return { handled: true };
+    }
+    if (evt.disputeStatus !== 'lost') return { handled: true }; // won or withdrawn: the money stays
+    // A dispute covers what was not refunded yet; a full loss leaves the order REFUNDED, so a replay books nothing.
+    const unbooked = Math.min(amountFils, order.totalFils - order.refundedFils);
+    if (unbooked <= 0 || order.status !== 'PAID') return { handled: true, duplicate: true };
+    await this.recordRefund(order, unbooked, 'Card payment reversed by the card issuer (chargeback)');
+    return { handled: true };
   }
 
   /**

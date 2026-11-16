@@ -5,7 +5,7 @@ import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction } fro
 import { FixedClock } from '../src/infrastructure/clock';
 import { AppStoreSignedDataVerifier } from '../src/infrastructure/payments/apple-store-verifier';
 import { FakePaymentGateway } from '../src/infrastructure/payments/stripe-gateway';
-import { decideApplePurchase, receivedFils } from '../src/modules/payments/apple/apple-iap-policy';
+import { appleCommissionFils, decideApplePurchase, receivedFils } from '../src/modules/payments/apple/apple-iap-policy';
 import { AppleIapService } from '../src/modules/payments/apple/apple-iap.service';
 import { AppleIapCheckout } from '../src/modules/payments/checkout/apple-iap-checkout';
 import { CheckoutStrategyRegistry } from '../src/modules/payments/checkout/checkout-strategy';
@@ -122,6 +122,13 @@ describe('apple purchase decision', () => {
     expect(receivedFils({ totalFils: 92_400 }, { priceMilliunits: 899_990, currency: 'SAR' })).toBe(92_400);
     expect(receivedFils({ totalFils: 92_400 }, { priceMilliunits: null, currency: null })).toBe(92_400);
   });
+
+  test("Apple's commission is a percent of the price before VAT", () => {
+    expect(appleCommissionFils(92_400, 4_400, 15)).toBe(13_200);
+    expect(appleCommissionFils(92_400, 4_400, 30)).toBe(26_400);
+    expect(appleCommissionFils(92_400, 4_400, 0)).toBe(0);
+    expect(appleCommissionFils(0, 0, 15)).toBe(0);
+  });
 });
 
 describe('apple in-app purchase flow', () => {
@@ -213,6 +220,14 @@ describe('apple in-app purchase flow', () => {
     expect(replay.duplicate).toBe(true);
     expect(replay.order.id).toBe(order.id);
     expect(notifier.types().filter((t) => t === 'ENROLLED')).toHaveLength(1);
+  });
+
+  test("the paid order records Apple's commission as its fee (15% of AED 880 before VAT)", async () => {
+    const withCut = new AppleIapService(repo, verifier, checkout, finance, undefined, async () => 15);
+    const { order } = await startOrder();
+    verifier.transactions.set('jws-1', tx({ appAccountToken: order.appleAppAccountToken }));
+    const { order: paid } = await withCut.verifyPurchase('sara', { orderId: order.id, signedTransaction: 'jws-1' });
+    expect(paid).toMatchObject({ status: 'PAID', totalFils: 92_400, vatFils: 4_400, feeFils: 13_200 });
   });
 
   test('restored transactions without orderId find their order by appAccountToken', async () => {

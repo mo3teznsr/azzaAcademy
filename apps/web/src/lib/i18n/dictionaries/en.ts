@@ -1703,8 +1703,8 @@ const en = {
       rulesCard: {
         title: 'Business rules',
         intro: 'Change them here and they apply right away. Reset goes back to the default set on the server.',
-        units: { VAT_PERCENT: '%', EARNING_HOLD_DAYS: 'days', MIN_PAYOUT_AED: 'AED', BANK_TRANSFER_HOLD_HOURS: 'hours' },
-        labels: { VAT_PERCENT: 'VAT', EARNING_HOLD_DAYS: 'Earning hold (days)', MIN_PAYOUT_AED: 'Minimum payout (AED)', BANK_TRANSFER_HOLD_HOURS: 'Bank transfer hold (hours)' },
+        units: { VAT_PERCENT: '%', EARNING_HOLD_DAYS: 'days', MIN_PAYOUT_AED: 'AED', BANK_TRANSFER_HOLD_HOURS: 'hours', APPLE_COMMISSION_PERCENT: '%' },
+        labels: { VAT_PERCENT: 'VAT', EARNING_HOLD_DAYS: 'Earning hold (days)', MIN_PAYOUT_AED: 'Minimum payout (AED)', BANK_TRANSFER_HOLD_HOURS: 'Bank transfer hold (hours)', APPLE_COMMISSION_PERCENT: 'Apple in-app purchase commission' },
         default: 'Default: {v}',
         range: 'Allowed {min}–{max}',
         reset: 'Reset to default',

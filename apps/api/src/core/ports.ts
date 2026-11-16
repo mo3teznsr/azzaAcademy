@@ -108,12 +108,15 @@ export interface WebhookInvoice {
   customerId?: string | null;
 }
 export interface PaymentWebhookEvent {
-  type: 'payment.succeeded' | 'payment.failed' | 'refund.succeeded' | 'subscription.updated' | 'invoice.paid' | 'invoice.failed' | 'ignored';
+  type: 'payment.succeeded' | 'payment.failed' | 'refund.succeeded' | 'dispute.opened' | 'dispute.closed' | 'subscription.updated' | 'invoice.paid' | 'invoice.failed' | 'ignored';
   paymentIntentId?: string;
   /** `refund.succeeded`: the invoice the refunded charge paid (a subscription charge), when there is one. */
   invoiceId?: string;
   /** `refund.succeeded`: the charge's cumulative refunded amount in fils. */
   amountRefundedFils?: number;
+  /** `dispute.opened` / `dispute.closed`: the disputed amount in fils, and Stripe's dispute status (`won`, `lost`, `needs_response`, …). */
+  disputeAmountFils?: number;
+  disputeStatus?: string;
   /** Set for Stripe Checkout events; the order is found by it. */
   checkoutSessionId?: string;
   feeFils?: number;

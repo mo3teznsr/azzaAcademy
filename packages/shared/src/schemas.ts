@@ -790,6 +790,7 @@ export const ruleSettingsInput = z.object({
   earningHoldDays: z.number().int().min(0).max(90).nullable().optional(),
   minPayoutAed: z.number().int().min(0).max(100_000).nullable().optional(),
   bankTransferHoldHours: z.number().int().min(1).max(168).nullable().optional(),
+  appleCommissionPercent: z.number().int().min(0).max(30).nullable().optional(),
 });
 export type RuleSettingsInput = z.infer<typeof ruleSettingsInput>;
 
@@ -849,6 +850,7 @@ export interface RuleSettings {
   EARNING_HOLD_DAYS: number;
   MIN_PAYOUT_AED: number;
   BANK_TRANSFER_HOLD_HOURS: number;
+  APPLE_COMMISSION_PERCENT: number;
 }
 
 /** `GET /admin/settings`, and the response of `PUT /admin/settings/rules` and `/contact`. */

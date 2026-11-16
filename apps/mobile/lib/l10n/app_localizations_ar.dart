@@ -6782,4 +6782,13 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get errBaseCurrencyLocked =>
       'الدرهم هو العملة الأساسية ولا يمكن تغييرها بهذه الطريقة.';
+
+  @override
+  String get lessonVideoPlay => 'تشغيل';
+
+  @override
+  String get lessonVideoPause => 'إيقاف مؤقت';
+
+  @override
+  String get lessonVideoSpeed => 'سرعة التشغيل';
 }

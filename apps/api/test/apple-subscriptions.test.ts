@@ -111,7 +111,7 @@ const note = (notificationType: string, subtype: string | null, transaction: App
   notificationUUID: `n-${notificationType}-${subtype}-${transaction.transactionId}`, notificationType, subtype, environment: 'Sandbox', transaction, ...over,
 });
 
-function setup() {
+function setup(appleCommissionPercent = 0) {
   let at = T0;
   const notifier = new RecordingNotifier();
   const repo = new MemRepo(() => at);
@@ -127,6 +127,7 @@ function setup() {
   const service = new SubscriptionService(
     repo, new FakePaymentGateway(new PriceCalculator(5)), notifier, payouts, { now: () => at }, new ReferenceGenerator(), new PriceCalculator(5),
     'https://azza.test', (m) => logged.push(m), verifier, () => `AAAAAAAA-0000-4000-8000-00000000000${++tokenSeq}`,
+    null, null, appleCommissionPercent,
   );
   const apple = new AppleIapService({} as never, verifier, {} as never, {} as never, service);
   const notify = (n: AppleNotification) => {
@@ -138,8 +139,8 @@ function setup() {
 
 
 /** A learner who tapped subscribe (INCOMPLETE row `sub1`) and finished the purchase (verified). */
-async function active(plan: 'MONTHLY' | 'YEARLY' = 'YEARLY') {
-  const ctx = setup();
+async function active(plan: 'MONTHLY' | 'YEARLY' = 'YEARLY', appleCommissionPercent = 0) {
+  const ctx = setup(appleCommissionPercent);
   const res = await ctx.service.subscribe('sam', 'logo-design', { plan, method: 'APPLE_IAP' });
   ctx.verifier.txs.set('jws-1', tx({ productId: plan === 'YEARLY' ? YEARLY : MONTHLY, appAccountToken: res.appAccountToken }));
   const verified = await ctx.service.verifyApple('sam', 'jws-1');
@@ -197,6 +198,11 @@ describe('apple verify', () => {
     expect(accrued).toEqual(['pay0']);
     expect(notifier.types()).toContain('SUBSCRIPTION_ACTIVE');
     expect(notifier.types()).toContain('SUBSCRIPTION_RECEIPT');
+  });
+
+  test("Apple's commission is recorded as the payment fee, on the price before VAT", async () => {
+    const { repo } = await active('YEARLY', 15);
+    expect(repo.payments[0]).toMatchObject({ totalFils: 105_000, vatFils: 5_000, feeFils: 15_000 });
   });
 
   test('without an Apple AED price the course price plus VAT is used', async () => {

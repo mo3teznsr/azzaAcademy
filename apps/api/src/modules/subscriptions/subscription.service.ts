@@ -6,6 +6,7 @@ import { addHours, formatInZone } from '../../core/time';
 import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction, Clock, PaymentGateway, PaymentWebhookEvent, WebhookInvoice, WebhookSubscription } from '../../core/ports';
 import { appEmails } from '../notifications/email-templates';
 import type { Notice, Notifier } from '../notifications/notification.types';
+import { appleCommissionFils } from '../payments/apple/apple-iap-policy';
 import { resolveBankAccount } from '../payments/checkout/bank-transfer-checkout';
 import type { BankAccountRecord, PaymentsRepository } from '../payments/payments.repository';
 import type { PriceCalculator } from '../payments/price-calculator';
@@ -129,6 +130,8 @@ export class SubscriptionService {
     private readonly transfers: TransferOptions | null = null,
     /** Admin lists, subscriber counts and the reminder job's bookkeeping. */
     private readonly admin: SubscriptionAdminRepository | null = null,
+    /** Apple's commission in percent of the pre-VAT price (admin-editable; read at use time). */
+    private readonly appleCommissionPercent: RuleValue<number> = 0,
   ) {}
 
   // ───────── learner actions ─────────
@@ -719,6 +722,31 @@ export class SubscriptionService {
     return changed ? { handled: true } : { handled: true, duplicate: true };
   }
 
+  /** A chargeback on a plan invoice: admins are alerted when it opens; a lost one is booked like a refund (earning reversed). */
+  private async onChargeDisputed(evt: PaymentWebhookEvent) {
+    if (!evt.invoiceId) return { handled: false };
+    const payment = await this.repo.paymentByProviderId(evt.invoiceId);
+    if (!payment) return { handled: false };
+    const amountFils = evt.disputeAmountFils ?? payment.totalFils;
+    if (evt.type === 'dispute.opened') {
+      await this.notifier.notifyRole(
+        'ADMIN',
+        {
+          type: 'PAYMENT_DISPUTED',
+          title: 'Plan payment disputed',
+          body: `${(amountFils / 100).toFixed(2)} AED disputed with the card issuer. Respond in the Stripe dashboard before the deadline.`,
+          data: { paymentId: payment.id, subscriptionId: payment.subscriptionId },
+        },
+        { channels: ['in-app', 'realtime', 'email'] },
+      );
+      return { handled: true };
+    }
+    if (evt.disputeStatus !== 'lost') return { handled: true }; // won or withdrawn: the money stays
+    // A dispute covers what was not refunded yet, so the loss brings the refunded total to refunds + disputed (capped at the total).
+    const changed = await this.recordRefund(payment, payment.refundedFils + amountFils);
+    return changed ? { handled: true } : { handled: true, duplicate: true };
+  }
+
   // ───────── admin reads ─────────
 
   /** `GET /admin/subscriptions` */
@@ -1069,6 +1097,7 @@ export class SubscriptionService {
   }
 
   private async recordApplePayment(row: SubscriptionRow, course: SubscribableCourse, tx: AppleTransaction, plan: SubscriptionPlan, total = this.appleTotalFils(tx, course, plan, row), extra: Partial<Pick<NewSubscriptionPayment, 'status' | 'refundedFils' | 'reviewNote'>> = {}) {
+    const split = this.prices.splitInclusive(total);
     return this.repo.upsertPayment({
       subscriptionId: row.id,
       userId: row.userId,
@@ -1077,9 +1106,9 @@ export class SubscriptionService {
       plan,
       periodStart: tx.purchaseDate ?? this.clock.now(),
       periodEnd: tx.expiresDate ?? this.clock.now(),
-      ...this.prices.splitInclusive(total),
+      ...split,
       totalFils: total,
-      feeFils: 0, // Apple's commission is not recorded (as with seat purchases)
+      feeFils: appleCommissionFils(total, split.vatFils, await resolveRule(this.appleCommissionPercent)),
       status: 'PAID',
       paidAt: this.clock.now(),
       ...extra,
@@ -1249,6 +1278,9 @@ export class SubscriptionService {
         return evt.invoice ? this.onInvoiceFailed(evt.invoice) : { handled: false };
       case 'refund.succeeded':
         return this.onChargeRefunded(evt);
+      case 'dispute.opened':
+      case 'dispute.closed':
+        return this.onChargeDisputed(evt);
       default:
         return { handled: false };
     }

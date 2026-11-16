@@ -3845,5 +3845,8 @@
   "adminCurrencySymbolTooLong": "The symbol can be up to 8 characters.",
   "errPhoneInvalid": "That phone number doesn't look right.",
   "errCurrencyUnavailable": "That currency isn't available any more.",
-  "errBaseCurrencyLocked": "The dirham is the base currency and can't be changed that way."
+  "errBaseCurrencyLocked": "The dirham is the base currency and can't be changed that way.",
+  "lessonVideoPlay": "Play",
+  "lessonVideoPause": "Pause",
+  "lessonVideoSpeed": "Playback speed"
 }

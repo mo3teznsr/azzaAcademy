@@ -1702,8 +1702,8 @@ const ar: Dictionary = {
       rulesCard: {
         title: 'قواعد العمل',
         intro: 'عدّلها هنا فتُطبَّق فورًا. إعادة الضبط ترجع إلى القيمة الافتراضية المحدّدة في الخادم.',
-        units: { VAT_PERCENT: '%', EARNING_HOLD_DAYS: 'يوم', MIN_PAYOUT_AED: 'درهم', BANK_TRANSFER_HOLD_HOURS: 'ساعة' },
-        labels: { VAT_PERCENT: 'ضريبة القيمة المضافة', EARNING_HOLD_DAYS: 'تجميد المستحقات (أيام)', MIN_PAYOUT_AED: 'الحد الأدنى لصرف المستحقات (درهم)', BANK_TRANSFER_HOLD_HOURS: 'مهلة التحويل البنكي (ساعات)' },
+        units: { VAT_PERCENT: '%', EARNING_HOLD_DAYS: 'يوم', MIN_PAYOUT_AED: 'درهم', BANK_TRANSFER_HOLD_HOURS: 'ساعة', APPLE_COMMISSION_PERCENT: '%' },
+        labels: { VAT_PERCENT: 'ضريبة القيمة المضافة', EARNING_HOLD_DAYS: 'تجميد المستحقات (أيام)', MIN_PAYOUT_AED: 'الحد الأدنى لصرف المستحقات (درهم)', BANK_TRANSFER_HOLD_HOURS: 'مهلة التحويل البنكي (ساعات)', APPLE_COMMISSION_PERCENT: 'عمولة Apple على الشراء داخل التطبيق' },
         default: 'الافتراضي: {v}',
         range: 'المسموح {min}–{max}',
         reset: 'إعادة إلى الافتراضي',
