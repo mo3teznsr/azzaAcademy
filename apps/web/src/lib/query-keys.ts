@@ -68,6 +68,8 @@ export const qk = {
     liveRooms: ['admin', 'live-rooms'] as const,
     users: (params: object) => ['admin', 'users', params] as const,
     transfers: (status?: string) => ['admin', 'transfers', status ?? 'all'] as const,
+    statements: ['admin', 'bank-statements'] as const,
+    statement: (id: string) => ['admin', 'bank-statements', id] as const,
     orders: (params: object) => ['admin', 'orders', params] as const,
     bankAccounts: ['admin', 'bank-accounts'] as const,
     coupons: ['admin', 'coupons'] as const,
