@@ -236,6 +236,15 @@ describe('approval', () => {
     expect(repo.subs[0]?.currentPeriodEnd).toEqual(new Date('2027-01-20T10:00:00Z'));
   });
 
+  test('a bank statement line approves a payment that never got a receipt; without it, no', async () => {
+    const { service, res, repo } = await subscribed();
+    expect(await codeOf(service.reviewTransfer(res.paymentId, { approve: true }, 'admin1'))).toBe('PAYMENT_NOT_REVIEWABLE');
+    expect(await codeOf(service.reviewTransfer(res.paymentId, { approve: false, note: 'x' }, 'admin1', { fromBankStatement: true }))).toBe('PAYMENT_NOT_REVIEWABLE');
+    await service.reviewTransfer(res.paymentId, { approve: true, receivedFils: repo.tpay[0]!.totalFils }, 'admin1', { fromBankStatement: true });
+    expect(repo.tpay[0]).toMatchObject({ status: 'PAID', reviewedById: 'admin1' });
+    expect(repo.subs[0]).toMatchObject({ status: 'ACTIVE' });
+  });
+
   test('an amount that differs from the total is refused', async () => {
     const { service, res } = await uploaded();
     expect(await codeOf(service.reviewTransfer(res.paymentId, { approve: true, receivedFils: 9_000 }, 'a'))).toBe('AMOUNT_MISMATCH');
