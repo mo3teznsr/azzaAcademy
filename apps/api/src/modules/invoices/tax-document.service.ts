@@ -1,7 +1,7 @@
 import type { Clock } from '../../core/ports';
 import { ForbiddenError, NotFoundError } from '../../core/errors';
 import type { Db } from '../../infrastructure/db';
-import { creditNoteAmounts, taxDocumentNumber, vatPercentOf, type TaxDocumentKind } from './tax-document-math';
+import { creditNoteAmounts, organizationBuyer, seatPackDescription, taxDocumentNumber, vatPercentOf, type TaxBuyer, type TaxDocumentKind } from './tax-document-math';
 
 export interface Supplier {
   legalName: string;
@@ -12,8 +12,10 @@ export interface Supplier {
 interface Source {
   orderId?: string;
   subscriptionPaymentId?: string;
-  userId: string;
-  buyer: { name: string; email: string };
+  seatPackId?: string;
+  /** Null for an organization's seat pack (the buyer is the organization). */
+  userId: string | null;
+  buyer: TaxBuyer;
   description: string;
   subtotalFils: number;
   discountFils: number;
@@ -26,7 +28,8 @@ const PLAN_EN = { MONTHLY: 'monthly plan', YEARLY: 'yearly plan' } as const;
 
 /**
  * UAE tax invoices and credit notes. A job issues what is missing: an invoice for every card or bank-transfer payment made
- * since invoicing started (App Store sales are invoiced by Apple, the merchant of record), and a credit note for every
+ * since invoicing started (App Store sales are invoiced by Apple, the merchant of record), an invoice to the organization
+ * for every seat pack, and a credit note for every
  * refund not credited yet. Nothing is issued until the supplier's TRN is set in the admin settings.
  */
 export class TaxDocumentService {
@@ -52,7 +55,7 @@ export class TaxDocumentService {
     let creditNotes = 0;
     for (const src of await this.sources(setup.from)) {
       let invoice = await this.db.taxDocument.findFirst({
-        where: { kind: 'INVOICE', ...(src.orderId ? { orderId: src.orderId } : { subscriptionPaymentId: src.subscriptionPaymentId }) },
+        where: { kind: 'INVOICE', ...sourceKey(src) },
         include: { creditNotes: { select: { totalFils: true, vatFils: true } } },
       });
       if (!invoice) {
@@ -89,6 +92,7 @@ export class TaxDocumentService {
           invoiceId: invoiceId ?? null,
           orderId: src.orderId ?? null,
           subscriptionPaymentId: src.subscriptionPaymentId ?? null,
+          seatPackId: src.seatPackId ?? null,
           userId: src.userId,
           description: src.description,
           ...money,
@@ -103,7 +107,7 @@ export class TaxDocumentService {
 
   /** Card and bank-transfer payments since invoicing started, with what has been refunded on each. */
   private async sources(from: Date): Promise<Source[]> {
-    const [orders, payments] = await Promise.all([
+    const [orders, payments, packs] = await Promise.all([
       this.db.order.findMany({
         where: { status: { in: ['PAID', 'REFUNDED'] }, method: { not: 'APPLE_IAP' }, paidAt: { gte: from }, totalFils: { gt: 0 } },
         select: {
@@ -122,6 +126,19 @@ export class TaxDocumentService {
           subscription: { select: { course: { select: { titleEn: true } } } },
         },
         orderBy: { paidAt: 'asc' },
+        take: 500,
+      }),
+      // Seat packs are invoiced when the deal is recorded (companies pay against the invoice), cancelled ones included:
+      // their credit note follows from refundedFils.
+      this.db.seatPack.findMany({
+        where: { invoicedAt: { gte: from }, totalFils: { gt: 0 } },
+        select: {
+          id: true, seats: true, subtotalFils: true, discountFils: true, vatFils: true, totalFils: true, refundedFils: true,
+          organization: { select: { legalName: true, billingEmail: true, trn: true, address: true } },
+          batch: { select: { code: true, course: { select: { titleEn: true } } } },
+          course: { select: { titleEn: true } },
+        },
+        orderBy: { invoicedAt: 'asc' },
         take: 500,
       }),
     ]);
@@ -149,6 +166,17 @@ export class TaxDocumentService {
         totalFils: p.totalFils,
         refundedFils: p.refundedFils,
       })),
+      ...packs.map((k) => ({
+        seatPackId: k.id,
+        userId: null,
+        buyer: organizationBuyer(k.organization),
+        description: seatPackDescription({ seats: k.seats, courseTitle: k.batch?.course.titleEn ?? k.course?.titleEn ?? '', batchCode: k.batch?.code ?? null }),
+        subtotalFils: k.subtotalFils,
+        discountFils: k.discountFils,
+        vatFils: k.vatFils,
+        totalFils: k.totalFils,
+        refundedFils: k.refundedFils,
+      })),
     ];
   }
 
@@ -157,12 +185,25 @@ export class TaxDocumentService {
     return this.db.taxDocument.findMany({ where: { userId }, orderBy: { issuedAt: 'desc' }, select: listSelect });
   }
 
-  /** `GET /tax-documents/:id` — its buyer or an admin. */
+  /** `GET /tax-documents/:id` — its buyer, an admin, or (seat packs) a manager of the buying organization. */
   async get(id: string, viewer: { id: string; role: string }) {
-    const doc = await this.db.taxDocument.findUnique({ where: { id }, include: { invoice: { select: { id: true, number: true } } } });
+    const doc = await this.db.taxDocument.findUnique({
+      where: { id },
+      include: { invoice: { select: { id: true, number: true } }, seatPack: { select: { organizationId: true } } },
+    });
     if (!doc) throw new NotFoundError('Tax document', id);
-    if (doc.userId !== viewer.id && viewer.role !== 'ADMIN') throw new ForbiddenError('This document belongs to another account');
-    return doc;
+    const { seatPack, ...rest } = doc;
+    if (doc.userId === viewer.id || viewer.role === 'ADMIN') return rest;
+    if (seatPack) {
+      const manager = await this.db.organizationMember.findFirst({ where: { organizationId: seatPack.organizationId, userId: viewer.id, role: 'MANAGER' }, select: { id: true } });
+      if (manager) return rest;
+    }
+    throw new ForbiddenError('This document belongs to another account');
+  }
+
+  /** `GET /org/:orgId/tax-documents` (after the caller checked the viewer manages the organization). */
+  forOrganization(organizationId: string) {
+    return this.db.taxDocument.findMany({ where: { seatPack: { organizationId } }, orderBy: { issuedAt: 'desc' }, select: listSelect });
   }
 
   /** `GET /admin/tax-documents?from&to` — for VAT returns. */
@@ -190,6 +231,13 @@ export class TaxDocumentService {
   }
 }
 
+/** The invoice of a payment is found by what was paid: an order, a plan payment or a seat pack. */
+function sourceKey(src: Source) {
+  if (src.orderId) return { orderId: src.orderId };
+  if (src.seatPackId) return { seatPackId: src.seatPackId };
+  return { subscriptionPaymentId: src.subscriptionPaymentId };
+}
+
 const listSelect = {
   id: true,
   kind: true,
@@ -204,5 +252,6 @@ const listSelect = {
   issuedAt: true,
   orderId: true,
   subscriptionPaymentId: true,
+  seatPackId: true,
   invoice: { select: { id: true, number: true } },
 } as const;

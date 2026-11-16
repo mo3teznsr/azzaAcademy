@@ -1,5 +1,6 @@
 import type { Attribution, BatchStatus, EnrollmentStatus, OrderStatus, PaymentMethod } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
+import { SEAT_PACK_LIVE, reservedSeats } from '../organizations/seat-pack-policy';
 import { SEAT_HOLDING } from './enrollment-state';
 import type { CouponState } from './price-calculator';
 
@@ -231,10 +232,18 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
     return { ...rest, courseId: course.id, courseTitle: course.titleEn, firstSessionAt: sessions[0]?.startsAt ?? null };
   }
 
-  heldSeats(batchId: string, excludeUserId?: string) {
-    return this.db.enrollment.count({
-      where: { batchId, status: { in: SEAT_HOLDING }, ...(excludeUserId && { userId: { not: excludeUserId } }) },
-    });
+  /** Enrollments on a seat, plus the seats organizations bought and have not assigned yet (held for them). */
+  async heldSeats(batchId: string, excludeUserId?: string) {
+    const [enrolled, packs] = await Promise.all([
+      this.db.enrollment.count({
+        where: { batchId, status: { in: SEAT_HOLDING }, ...(excludeUserId && { userId: { not: excludeUserId } }) },
+      }),
+      this.db.seatPack.findMany({
+        where: { batchId, status: { in: SEAT_PACK_LIVE } },
+        select: { seats: true, _count: { select: { assignments: { where: { status: 'ACTIVE' } } } } },
+      }),
+    ]);
+    return enrolled + reservedSeats(packs.map((p) => ({ seats: p.seats, used: p._count.assignments })));
   }
 
   async setBatchStatus(batchId: string, status: BatchStatus) {

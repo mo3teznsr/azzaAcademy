@@ -24,6 +24,8 @@ enum SubscriptionProvider {
   STRIPE
   APPLE
   BANK_TRANSFER
+  /// A seat from an organization's seat pack (no payments; access ends with the pack).
+  ORGANIZATION
 }
 
 enum SubscriptionStatus {
@@ -228,6 +230,9 @@ model User {
   referralsMade   Referral[] @relation("ReferralReferrer")
   referredBy      Referral?  @relation("ReferralReferred")
   ownCoupons      Coupon[]   @relation("CouponOwner")
+  organizationMemberships OrganizationMember[]
+  seatAssignments         SeatAssignment[] @relation("SeatAssignee")
+  seatPacksCreated        SeatPack[]       @relation("SeatPackCreator")
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -347,6 +352,7 @@ model Course {
   reviews       CourseReview[]
   savedBy       SavedCourse[]
   subscriptions Subscription[]
+  seatPacks     SeatPack[]
   quizzes       Quiz[]
   earnings      Earning[]
   certificates  Certificate[]
@@ -408,6 +414,7 @@ model Batch {
   announcements  Announcement[]
   conversations  Conversation[]
   supportTickets SupportTicket[]
+  seatPacks      SeatPack[]
 
   @@unique([courseId, code])
   @@index([teacherId, status])
@@ -479,7 +486,8 @@ model Enrollment {
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
-  orders Order[]
+  orders          Order[]
+  seatAssignments SeatAssignment[]
 
   @@unique([userId, batchId])
   @@index([batchId, status])
@@ -1066,6 +1074,7 @@ model Subscription {
   updatedAt                  DateTime             @updatedAt
 
   payments SubscriptionPayment[]
+  seatAssignment SeatAssignment?
 
   @@index([userId, courseId])
   @@index([status, currentPeriodEnd])
@@ -1370,8 +1379,11 @@ model TaxDocument {
   order                 Order?          @relation(fields: [orderId], references: [id])
   subscriptionPaymentId String?
   subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id])
-  userId                String
-  user                  User            @relation(fields: [userId], references: [id])
+  /// The learner who paid; null on an organization's seat-pack invoice (the buyer is the organization).
+  userId                String?
+  user                  User?           @relation(fields: [userId], references: [id])
+  seatPackId            String?
+  seatPack              SeatPack?       @relation(fields: [seatPackId], references: [id])
   description           String
   subtotalFils          Int
   discountFils          Int             @default(0)
@@ -1386,6 +1398,7 @@ model TaxDocument {
   @@index([userId, issuedAt])
   @@index([orderId])
   @@index([subscriptionPaymentId])
+  @@index([seatPackId])
 }
 
 /// The last number used in each series (`INVOICE`, `CREDIT_NOTE`). Incremented in the same transaction as the document
@@ -1445,4 +1458,125 @@ model ReferralProgram {
   /// Teachers who refer a paying student get this as a BONUS earning instead of a coupon. 0 = they get the coupon.
   teacherBonusFils Int      @default(2500)
   updatedAt        DateTime @updatedAt
+}
+
+// ───────────────────────── Companies and schools ─────────────────────────
+
+/// A company or school that buys seats for its people. Its legal name, address and TRN go on its tax invoices.
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  legalName    String
+  /// UAE Tax Registration Number (15 digits), when the organization is VAT registered.
+  trn          String?
+  address      String?
+  contactName  String
+  contactEmail String
+  contactPhone String?
+  /// Where tax invoices are sent.
+  billingEmail String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  members   OrganizationMember[]
+  seatPacks SeatPack[]
+}
+
+enum OrganizationRole {
+  /// A learner who can be given seats.
+  LEARNER
+  /// The organization's contact: assigns and revokes seats and sees the organization report.
+  MANAGER
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           OrganizationRole @default(LEARNER)
+  createdAt      DateTime         @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+enum SeatPackStatus {
+  /// Tax invoice issued, payment (bank transfer) not received yet. Seats can be assigned.
+  INVOICED
+  PAID
+  /// Called off: unused seats go back to the batch; an issued invoice gets a credit note for the unused seats.
+  CANCELLED
+}
+
+/// A corporate deal: `seats` seats in one batch (live) or one recorded course, bought by an organization. Its own
+/// order (not an `Order`, which is one learner's seat): it carries the money, and the tax-invoice job invoices it to the
+/// organization. Unassigned seats of an INVOICED or PAID pack are held in the batch, like seats on hold.
+model SeatPack {
+  id               String         @id @default(cuid())
+  reference        String         @unique
+  organizationId   String
+  organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  batchId          String?
+  batch            Batch?         @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  /// Recorded course (batchId is null then).
+  courseId         String?
+  course           Course?        @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  seats            Int
+  /// Price per seat before VAT, in fils.
+  unitPriceFils    Int
+  subtotalFils     Int
+  discountFils     Int            @default(0)
+  vatFils          Int
+  totalFils        Int
+  /// What has been credited back (cancellation); the tax-invoice job issues credit notes for it.
+  refundedFils     Int            @default(0)
+  status           SeatPackStatus
+  /// Bank transfer reference, once paid.
+  paymentReference String?
+  paidAt           DateTime?
+  invoicedAt       DateTime       @default(now())
+  /// Recorded packs: when the learners' access ends.
+  accessEndsAt     DateTime?
+  note             String?
+  createdById      String?
+  createdBy        User?          @relation("SeatPackCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  cancelledAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  assignments  SeatAssignment[]
+  taxDocuments TaxDocument[]
+
+  @@index([organizationId, createdAt])
+  @@index([batchId, status])
+}
+
+enum SeatAssignmentStatus {
+  ACTIVE
+  /// Taken back: the seat returned to the pack.
+  REVOKED
+}
+
+/// A named learner on one seat of a pack. Live packs enroll the learner (ACTIVE enrollment, no order); recorded packs
+/// give them an ORGANIZATION subscription that ends with the pack.
+model SeatAssignment {
+  id             String               @id @default(cuid())
+  seatPackId     String
+  seatPack       SeatPack             @relation(fields: [seatPackId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                 @relation("SeatAssignee", fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentId   String?
+  enrollment     Enrollment?          @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  subscriptionId String?              @unique
+  subscription   Subscription?        @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  status         SeatAssignmentStatus @default(ACTIVE)
+  assignedById   String?
+  assignedAt     DateTime             @default(now())
+  revokedAt      DateTime?
+  revokedById    String?
+
+  @@index([seatPackId, status])
+  @@index([userId])
 }

@@ -654,6 +654,8 @@ export class SubscriptionService {
     const sub = await this.repo.findById(id);
     if (!sub) throw new NotFoundError('Subscription', id);
     if (sub.provider === 'APPLE') throw MANAGED_BY_APPLE();
+    // A seat from an organization's pack: revoked from the pack's page, never cancelled or refunded here.
+    if (sub.provider === 'ORGANIZATION') throw new BusinessRuleError('This plan is a seat from an organization pack', 'MANAGED_BY_ORGANIZATION');
     if (sub.provider === 'BANK_TRANSFER') return { ...(await this.adminCancelTransfer(id, input, adminId)), refundedFils: 0, cancelPending: false };
     if (sub.status === FINAL) throw new BusinessRuleError('This plan has already ended', 'NOT_ACTIVE');
     // An unfinished checkout: close its Session first, so the learner cannot pay on it after the row has ended.
@@ -787,6 +789,7 @@ export class SubscriptionService {
     const soonTo = now + YEARLY_REMINDER_DAYS * DAY;
     let reminders = 0;
     for (const c of await this.admin.endingBetween(new Date(now - DAY), new Date(soonTo))) {
+      if (c.provider === 'ORGANIZATION') continue; // organization seats: nothing for the learner to renew
       const end = c.currentPeriodEnd.getTime();
       const transfer = c.provider === 'BANK_TRANSFER';
       const kinds: Array<'SOON' | 'END_DAY'> = [];

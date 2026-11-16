@@ -1,5 +1,6 @@
 import { SOCKET_EVENTS, type EnrollmentStatus, type OrderUpdatedEvent } from '@azza/shared';
 import type { Clock, RealtimeBroadcaster } from '../../core/ports';
+import { BusinessRuleError } from '../../core/errors';
 import { formatInZone } from '../../core/time';
 import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
@@ -30,6 +31,27 @@ export class EnrollmentLifecycle {
     const enrollment = await this.repo.findEnrollmentById(enrollmentId);
     if (!enrollment) return null;
     const active = await this.move(enrollment, 'ACTIVE');
+    await this.welcome(active);
+    return active;
+  }
+
+  /**
+   * A seat given without checkout (an organization's seat pack): creates the enrollment, or takes one that holds no
+   * seat, straight to ACTIVE with no order, then the same fullness sync and "you're enrolled" message as a paid seat.
+   * Capacity is the caller's: a pack's seats are already held in the batch.
+   */
+  async grant(userId: string, batchId: string): Promise<EnrollmentRecord> {
+    const existing = await this.repo.findEnrollment(userId, batchId);
+    if (!this.machine.canGrant(existing?.status ?? null)) {
+      throw new BusinessRuleError('This learner already has a seat in this class', 'ALREADY_ENROLLED', { status: existing?.status });
+    }
+    const active = await this.repo.saveEnrollment(userId, batchId, 'ACTIVE');
+    await this.welcome(active);
+    return active;
+  }
+
+  private async welcome(enrollment: EnrollmentRecord) {
+    const enrollmentId = enrollment.id;
     const batch = await this.repo.findBatchForSale(enrollment.batchId);
     if (batch) {
       await this.syncFullness(batch.id);
@@ -48,7 +70,6 @@ export class EnrollmentLifecycle {
           ),
       });
     }
-    return active;
   }
 
   /** A seat may have been freed: update FULL/ENROLLING and offer seats to the waitlist. */

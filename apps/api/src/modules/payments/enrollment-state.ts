@@ -18,6 +18,9 @@ const TRANSITIONS: Record<EnrollmentStatus, EnrollmentStatus[]> = {
 
 const INITIAL: EnrollmentStatus[] = ['PENDING_PAYMENT', 'AWAITING_TRANSFER', 'WAITLISTED'];
 
+/** A seat given without checkout (an organization's seat pack) can start a new enrollment or take one that holds no seat. */
+export const GRANTABLE: (EnrollmentStatus | null)[] = [null, 'CANCELLED', 'EXPIRED', 'REFUNDED', 'WAITLISTED'];
+
 /** Pure enrollment lifecycle. `from = null` means the enrollment does not exist yet. */
 export class EnrollmentStateMachine {
   canMove(from: EnrollmentStatus | null, to: EnrollmentStatus): boolean {
@@ -28,6 +31,11 @@ export class EnrollmentStateMachine {
     if (!this.canMove(from, to)) {
       throw new BusinessRuleError(`Enrollment cannot move from ${from ?? 'NEW'} to ${to}`, 'INVALID_ENROLLMENT_TRANSITION', { from, to });
     }
+  }
+
+  /** Can a seat be granted (straight to ACTIVE, no order) to an enrollment in this status? */
+  canGrant(from: EnrollmentStatus | null) {
+    return GRANTABLE.includes(from);
   }
 
   holdsSeat(status: EnrollmentStatus) {
