@@ -725,6 +725,8 @@ export interface PayoutRun extends PayoutRunBase {
 /** GET /admin/payout-runs/:id */
 export interface PayoutRunDetail extends PayoutRunBase {
   payouts: RunPayout[];
+  /** Who created, adjusted, approved, exported and paid the run, oldest first. */
+  audit?: Array<{ id: string; action: string; actorId: string | null; actorName: string | null; createdAt: ISODate; data: Record<string, unknown> }>;
   totals: { totalFils: number; readyFils: number; [k: string]: number };
 }
 

@@ -1,0 +1,16 @@
+-- Append-only audit log of admin actions on money, and who created each payout run.
+CREATE TABLE "AuditLog" (
+    "id" TEXT NOT NULL,
+    "actorId" TEXT,
+    "action" TEXT NOT NULL,
+    "entityType" TEXT NOT NULL,
+    "entityId" TEXT NOT NULL,
+    "data" JSONB NOT NULL DEFAULT '{}',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+);
+CREATE INDEX "AuditLog_entityType_entityId_idx" ON "AuditLog"("entityType", "entityId");
+CREATE INDEX "AuditLog_actorId_createdAt_idx" ON "AuditLog"("actorId", "createdAt");
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "PayoutRun" ADD COLUMN "createdById" TEXT;

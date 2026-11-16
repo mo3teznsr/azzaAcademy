@@ -1662,6 +1662,9 @@ const en = {
       actions: 'Actions',
     },
     payouts: {
+      secondAdmin: 'Another admin must approve this run: you created or adjusted it.',
+      auditTitle: 'History',
+      auditActions: { PAYOUT_RUN_CREATED: 'created the run', PAYOUT_ADJUSTED: 'adjusted a payout', PAYOUT_RUN_APPROVED: 'approved the run', PAYOUT_RUN_EXPORTED: 'downloaded the bank file', PAYOUT_RUN_PAID: 'marked the run paid' },
       title: 'Instructor payouts',
       policyTitle: 'Payout policy',
       policy: [

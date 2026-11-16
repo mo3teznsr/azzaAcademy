@@ -1661,6 +1661,9 @@ const ar: Dictionary = {
       actions: 'إجراءات',
     },
     payouts: {
+      secondAdmin: 'يجب أن يعتمد هذه الدورة مسؤول آخر: أنت أنشأتها أو عدّلتها.',
+      auditTitle: 'السجل',
+      auditActions: { PAYOUT_RUN_CREATED: 'أنشأ الدورة', PAYOUT_ADJUSTED: 'عدّل مستحقًا', PAYOUT_RUN_APPROVED: 'اعتمد الدورة', PAYOUT_RUN_EXPORTED: 'نزّل ملف البنك', PAYOUT_RUN_PAID: 'علّم الدورة مدفوعة' },
       title: 'مستحقات المعلّمين',
       policyTitle: 'سياسة المستحقات',
       policy: [

@@ -219,6 +219,7 @@ model User {
   subscriptionPayments         SubscriptionPayment[]
 
   @@map("user")
+  auditEntries    AuditLog[] @relation("AuditActor")
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -784,6 +785,8 @@ model PayoutRun {
   approvedById String?
   approvedAt   DateTime?
   paidAt       DateTime?
+  /// The admin who created the run (approval needs someone else when there is more than one admin).
+  createdById  String?
   createdAt    DateTime        @default(now())
 
   payouts Payout[]
@@ -1292,4 +1295,19 @@ model AppleSeatProduct {
   status    String
   detail    String?
   syncedAt  DateTime
+}
+
+/// Append-only record of admin actions on money and sensitive data (payout runs, adjustments, exports, bank checks).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String
+  data       Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
 }

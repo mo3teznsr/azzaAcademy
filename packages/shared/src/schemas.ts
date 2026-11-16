@@ -379,7 +379,11 @@ export const payoutAdjustmentInput = z.object({
   amountAed: z.number(), // positive bonus, negative deduction
   reason: z.string().min(3),
 });
-export const markPayoutPaidInput = z.object({ transferReference: z.string().min(3) });
+export const markPayoutPaidInput = z.object({
+  transferReference: z.string().min(3),
+  /** A payout's own bank reference (payout id → reference); the others get `transferReference`. */
+  references: z.record(z.string(), z.string().trim().min(3).max(100)).optional(),
+});
 
 // ---------- Content ----------
 export const materialInput = z.object({

@@ -26,16 +26,16 @@ export function adminPayoutRoutes(service: PayoutService) {
       const { page, pageSize } = c.req.valid('query');
       return c.json(paged(await service.listRuns(page, pageSize), page, pageSize));
     })
-    .post('/payout-runs', validate('json', createPayoutRunInput), async (c) => c.json(await service.createRun(c.req.valid('json')), 201))
+    .post('/payout-runs', validate('json', createPayoutRunInput), async (c) => c.json(await service.createRun(c.req.valid('json'), currentUser(c).id), 201))
     .get('/payout-runs/:id', async (c) => c.json(await service.getRun(c.req.param('id'))))
     .post('/payout-runs/:id/approve', async (c) => c.json(await service.approve(c.req.param('id'), currentUser(c).id)))
     .on(['GET', 'POST'], '/payout-runs/:id/export', async (c) => {
-      const { filename, csv } = await service.exportCsv(c.req.param('id'));
+      const { filename, csv } = await service.exportCsv(c.req.param('id'), currentUser(c).id);
       return c.body(csv, 200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="${filename}"` });
     })
     .post('/payout-runs/:id/mark-paid', validate('json', markPayoutPaidInput), async (c) =>
-      c.json(await service.markPaid(c.req.param('id'), c.req.valid('json').transferReference)),
+      c.json(await service.markPaid(c.req.param('id'), c.req.valid('json').transferReference, currentUser(c).id, c.req.valid('json').references)),
     )
-    .post('/payouts/adjustments', validate('json', payoutAdjustmentInput), async (c) => c.json(await service.adjust(c.req.valid('json'))))
-    .post('/teachers/:id/bank-details/verify', async (c) => c.json(await service.verifyBankDetails(c.req.param('id'))));
+    .post('/payouts/adjustments', validate('json', payoutAdjustmentInput), async (c) => c.json(await service.adjust(c.req.valid('json'), currentUser(c).id)))
+    .post('/teachers/:id/bank-details/verify', async (c) => c.json(await service.verifyBankDetails(c.req.param('id'), currentUser(c).id)));
 }

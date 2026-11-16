@@ -105,6 +105,7 @@ import { SubscriptionService } from './modules/subscriptions/subscription.servic
 import { SubscriptionTransferQueries } from './modules/subscriptions/transfer-queries';
 import { PrismaSessionReminderRepository, SessionReminderService } from './modules/sessions/session-reminders';
 import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.service';
+import { PrismaAuditLog } from './modules/audit/audit-log';
 
 export interface Adapters {
   db: Db;
@@ -235,10 +236,18 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const vatSnapshot = () => siteSettings.ruleSnapshot().vatPercent;
   if (adapters.vat) adapters.vat.current = vatSnapshot;
   const prices = new PriceCalculator(vatSnapshot);
-  const payouts = new PayoutService(new PrismaPayoutRepository(db), new EarningsCalculator(), settings, notifications, clock, async () => {
-    const r = await rules();
-    return { earningHoldDays: r.earningHoldDays, minPayoutFils: Math.round(r.minPayoutAed * 100) };
-  });
+  const payouts = new PayoutService(
+    new PrismaPayoutRepository(db),
+    new EarningsCalculator(),
+    settings,
+    notifications,
+    clock,
+    async () => {
+      const r = await rules();
+      return { earningHoldDays: r.earningHoldDays, minPayoutFils: Math.round(r.minPayoutAed * 100) };
+    },
+    new PrismaAuditLog(db),
+  );
 
   const rescheduleRequestRepo = new PrismaRescheduleRequestRepository(db);
   const sessions = new SessionService(
