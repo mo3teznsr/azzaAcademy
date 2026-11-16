@@ -20,6 +20,7 @@ export interface CheckoutStart {
   bankAccountId?: string;
   appleProductId?: string;
   appleAppAccountToken?: string;
+  tabbyPaymentId?: string;
   /** Extra fields returned to the client next to `order`. */
   response: Record<string, unknown>;
   /** Side effects once the order row exists (e.g. instructions email). */

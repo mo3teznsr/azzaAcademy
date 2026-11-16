@@ -5,6 +5,7 @@ import type { AppEnv } from '../../http/types';
 import type { AppleIapService } from '../payments/apple/apple-iap.service';
 import type { CheckoutService } from '../payments/checkout.service';
 import type { FinanceAdminService } from '../payments/finance-admin.service';
+import type { TabbyPaymentService } from '../payments/tabby/tabby-payment.service';
 import type { SubscriptionService } from '../subscriptions/subscription.service';
 import type { SessionService } from '../sessions/session.service';
 
@@ -17,6 +18,7 @@ export function webhookRoutes(deps: {
   subscriptions: SubscriptionService;
   sessions: SessionService;
   appleIap: AppleIapService;
+  tabby: Pick<TabbyPaymentService, 'handleWebhook'>;
 }) {
   return new Hono<AppEnv>()
     .post('/stripe', async (c) => {
@@ -32,6 +34,11 @@ export function webhookRoutes(deps: {
         if (out.handled) return c.json({ received: true, ...out });
       }
       return c.json({ received: true, ...(await deps.subscriptions.handleStripeEvent(event)) });
+    })
+    // Tabby: verified by the static auth header registered with the webhook; the payment is re-read from Tabby's API.
+    .post('/tabby', async (c) => {
+      const raw = await c.req.text();
+      return c.json({ received: true, ...(await deps.tabby.handleWebhook(raw, (name) => c.req.header(name))) });
     })
     // App Store Server Notifications V2: `{ signedPayload }`, verified against Apple's certificate chain.
     .post('/apple', async (c) => {

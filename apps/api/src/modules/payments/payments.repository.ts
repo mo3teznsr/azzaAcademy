@@ -49,6 +49,7 @@ export interface OrderRecord {
   appleTransactionId: string | null;
   appleOriginalTransactionId: string | null;
   appleEnvironment: string | null;
+  tabbyPaymentId: string | null;
   bankAccountId: string | null;
   receiptUrl: string | null;
   receiptUploadedAt: Date | null;
@@ -78,6 +79,7 @@ export type NewOrder = Pick<
   | 'stripeCheckoutSessionId'
   | 'appleProductId'
   | 'appleAppAccountToken'
+  | 'tabbyPaymentId'
   | 'bankAccountId'
   | 'expiresAt'
 >;
@@ -103,6 +105,10 @@ export interface UserContact {
   email: string;
   locale: string;
   timezone: string;
+  /** E.164; Tabby needs it. */
+  phone?: string | null;
+  /** Account creation (Tabby `buyer_history.registered_since`). */
+  createdAt?: Date;
 }
 
 export interface CouponRecord extends CouponState {
@@ -133,10 +139,13 @@ export interface PaymentsRepository {
   findOrderByCheckoutSession(sessionId: string): Promise<OrderRecord | null>;
   findOrderByAppleTransaction(transactionId: string): Promise<OrderRecord | null>;
   findOrderByAppleToken(appAccountToken: string): Promise<OrderRecord | null>;
+  findOrderByTabbyPayment(paymentId: string): Promise<OrderRecord | null>;
   /** The student's newest APPLE_IAP order for this product that is not PAID/REFUNDED (fallback when a transaction has no token). */
   latestUnpaidAppleOrder(userId: string, productId: string): Promise<OrderRecord | null>;
   openOrderFor(enrollmentId: string): Promise<OrderRecord | null>;
   updateOrder(id: string, patch: OrderPatch): Promise<OrderRecord>;
+  /** Applies `patch` only while the order is still in one of `from`; null when another caller changed it first (atomic claim). */
+  updateOrderIf(id: string, from: OrderStatus[], patch: OrderPatch): Promise<OrderRecord | null>;
   /** AWAITING_PAYMENT / AWAITING_RECEIPT orders whose hold expired. */
   staleOrders(now: Date): Promise<OrderRecord[]>;
   /** Bank transfer orders still waiting for a receipt whose hold ends in (now, until], not reminded yet. */
@@ -184,6 +193,7 @@ const orderFields = {
   appleTransactionId: true,
   appleOriginalTransactionId: true,
   appleEnvironment: true,
+  tabbyPaymentId: true,
   bankAccountId: true,
   receiptUrl: true,
   receiptUploadedAt: true,
@@ -296,6 +306,11 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
     return o && toOrder(o);
   }
 
+  async findOrderByTabbyPayment(paymentId: string) {
+    const o = await this.db.order.findUnique({ where: { tabbyPaymentId: paymentId }, select: orderFields });
+    return o && toOrder(o);
+  }
+
   async latestUnpaidAppleOrder(userId: string, productId: string) {
     const o = await this.db.order.findFirst({
       where: { userId, method: 'APPLE_IAP', appleProductId: productId, status: { notIn: ['PAID', 'REFUNDED'] } },
@@ -316,6 +331,11 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
 
   async updateOrder(id: string, patch: OrderPatch) {
     return toOrder(await this.db.order.update({ where: { id }, data: patch, select: orderFields }));
+  }
+
+  async updateOrderIf(id: string, from: OrderStatus[], patch: OrderPatch) {
+    const { count } = await this.db.order.updateMany({ where: { id, status: { in: from } }, data: patch });
+    return count ? this.findOrder(id) : null;
   }
 
   async staleOrders(now: Date) {
@@ -389,6 +409,6 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
   }
 
   findUser(id: string) {
-    return this.db.user.findUnique({ where: { id }, select: { id: true, name: true, email: true, locale: true, timezone: true } });
+    return this.db.user.findUnique({ where: { id }, select: { id: true, name: true, email: true, locale: true, timezone: true, phone: true, createdAt: true } });
   }
 }

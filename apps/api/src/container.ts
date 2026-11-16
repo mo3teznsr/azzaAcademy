@@ -4,9 +4,10 @@
 import { createAuth, type OnUserCreated } from './auth/auth';
 import { BetterAuthUserProvisioner, InviteRegistry } from './auth/user-provisioner';
 import { msUntilUtcHour, type Job } from './jobs/scheduler';
-import type { AppConfig } from './core/config';
+import { tabbyConfigured, type AppConfig } from './core/config';
 import { fileURLToPath } from 'node:url';
-import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, VideoProvider } from './core/ports';
+import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, TabbyGateway, VideoProvider } from './core/ports';
+import { HttpTabbyGateway } from './infrastructure/payments/tabby-gateway';
 import { systemClock } from './infrastructure/clock';
 import { createDb, type Db } from './infrastructure/db';
 import { ConsoleMailer, NodemailerMailer } from './infrastructure/mail/mailers';
@@ -59,6 +60,8 @@ import { AppleIapCheckout } from './modules/payments/checkout/apple-iap-checkout
 import { BankTransferCheckout } from './modules/payments/checkout/bank-transfer-checkout';
 import { CheckoutStrategyRegistry } from './modules/payments/checkout/checkout-strategy';
 import { StripeCheckout } from './modules/payments/checkout/stripe-checkout';
+import { TabbyCheckout } from './modules/payments/checkout/tabby-checkout';
+import { TabbyPaymentService } from './modules/payments/tabby/tabby-payment.service';
 import { CheckoutService } from './modules/payments/checkout.service';
 import { EnrollmentLifecycle } from './modules/payments/enrollment-lifecycle';
 import { EnrollmentStateMachine } from './modules/payments/enrollment-state';
@@ -125,6 +128,8 @@ export interface Adapters {
   appStore?: AppStoreCatalog | null;
   /** What the gateway's PriceCalculator reads the VAT from; createContainer points it at the site settings. */
   vat?: VatHolder;
+  /** Tabby "pay in 4"; null/absent when not configured (the method is then not offered). */
+  tabby?: TabbyGateway | null;
 }
 
 /** `apps/api/uploads/` regardless of the process cwd. */
@@ -162,6 +167,15 @@ export function createAdapters(config: AppConfig, vat: VatHolder = { current: ()
       ? new StripePaymentGateway(config.STRIPE_SECRET_KEY, config.STRIPE_WEBHOOK_SECRET, prices)
       : new FakePaymentGateway(prices),
     vat,
+    tabby: tabbyConfigured(config)
+      ? new HttpTabbyGateway({
+          secretKey: config.TABBY_SECRET_KEY!.trim(),
+          merchantCode: config.TABBY_MERCHANT_CODE!.trim(),
+          webhookHeader: config.TABBY_WEBHOOK_HEADER,
+          webhookSecret: config.TABBY_WEBHOOK_SECRET,
+          baseUrl: config.TABBY_API_URL,
+        })
+      : null,
     apple: new AppStoreSignedDataVerifier({
       bundleId: config.APPLE_BUNDLE_ID,
       environments: config.appleEnvironments,
@@ -228,6 +242,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
       smtp: !!config.SMTP_HOST,
       push: !!(config.FIREBASE_PROJECT_ID && config.FIREBASE_CLIENT_EMAIL && config.FIREBASE_PRIVATE_KEY),
       appStoreConnect: !!config.appStoreConnect,
+      tabby: !!adapters.tabby,
     },
     cuts: () => settings.cuts(),
     onVatChanged: () => resyncRecordedPrices(),
@@ -281,6 +296,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     new StripeCheckout(payments, config.WEB_URL),
     new BankTransferCheckout(paymentsRepo, notifications, holdHours),
     new AppleIapCheckout(),
+    // Offered only when configured: without keys TABBY checkouts answer PAYMENT_METHOD_UNAVAILABLE.
+    ...(adapters.tabby ? [new TabbyCheckout(adapters.tabby, config.WEB_URL)] : []),
   ]);
   const checkout = new CheckoutService(
     paymentsRepo,
@@ -295,7 +312,14 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     config.WEB_URL,
   );
 
-  const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, holdHours);
+  const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, holdHours, adapters.tabby ?? null);
+  const tabby = new TabbyPaymentService(
+    paymentsRepo,
+    adapters.tabby ?? null,
+    checkout,
+    lifecycle,
+    config.TABBY_MERCHANT_CODE ? { merchantCode: config.TABBY_MERCHANT_CODE.trim(), publicKey: config.TABBY_PUBLIC_KEY?.trim() || undefined } : null,
+  );
 
   const subscriptionRepo = new PrismaSubscriptionRepository(db);
   const subscriptions = new SubscriptionService(
@@ -359,6 +383,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     subscriptions,
     finance,
     appleIap: new AppleIapService(paymentsRepo, adapters.apple, checkout, finance, subscriptions, appleCommission),
+    tabby,
     fx,
     bankAccounts: new BankAccountService(new PrismaBankAccountRepository(db)),
     coupons: new CouponService(new PrismaCouponRepository(db)),

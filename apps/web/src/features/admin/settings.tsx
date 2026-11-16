@@ -364,7 +364,7 @@ function IntegrationsCard() {
   const { t } = useI18n();
   const i = t.admin.settingsPage.integrationsCard;
   const q = useAdminSettings();
-  const keys = ['stripe', 'appleIap', 'livekit', 'smtp', 'push', 'appStoreConnect'] as const;
+  const keys = ['stripe', 'tabby', 'appleIap', 'livekit', 'smtp', 'push', 'appStoreConnect'] as const;
   return (
     <Panel>
       <SectionHeader title={i.title} size="sm" />

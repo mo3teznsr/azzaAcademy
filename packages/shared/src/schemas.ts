@@ -308,6 +308,10 @@ export const reviewTransferInput = z.discriminatedUnion('decision', [
 ]);
 export type ReviewTransferInput = z.infer<typeof reviewTransferInput>;
 
+/** `GET /payments/tabby/eligibility` — may the signed-in student pay this seat (after the coupon) with Tabby? */
+export const tabbyEligibilityQuery = z.object({ batchId: id, couponCode: z.string().trim().optional(), lang: z.enum(['ar', 'en']).default('en') });
+export type TabbyEligibilityQuery = z.infer<typeof tabbyEligibilityQuery>;
+
 export const refundInput = z.object({ amountAed: z.number().positive(), reason: z.string().min(3) });
 
 export const bankAccountInput = z.object({
@@ -882,7 +886,7 @@ export interface AdminSettings {
   legal: LegalSettings;
   rules: RuleSettings & { TEACHER_SHARE_PERCENT: number };
   ruleDefaults: RuleSettings;
-  integrations: { stripe: boolean; appleIap: boolean; livekit: boolean; smtp: boolean; push: boolean; appStoreConnect: boolean };
+  integrations: { stripe: boolean; appleIap: boolean; livekit: boolean; smtp: boolean; push: boolean; appStoreConnect: boolean; tabby: boolean };
   contact: ContactSettings;
   socials: SocialLinks;
 }

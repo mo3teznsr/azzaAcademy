@@ -127,6 +127,7 @@ export class CheckoutService {
       stripeCheckoutSessionId: started.stripeCheckoutSessionId ?? null,
       appleProductId: started.appleProductId ?? null,
       appleAppAccountToken: started.appleAppAccountToken ?? null,
+      tabbyPaymentId: started.tabbyPaymentId ?? null,
       bankAccountId: started.bankAccountId ?? null,
       expiresAt: started.expiresAt,
       attribution: cleanAttribution(input.attribution),

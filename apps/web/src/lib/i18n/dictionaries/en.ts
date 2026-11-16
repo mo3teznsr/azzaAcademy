@@ -105,7 +105,7 @@ const en = {
     sessionLanguage: { AR: 'Arabic', EN: 'English' },
     role: { STUDENT: 'Student', TEACHER: 'Teacher', ADMIN: 'Admin' },
     material: { SLIDES: 'Slides', FILE: 'File', LINK: 'Link', VIDEO: 'Video' },
-    method: { STRIPE: 'Card · Stripe', BANK_TRANSFER: 'Bank transfer', APPLE_IAP: 'App Store (iOS)' },
+    method: { STRIPE: 'Card · Stripe', BANK_TRANSFER: 'Bank transfer', APPLE_IAP: 'App Store (iOS)', TABBY: 'Tabby · pay in 4' },
   },
   nav: {
     public: { courses: 'Courses', startingSoon: 'Starting soon', howItWorks: 'How it works', teachers: 'Teachers', signIn: 'Sign in', findBatch: 'Find your course', myLearning: 'My learning' },
@@ -842,6 +842,22 @@ const en = {
     refundsBody: 'Always in AED to the original method.',
     full: 'This class is full.',
     notOpen: 'This class isn’t open for enrollment.',
+    /** Tabby's standard method name and description (docs.tabby.ai › Checkout flow › Tabby on checkout). */
+    tabby: {
+      name: 'Pay later with Tabby',
+      sub: '4 payments of {amount}/mo or up to 12 months.',
+      learnMore: 'Learn more',
+      continue: 'Continue to Tabby',
+      redirecting: 'Taking you to Tabby…',
+      next: 'Split your payment with Tabby. You’re enrolled as soon as Tabby approves, and Tabby collects the instalments.',
+      unavailable: {
+        not_available: 'Sorry, Tabby is unable to approve this purchase. Please use an alternative payment method for your order.',
+        order_amount_too_high: 'This purchase is above your current spending limit with Tabby, try a smaller cart or use another payment method',
+        order_amount_too_low: 'The purchase amount is below the minimum amount required to use Tabby, try adding more items or use another payment method',
+        PHONE_REQUIRED: 'Add your mobile number in Settings to pay with Tabby.',
+      },
+      addPhone: 'Go to Settings',
+    },
     quoteError: 'We couldn’t price this order.',
     couponErrors: {
       NOT_FOUND: 'That coupon code doesn’t exist.',
@@ -1337,6 +1353,11 @@ const en = {
     failedBody: 'Nothing was charged and the place is no longer held for you.',
     chooseBatch: 'Choose another class',
     missingRef: 'This link is missing its order reference.',
+    /** Tabby's approved redirect messages (docs.tabby.ai › Checkout flow › Redirection to the store). */
+    tabbyConfirmingBody: 'Tabby is confirming your payment. This usually takes a few seconds, so keep this tab open.',
+    tabbyCancelled: 'You aborted the payment. Please retry or choose another payment method.',
+    tabbyFailed: 'Sorry, Tabby is unable to approve this purchase. Please use an alternative payment method for your order.',
+    otherMethod: 'Choose another payment method',
   },
   admin: {
     greeting: 'Good evening, {name}.',
@@ -1879,7 +1900,7 @@ const en = {
         title: 'Integrations',
         note: 'Set in the server environment. This only shows whether each one is configured.',
         loadFailed: 'Couldn’t load the integrations.',
-        names: { stripe: 'Stripe', appleIap: 'Apple in-app purchase', livekit: 'LiveKit', smtp: 'Email (SMTP)', push: 'Push notifications', appStoreConnect: 'App Store Connect' },
+        names: { stripe: 'Stripe', appleIap: 'Apple in-app purchase', livekit: 'LiveKit', smtp: 'Email (SMTP)', push: 'Push notifications', appStoreConnect: 'App Store Connect', tabby: 'Tabby (pay in 4)' },
       },
     },
   },

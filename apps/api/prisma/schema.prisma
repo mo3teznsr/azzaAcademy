@@ -101,6 +101,7 @@ enum PaymentMethod {
   STRIPE
   BANK_TRANSFER
   APPLE_IAP
+  TABBY
 }
 
 enum OrderStatus {
@@ -514,6 +515,8 @@ model Order {
   appleTransactionId         String?           @unique
   appleOriginalTransactionId String?
   appleEnvironment           String?
+  /// Tabby "pay in 4": the payment created with the checkout session; verified, captured and refunded by this id.
+  tabbyPaymentId             String?           @unique
   bankAccountId              String?
   bankAccount                BankAccount?      @relation(fields: [bankAccountId], references: [id])
   receiptUrl                 String?

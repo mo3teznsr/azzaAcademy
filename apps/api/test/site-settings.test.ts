@@ -46,7 +46,7 @@ class MemCuts implements SettingsRepository {
 }
 
 const DEFAULTS = { vatPercent: 5, earningHoldDays: 14, minPayoutAed: 200, bankTransferHoldHours: 48, appleCommissionPercent: 15 };
-const INTEGRATIONS = { stripe: true, appleIap: true, livekit: false, smtp: false, push: false, appStoreConnect: false };
+const INTEGRATIONS = { stripe: true, appleIap: true, livekit: false, smtp: false, push: false, appStoreConnect: false, tabby: false };
 
 function build(repo = new MemSiteSettings(), extra: Partial<SiteSettingsDeps> = {}) {
   let t = 0;

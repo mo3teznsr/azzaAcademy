@@ -1,4 +1,4 @@
-import type { BatchStatus, EnrollmentStatus, Role } from '@azza/shared';
+import type { BatchStatus, EnrollmentStatus, OrderStatus, Role } from '@azza/shared';
 import type { RealtimeBroadcaster } from '../../src/core/ports';
 import type { Notice, Notifier } from '../../src/modules/notifications/notification.types';
 import { SEAT_HOLDING } from '../../src/modules/payments/enrollment-state';
@@ -80,6 +80,7 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   async createOrder(data: NewOrder) {
     const o: OrderRecord = {
       ...data,
+      tabbyPaymentId: data.tabbyPaymentId ?? null,
       id: this.id('ord'),
       appleTransactionId: null,
       appleOriginalTransactionId: null,
@@ -113,6 +114,9 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   async findOrderByAppleToken(token: string) {
     return this.orders.find((o) => o.appleAppAccountToken === token.toLowerCase()) ?? null;
   }
+  async findOrderByTabbyPayment(paymentId: string) {
+    return this.orders.find((o) => o.tabbyPaymentId === paymentId) ?? null;
+  }
   async latestUnpaidAppleOrder(userId: string, productId: string) {
     return (
       this.orders
@@ -125,6 +129,12 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   }
   async updateOrder(id: string, patch: OrderPatch) {
     const o = this.orders.find((x) => x.id === id)!;
+    Object.assign(o, patch);
+    return o;
+  }
+  async updateOrderIf(id: string, from: OrderStatus[], patch: OrderPatch) {
+    const o = this.orders.find((x) => x.id === id);
+    if (!o || !from.includes(o.status)) return null;
     Object.assign(o, patch);
     return o;
   }
