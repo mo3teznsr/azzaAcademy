@@ -948,6 +948,19 @@ export interface RecordedRevenue {
   netFils: number;
 }
 
+/** GET /admin/growth?days */
+export interface AdminGrowth {
+  range: { from: ISODate; to: ISODate; days: number };
+  plans: { mrrFils: number; arrFils: number; live: number; churn: { atStart: number; ended: number; rate: number | null } };
+  customers: {
+    total: number;
+    repeat90: { eligible: number; repeated: number; rate: number | null };
+    cohorts: Array<{ month: string; customers: number; returned: number; rate: number | null }>;
+  };
+  teachers: { totalFils: number; topFiveShare: number | null; teachers: Array<{ teacherId: string; name: string; amountFils: number; share: number }> };
+  signups: { total: number; sources: Array<{ source: string; signups: number }> };
+}
+
 /** GET /admin/reports?from&to */
 export interface AdminReport {
   range: { from: string; to: string; days: number; timezone: string };

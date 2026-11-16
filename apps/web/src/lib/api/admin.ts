@@ -2,6 +2,7 @@ import type { AdminCreateUserInput, AppleProductsInput, BankAccountInput, Coupon
 import { API_URL, http, items, request } from './client';
 import { uploadCourseMediaAsAdmin, type CourseMediaKind } from './courses';
 import type {
+  AdminGrowth,
   AdminDashboard,
   AdminReport,
   AdminSubscription,
@@ -37,6 +38,7 @@ export const adminApi = {
   dashboard: () => http.get<AdminDashboard>('/api/v1/admin/dashboard'),
   /** Inclusive `YYYY-MM-DD` days in Asia/Dubai; defaults to the last 30 days. */
   reports: (p: { from?: string; to?: string } = {}) => http.get<AdminReport>('/api/v1/admin/reports', { ...p }),
+  growth: (days: number) => http.get<AdminGrowth>('/api/v1/admin/growth', { days }),
   settings: () => http.get<PlatformSettings>('/api/v1/admin/settings'),
   /** `null` on a rule goes back to its env default. A VAT change re-syncs recorded-course Stripe prices. */
   saveRules: (input: RuleSettingsInput) => http.put<PlatformSettings>('/api/v1/admin/settings/rules', input),

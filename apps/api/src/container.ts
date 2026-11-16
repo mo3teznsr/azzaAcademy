@@ -104,6 +104,7 @@ import { PrismaSubscriptionRepository } from './modules/subscriptions/subscripti
 import { SubscriptionService } from './modules/subscriptions/subscription.service';
 import { SubscriptionTransferQueries } from './modules/subscriptions/transfer-queries';
 import { PrismaSessionReminderRepository, SessionReminderService } from './modules/sessions/session-reminders';
+import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.service';
 
 export interface Adapters {
   db: Db;
@@ -344,6 +345,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     waitlist: new WaitlistQueries(db),
     certificates,
     reports: new ReportService(new PrismaReportRepository(db), clock),
+    growth: new GrowthService(new PrismaGrowthRepository(db), clock),
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
     lessons: new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),

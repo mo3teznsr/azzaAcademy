@@ -2,6 +2,7 @@ import {
   Award,
   BadgeDollarSign,
   ChartColumn,
+  TrendingUp,
   SquareCheck,
   BookOpen,
   CalendarDays,
@@ -77,6 +78,7 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
     items: [
       { href: '/admin', label: t.nav.admin.dashboard, icon: LayoutDashboard, exact: true },
       { href: '/admin/reports', label: t.nav.admin.reports, icon: ChartColumn },
+      { href: '/admin/growth', label: t.nav.admin.growth, icon: TrendingUp },
       { href: '/admin/courses', label: t.nav.admin.courses, icon: BookOpen },
       { href: '/admin/batches', label: t.nav.admin.batches, icon: Layers },
       { href: '/admin/categories', label: t.nav.admin.categories, icon: Shapes },
