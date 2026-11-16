@@ -1538,3 +1538,20 @@ model ReferralProgram {
   teacherBonusFils Int      @default(2500)
   updatedAt        DateTime @updatedAt
 }
+
+/// Marketing spend admins record per calendar month and channel (fils of AED), for CAC and payback on /admin/growth.
+model MarketingSpend {
+  id          String   @id @default(cuid())
+  /// `YYYY-MM`
+  month       String
+  /// instagram | tiktok | snapchat | google | facebook | other (MARKETING_CHANNELS)
+  channel     String
+  amountFils  Int
+  note        String?
+  /// The admin who last saved it (a plain id, kept if that user is deleted).
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([month, channel])
+}

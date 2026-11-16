@@ -9,6 +9,7 @@ import type {
   EnrollmentStatus,
   HandQueueEvent,
   Locale,
+  MarketingChannel,
   OrderStatus,
   PaymentMethod,
   PayoutRunStatus,
@@ -962,6 +963,70 @@ export interface AdminGrowth {
   };
   teachers: { totalFils: number; topFiveShare: number | null; teachers: Array<{ teacherId: string; name: string; amountFils: number; share: number }> };
   signups: { total: number; sources: Array<{ source: string; signups: number }> };
+}
+
+/** Where a paying customer came from (first touch): a paid channel, `referral`, `organic` or `direct`. */
+export type CustomerChannel = MarketingChannel | 'referral' | 'organic' | 'direct';
+
+/** GET /admin/investors?months — months are `YYYY-MM` (UTC); money is fils of AED. */
+export interface AdminInvestors {
+  range: { from: string; to: string; months: number };
+  monthly: Array<{
+    month: string;
+    partial: boolean;
+    grossFils: number;
+    vatFils: number;
+    refundsFils: number;
+    netRevenueFils: number;
+    feesFils: number;
+    teacherFils: number;
+    grossMarginFils: number;
+    grossMarginRate: number | null;
+    activeCustomers: number;
+    newCustomers: number;
+    newByChannel: Partial<Record<CustomerChannel, number>>;
+    spendFils: number;
+    blendedCacFils: number | null;
+  }>;
+  nrr: {
+    cohorts: Array<{ month: string; customers: number; baseFils: number; m3: number | null; m6: number | null; m12: number | null }>;
+    overall: { m3: number | null; m6: number | null; m12: number | null };
+  };
+  unitEconomics: {
+    customers: number;
+    historicalLtvFils: number | null;
+    monthlyMarginPerActiveFils: number | null;
+    monthlyChurn: number | null;
+    expectedLifetimeMonths: number | null;
+    projectedLtvFils: number | null;
+    newCustomers: number;
+    spendFils: number;
+    blendedCacFils: number | null;
+    paidCacFils: number | null;
+    ltvCac: number | null;
+    paybackMonths: number | null;
+  };
+  channels: Array<{
+    channel: CustomerChannel;
+    paid: boolean;
+    newCustomers: number;
+    share: number;
+    spendFils: number;
+    cacFils: number | null;
+    historicalLtvFils: number | null;
+    ltvCac: number | null;
+    paybackMonths: number | null;
+  }>;
+}
+
+/** GET /admin/marketing-spend */
+export interface MarketingSpend {
+  id: string;
+  month: string;
+  channel: MarketingChannel;
+  amountFils: number;
+  note: string | null;
+  updatedAt: ISODate;
 }
 
 /** GET /admin/reports?from&to */

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PageTitle, Panel, SectionHeader } from '@/components/brand/section';
 import { ErrorState, LoadingGrid } from '@/components/brand/states';
@@ -10,10 +11,14 @@ import { adminApi, type AdminGrowth as Growth } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
+import { InvestorMetrics } from './investors';
 
 const RANGES = [30, 90, 365] as const;
 
-/** `/admin/growth`: recurring revenue, churn, repeat buyers, retention by month, teacher concentration and sign-up sources. */
+/**
+ * `/admin/growth`: recurring revenue, churn, repeat buyers, retention by month, teacher concentration and sign-up sources;
+ * the Investors tab adds margin, net revenue retention, CAC, LTV, payback and the marketing spend behind them.
+ */
 export function AdminGrowth() {
   const { t } = useI18n();
   const g = t.growth;
@@ -21,20 +26,26 @@ export function AdminGrowth() {
   const q = useQuery({ queryKey: qk.admin.growth(days), queryFn: () => adminApi.growth(days), placeholderData: keepPreviousData });
   return (
     <>
-      <PageTitle
-        kicker={g.kicker}
-        title={g.title}
-        aside={
-          <ToggleGroup type="single" value={String(days)} onValueChange={(v) => v && setDays(Number(v) as (typeof RANGES)[number])} aria-label={g.range} className="flex flex-wrap gap-2">
+      <PageTitle kicker={g.kicker} title={g.title} />
+      <Tabs defaultValue="overview" className="gap-6">
+        <TabsList>
+          <TabsTrigger value="overview">{t.investors.tabs.overview}</TabsTrigger>
+          <TabsTrigger value="investors">{t.investors.tabs.investors}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview" className="flex flex-col gap-6">
+          <ToggleGroup type="single" value={String(days)} onValueChange={(v) => v && setDays(Number(v) as (typeof RANGES)[number])} aria-label={g.range} className="flex flex-wrap gap-2 self-start">
             {RANGES.map((d) => (
               <ToggleGroupItem key={d} value={String(d)} className="h-11 rounded-full border border-border px-4 text-sm data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 {g.ranges[d]}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-        }
-      />
-      {q.isPending ? <LoadingGrid count={4} /> : q.isError ? <ErrorState error={q.error} onRetry={() => void q.refetch()} /> : <Body data={q.data} />}
+          {q.isPending ? <LoadingGrid count={4} /> : q.isError ? <ErrorState error={q.error} onRetry={() => void q.refetch()} /> : <Body data={q.data} />}
+        </TabsContent>
+        <TabsContent value="investors">
+          <InvestorMetrics />
+        </TabsContent>
+      </Tabs>
     </>
   );
 }

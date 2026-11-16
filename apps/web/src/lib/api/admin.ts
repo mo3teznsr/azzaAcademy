@@ -1,8 +1,10 @@
-import type { AdminCreateUserInput, AppleProductsInput, BankAccountInput, CouponInput, CutSettingsInput, RecordedPricingInput, ReviewTransferInput, Role, StatementImportInput, UpdateCouponInput } from '@azza/shared';
+import type { AdminCreateUserInput, AppleProductsInput, BankAccountInput, CouponInput, CutSettingsInput, MarketingSpendInput, RecordedPricingInput, ReviewTransferInput, Role, StatementImportInput, UpdateCouponInput } from '@azza/shared';
 import { API_URL, http, items, request } from './client';
 import { uploadCourseMediaAsAdmin, type CourseMediaKind } from './courses';
 import type {
   AdminGrowth,
+  AdminInvestors,
+  MarketingSpend,
   AdminDashboard,
   AdminReport,
   AdminSubscription,
@@ -42,6 +44,13 @@ export const adminApi = {
   /** Inclusive `YYYY-MM-DD` days in Asia/Dubai; defaults to the last 30 days. */
   reports: (p: { from?: string; to?: string } = {}) => http.get<AdminReport>('/api/v1/admin/reports', { ...p }),
   growth: (days: number) => http.get<AdminGrowth>('/api/v1/admin/growth', { days }),
+  investors: (months: number) => http.get<AdminInvestors>('/api/v1/admin/investors', { months }),
+  /** The investor monthly table as a CSV download (same admin session cookie). */
+  investorsCsvUrl: (months: number) => `${API_URL}/api/v1/admin/investors?months=${months}&format=csv`,
+  marketingSpend: (months = 12) => items(http.get<Items<MarketingSpend>>('/api/v1/admin/marketing-spend', { months })),
+  /** Saving the same month and channel again replaces it. */
+  saveMarketingSpend: (input: MarketingSpendInput) => http.put<MarketingSpend>('/api/v1/admin/marketing-spend', input),
+  deleteMarketingSpend: (id: string) => http.del<{ ok: true }>(`/api/v1/admin/marketing-spend/${id}`),
   settings: () => http.get<PlatformSettings>('/api/v1/admin/settings'),
   /** `null` on a rule goes back to its env default. A VAT change re-syncs recorded-course Stripe prices. */
   saveRules: (input: RuleSettingsInput) => http.put<PlatformSettings>('/api/v1/admin/settings/rules', input),
