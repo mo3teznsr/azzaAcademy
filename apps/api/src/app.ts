@@ -34,6 +34,8 @@ import { webhookRoutes } from './modules/webhooks/webhook.routes';
 import { announcementRoutes } from './modules/announcements/announcement.routes';
 import { conversationRoutes } from './modules/conversations/conversation.routes';
 import { supportRoutes } from './modules/support/support.routes';
+import { lessonQaRoutes } from './modules/lesson-qa/qa.routes';
+import { courseAnalyticsRoutes } from './modules/course-analytics/analytics.routes';
 import { adminSubscriptionRoutes, teacherSubscriberRoutes } from './modules/subscriptions/subscription-admin.routes';
 import { subscriptionRoutes } from './modules/subscriptions/subscription.routes';
 import { adminGrowthRoutes } from './modules/growth/growth.routes';
@@ -112,6 +114,7 @@ export function createApp(container: Container) {
     // First: it answers admins too, which the TEACHER-only payout guard below would refuse.
     .route('/teacher', teacherSubscriberRoutes(services.subscriptions))
     .route('/teacher', teacherPayoutRoutes(services.payouts))
+    .route('/teacher', courseAnalyticsRoutes(services.courseAnalytics))
     .route('/teachers', teacherRoutes(services.teachers))
     .route('/admin', adminRoutes(services.admin, services.siteSettings))
     .route('/admin', adminMediaRoutes(services.courseMedia))
@@ -134,6 +137,7 @@ export function createApp(container: Container) {
     .route('/', paymentRoutes(services))
     .route('/', contentRoutes(services.content))
     .route('/', lessonRoutes(services.lessons))
+    .route('/', lessonQaRoutes(services.lessonQa))
     .route('/', quizRoutes(services.quizzes))
     .route('/', subscriptionRoutes(services.subscriptions, services.receipts))
     .route('/', certificateRoutes(services.certificates))

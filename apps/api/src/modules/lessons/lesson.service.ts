@@ -58,6 +58,23 @@ export class LessonService {
     return { ...lesson, courseId: course.id, completed: done.length > 0, videoPositionSec: position ?? 0 };
   }
 
+  /** The lesson and its course when the viewer may read it (the rules above); throws otherwise. Used by lesson Q&A. */
+  async readable(lessonId: string, viewer: Actor) {
+    const { lesson, course } = await this.lessonOf(lessonId);
+    await this.assertCanRead(course, viewer);
+    return { lesson, course };
+  }
+
+  /** The course and its lessons in curriculum order (module order, then lesson order). No access check: callers apply their own. */
+  async courseLessons(courseIdOrSlug: string) {
+    const course = await this.repo.findCourse(courseIdOrSlug);
+    if (!course) return null;
+    const lessons = await this.repo.lessonsOfModules(course.modules.map((m) => m.id));
+    const moduleOrder = new Map(course.modules.map((m, i) => [m.id, i]));
+    lessons.sort((a, b) => (moduleOrder.get(a.moduleId) ?? 0) - (moduleOrder.get(b.moduleId) ?? 0) || a.order - b.order);
+    return { course, lessons };
+  }
+
   /** `GET /lessons/:id/preview` — public: only the preview lesson (the teacher's choice, else the first lesson) of a PUBLISHED recorded course. */
   async preview(lessonId: string) {
     const lesson = await this.repo.find(lessonId);
