@@ -6795,4 +6795,80 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get errWatchMore =>
       'شاهد معظم الفيديو قبل أن تعلّم هذا الدرس مكتملًا.';
+
+  @override
+  String get qaTitle => 'الأسئلة';
+
+  @override
+  String get qaIntro =>
+      'توقّفت عند شيء في هذا الدرس؟ اسأل هنا ويجيب المعلّم ليستفيد كل من يدرس الدورة.';
+
+  @override
+  String get qaAskLabel => 'سؤالك';
+
+  @override
+  String get qaAskHint => 'ما الذي تريد أن تسأل عنه في هذا الدرس؟';
+
+  @override
+  String get qaAsk => 'اسأل';
+
+  @override
+  String get qaAsked => 'نُشر سؤالك وأبلغنا معلّمك.';
+
+  @override
+  String qaLeftToday(int n) {
+    return 'بقي لك $n أسئلة اليوم';
+  }
+
+  @override
+  String get qaLimitReached => 'بلغت حد اليوم. يمكنك أن تسأل مجددًا غدًا.';
+
+  @override
+  String get qaEmpty => 'لا أسئلة بعد. كن أول من يسأل عن هذا الدرس.';
+
+  @override
+  String get qaEmptyStaff => 'لا أسئلة على هذا الدرس بعد.';
+
+  @override
+  String get qaAnswerOnWeb => 'أجب عن الأسئلة وأدِرها من الاستوديو على الويب.';
+
+  @override
+  String get qaWaiting => 'بانتظار إجابة المعلّم';
+
+  @override
+  String get qaInstructor => 'المعلّم';
+
+  @override
+  String get qaHelped => 'أفادني';
+
+  @override
+  String get qaMarkHelped => 'هذه الإجابة أفادتني';
+
+  @override
+  String get qaUnmarkHelped => 'إلغاء التحديد';
+
+  @override
+  String get qaYou => 'أنت';
+
+  @override
+  String get qaHidden => 'مخفي';
+
+  @override
+  String get qaDelete => 'حذف';
+
+  @override
+  String get qaDeleteTitle => 'حذف هذا السؤال؟';
+
+  @override
+  String get qaDeleteBody => 'سيختفي عن الجميع، ولا يمكن التراجع عن ذلك.';
+
+  @override
+  String get qaDeleted => 'حُذف السؤال';
+
+  @override
+  String get errQaDailyLimit =>
+      'طرحت أقصى عدد من الأسئلة المسموح به اليوم. يمكنك أن تسأل مجددًا غدًا.';
+
+  @override
+  String get errQaHasAnswers => 'لهذا السؤال إجابات، لذا لم يعد بالإمكان حذفه.';
 }

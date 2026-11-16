@@ -11119,6 +11119,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Watch most of the video before marking this lesson complete.'**
   String get errWatchMore;
+
+  /// No description provided for @qaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get qaTitle;
+
+  /// No description provided for @qaIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Stuck on something in this lesson? Ask here and the teacher answers for everyone taking the course.'**
+  String get qaIntro;
+
+  /// No description provided for @qaAskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your question'**
+  String get qaAskLabel;
+
+  /// No description provided for @qaAskHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to ask about this lesson?'**
+  String get qaAskHint;
+
+  /// No description provided for @qaAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get qaAsk;
+
+  /// No description provided for @qaAsked.
+  ///
+  /// In en, this message translates to:
+  /// **'Question posted. Your teacher has been told.'**
+  String get qaAsked;
+
+  /// No description provided for @qaLeftToday.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} questions left today'**
+  String qaLeftToday(int n);
+
+  /// No description provided for @qaLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ve reached today’s limit. You can ask again tomorrow.'**
+  String get qaLimitReached;
+
+  /// No description provided for @qaEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet. Be the first to ask about this lesson.'**
+  String get qaEmpty;
+
+  /// No description provided for @qaEmptyStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions on this lesson yet.'**
+  String get qaEmptyStaff;
+
+  /// No description provided for @qaAnswerOnWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer and moderate questions from the studio on the web.'**
+  String get qaAnswerOnWeb;
+
+  /// No description provided for @qaWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the teacher’s answer'**
+  String get qaWaiting;
+
+  /// No description provided for @qaInstructor.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor'**
+  String get qaInstructor;
+
+  /// No description provided for @qaHelped.
+  ///
+  /// In en, this message translates to:
+  /// **'Helped'**
+  String get qaHelped;
+
+  /// No description provided for @qaMarkHelped.
+  ///
+  /// In en, this message translates to:
+  /// **'This helped'**
+  String get qaMarkHelped;
+
+  /// No description provided for @qaUnmarkHelped.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmark'**
+  String get qaUnmarkHelped;
+
+  /// No description provided for @qaYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get qaYou;
+
+  /// No description provided for @qaHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get qaHidden;
+
+  /// No description provided for @qaDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get qaDelete;
+
+  /// No description provided for @qaDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this question?'**
+  String get qaDeleteTitle;
+
+  /// No description provided for @qaDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It disappears for everyone. This can’t be undone.'**
+  String get qaDeleteBody;
+
+  /// No description provided for @qaDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Question deleted'**
+  String get qaDeleted;
+
+  /// No description provided for @errQaDailyLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ve asked the most questions allowed today. You can ask again tomorrow.'**
+  String get errQaDailyLimit;
+
+  /// No description provided for @errQaHasAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'This question has answers, so it can no longer be deleted.'**
+  String get errQaHasAnswers;
 }
 
 class _AppLocalizationsDelegate

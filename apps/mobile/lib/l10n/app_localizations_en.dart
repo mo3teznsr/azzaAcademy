@@ -6634,4 +6634,85 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errWatchMore =>
       'Watch most of the video before marking this lesson complete.';
+
+  @override
+  String get qaTitle => 'Questions';
+
+  @override
+  String get qaIntro =>
+      'Stuck on something in this lesson? Ask here and the teacher answers for everyone taking the course.';
+
+  @override
+  String get qaAskLabel => 'Your question';
+
+  @override
+  String get qaAskHint => 'What would you like to ask about this lesson?';
+
+  @override
+  String get qaAsk => 'Ask';
+
+  @override
+  String get qaAsked => 'Question posted. Your teacher has been told.';
+
+  @override
+  String qaLeftToday(int n) {
+    return '$n questions left today';
+  }
+
+  @override
+  String get qaLimitReached =>
+      'You’ve reached today’s limit. You can ask again tomorrow.';
+
+  @override
+  String get qaEmpty =>
+      'No questions yet. Be the first to ask about this lesson.';
+
+  @override
+  String get qaEmptyStaff => 'No questions on this lesson yet.';
+
+  @override
+  String get qaAnswerOnWeb =>
+      'Answer and moderate questions from the studio on the web.';
+
+  @override
+  String get qaWaiting => 'Waiting for the teacher’s answer';
+
+  @override
+  String get qaInstructor => 'Instructor';
+
+  @override
+  String get qaHelped => 'Helped';
+
+  @override
+  String get qaMarkHelped => 'This helped';
+
+  @override
+  String get qaUnmarkHelped => 'Unmark';
+
+  @override
+  String get qaYou => 'You';
+
+  @override
+  String get qaHidden => 'Hidden';
+
+  @override
+  String get qaDelete => 'Delete';
+
+  @override
+  String get qaDeleteTitle => 'Delete this question?';
+
+  @override
+  String get qaDeleteBody =>
+      'It disappears for everyone. This can’t be undone.';
+
+  @override
+  String get qaDeleted => 'Question deleted';
+
+  @override
+  String get errQaDailyLimit =>
+      'You’ve asked the most questions allowed today. You can ask again tomorrow.';
+
+  @override
+  String get errQaHasAnswers =>
+      'This question has answers, so it can no longer be deleted.';
 }

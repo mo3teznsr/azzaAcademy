@@ -18,6 +18,7 @@ import '../data/lessons_repository.dart';
 import '../data/quizzes_repository.dart';
 import '../domain/quiz_models.dart';
 import '../domain/lesson_models.dart';
+import 'lesson_qa_section.dart';
 import 'lesson_video_tracker.dart';
 
 /// One lesson: its video, the markdown text and the attachments, with previous / next.
@@ -138,6 +139,7 @@ class LessonScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
+                    if (c.isRecorded) LessonQaSection(key: ValueKey('qa-${lesson.id}'), lessonId: lesson.id),
                   ],
                 ),
               ),
