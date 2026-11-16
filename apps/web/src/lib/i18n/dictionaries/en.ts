@@ -309,6 +309,7 @@ const en = {
     tagline: 'Start any time. Learn at your pace.',
     monthly: 'Monthly',
     yearly: 'Yearly',
+    promoHint: 'Have a promotion code? Add it on the payment page.',
     perMonth: '{amount} / month',
     perYear: '{amount} / year',
     yearlyPerMonth: '≈ {amount}/month',

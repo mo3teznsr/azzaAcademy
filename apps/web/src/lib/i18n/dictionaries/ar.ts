@@ -308,6 +308,7 @@ const ar: Dictionary = {
     tagline: 'ابدأ متى شئت، وتعلّم على راحتك.',
     monthly: 'شهري',
     yearly: 'سنوي',
+    promoHint: 'لديك رمز ترويجي؟ أضفه في صفحة الدفع.',
     perMonth: '{amount} / شهريًا',
     perYear: '{amount} / سنويًا',
     yearlyPerMonth: '≈ {amount} شهريًا',

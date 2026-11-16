@@ -241,9 +241,12 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
         </Button>
       )}
       {method === 'CARD' && (
-        <p className="flex items-center gap-1.5 text-[13px] text-stone-2">
-          <ShieldCheck className="size-4 shrink-0" aria-hidden /> {t.checkout.secured}
-        </p>
+        <>
+          <p className="flex items-center gap-1.5 text-[13px] text-stone-2">
+            <ShieldCheck className="size-4 shrink-0" aria-hidden /> {t.checkout.secured}
+          </p>
+          <p className="text-[13px] text-stone-2">{t.recorded.promoHint}</p>
+        </>
       )}
     </Shell>
   );
