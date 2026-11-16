@@ -275,6 +275,42 @@ export interface FileStorage {
   delete?(key: string): Promise<void>;
 }
 
+export type TranscodeStatus = 'PROCESSING' | 'READY' | 'FAILED';
+
+/** A transcoded lesson video at the hosted service. URLs are unsigned; `signUrl` signs them per viewer. */
+export interface TranscodeAsset {
+  assetId: string;
+  status: TranscodeStatus;
+  /** HLS master playlist with every rendition (adaptive bitrate). */
+  hlsUrl: string | null;
+  posterUrl: string | null;
+  /** Lowest progressive MP4 rendition (data saver, offline downloads). */
+  lowMp4Url: string | null;
+  durationSec: number | null;
+  /** Heights ready so far, e.g. `[240, 360, 720]`. */
+  renditions: number[];
+  error?: string | null;
+}
+
+/**
+ * Turns an uploaded lesson video into adaptive HLS at a hosted service (`BunnyStreamTranscoder`), or does nothing
+ * (`DisabledVideoTranscoder`) when not configured. The service fetches the source from its public URL.
+ */
+export interface VideoTranscoder {
+  /** `bunny`, or `disabled` (then every other method throws). */
+  readonly provider: string;
+  readonly enabled: boolean;
+  createAsset(input: { sourceUrl: string; title: string }): Promise<{ assetId: string }>;
+  getAsset(assetId: string): Promise<TranscodeAsset>;
+  /**
+   * Verifies a webhook and returns the asset it is about; null when it is about something we don't track. Throws
+   * `AppError` 401 when the signature is wrong. The status is always re-read with `getAsset`, never trusted from the body.
+   */
+  parseWebhook(rawBody: string, header: (name: string) => string | undefined): { assetId: string } | null;
+  /** Short-lived URL for one viewer. `directory` = sign the whole folder (HLS playlists and their segments). */
+  signUrl(url: string, expiresAt: Date, opts?: { directory?: boolean }): string;
+}
+
 /** A StoreKit 2 transaction whose JWS signature, certificate chain, bundle id and environment were verified. */
 export interface AppleTransaction {
   transactionId: string;

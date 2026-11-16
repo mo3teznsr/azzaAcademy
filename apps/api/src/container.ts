@@ -4,9 +4,13 @@
 import { createAuth, type OnUserCreated } from './auth/auth';
 import { BetterAuthUserProvisioner, InviteRegistry } from './auth/user-provisioner';
 import { msUntilUtcHour, type Job } from './jobs/scheduler';
-import { tabbyConfigured, type AppConfig } from './core/config';
+import { bunnyStreamConfigured, tabbyConfigured, type AppConfig } from './core/config';
 import { fileURLToPath } from 'node:url';
-import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, TabbyGateway, VideoProvider } from './core/ports';
+import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, TabbyGateway, VideoProvider, VideoTranscoder } from './core/ports';
+import { BunnyStreamTranscoder, DisabledVideoTranscoder } from './infrastructure/video/bunny-stream-transcoder';
+import { DownloadLinkSigner } from './modules/lessons/download-link';
+import { PrismaLessonStreamRepository } from './modules/lessons/lesson-stream.repository';
+import { LessonStreamingService } from './modules/lessons/lesson-streaming.service';
 import { HttpTabbyGateway } from './infrastructure/payments/tabby-gateway';
 import { systemClock } from './infrastructure/clock';
 import { createDb, type Db } from './infrastructure/db';
@@ -130,6 +134,8 @@ export interface Adapters {
   vat?: VatHolder;
   /** Tabby "pay in 4"; null/absent when not configured (the method is then not offered). */
   tabby?: TabbyGateway | null;
+  /** HLS transcoding of lesson videos; absent = disabled (lessons play their uploaded MP4). */
+  transcoder?: VideoTranscoder;
 }
 
 /** `apps/api/uploads/` regardless of the process cwd. */
@@ -176,6 +182,15 @@ export function createAdapters(config: AppConfig, vat: VatHolder = { current: ()
           baseUrl: config.TABBY_API_URL,
         })
       : null,
+    transcoder: bunnyStreamConfigured(config)
+      ? new BunnyStreamTranscoder({
+          libraryId: config.BUNNY_STREAM_LIBRARY_ID!.trim(),
+          apiKey: config.BUNNY_STREAM_API_KEY!.trim(),
+          readOnlyApiKey: config.BUNNY_STREAM_READONLY_API_KEY?.trim() || undefined,
+          cdnHost: config.BUNNY_STREAM_CDN_HOST!.trim(),
+          tokenKey: config.BUNNY_STREAM_TOKEN_KEY?.trim() || undefined,
+        })
+      : new DisabledVideoTranscoder(),
     apple: new AppStoreSignedDataVerifier({
       bundleId: config.APPLE_BUNDLE_ID,
       environments: config.appleEnvironments,
@@ -356,6 +371,23 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
   resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
   const taxDocuments = new TaxDocumentService(db, clock);
+  // Lessons tell streaming when a video is saved; streaming reads the lesson read rule back (hence the late binding).
+  let lessonStreaming: LessonStreamingService;
+  const lessons = new LessonService(
+    new PrismaLessonRepository(db),
+    clock,
+    (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId),
+    (lessonId, videoUrl) => lessonStreaming.onVideoChanged(lessonId, videoUrl),
+  );
+  lessonStreaming = new LessonStreamingService(
+    new PrismaLessonStreamRepository(db),
+    adapters.transcoder ?? new DisabledVideoTranscoder(),
+    lessons,
+    new DownloadLinkSigner(config.BETTER_AUTH_SECRET),
+    clock,
+    { transcodeOnUpload: config.VIDEO_TRANSCODE_ON_UPLOAD === 'true', offlineMaxDays: config.OFFLINE_DOWNLOAD_MAX_DAYS, apiUrl: config.API_URL },
+  );
+
   const services = {
     settings,
     siteSettings,
@@ -396,7 +428,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     referrals,
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
-    lessons: new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
+    lessons,
+    lessonStreaming,
     quizzes: new QuizService(new PrismaQuizRepository(db), access, notifications, clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
     courseMedia: new CourseMediaService(adapters.storage),
     announcements: new AnnouncementService(new PrismaAnnouncementRepository(db), access, notifications, config.WEB_URL),
@@ -436,6 +469,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
     // Referral rewards once the friend's first payment has passed the earning hold without a refund.
     { name: 'referral-rewards', everyMs: 60 * 60_000, run: () => referrals.run() },
+    // Lesson videos still encoding at the video service (webhooks can be lost). A no-op without Bunny Stream.
+    { name: 'sync-lesson-streams', everyMs: 2 * 60_000, run: () => lessonStreaming.syncProcessing() },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 

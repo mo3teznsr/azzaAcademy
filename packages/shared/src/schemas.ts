@@ -744,6 +744,24 @@ export const videoPositionInput = z.object({
 });
 export type VideoPositionInput = z.infer<typeof videoPositionInput>;
 
+/** `POST /me/lesson-downloads/status` — lessons saved on the device, checked on the app's next online launch. */
+export const lessonDownloadStatusInput = z.object({
+  lessonIds: z.array(z.string().min(1).max(64)).max(200),
+});
+export type LessonDownloadStatusInput = z.infer<typeof lessonDownloadStatusInput>;
+
+/** Adaptive streaming state of a lesson video, as returned next to a lesson (`stream`). */
+export type LessonStreamStatus = 'PROCESSING' | 'READY' | 'FAILED';
+export interface LessonStreamPlayback {
+  status: LessonStreamStatus;
+  /** Signed HLS master playlist (several renditions), only when READY. */
+  hlsUrl: string | null;
+  posterUrl: string | null;
+  /** Lowest progressive MP4 rendition: data saver on players that cannot cap HLS (Safari, mobile). */
+  lowMp4Url: string | null;
+  durationSec: number | null;
+}
+
 // ---------- Currencies (display only; AED is the base) ----------
 const currencyFields = {
   nameEn: z.string().trim().min(1).max(60),

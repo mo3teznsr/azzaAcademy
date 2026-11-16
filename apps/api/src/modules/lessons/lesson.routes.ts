@@ -3,16 +3,18 @@ import { lessonInput, reorderLessonsInput, updateLessonInput, videoPositionInput
 import { currentUser, requireAuth, requireRole } from '../../http/middleware';
 import type { AppEnv } from '../../http/types';
 import { validate } from '../../http/validate';
+import type { LessonStreamingService } from './lesson-streaming.service';
 import type { LessonService } from './lesson.service';
 
-/** Mounted at /api/v1 */
-export function lessonRoutes(service: LessonService) {
+/** Mounted at /api/v1. With `streaming`, a lesson carries `stream` (signed HLS when ready) and `downloadable`. */
+export function lessonRoutes(service: LessonService, streaming?: Pick<LessonStreamingService, 'playback'>) {
+  const withPlayback = async <T extends { id: string }>(lesson: T) => (streaming ? { ...lesson, ...(await streaming.playback(lesson.id)) } : lesson);
   const base = '/courses/:courseId/modules/:moduleId/lessons';
   return new Hono<AppEnv>()
     .get('/courses/:courseId/lessons', requireAuth, async (c) => c.json(await service.list(c.req.param('courseId'), currentUser(c))))
     .get('/me/learning-progress', requireAuth, async (c) => c.json(await service.myProgress(currentUser(c))))
-    .get('/lessons/:lessonId/preview', async (c) => c.json(await service.preview(c.req.param('lessonId'))))
-    .get('/lessons/:lessonId', requireAuth, async (c) => c.json(await service.get(c.req.param('lessonId'), currentUser(c))))
+    .get('/lessons/:lessonId/preview', async (c) => c.json(await withPlayback(await service.preview(c.req.param('lessonId')))))
+    .get('/lessons/:lessonId', requireAuth, async (c) => c.json(await withPlayback(await service.get(c.req.param('lessonId'), currentUser(c)))))
     .put('/lessons/:lessonId/video-position', requireAuth, validate('json', videoPositionInput), async (c) =>
       c.json(await service.saveVideoPosition(c.req.param('lessonId'), c.req.valid('json'), currentUser(c))),
     )

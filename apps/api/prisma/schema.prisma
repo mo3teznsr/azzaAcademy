@@ -973,7 +973,31 @@ model Lesson {
   progress    LessonProgress[]
   positions   LessonVideoPosition[]
 
+  /// Adaptive streaming (HLS) of an uploaded `videoUrl`, made by the `VideoTranscoder` (Bunny Stream). Null = never prepared.
+  streamStatus    VideoStreamStatus?
+  /// Who made the asset (`bunny`) and its id there.
+  streamProvider  String?
+  streamAssetId   String?
+  /// The `videoUrl` the asset was made from; a new upload resets the stream.
+  streamSourceUrl String?
+  /// Unsigned playback URLs; signed per request when CDN token auth is on.
+  hlsUrl          String?
+  posterUrl       String?
+  /// Lowest-quality progressive MP4 (data saver and offline downloads); null when the provider has none.
+  lowMp4Url       String?
+  durationSec     Int?
+  streamError     String?
+  streamUpdatedAt DateTime?
+
   @@index([moduleId, order])
+  @@index([streamStatus])
+  @@index([streamAssetId])
+}
+
+enum VideoStreamStatus {
+  PROCESSING
+  READY
+  FAILED
 }
 
 /// A learner marked this lesson complete. Drives "Continue learning" (next lesson + lesson-based progress).
