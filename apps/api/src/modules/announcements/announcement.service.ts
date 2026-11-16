@@ -129,7 +129,7 @@ export class AnnouncementService {
             title: a.title,
             body: preview(a.body),
             data: { announcementId: a.id },
-            email: () => communicationEmails.announcement(a.title, a.body, url),
+            email: (r) => communicationEmails.announcement(a.title, a.body, url, r.locale),
           },
           { channels: ['in-app', 'realtime', 'push', 'email'] },
         );

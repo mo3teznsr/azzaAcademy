@@ -434,6 +434,11 @@ model LiveSession {
   endedAt      DateTime?
   recordingUrl String?
   egressId     String?
+  /// When each reminder before the session went out (24 h, 1 h, 10 min), and when absentees were told about the recording.
+  reminderDayAt  DateTime?
+  reminderHourAt DateTime?
+  reminderSoonAt DateTime?
+  missedNoticeAt DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 

@@ -6,8 +6,11 @@ import { isValidPhone, toE164 } from '@azza/shared';
 import type { AppConfig } from '../core/config';
 import type { Mailer } from '../core/ports';
 import type { Db } from '../infrastructure/db';
-import { appEmails, authEmails } from '../modules/notifications/email-templates';
+import { authEmailsIn, emailsIn } from '../modules/notifications/email-templates';
 import type { InviteRegistry } from './user-provisioner';
+
+/** The user's language for auth emails (better-auth passes the user row, which has `locale`). */
+const localeOf = (user: unknown) => (user as { locale?: string | null }).locale ?? null;
 
 /**
  * Sign-up over HTTP needs a valid mobile number, stored in E.164. An input that is not already E.164 is read as a UAE
@@ -112,14 +115,14 @@ export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: 
       minPasswordLength: 8,
       sendResetPassword: async ({ user, url }) => {
         const role = (user as { role?: string }).role ?? 'STUDENT';
-        const body = invites?.consume(user.email) ? appEmails.invite(user.name, role, url) : authEmails.resetPassword(user.name, url);
+        const body = invites?.consume(user.email) ? emailsIn(localeOf(user)).invite(user.name, role, url) : authEmailsIn(localeOf(user)).resetPassword(user.name, url);
         void mailer.send({ to: user.email, ...body });
       },
     },
     emailVerification: {
       sendOnSignUp: true,
       sendVerificationEmail: async ({ user, url }) => {
-        void mailer.send({ to: user.email, ...authEmails.verifyEmail(user.name, url) });
+        void mailer.send({ to: user.email, ...authEmailsIn(localeOf(user)).verifyEmail(user.name, url) });
       },
     },
     hooks: { before: createUserHooks(currencies) },

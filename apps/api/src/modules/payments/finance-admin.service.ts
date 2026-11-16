@@ -3,7 +3,7 @@ import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { BusinessRuleError, NotFoundError } from '../../core/errors';
 import type { PaymentGateway, PaymentWebhookEvent } from '../../core/ports';
 import { addHours, formatInZone } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { RefundEarningsReverser } from '../payouts/payout.service';
 import type { EnrollmentLifecycle } from './enrollment-lifecycle';
@@ -49,7 +49,7 @@ export class FinanceAdminService {
           title: `Transfer amount differs · ${order.reference}`,
           body: `Received ${aed(receivedFils)}, expected ${aed(order.totalFils)}`,
           data: { orderId: order.id },
-          email: (r) => appEmails.amountMismatch(r.name, order.reference, aed(order.totalFils), aed(receivedFils)),
+          email: (r) => emailsIn(r.locale).amountMismatch(r.name, order.reference, aed(order.totalFils), aed(receivedFils)),
         });
         throw new BusinessRuleError('Received amount does not match the order total', 'AMOUNT_MISMATCH', {
           orderId: order.id,
@@ -83,7 +83,7 @@ export class FinanceAdminService {
         title: `Transfer not verified · ${order.reference}`,
         body: input.reason,
         data: { orderId: order.id },
-        email: (r) => appEmails.transferRejected(r.name, order.reference, input.reason),
+        email: (r) => emailsIn(r.locale).transferRejected(r.name, order.reference, input.reason),
       });
       return rejected;
     }
@@ -104,7 +104,7 @@ export class FinanceAdminService {
       title: `New receipt needed · ${order.reference}`,
       body: input.reason,
       data: { orderId: order.id },
-      email: (r) => appEmails.newReceiptRequested(r.name, order.reference, input.reason, formatInZone(expiresAt, r.timezone, r.locale)),
+      email: (r) => emailsIn(r.locale).newReceiptRequested(r.name, order.reference, input.reason, formatInZone(expiresAt, r.timezone, r.locale)),
     });
     return reopened;
   }
@@ -211,7 +211,7 @@ export class FinanceAdminService {
       title: `Refund issued · ${order.reference}`,
       body: `${aed(amountFils)} — ${reason}`,
       data: { orderId: order.id },
-      email: (r) => appEmails.refunded(r.name, aed(amountFils), order.reference),
+      email: (r) => emailsIn(r.locale).refunded(r.name, aed(amountFils), order.reference),
     });
     return updated;
   }

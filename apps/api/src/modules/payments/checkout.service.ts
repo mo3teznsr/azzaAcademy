@@ -2,7 +2,7 @@ import type { CheckoutInput, EnrollmentStatus } from '@azza/shared';
 import { BusinessRuleError, ConflictError, ForbiddenError, NotFoundError } from '../../core/errors';
 import type { PaymentWebhookEvent } from '../../core/ports';
 import { addHours } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { CheckoutStrategyRegistry } from './checkout/checkout-strategy';
 import type { EnrollmentLifecycle } from './enrollment-lifecycle';
@@ -164,7 +164,7 @@ export class CheckoutService {
       title: `You’re on the waitlist · ${batch.courseTitle} ${batch.code}`,
       body: 'We’ll let you know as soon as a seat opens',
       data: { batchId: batch.id },
-      email: (r) => appEmails.waitlisted(r.name, batch.courseTitle, batch.code),
+      email: (r) => emailsIn(r.locale).waitlisted(r.name, batch.courseTitle, batch.code),
     });
     return enrollment;
   }

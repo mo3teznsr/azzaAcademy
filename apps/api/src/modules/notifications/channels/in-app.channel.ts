@@ -1,5 +1,5 @@
 import type { NotificationRepository } from '../notification.repository';
-import type { Delivery, NotificationChannel } from '../notification.types';
+import { localizedText, type Delivery, type NotificationChannel } from '../notification.types';
 
 /** Persists the notification feed shown in the app (bell icon). */
 export class InAppChannel implements NotificationChannel {
@@ -12,8 +12,7 @@ export class InAppChannel implements NotificationChannel {
         id: d.id,
         userId: d.recipient.id,
         type: d.notice.type,
-        title: d.notice.title,
-        body: d.notice.body,
+        ...localizedText(d.notice, d.recipient),
         data: d.notice.data,
         createdAt: d.createdAt,
       })),

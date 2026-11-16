@@ -103,6 +103,7 @@ import { SupportService } from './modules/support/support.service';
 import { PrismaSubscriptionRepository } from './modules/subscriptions/subscription.repository';
 import { SubscriptionService } from './modules/subscriptions/subscription.service';
 import { SubscriptionTransferQueries } from './modules/subscriptions/transfer-queries';
+import { PrismaSessionReminderRepository, SessionReminderService } from './modules/sessions/session-reminders';
 
 export interface Adapters {
   db: Db;
@@ -353,6 +354,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     admin: new AdminService(new PrismaAdminRepository(db), new BetterAuthUserProvisioner(auth, invites, config.WEB_URL), video, clock),
   };
 
+  const sessionReminders = new SessionReminderService(new PrismaSessionReminderRepository(db), notifications, clock, config.WEB_URL);
+
   /** Background jobs (started by index.ts only, never in tests). */
   const jobs: Job[] = [
     { name: 'expire-stale-orders', everyMs: 5 * 60_000, run: () => checkout.expireStaleOrders() },
@@ -372,6 +375,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
         return null; // quiet: the scheduler logs non-zero results
       },
     },
+    // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.
+    { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 
