@@ -1,11 +1,13 @@
 import type { MetadataRoute } from 'next';
 import { API_URL } from '@/lib/api/client';
-import { SITE_URL } from '@/lib/site';
+import { LOCALES } from '@/lib/i18n/routing';
+import { SITE_URL, languageUrls, pageUrl } from '@/lib/site';
 
 // Rebuilt at most once an hour.
 export const revalidate = 3600;
 
 type Listed = { slug: string; updatedAt?: string };
+type Entry = MetadataRoute.Sitemap[number];
 
 async function publishedCourses(): Promise<Listed[]> {
   const out: Listed[] = [];
@@ -19,27 +21,42 @@ async function publishedCourses(): Promise<Listed[]> {
   return out;
 }
 
-async function teachers(): Promise<{ id: string }[]> {
-  const res = await fetch(`${API_URL}/api/v1/teachers`, { next: { revalidate } }).catch(() => null);
+async function list<T>(path: string): Promise<T[]> {
+  const res = await fetch(`${API_URL}${path}`, { next: { revalidate } }).catch(() => null);
   if (!res?.ok) return [];
-  return ((await res.json()) as { items: { id: string }[] }).items;
+  return ((await res.json()) as { items: T[] }).items;
 }
 
-/** Public pages, every published course and every teacher profile. The API being down still yields the static pages. */
+/** One entry per language (`/ar/...` and `/en/...`), each listing every language version for hreflang. */
+function localized(path: string, extra: Omit<Entry, 'url' | 'alternates'>): Entry[] {
+  const languages = languageUrls(path);
+  return LOCALES.map((locale) => ({ url: pageUrl(locale, path), alternates: { languages }, ...extra }));
+}
+
+/** Public pages, every category, published course and teacher profile, in Arabic and English. The API being down still yields the static pages. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [courses, people] = await Promise.all([publishedCourses(), teachers()]);
+  const [courses, people, categories] = await Promise.all([
+    publishedCourses(),
+    list<{ id: string }>('/api/v1/teachers'),
+    list<{ slug: string; courseCount: number }>('/api/v1/categories'),
+  ]);
   return [
-    { url: SITE_URL, changeFrequency: 'daily', priority: 1 },
-    { url: `${SITE_URL}/teachers`, changeFrequency: 'weekly', priority: 0.6 },
-    { url: `${SITE_URL}/teach`, changeFrequency: 'monthly', priority: 0.5 },
+    ...localized('/', { changeFrequency: 'daily', priority: 1 }),
+    ...localized('/teachers', { changeFrequency: 'weekly', priority: 0.6 }),
+    ...localized('/teach', { changeFrequency: 'monthly', priority: 0.5 }),
+    ...categories
+      .filter((c) => c.courseCount > 0)
+      .flatMap((c) => localized(`/categories/${encodeURIComponent(c.slug)}`, { changeFrequency: 'weekly', priority: 0.7 })),
+    ...courses.flatMap((c) =>
+      localized(`/courses/${encodeURIComponent(c.slug)}`, {
+        ...(c.updatedAt && { lastModified: new Date(c.updatedAt) }),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      }),
+    ),
+    ...people.flatMap((t) => localized(`/teachers/${encodeURIComponent(t.id)}`, { changeFrequency: 'weekly', priority: 0.5 })),
+    // Legal pages have no language URLs.
     { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.1 },
     { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.1 },
-    ...courses.map((c) => ({
-      url: `${SITE_URL}/courses/${encodeURIComponent(c.slug)}`,
-      ...(c.updatedAt && { lastModified: new Date(c.updatedAt) }),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    })),
-    ...people.map((t) => ({ url: `${SITE_URL}/teachers/${encodeURIComponent(t.id)}`, changeFrequency: 'weekly' as const, priority: 0.5 })),
   ];
 }
