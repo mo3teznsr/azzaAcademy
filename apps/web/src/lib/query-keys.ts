@@ -65,6 +65,8 @@ export const qk = {
     dashboard: ['admin', 'dashboard'] as const,
     reports: (from: string, to: string) => ['admin', 'reports', from, to] as const,
     growth: (days: number) => ['admin', 'growth', days] as const,
+    investors: (months: number) => ['admin', 'investors', months] as const,
+    marketingSpend: ['admin', 'marketing-spend'] as const,
     liveRooms: ['admin', 'live-rooms'] as const,
     users: (params: object) => ['admin', 'users', params] as const,
     transfers: (status?: string) => ['admin', 'transfers', status ?? 'all'] as const,
