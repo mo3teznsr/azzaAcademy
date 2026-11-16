@@ -11119,6 +11119,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Watch most of the video before marking this lesson complete.'**
   String get errWatchMore;
+
+  /// No description provided for @inviteFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite friends'**
+  String get inviteFriends;
+
+  /// No description provided for @inviteFriendsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You both get a reward after their first payment'**
+  String get inviteFriendsHint;
+
+  /// No description provided for @inviteShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Join me on Azza'**
+  String get inviteShareSubject;
 }
 
 class _AppLocalizationsDelegate

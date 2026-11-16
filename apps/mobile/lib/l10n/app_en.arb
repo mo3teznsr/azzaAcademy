@@ -3849,5 +3849,8 @@
   "lessonVideoPlay": "Play",
   "lessonVideoPause": "Pause",
   "lessonVideoSpeed": "Playback speed",
-  "errWatchMore": "Watch most of the video before marking this lesson complete."
+  "errWatchMore": "Watch most of the video before marking this lesson complete.",
+  "inviteFriends": "Invite friends",
+  "inviteFriendsHint": "You both get a reward after their first payment",
+  "inviteShareSubject": "Join me on Azza"
 }
