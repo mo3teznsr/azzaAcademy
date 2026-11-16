@@ -118,6 +118,8 @@ function notificationHref(type: string, data: unknown, role: Role | null): strin
     case 'RECORDING_READY':
     case 'SESSION_MISSED':
       return sessionId ? `/library/${sessionId}` : '/library';
+    case 'CERTIFICATE_ISSUED':
+      return '/certificates';
     case 'TRANSFER_HOLD_ENDING': {
       const orderId = field('orderId');
       return orderId ? `/orders/${orderId}` : null;

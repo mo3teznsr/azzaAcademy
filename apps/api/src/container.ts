@@ -307,7 +307,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const appStoreSync = new AppStoreSyncCoordinator(appStoreSyncer, new PrismaAppleSyncStore(db), courseRepo, clock);
 
   const meService = new MeService(new PrismaMeRepository(db), clock, lifecycle, adapters.storage, currencies);
-  const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator());
+  const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator(), undefined, notifications, config.WEB_URL);
   const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
   resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
   const services = {
