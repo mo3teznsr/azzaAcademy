@@ -142,6 +142,8 @@ export class PrismaMeRepository {
           bio: null,
           role: 'STUDENT',
           banned: true,
+          // Their invite link stops working.
+          referralCode: null,
         },
       });
       return [...new Set(held.map((e) => e.batchId))];

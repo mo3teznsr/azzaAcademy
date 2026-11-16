@@ -5,17 +5,17 @@ const langOf = (locale: string | null | undefined): Lang => (locale?.startsWith(
 
 const FOOTER: Record<Lang, string> = { en: 'Azza · learn live, together', ar: 'عازة · تعلّم مباشر مع معلّم يعرفك' };
 
-const layout = (lang: Lang, title: string, body: string) => `<!doctype html><html lang="${lang}" dir="${lang === 'ar' ? 'rtl' : 'ltr'}"><body style="margin:0;background:#F5EFE4;font-family:${lang === 'ar' ? "Tahoma,'Segoe UI',Arial" : 'Arial'},sans-serif;color:#121110">
+export const layout = (lang: Lang, title: string, body: string) => `<!doctype html><html lang="${lang}" dir="${lang === 'ar' ? 'rtl' : 'ltr'}"><body style="margin:0;background:#F5EFE4;font-family:${lang === 'ar' ? "Tahoma,'Segoe UI',Arial" : 'Arial'},sans-serif;color:#121110">
 <div style="max-width:560px;margin:0 auto;padding:32px;text-align:${lang === 'ar' ? 'right' : 'left'}">
 <p style="font-weight:800;font-size:22px;margin:0 0 24px">${lang === 'ar' ? 'عازة' : 'azza'}<span style="color:#FF5A36">.</span></p>
 <h1 style="font-size:26px;margin:0 0 16px">${title}</h1>${body}
 <p style="color:#6B645B;font-size:12px;margin-top:32px">${FOOTER[lang]}</p></div></body></html>`;
 
-const button = (url: string, label: string) =>
+export const button = (url: string, label: string) =>
   `<p><a href="${url}" style="display:inline-block;background:#121110;color:#FBF8F2;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">${label}</a></p>`;
 
 /** Codes, amounts and IBANs stay left-to-right inside Arabic text. */
-const ltr = (s: string) => `<bdi dir="ltr">${s}</bdi>`;
+export const ltr = (s: string) => `<bdi dir="ltr">${s}</bdi>`;
 
 const ROLE_AR: Record<string, string> = { STUDENT: 'طالب', TEACHER: 'معلّم', ADMIN: 'مسؤول' };
 

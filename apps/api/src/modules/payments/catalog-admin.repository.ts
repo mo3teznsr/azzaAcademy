@@ -39,7 +39,8 @@ const couponScope = {
 export class PrismaCouponRepository {
   constructor(private readonly db: Db) {}
   list() {
-    return this.db.coupon.findMany({ orderBy: { createdAt: 'desc' }, include: couponScope });
+    // Personal referral rewards are listed under Referrals, not here.
+    return this.db.coupon.findMany({ where: { ownerId: null }, orderBy: { createdAt: 'desc' }, include: couponScope });
   }
   find(id: string) {
     return this.db.coupon.findUnique({ where: { id }, include: couponScope });
