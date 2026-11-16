@@ -1,7 +1,8 @@
 import type { CourseType, LessonAttachment } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
 import type { AccessSubscription } from '../subscriptions/access-policy';
-import { everSubscribed, learnerSubscription, newestLiveSubscription, type LearnerSubscription } from '../subscriptions/recorded-subscription';
+import { utcDay, watchedDelta } from '../all-access/watch-time';
+import { allAccessSubscription, everSubscribed, learnerSubscription, newestLiveSubscription, type LearnerSubscription } from '../subscriptions/recorded-subscription';
 import type { WatchProgress } from './watch-policy';
 
 export type RecordedSubscription = AccessSubscription;
@@ -74,10 +75,16 @@ export interface LessonRepository {
   recordedSubscription(courseId: string, userId: string): Promise<RecordedSubscription | null>;
   /** The user once had a paid period on the course (even one that has expired); an abandoned checkout does not count. */
   hadSubscription(courseId: string, userId: string): Promise<boolean>;
+  /** The learner's live all-access plan; absent (older fakes) means none. */
+  allAccessSubscription?(userId: string): Promise<RecordedSubscription | null>;
   /** Saved video position in seconds; null when never saved. */
   videoPosition(userId: string, lessonId: string): Promise<number | null>;
-  /** Saves the position; keeps the furthest point reached and the length when given (`ended` counts as watched to the end). */
-  setVideoPosition(userId: string, lessonId: string, positionSec: number, watch?: { durationSec?: number; ended?: boolean }): Promise<void>;
+  /**
+   * Saves the position; keeps the furthest point reached and the length when given (`ended` counts as watched to the end).
+   * With `recordedCourseId`, the seconds played since the last report (`watchedDelta`) are added to today's
+   * `LessonWatchTime`, which splits all-access teacher pay.
+   */
+  setVideoPosition(userId: string, lessonId: string, positionSec: number, watch?: { durationSec?: number; ended?: boolean; recordedCourseId?: string }): Promise<void>;
   watchProgress(userId: string, lessonId: string): Promise<WatchProgress | null>;
 }
 
@@ -178,14 +185,30 @@ export class PrismaLessonRepository implements LessonRepository {
     return everSubscribed(this.db, courseId, userId);
   }
 
+  allAccessSubscription(userId: string) {
+    return allAccessSubscription(this.db, userId);
+  }
+
   async videoPosition(userId: string, lessonId: string) {
     const row = await this.db.lessonVideoPosition.findUnique({ where: { userId_lessonId: { userId, lessonId } }, select: { positionSec: true } });
     return row?.positionSec ?? null;
   }
 
-  async setVideoPosition(userId: string, lessonId: string, positionSec: number, watch: { durationSec?: number; ended?: boolean } = {}) {
+  async setVideoPosition(userId: string, lessonId: string, positionSec: number, watch: { durationSec?: number; ended?: boolean; recordedCourseId?: string } = {}) {
     const key = { userId_lessonId: { userId, lessonId } };
-    const before = await this.db.lessonVideoPosition.findUnique({ where: key, select: { maxSec: true, durationSec: true } });
+    const before = await this.db.lessonVideoPosition.findUnique({ where: key, select: { maxSec: true, durationSec: true, positionSec: true, updatedAt: true } });
+    if (watch.recordedCourseId) {
+      const now = new Date();
+      const seconds = watchedDelta(before, positionSec, now);
+      if (seconds > 0) {
+        const day = utcDay(now);
+        await this.db.lessonWatchTime.upsert({
+          where: { userId_lessonId_day: { userId, lessonId, day } },
+          create: { userId, lessonId, courseId: watch.recordedCourseId, day, seconds },
+          update: { seconds: { increment: seconds } },
+        });
+      }
+    }
     const durationSec = watch.durationSec ?? before?.durationSec ?? null;
     const reached = watch.ended && durationSec ? durationSec : positionSec;
     const maxSec = Math.max(before?.maxSec ?? 0, reached);

@@ -4,7 +4,7 @@ import type { Clock } from '../../core/ports';
 import type { BatchAccessPolicy, BatchRole } from '../batches/batch-access';
 import { assertCanEditCourse } from '../courses/course.service';
 import type { Notifier } from '../notifications/notification.types';
-import { canAccessRecorded } from '../subscriptions/access-policy';
+import { canReadRecordedCourse } from '../subscriptions/access-policy';
 import { answerKey, gradeQuiz, normalizeQuestions, passed, percentOf, publicQuestion, type StoredQuestion } from './quiz-grader';
 import type { AttemptRecord, CourseRef, QuizRecord, QuizRepository } from './quiz.repository';
 
@@ -434,7 +434,7 @@ export class QuizService {
   private async courseRole(course: CourseRef, viewer: Viewer): Promise<BatchRole> {
     if (viewer.role === 'ADMIN') return 'admin';
     if (course.createdById === viewer.id) return 'teacher';
-    if (canAccessRecorded(await this.repo.recordedSubscription(course.id, viewer.id), this.clock.now())) return 'student';
+    if (await canReadRecordedCourse(this.repo, course, viewer.id, this.clock.now())) return 'student';
     throw new PlanRequiredError(course.slug, await this.repo.hadSubscription(course.id, viewer.id));
   }
 
