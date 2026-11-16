@@ -309,7 +309,7 @@ export const reviewTransferInput = z.discriminatedUnion('decision', [
 export type ReviewTransferInput = z.infer<typeof reviewTransferInput>;
 
 /** `GET /payments/tabby/eligibility` — may the signed-in student pay this seat (after the coupon) with Tabby? */
-export const tabbyEligibilityQuery = z.object({ batchId: id, couponCode: z.string().trim().optional() });
+export const tabbyEligibilityQuery = z.object({ batchId: id, couponCode: z.string().trim().optional(), lang: z.enum(['ar', 'en']).default('en') });
 export type TabbyEligibilityQuery = z.infer<typeof tabbyEligibilityQuery>;
 
 export const refundInput = z.object({ amountAed: z.number().positive(), reason: z.string().min(3) });

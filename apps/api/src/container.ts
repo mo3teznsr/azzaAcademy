@@ -304,7 +304,13 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   );
 
   const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, holdHours, adapters.tabby ?? null);
-  const tabby = new TabbyPaymentService(paymentsRepo, adapters.tabby ?? null, checkout, lifecycle);
+  const tabby = new TabbyPaymentService(
+    paymentsRepo,
+    adapters.tabby ?? null,
+    checkout,
+    lifecycle,
+    config.TABBY_MERCHANT_CODE ? { merchantCode: config.TABBY_MERCHANT_CODE.trim(), publicKey: config.TABBY_PUBLIC_KEY?.trim() || undefined } : null,
+  );
 
   const subscriptionRepo = new PrismaSubscriptionRepository(db);
   const subscriptions = new SubscriptionService(

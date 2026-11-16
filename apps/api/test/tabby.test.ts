@@ -352,7 +352,11 @@ describe('tabby seat checkout', () => {
 
   describe('eligibility', () => {
     test('available with the monthly figure; rejection reasons pass through', async () => {
-      expect(await service.eligibility('sara', { batchId: 'b08' })).toEqual({ available: true, reason: null, installmentFils: tabbyInstallmentFils(92_400) });
+      expect(await service.eligibility('sara', { batchId: 'b08' })).toEqual({ available: true, reason: null, installmentFils: tabbyInstallmentFils(92_400), learnMoreUrl: null });
+      const withPromo = new TabbyPaymentService(repo, tabby, checkout, { orderUpdated: () => {} }, { merchantCode: 'AZZA', publicKey: 'pk_test_1' });
+      expect((await withPromo.eligibility('sara', { batchId: 'b08', lang: 'ar' })).learnMoreUrl).toBe(
+        'https://checkout.tabby.ai/promos/product-page/installments/ar/?price=924.00&currency=AED&merchant_code=AZZA&public_key=pk_test_1',
+      );
       tabby.rejectWith = 'order_amount_too_low';
       expect(await service.eligibility('sara', { batchId: 'b08' })).toMatchObject({ available: false, reason: 'order_amount_too_low' });
     });

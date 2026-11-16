@@ -1,4 +1,4 @@
-import { tabbyInstallmentFils, type OrderStatus, type TabbyEligibility, type TabbyEligibilityQuery, type TabbyUnavailableReason } from '@azza/shared';
+import { tabbyInstallmentFils, tabbyLearnMoreUrl, type OrderStatus, type TabbyEligibility, type TabbyEligibilityQuery, type TabbyUnavailableReason } from '@azza/shared';
 import { AppError, ForbiddenError, NotFoundError } from '../../../core/errors';
 import type { TabbyGateway, TabbyPayment } from '../../../core/ports';
 import type { CheckoutService } from '../checkout.service';
@@ -30,6 +30,8 @@ export class TabbyPaymentService {
     private readonly gateway: TabbyGateway | null,
     private readonly checkout: Pick<CheckoutService, 'confirmPaid' | 'quote'>,
     private readonly lifecycle: Pick<EnrollmentLifecycle, 'orderUpdated'>,
+    /** For Tabby's "Learn more" pop-up link; without a public key the link is omitted. */
+    private readonly promo: { merchantCode: string; publicKey?: string } | null = null,
   ) {}
 
   get configured() {
@@ -40,10 +42,13 @@ export class TabbyPaymentService {
    * Background pre-scoring for the checkout page. Tabby asks merchants to fail open: when its API errors or times
    * out the option stays visible, and session creation gives the final answer.
    */
-  async eligibility(userId: string, input: TabbyEligibilityQuery): Promise<TabbyEligibility> {
+  async eligibility(userId: string, input: Partial<TabbyEligibilityQuery> & Pick<TabbyEligibilityQuery, 'batchId'>): Promise<TabbyEligibility> {
     const quote = await this.checkout.quote({ batchId: input.batchId, couponCode: input.couponCode, displayCurrency: 'AED' }, undefined, userId);
     const installmentFils = tabbyInstallmentFils(quote.totalFils);
-    const no = (reason: TabbyUnavailableReason): TabbyEligibility => ({ available: false, reason, installmentFils });
+    const learnMoreUrl = this.promo?.publicKey
+      ? tabbyLearnMoreUrl({ totalFils: quote.totalFils, lang: input.lang ?? 'en', merchantCode: this.promo.merchantCode, publicKey: this.promo.publicKey })
+      : null;
+    const no = (reason: TabbyUnavailableReason): TabbyEligibility => ({ available: false, reason, installmentFils, learnMoreUrl });
     if (!this.gateway) return no('NOT_CONFIGURED');
     const user = await this.repo.findUser(userId);
     if (!user) throw new NotFoundError('User', userId);
@@ -54,7 +59,7 @@ export class TabbyPaymentService {
     } catch (e) {
       console.warn('[tabby] eligibility check failed; showing Tabby (fail-open)', e instanceof Error ? e.message : e);
     }
-    return { available: true, reason: null, installmentFils };
+    return { available: true, reason: null, installmentFils, learnMoreUrl };
   }
 
   /** `POST /payments/tabby/orders/:id/confirm` — the return page asks us to check the payment now. */

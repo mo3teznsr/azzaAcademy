@@ -26,9 +26,9 @@ import { useCategoryLabel } from '@/components/brand/category';
 import { WhatsAppButton } from '@/components/brand/whatsapp-button';
 import { readAttribution, track } from '@/lib/analytics';
 
-/** Card covers Apple Pay and Google Pay too: Stripe's page offers them. */
-type Choice = 'CARD' | 'BANK';
-const methodOf = (c: Choice): PaymentMethod => (c === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE');
+/** Card covers Apple Pay and Google Pay too: Stripe's page offers them. TABBY appears only when Tabby says yes. */
+type Choice = 'CARD' | 'BANK' | 'TABBY';
+const methodOf = (c: Choice): PaymentMethod => (c === 'BANK' ? 'BANK_TRANSFER' : c === 'TABBY' ? 'TABBY' : 'STRIPE');
 
 export function CheckoutPage({ batchId }: { batchId: string }) {
   const { t } = useI18n();
@@ -40,15 +40,26 @@ export function CheckoutPage({ batchId }: { batchId: string }) {
 }
 
 function Checkout({ batch }: { batch: BatchDetail }) {
-  const { t, f, pick } = useI18n();
+  const { t, f, fill, pick, locale } = useI18n();
   const categoryLabel = useCategoryLabel();
   const money = useMoney();
   const router = useRouter();
-  const [choice, setChoice] = useState<Choice>('CARD');
+  const [picked, setChoice] = useState<Choice>('CARD');
   // A campaign link can carry the code: /checkout/<batch>?coupon=RAMADAN20 applies it at once.
   const linked = useSearchParams().get('coupon')?.trim().toUpperCase() || undefined;
   const [couponDraft, setCouponDraft] = useState(linked ?? '');
   const [coupon, setCoupon] = useState<string | undefined>(linked);
+  // Tabby pre-scoring for this student and total. Hidden when Tabby isn't configured or the check failed; shown
+  // as unavailable with Tabby's own message when Tabby declines (amount limits, no phone on the profile).
+  const tabby = useQuery({
+    queryKey: ['tabby-eligibility', batch.id, coupon ?? '', locale],
+    queryFn: () => checkoutApi.tabbyEligibility({ batchId: batch.id, couponCode: coupon, lang: locale }),
+    retry: false,
+    staleTime: 5 * 60_000,
+  });
+  const tabbyShown = !!tabby.data && tabby.data.reason !== 'NOT_CONFIGURED';
+  const tabbyOk = tabby.data?.available === true;
+  const choice: Choice = picked === 'TABBY' && !tabbyOk ? 'CARD' : picked;
   const [bankAccountId, setBankAccountId] = useState<string | undefined>();
   const [result, setResult] = useState<CheckoutResult | null>(null);
   const [redirecting, setRedirecting] = useState(false);
@@ -68,7 +79,7 @@ function Checkout({ batch }: { batch: BatchDetail }) {
   const start = useMutation({
     mutationFn: () => checkoutApi.checkout({ ...input, bankAccountId: choice === 'BANK' ? selectedBank : undefined, attribution: readAttribution() ?? undefined }),
     onSuccess: (r) => {
-      // Card / wallets: Stripe's hosted page takes over; the webhook confirms the order, /checkout/return shows it.
+      // Card / wallets / Tabby: the hosted page takes over; the API confirms the order, /checkout/return shows it.
       if (isStripeResult(r)) {
         setRedirecting(true);
         window.location.assign(r.checkoutUrl);
@@ -126,6 +137,42 @@ function Checkout({ batch }: { batch: BatchDetail }) {
                     </span>
                   </label>
                 ))}
+                {tabbyShown && tabby.data && (
+                  <label
+                    className={cn(
+                      'flex items-center gap-4 rounded-2xl border p-4 transition-colors',
+                      choice === 'TABBY' ? 'border-foreground bg-card' : 'border-border',
+                      tabbyOk ? 'cursor-pointer hover:border-line-strong' : 'cursor-not-allowed',
+                    )}
+                  >
+                    <RadioGroupItem value="TABBY" disabled={!tabbyOk} aria-describedby="tabby-sub" />
+                    <TabbyMark />
+                    <span className="flex-1">
+                      <b className="block">{t.checkout.tabby.name}</b>
+                      <span id="tabby-sub" className="text-sm text-muted-foreground">
+                        {tabbyOk ? (
+                          <>
+                            {fill(t.checkout.tabby.sub, { amount: money.aed(tabby.data.installmentFils) })}{' '}
+                            {tabby.data.learnMoreUrl && (
+                              <a href={tabby.data.learnMoreUrl} target="_blank" rel="noopener noreferrer" className="link-sun">
+                                {t.checkout.tabby.learnMore}
+                              </a>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {t.checkout.tabby.unavailable[tabby.data.reason as keyof typeof t.checkout.tabby.unavailable] ?? t.checkout.tabby.unavailable.not_available}{' '}
+                            {tabby.data.reason === 'PHONE_REQUIRED' && (
+                              <Link href="/settings" className="link-sun">
+                                {t.checkout.tabby.addPhone}
+                              </Link>
+                            )}
+                          </>
+                        )}
+                      </span>
+                    </span>
+                  </label>
+                )}
               </RadioGroup>
 
               {choice === 'BANK' && (
@@ -153,11 +200,21 @@ function Checkout({ batch }: { batch: BatchDetail }) {
                 </div>
               )}
 
-              {start.isError && <ErrorState compact error={start.error} />}
+              {start.isError && <ErrorState compact error={tabbyError(start.error, t.checkout.tabby.unavailable) ?? start.error} />}
               <Button size="lg" onClick={() => start.mutate()} disabled={start.isPending || redirecting || quote.isError || (choice === 'BANK' && !selectedBank)}>
-                {redirecting ? t.checkoutReturn.redirecting : start.isPending ? t.checkout.paying : choice === 'BANK' ? t.checkout.getBankDetails : t.checkout.continueCard}
+                {redirecting
+                  ? choice === 'TABBY'
+                    ? t.checkout.tabby.redirecting
+                    : t.checkoutReturn.redirecting
+                  : start.isPending
+                    ? t.checkout.paying
+                    : choice === 'BANK'
+                      ? t.checkout.getBankDetails
+                      : choice === 'TABBY'
+                        ? t.checkout.tabby.continue
+                        : t.checkout.continueCard}
               </Button>
-              {choice !== 'BANK' && (
+              {choice === 'CARD' && (
                 <p className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
                   <ShieldCheck className="size-4 shrink-0" /> {t.checkout.secured}
                 </p>
@@ -234,6 +291,12 @@ function Checkout({ batch }: { batch: BatchDetail }) {
               <b className="text-foreground">{t.checkout.bank}: </b>
               {t.checkout.nextBank}
             </p>
+            {tabbyOk && (
+              <p className="text-muted-foreground">
+                <b className="text-foreground">{t.checkout.tabby.name}: </b>
+                {t.checkout.tabby.next}
+              </p>
+            )}
             <p className="text-muted-foreground">
               <b className="text-foreground">{t.checkout.refunds}: </b>
               {t.checkout.refundsBody}
@@ -256,6 +319,24 @@ function couponError(error: unknown, messages: Record<string, string>, withAmoun
   if (!template) return null;
   const message = details.minOrderFils != null ? withAmount(template, details.minOrderFils) : template;
   return new ApiError(error.status, error.code, message, error.details);
+}
+
+/** `TABBY_REJECTED` (with `details.reason`) and `PHONE_REQUIRED` → Tabby's approved message (null for any other error). */
+function tabbyError(error: unknown, messages: Record<string, string>): ApiError | null {
+  if (!(error instanceof ApiError)) return null;
+  if (error.code === 'PHONE_REQUIRED') return new ApiError(error.status, error.code, messages.PHONE_REQUIRED ?? error.message, error.details);
+  if (error.code !== 'TABBY_REJECTED') return null;
+  const reason = (error.details as { reason?: string } | undefined)?.reason ?? 'not_available';
+  return new ApiError(error.status, error.code, messages[reason] ?? messages.not_available ?? error.message, error.details);
+}
+
+/** Text-only Tabby mark (no logo asset is bundled); Latin wordmark kept left-to-right in Arabic. */
+function TabbyMark() {
+  return (
+    <span aria-hidden className="grid h-5 min-w-5 place-items-center rounded-md border border-foreground px-1 text-[11px] font-bold lowercase leading-none" dir="ltr">
+      tabby
+    </span>
+  );
 }
 
 function Summary({ quote, pending, error }: { quote: Quote | undefined; pending: boolean; error: unknown }) {

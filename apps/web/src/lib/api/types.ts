@@ -567,7 +567,7 @@ export interface EnrollmentRecord {
 }
 
 export type CheckoutResult =
-  /** STRIPE: redirect to Stripe Checkout; the order turns PAID only via the webhook. */
+  /** STRIPE / TABBY: redirect to the hosted page; the order turns PAID only once the API confirmed the payment. */
   | { waitlisted: false; order: CreatedOrder; enrollment: EnrollmentRecord; quote: Quote; checkoutUrl: string }
   | { waitlisted: false; order: CreatedOrder; enrollment: EnrollmentRecord; quote: Quote; bankAccount: BankAccount; reference: string; expiresAt: ISODate }
   | { waitlisted: true; enrollment: EnrollmentRecord };

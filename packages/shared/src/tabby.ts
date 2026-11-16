@@ -15,6 +15,14 @@ export interface TabbyEligibility {
   reason: TabbyUnavailableReason | null;
   /** The monthly amount Tabby's checkout copy shows ("4 payments of …"), in fils. */
   installmentFils: number;
+  /** Tabby's "Learn more" pop-up with the payment schedule (needs the public key), else null. */
+  learnMoreUrl: string | null;
+}
+
+/** Tabby's hosted "Learn more" pop-up for a price (docs.tabby.ai › On-site messaging › custom snippets, UAE). */
+export function tabbyLearnMoreUrl(args: { totalFils: number; lang: 'ar' | 'en'; merchantCode: string; publicKey: string }): string {
+  const q = new URLSearchParams({ price: filsToTabbyAmount(args.totalFils), currency: 'AED', merchant_code: args.merchantCode, public_key: args.publicKey });
+  return `https://checkout.tabby.ai/promos/product-page/installments/${args.lang}/?${q.toString()}`;
 }
 
 /**
