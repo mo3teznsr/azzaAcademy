@@ -118,6 +118,16 @@ function notificationHref(type: string, data: unknown, role: Role | null): strin
     case 'RECORDING_READY':
     case 'SESSION_MISSED':
       return sessionId ? `/library/${sessionId}` : '/library';
+    case 'LEARNING_NUDGE': {
+      const slug = field('courseSlug');
+      return slug ? `/learn/courses/${slug}` : '/learn';
+    }
+    case 'PLAN_WINBACK': {
+      const slug = field('courseSlug');
+      return slug ? `/courses/${slug}` : null;
+    }
+    case 'WELCOME':
+      return '/';
     case 'CERTIFICATE_ISSUED':
       return '/certificates';
     case 'TRANSFER_HOLD_ENDING': {

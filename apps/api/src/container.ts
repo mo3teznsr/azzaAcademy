@@ -106,6 +106,7 @@ import { SubscriptionTransferQueries } from './modules/subscriptions/transfer-qu
 import { PrismaSessionReminderRepository, SessionReminderService } from './modules/sessions/session-reminders';
 import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.service';
 import { PrismaAuditLog } from './modules/audit/audit-log';
+import { LifecycleService, PrismaLifecycleRepository } from './modules/lifecycle/lifecycle.service';
 
 export interface Adapters {
   db: Db;
@@ -366,6 +367,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     admin: new AdminService(new PrismaAdminRepository(db), new BetterAuthUserProvisioner(auth, invites, config.WEB_URL), video, clock),
   };
 
+  const lifecycleMessages = new LifecycleService(new PrismaLifecycleRepository(db), notifications, clock, config.WEB_URL);
   const sessionReminders = new SessionReminderService(new PrismaSessionReminderRepository(db), notifications, clock, config.WEB_URL);
 
   /** Background jobs (started by index.ts only, never in tests). */
@@ -388,6 +390,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
         return null; // quiet: the scheduler logs non-zero results
       },
     },
+    // Welcome, inactivity nudges and win-back messages (each sent once per user and key).
+    { name: 'lifecycle-messages', everyMs: 60 * 60_000, run: () => lifecycleMessages.run() },
     // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.
     { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },

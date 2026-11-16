@@ -117,6 +117,8 @@ String? notificationRoute(String type, Map<String, dynamic> data) {
   if (type == 'SESSION_STARTING' && data['sessionId'] != null) return '/sessions/${data['sessionId']}/lobby';
   if (type == 'SESSION_MISSED') return '/student/library';
   if (type == 'CERTIFICATE_ISSUED') return '/me/certificates';
+  // Learning nudges and win-backs open the course (its lessons or its plan).
+  if ((type == 'LEARNING_NUDGE' || type == 'PLAN_WINBACK') && _present(data['courseSlug']) != null) return '/courses/${data['courseSlug']}';
   if (data['sessionId'] != null) {
     return type.contains('LIVE') || type.contains('LOBBY') ? '/sessions/${data['sessionId']}/lobby' : null;
   }

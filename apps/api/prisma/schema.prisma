@@ -220,6 +220,7 @@ model User {
 
   @@map("user")
   auditEntries    AuditLog[] @relation("AuditActor")
+  lifecycleMessages LifecycleMessage[]
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -1310,4 +1311,15 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([actorId, createdAt])
+}
+
+/// A lifecycle message (welcome, inactivity nudge, win-back) sent to a learner. The key is unique per user, so a message
+/// is never sent twice.
+model LifecycleMessage {
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key    String
+  sentAt DateTime @default(now())
+
+  @@id([userId, key])
 }
