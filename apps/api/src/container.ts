@@ -271,6 +271,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     new ReferenceGenerator(),
     notifications,
     vatPercentNow,
+    config.WEB_URL,
   );
 
   const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, holdHours);
@@ -359,6 +360,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   /** Background jobs (started by index.ts only, never in tests). */
   const jobs: Job[] = [
     { name: 'expire-stale-orders', everyMs: 5 * 60_000, run: () => checkout.expireStaleOrders() },
+    { name: 'remind-expiring-transfers', everyMs: 15 * 60_000, run: () => checkout.remindExpiringTransfers() },
     { name: 'expire-transfer-payments', everyMs: 5 * 60_000, run: () => subscriptions.expireStaleTransferPayments() },
     // Before the expiry job, so a plan ending today is still reminded.
     { name: 'remind-renewals', everyMs: 24 * 3_600_000, run: () => subscriptions.remindRenewals() },

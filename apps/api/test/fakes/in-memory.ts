@@ -131,6 +131,13 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   async staleOrders(now: Date) {
     return this.orders.filter((o) => (o.status === 'AWAITING_PAYMENT' || o.status === 'AWAITING_RECEIPT') && o.expiresAt && o.expiresAt < now);
   }
+  reminded = new Set<string>();
+  async transfersExpiringSoon(now: Date, until: Date) {
+    return this.orders.filter((o) => o.status === 'AWAITING_RECEIPT' && !this.reminded.has(o.id) && o.expiresAt && o.expiresAt > now && o.expiresAt <= until);
+  }
+  async markReceiptReminded(orderId: string) {
+    this.reminded.add(orderId);
+  }
   async findCoupon(code: string) {
     return this.coupons.find((c) => c.code === code.toUpperCase()) ?? null;
   }

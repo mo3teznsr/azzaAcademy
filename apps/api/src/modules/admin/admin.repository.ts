@@ -21,7 +21,7 @@ export class PrismaAdminRepository {
   constructor(private readonly db: Db) {}
 
   async dashboardCounts(dayStart: Date, dayEnd: Date, monthStart: Date, soon: Date, now: Date) {
-    const [liveSessions, sessionsToday, activeBatches, seatsHeld, transfersToVerify, bankUnverified, heldPayouts, holdsExpiringSoon, revenue] =
+    const [liveSessions, sessionsToday, activeBatches, seatsHeld, transfersToVerify, bankUnverified, heldPayouts, holdsExpiringSoon, revenue, appleRevenue] =
       await Promise.all([
         this.db.liveSession.count({ where: { status: 'LIVE' } }),
         this.db.liveSession.findMany({
@@ -49,8 +49,12 @@ export class PrismaAdminRepository {
           _sum: { totalFils: true, refundedFils: true, vatFils: true },
           _count: true,
         }),
+        this.db.order.aggregate({
+          where: { status: { in: ['PAID', 'REFUNDED'] }, paidAt: { gte: monthStart }, method: 'APPLE_IAP' },
+          _sum: { vatFils: true },
+        }),
       ]);
-    return { liveSessions, sessionsToday, activeBatches, seatsHeld, transfersToVerify, bankUnverified, heldPayouts, holdsExpiringSoon, revenue };
+    return { liveSessions, sessionsToday, activeBatches, seatsHeld, transfersToVerify, bankUnverified, heldPayouts, holdsExpiringSoon, revenue, appleRevenue };
   }
 
   async listUsers(f: { role?: Role; q?: string; skip: number; take: number }) {

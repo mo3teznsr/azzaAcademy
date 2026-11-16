@@ -509,6 +509,8 @@ model Order {
   receiptUrl                 String?
   receiptUploadedAt          DateTime?
   expiresAt                  DateTime?
+  /// When the "your hold ends soon" reminder went out (bank transfers).
+  receiptReminderAt DateTime?
   verifiedById               String?
   verifiedBy                 User?             @relation("OrderVerifier", fields: [verifiedById], references: [id])
   verifiedAt                 DateTime?

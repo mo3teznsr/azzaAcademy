@@ -139,6 +139,9 @@ export interface PaymentsRepository {
   updateOrder(id: string, patch: OrderPatch): Promise<OrderRecord>;
   /** AWAITING_PAYMENT / AWAITING_RECEIPT orders whose hold expired. */
   staleOrders(now: Date): Promise<OrderRecord[]>;
+  /** Bank transfer orders still waiting for a receipt whose hold ends in (now, until], not reminded yet. */
+  transfersExpiringSoon(now: Date, until: Date): Promise<OrderRecord[]>;
+  markReceiptReminded(orderId: string, at: Date): Promise<void>;
 
   findCoupon(code: string): Promise<CouponRecord | null>;
   /** Paid redemptions plus the student's still-open orders carrying this coupon. */
@@ -321,6 +324,19 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
       select: orderFields,
     });
     return rows.map(toOrder);
+  }
+
+  async transfersExpiringSoon(now: Date, until: Date) {
+    const rows = await this.db.order.findMany({
+      where: { status: 'AWAITING_RECEIPT', receiptReminderAt: null, expiresAt: { gt: now, lte: until } },
+      select: orderFields,
+      take: 500,
+    });
+    return rows.map(toOrder);
+  }
+
+  async markReceiptReminded(orderId: string, at: Date) {
+    await this.db.order.update({ where: { id: orderId }, data: { receiptReminderAt: at } });
   }
 
   async findCoupon(code: string) {

@@ -511,6 +511,7 @@ const en = {
       refunds: 'Refunds',
       fees: 'Fees',
       vat: 'VAT',
+      appleVat: 'VAT collected by Apple',
       net: 'Net',
       none: 'No recorded-course payments in this range.',
     },
