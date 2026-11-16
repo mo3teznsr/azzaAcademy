@@ -66,6 +66,7 @@ export function createApp(container: Container) {
       payments: adapters.payments,
       video: adapters.video,
       checkout: services.checkout,
+      finance: services.finance,
       subscriptions: services.subscriptions,
       sessions: services.sessions,
       appleIap: services.appleIap,

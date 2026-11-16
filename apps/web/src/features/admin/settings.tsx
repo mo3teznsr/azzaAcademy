@@ -82,6 +82,7 @@ const RULES: RuleDef[] = [
   { key: 'EARNING_HOLD_DAYS', field: 'earningHoldDays', min: 0, max: 90, unit: 'd' },
   { key: 'MIN_PAYOUT_AED', field: 'minPayoutAed', min: 0, max: 100000, unit: 'AED' },
   { key: 'BANK_TRANSFER_HOLD_HOURS', field: 'bankTransferHoldHours', min: 1, max: 168, unit: 'h' },
+  { key: 'APPLE_COMMISSION_PERCENT', field: 'appleCommissionPercent', min: 0, max: 30, unit: '%' },
 ];
 
 function useAdminSettings() {
@@ -95,9 +96,9 @@ function RulesCard() {
   const errorText = useProposalError();
   const qc = useQueryClient();
   const q = useAdminSettings();
-  const [vals, setVals] = useState<Record<RuleKey, string>>({ VAT_PERCENT: '', EARNING_HOLD_DAYS: '', MIN_PAYOUT_AED: '', BANK_TRANSFER_HOLD_HOURS: '' });
+  const [vals, setVals] = useState<Record<RuleKey, string>>({ VAT_PERCENT: '', EARNING_HOLD_DAYS: '', MIN_PAYOUT_AED: '', BANK_TRANSFER_HOLD_HOURS: '', APPLE_COMMISSION_PERCENT: '' });
   const [tried, setTried] = useState(false);
-  const seed = (d: AdminSettings) => setVals({ VAT_PERCENT: String(d.rules.VAT_PERCENT), EARNING_HOLD_DAYS: String(d.rules.EARNING_HOLD_DAYS), MIN_PAYOUT_AED: String(d.rules.MIN_PAYOUT_AED), BANK_TRANSFER_HOLD_HOURS: String(d.rules.BANK_TRANSFER_HOLD_HOURS) });
+  const seed = (d: AdminSettings) => setVals({ VAT_PERCENT: String(d.rules.VAT_PERCENT), EARNING_HOLD_DAYS: String(d.rules.EARNING_HOLD_DAYS), MIN_PAYOUT_AED: String(d.rules.MIN_PAYOUT_AED), BANK_TRANSFER_HOLD_HOURS: String(d.rules.BANK_TRANSFER_HOLD_HOURS), APPLE_COMMISSION_PERCENT: String(d.rules.APPLE_COMMISSION_PERCENT) });
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- seed the inputs once the saved values arrive
     if (q.data) seed(q.data);

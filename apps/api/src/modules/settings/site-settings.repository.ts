@@ -8,6 +8,7 @@ export interface RuleOverrides {
   earningHoldDays: number | null;
   minPayoutAed: number | null;
   bankTransferHoldHours: number | null;
+  appleCommissionPercent: number | null;
 }
 
 export interface SiteSettingsRow extends RuleOverrides, ContactSettings {
@@ -19,6 +20,7 @@ export const EMPTY_SITE_SETTINGS: SiteSettingsRow = {
   earningHoldDays: null,
   minPayoutAed: null,
   bankTransferHoldHours: null,
+  appleCommissionPercent: null,
   contactEmail: null,
   contactPhone: null,
   whatsappNumber: null,
@@ -39,6 +41,7 @@ const select = {
   earningHoldDays: true,
   minPayoutAed: true,
   bankTransferHoldHours: true,
+  appleCommissionPercent: true,
   contactEmail: true,
   contactPhone: true,
   whatsappNumber: true,

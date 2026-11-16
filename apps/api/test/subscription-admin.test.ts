@@ -398,6 +398,37 @@ describe('admin cancel', () => {
   });
 });
 
+describe('chargebacks on plan invoices', () => {
+  const dispute = (type: 'dispute.opened' | 'dispute.closed', disputeStatus: string, invoiceId: string | undefined = 'in_1') =>
+    ({ type, paymentIntentId: 'pi_1', invoiceId, disputeAmountFils: 105_000, disputeStatus });
+
+  test('an opened dispute alerts the admins and changes no money', async () => {
+    const { repo, service, notifier, reversed } = setup();
+    paid(repo, card(repo).id);
+    expect(await service.handleStripeEvent(dispute('dispute.opened', 'needs_response'))).toEqual({ handled: true });
+    expect(notifier.sent.at(-1)).toMatchObject({ userIds: ['role:ADMIN'], notice: { type: 'PAYMENT_DISPUTED' } });
+    expect(repo.pays[0]).toMatchObject({ status: 'PAID', refundedFils: 0 });
+    expect(reversed).toHaveLength(0);
+  });
+
+  test('a lost dispute is booked like a full refund, once; a won one changes nothing', async () => {
+    const { repo, service, reversed } = setup();
+    const pay = paid(repo, card(repo).id);
+    expect(await service.handleStripeEvent(dispute('dispute.closed', 'won'))).toEqual({ handled: true });
+    expect(reversed).toHaveLength(0);
+    await service.handleStripeEvent(dispute('dispute.closed', 'lost'));
+    expect(repo.pays[0]).toMatchObject({ status: 'REFUNDED', refundedFils: 105_000 });
+    expect(reversed).toEqual([[pay.id, 105_000]]);
+    expect(await service.handleStripeEvent(dispute('dispute.closed', 'lost'))).toEqual({ handled: true, duplicate: true });
+    expect(reversed).toHaveLength(1);
+  });
+
+  test('disputes on charges that paid no plan invoice are not handled here', async () => {
+    const { service } = setup();
+    expect(await service.handleStripeEvent(dispute('dispute.opened', 'needs_response', undefined))).toEqual({ handled: false });
+  });
+});
+
 describe('refunds made in the Stripe dashboard', () => {
   const refund = (invoiceId: string | undefined, amountRefundedFils: number) => ({ type: 'refund.succeeded' as const, paymentIntentId: 'pi_1', invoiceId, amountRefundedFils });
 

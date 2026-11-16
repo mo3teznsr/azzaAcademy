@@ -109,6 +109,20 @@ export class StripePaymentGateway implements PaymentGateway {
         const piId = typeof pi === 'string' ? pi : pi?.id;
         return { type: 'refund.succeeded', paymentIntentId: piId, amountRefundedFils: charge.amount_refunded, ...(piId && { invoiceId: await this.invoiceOfPaymentIntent(piId) }) };
       }
+      case 'charge.dispute.created':
+      case 'charge.dispute.closed': {
+        // A chargeback: the bank pulled the money back. `closed` with status `lost` means it is gone for good.
+        const dispute = event.data.object;
+        const pi = dispute.payment_intent;
+        const piId = typeof pi === 'string' ? pi : pi?.id;
+        return {
+          type: event.type === 'charge.dispute.created' ? 'dispute.opened' : 'dispute.closed',
+          paymentIntentId: piId ?? undefined,
+          disputeAmountFils: dispute.amount,
+          disputeStatus: dispute.status,
+          ...(piId && { invoiceId: await this.invoiceOfPaymentIntent(piId) }),
+        };
+      }
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {

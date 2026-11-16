@@ -71,6 +71,7 @@ class LessonPlayerRequest {
 typedef LessonPlayerBuilder = Widget Function(BuildContext context, LessonPlayerRequest request);
 
 /// The in-app video player for uploaded and direct video files, or null where the app has none.
+/// The app sets it to `LessonVideoPlayer` in `main.dart`; tests leave it null or pass a fake.
 /// Without one, a lesson's video opens in the system player, which can't report a position, so nothing is saved.
 final lessonPlayerBuilderProvider = Provider<LessonPlayerBuilder?>((ref) => null);
 

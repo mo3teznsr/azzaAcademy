@@ -210,6 +210,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
       earningHoldDays: config.EARNING_HOLD_DAYS,
       minPayoutAed: config.MIN_PAYOUT_AED,
       bankTransferHoldHours: config.BANK_TRANSFER_HOLD_HOURS,
+      appleCommissionPercent: config.APPLE_COMMISSION_PERCENT,
     },
     integrations: {
       stripe: !!config.STRIPE_SECRET_KEY,
@@ -228,6 +229,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const rules = () => siteSettings.rules();
   const vatPercentNow = async () => (await rules()).vatPercent;
   const holdHours = async () => (await rules()).bankTransferHoldHours;
+  const appleCommission = async () => (await rules()).appleCommissionPercent;
   const vatSnapshot = () => siteSettings.ruleSnapshot().vatPercent;
   if (adapters.vat) adapters.vat.current = vatSnapshot;
   const prices = new PriceCalculator(vatSnapshot);
@@ -287,6 +289,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     undefined,
     { repo: subscriptionRepo, bankAccounts: paymentsRepo, holdHours },
     subscriptionRepo,
+    appleCommission,
   );
 
   const appStoreSyncer: AppStoreSyncer = adapters.appStore
@@ -331,7 +334,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     checkout,
     subscriptions,
     finance,
-    appleIap: new AppleIapService(paymentsRepo, adapters.apple, checkout, finance, subscriptions),
+    appleIap: new AppleIapService(paymentsRepo, adapters.apple, checkout, finance, subscriptions, appleCommission),
     fx,
     bankAccounts: new BankAccountService(new PrismaBankAccountRepository(db)),
     coupons: new CouponService(new PrismaCouponRepository(db)),

@@ -6621,4 +6621,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errBaseCurrencyLocked =>
       'The dirham is the base currency and can\'t be changed that way.';
+
+  @override
+  String get lessonVideoPlay => 'Play';
+
+  @override
+  String get lessonVideoPause => 'Pause';
+
+  @override
+  String get lessonVideoSpeed => 'Playback speed';
 }

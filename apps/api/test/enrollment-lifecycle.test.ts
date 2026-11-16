@@ -209,6 +209,84 @@ describe('enrollment lifecycle', () => {
     expect(reversals).toHaveLength(1);
   });
 
+  const paidStripeOrder = async () => {
+    const res = await checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED' });
+    if (res.waitlisted) throw new Error();
+    const pi = `pi_${res.order.reference}`;
+    await checkout.handlePaymentEvent({ type: 'payment.succeeded', checkoutSessionId: res.order.stripeCheckoutSessionId!, paymentIntentId: pi });
+    return { order: res.order, pi };
+  };
+  const orderOf = (id: string) => repo.orders.find((o) => o.id === id)!;
+
+  test('a refund made in the Stripe dashboard is booked: earnings reversed, seat released, once', async () => {
+    const { order, pi } = await paidStripeOrder();
+    const partial = await finance.handleStripeRefund({ type: 'refund.succeeded', paymentIntentId: pi, amountRefundedFils: 40_000 });
+    expect(partial).toEqual({ handled: true });
+    expect(orderOf(order.id)).toMatchObject({ status: 'PAID', refundedFils: 40_000 });
+    expect(reversals).toHaveLength(1);
+    expect(statusOf('sara')).toBe('ACTIVE');
+
+    // Stripe sends the cumulative amount; the second event books only the remaining 52,400.
+    await finance.handleStripeRefund({ type: 'refund.succeeded', paymentIntentId: pi, amountRefundedFils: 92_400 });
+    expect(orderOf(order.id)).toMatchObject({ status: 'REFUNDED', refundedFils: 92_400 });
+    expect(reversals).toHaveLength(2);
+    expect(reversals[1]).toMatchObject({ refundFils: 52_400 });
+    expect(statusOf('sara')).toBe('REFUNDED');
+
+    const replay = await finance.handleStripeRefund({ type: 'refund.succeeded', paymentIntentId: pi, amountRefundedFils: 92_400 });
+    expect(replay).toEqual({ handled: true, duplicate: true });
+    expect(reversals).toHaveLength(2);
+  });
+
+  test("an admin refund's webhook echo books nothing twice, in either order", async () => {
+    const first = await paidStripeOrder();
+    await finance.refund(first.order.id, { amountAed: 924, reason: 'Moved abroad' });
+    await finance.handleStripeRefund({ type: 'refund.succeeded', paymentIntentId: first.pi, amountRefundedFils: 92_400 });
+    expect(orderOf(first.order.id).refundedFils).toBe(92_400);
+    expect(reversals).toHaveLength(1);
+
+    // The echo can also land while the admin refund is still running (between the Stripe call and the booking).
+    repo.addUser('omar');
+    const res = await checkout.checkout('omar', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED' });
+    if (res.waitlisted) throw new Error();
+    const pi = `pi_${res.order.reference}`;
+    await checkout.handlePaymentEvent({ type: 'payment.succeeded', checkoutSessionId: res.order.stripeCheckoutSessionId!, paymentIntentId: pi });
+    const refundCall = gateway.refund.bind(gateway);
+    gateway.refund = async (id, fils) => {
+      await refundCall(id, fils);
+      await finance.handleStripeRefund({ type: 'refund.succeeded', paymentIntentId: id, amountRefundedFils: fils });
+    };
+    const out = await finance.refund(res.order.id, { amountAed: 924, reason: 'Changed plans' });
+    expect(out.order).toMatchObject({ status: 'REFUNDED', refundedFils: 92_400 });
+    expect(reversals).toHaveLength(2);
+  });
+
+  test('a chargeback alerts the admins when opened, and a lost one is booked like a refund, once', async () => {
+    const { order, pi } = await paidStripeOrder();
+    const opened = await finance.handleStripeDispute({ type: 'dispute.opened', paymentIntentId: pi, disputeAmountFils: 92_400, disputeStatus: 'needs_response' });
+    expect(opened).toEqual({ handled: true });
+    expect(notifier.sent.at(-1)).toMatchObject({ userIds: ['role:ADMIN'], notice: { type: 'PAYMENT_DISPUTED' } });
+    expect(orderOf(order.id)).toMatchObject({ status: 'PAID', refundedFils: 0 });
+    expect(statusOf('sara')).toBe('ACTIVE');
+
+    expect(await finance.handleStripeDispute({ type: 'dispute.closed', paymentIntentId: pi, disputeAmountFils: 92_400, disputeStatus: 'won' })).toEqual({ handled: true });
+    expect(reversals).toHaveLength(0);
+
+    await finance.handleStripeDispute({ type: 'dispute.closed', paymentIntentId: pi, disputeAmountFils: 92_400, disputeStatus: 'lost' });
+    expect(orderOf(order.id)).toMatchObject({ status: 'REFUNDED', refundedFils: 92_400 });
+    expect(reversals).toHaveLength(1);
+    expect(statusOf('sara')).toBe('REFUNDED');
+
+    const replay = await finance.handleStripeDispute({ type: 'dispute.closed', paymentIntentId: pi, disputeAmountFils: 92_400, disputeStatus: 'lost' });
+    expect(replay).toEqual({ handled: true, duplicate: true });
+    expect(reversals).toHaveLength(1);
+  });
+
+  test('refund events for unknown payments are left to the subscriptions', async () => {
+    expect(await finance.handleStripeRefund({ type: 'refund.succeeded', paymentIntentId: 'pi_plan_invoice', amountRefundedFils: 5_000, invoiceId: 'in_1' })).toEqual({ handled: false });
+    expect(await finance.handleStripeRefund({ type: 'payment.succeeded', paymentIntentId: 'pi_x' })).toEqual({ handled: false });
+  });
+
   test('state machine rejects illegal moves', () => {
     const m = new EnrollmentStateMachine();
     expect(m.canMove(null, 'AWAITING_TRANSFER')).toBe(true);

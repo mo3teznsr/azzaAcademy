@@ -8,6 +8,7 @@ export interface RuleValues {
   earningHoldDays: number;
   minPayoutAed: number;
   bankTransferHoldHours: number;
+  appleCommissionPercent: number;
 }
 
 export type Integrations = AdminSettings['integrations'];
@@ -27,13 +28,14 @@ export interface SiteSettingsDeps {
 }
 
 const CONTACT_KEYS = ['contactEmail', 'contactPhone', 'whatsappNumber', 'addressEn', 'addressAr'] as const;
-const RULE_KEYS = ['vatPercent', 'earningHoldDays', 'minPayoutAed', 'bankTransferHoldHours'] as const;
+const RULE_KEYS = ['vatPercent', 'earningHoldDays', 'minPayoutAed', 'bankTransferHoldHours', 'appleCommissionPercent'] as const;
 
 const toEnvKeys = (r: RuleValues): RuleSettings => ({
   VAT_PERCENT: r.vatPercent,
   EARNING_HOLD_DAYS: r.earningHoldDays,
   MIN_PAYOUT_AED: r.minPayoutAed,
   BANK_TRANSFER_HOLD_HOURS: r.bankTransferHoldHours,
+  APPLE_COMMISSION_PERCENT: r.appleCommissionPercent,
 });
 
 /** Only the links that are set (non-empty strings of a known network). */
@@ -156,6 +158,7 @@ export class SiteSettingsService {
       earningHoldDays: row.earningHoldDays ?? d.earningHoldDays,
       minPayoutAed: row.minPayoutAed ?? d.minPayoutAed,
       bankTransferHoldHours: row.bankTransferHoldHours ?? d.bankTransferHoldHours,
+      appleCommissionPercent: row.appleCommissionPercent ?? d.appleCommissionPercent,
     };
   }
 

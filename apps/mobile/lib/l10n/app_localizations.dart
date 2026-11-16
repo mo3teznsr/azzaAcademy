@@ -11095,6 +11095,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The dirham is the base currency and can\'t be changed that way.'**
   String get errBaseCurrencyLocked;
+
+  /// No description provided for @lessonVideoPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get lessonVideoPlay;
+
+  /// No description provided for @lessonVideoPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get lessonVideoPause;
+
+  /// No description provided for @lessonVideoSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback speed'**
+  String get lessonVideoSpeed;
 }
 
 class _AppLocalizationsDelegate

@@ -978,6 +978,8 @@ model PlatformSettings {
   earningHoldDays       Int?
   minPayoutAed          Int?
   bankTransferHoldHours Int?
+  /// Apple's commission on in-app purchases (percent of the price before VAT); null = APPLE_COMMISSION_PERCENT.
+  appleCommissionPercent Int?
   /// Public contact details (footer, help, WhatsApp buttons). whatsappNumber: digits with country code, no `+`.
   contactEmail   String?
   contactPhone   String?

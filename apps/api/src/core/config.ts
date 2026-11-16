@@ -60,6 +60,8 @@ const envSchema = z.object({
   MIN_PAYOUT_AED: z.coerce.number().min(0).default(200),
   BANK_TRANSFER_HOLD_HOURS: z.coerce.number().int().min(1).default(48),
   VAT_PERCENT: z.coerce.number().min(0).max(100).default(5),
+  /** Apple's App Store commission on in-app purchases, in percent of the price before VAT (15 = Small Business Program). */
+  APPLE_COMMISSION_PERCENT: z.coerce.number().int().min(0).max(30).default(15),
 });
 
 export const APPLE_ENVIRONMENTS = ['Production', 'Sandbox'] as const;

@@ -1,5 +1,6 @@
 import type { AppleVerifyInput } from '@azza/shared';
 import { AppError } from '../../../core/errors';
+import { resolveRule, type RuleValue } from '../../../core/rule-value';
 import type { AppleSignedDataVerifier, AppleTransaction } from '../../../core/ports';
 import type { CheckoutService } from '../checkout.service';
 import type { FinanceAdminService } from '../finance-admin.service';
@@ -8,6 +9,7 @@ import type { SubscriptionService } from '../../subscriptions/subscription.servi
 import {
   APPLE_REJECTION_IS_FINAL,
   APPLE_REJECTION_MESSAGES,
+  appleCommissionFils,
   appleNotificationAction,
   isRecordedPlanProduct,
   decideApplePurchase,
@@ -37,6 +39,8 @@ export class AppleIapService {
     private readonly finance: Pick<FinanceAdminService, 'recordRefund'>,
     /** Recorded-course plans: notifications for their products go here. */
     private readonly subscriptions?: Pick<SubscriptionService, 'handleAppleNotification'>,
+    /** Apple's commission in percent of the pre-VAT price (admin-editable; read at use time). */
+    private readonly commissionPercent: RuleValue<number> = 0,
   ) {}
 
   /** `POST /payments/apple/verify`. Idempotent on the Apple transaction id: a replay returns the paid order. */
@@ -56,7 +60,8 @@ export class AppleIapService {
       console.warn(`[apple-iap] transaction ${tx.transactionId} (${tx.environment}) rejected for order ${order.id}: ${decision.reason}`);
       throw rejection(decision.reason, order.id);
     }
-    return { order: await this.checkout.confirmPaid(order, decision.patch), duplicate: false };
+    const feeFils = appleCommissionFils(order.totalFils, order.vatFils, await resolveRule(this.commissionPercent));
+    return { order: await this.checkout.confirmPaid(order, { ...decision.patch, feeFils }), duplicate: false };
   }
 
   private async orderFor(userId: string, tx: AppleTransaction, orderId?: string) {

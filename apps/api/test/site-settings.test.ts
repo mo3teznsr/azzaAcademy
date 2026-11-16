@@ -45,7 +45,7 @@ class MemCuts implements SettingsRepository {
   async setCourseCut() { return null; }
 }
 
-const DEFAULTS = { vatPercent: 5, earningHoldDays: 14, minPayoutAed: 200, bankTransferHoldHours: 48 };
+const DEFAULTS = { vatPercent: 5, earningHoldDays: 14, minPayoutAed: 200, bankTransferHoldHours: 48, appleCommissionPercent: 15 };
 const INTEGRATIONS = { stripe: true, appleIap: true, livekit: false, smtp: false, push: false, appStoreConnect: false };
 
 function build(repo = new MemSiteSettings(), extra: Partial<SiteSettingsDeps> = {}) {
@@ -69,7 +69,7 @@ describe('business rules (DB override, env fallback)', () => {
 
     const view = await svc.updateRules({ vatPercent: 0, minPayoutAed: 500 });
     expect(view.rules).toMatchObject({ VAT_PERCENT: 0, MIN_PAYOUT_AED: 500, EARNING_HOLD_DAYS: 14, BANK_TRANSFER_HOLD_HOURS: 48, TEACHER_SHARE_PERCENT: 70 });
-    expect(view.ruleDefaults).toEqual({ VAT_PERCENT: 5, EARNING_HOLD_DAYS: 14, MIN_PAYOUT_AED: 200, BANK_TRANSFER_HOLD_HOURS: 48 });
+    expect(view.ruleDefaults).toEqual({ VAT_PERCENT: 5, EARNING_HOLD_DAYS: 14, MIN_PAYOUT_AED: 200, BANK_TRANSFER_HOLD_HOURS: 48, APPLE_COMMISSION_PERCENT: 15 });
     expect(svc.ruleSnapshot().minPayoutAed).toBe(500);
 
     await svc.updateRules({ minPayoutAed: null }); // absent keys stay as they are
@@ -340,8 +340,8 @@ describe('HTTP', () => {
     const { app, repo } = make(user('ADMIN'));
     const get = await (await app.request('/admin/settings')).json();
     expect(get).toEqual({
-      rules: { VAT_PERCENT: 5, EARNING_HOLD_DAYS: 14, MIN_PAYOUT_AED: 200, BANK_TRANSFER_HOLD_HOURS: 48, TEACHER_SHARE_PERCENT: 70 },
-      ruleDefaults: { VAT_PERCENT: 5, EARNING_HOLD_DAYS: 14, MIN_PAYOUT_AED: 200, BANK_TRANSFER_HOLD_HOURS: 48 },
+      rules: { VAT_PERCENT: 5, EARNING_HOLD_DAYS: 14, MIN_PAYOUT_AED: 200, BANK_TRANSFER_HOLD_HOURS: 48, APPLE_COMMISSION_PERCENT: 15, TEACHER_SHARE_PERCENT: 70 },
+      ruleDefaults: { VAT_PERCENT: 5, EARNING_HOLD_DAYS: 14, MIN_PAYOUT_AED: 200, BANK_TRANSFER_HOLD_HOURS: 48, APPLE_COMMISSION_PERCENT: 15 },
       integrations: INTEGRATIONS,
       contact: { contactEmail: null, contactPhone: null, whatsappNumber: null, addressEn: null, addressAr: null },
       socials: {},
