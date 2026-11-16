@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Check, ChevronRight, Lock, PlayCircle, Share2 } from 'lucide-react';
@@ -36,6 +36,7 @@ import { PlanPicker } from '../subscriptions/plan-picker';
 import { PlanBanner } from '../subscriptions/plan-banner';
 import { PendingTransfer } from '../subscriptions/manage-plan';
 import { CourseReviews } from './reviews';
+import { track } from '@/lib/analytics';
 
 const ZONES = ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Africa/Cairo', 'Europe/London'];
 
@@ -88,6 +89,9 @@ function CourseView({ course }: { course: Course }) {
   const desc = pick(course.descriptionEn, course.descriptionAr);
   const p = { courseId: course.id, pageSize: 50 };
   const recorded = course.type === 'RECORDED';
+  useEffect(() => {
+    track('view_item', { item_id: course.slug, item_name: course.titleEn });
+  }, [course.slug, course.titleEn]);
   // Recorded courses have no classes; they sell a plan instead.
   const batches = useQuery({ queryKey: qk.batches(p), queryFn: () => batchesApi.list(p), enabled: !recorded });
   const subs = useQuery({ queryKey: qk.mySubscriptions, queryFn: subscriptionsApi.mine, enabled: recorded && !!user && role === 'STUDENT', retry: false });

@@ -1,4 +1,4 @@
-import type { BatchStatus, EnrollmentStatus, OrderStatus, PaymentMethod } from '@azza/shared';
+import type { Attribution, BatchStatus, EnrollmentStatus, OrderStatus, PaymentMethod } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
 import { SEAT_HOLDING } from './enrollment-state';
 import type { CouponState } from './price-calculator';
@@ -127,7 +127,7 @@ export interface PaymentsRepository {
   staleHolds(before: Date): Promise<EnrollmentRecord[]>;
 
   referenceExists(reference: string): Promise<boolean>;
-  createOrder(data: NewOrder): Promise<OrderRecord>;
+  createOrder(data: NewOrder & { attribution?: Attribution | null }): Promise<OrderRecord>;
   findOrder(id: string): Promise<OrderRecord | null>;
   findOrderByPaymentIntent(paymentIntentId: string): Promise<OrderRecord | null>;
   findOrderByCheckoutSession(sessionId: string): Promise<OrderRecord | null>;
@@ -267,8 +267,8 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
     return (await this.db.order.count({ where: { reference } })) > 0;
   }
 
-  async createOrder(data: NewOrder) {
-    return toOrder(await this.db.order.create({ data, select: orderFields }));
+  async createOrder({ attribution, ...data }: NewOrder & { attribution?: Attribution | null }) {
+    return toOrder(await this.db.order.create({ data: { ...data, ...(attribution && { attribution }) }, select: orderFields }));
   }
 
   async findOrder(id: string) {

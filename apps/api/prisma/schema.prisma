@@ -165,6 +165,8 @@ model User {
   emailVerified   Boolean  @default(false)
   image           String?
   role            Role     @default(STUDENT)
+  /// First-touch attribution at sign-up (UTM tags, click ids, referrer), as JSON text; set once, never edited.
+  acquisition     String?
   locale          String   @default("en")
   timezone        String   @default("Asia/Dubai")
   displayCurrency String   @default("AED")
@@ -509,6 +511,8 @@ model Order {
   receiptUrl                 String?
   receiptUploadedAt          DateTime?
   expiresAt                  DateTime?
+  /// Where the buyer came from for this purchase (UTM tags, click ids).
+  attribution Json?
   /// When the "your hold ends soon" reminder went out (bank transfers).
   receiptReminderAt DateTime?
   verifiedById               String?

@@ -9,6 +9,7 @@ import { makeQueryClient } from '@/lib/query-client';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/lib/theme/provider';
+import { Analytics } from '@/components/analytics/analytics';
 
 export function Providers({ locale, children }: { locale: Locale; children: ReactNode }) {
   const [client] = useState(makeQueryClient);
@@ -20,6 +21,7 @@ export function Providers({ locale, children }: { locale: Locale; children: Reac
             <TooltipProvider delayDuration={200}>
               {children}
               <Toaster position="bottom-center" />
+              <Analytics />
             </TooltipProvider>
           </MoneyProvider>
         </I18nProvider>

@@ -1,4 +1,4 @@
-import { filsToAed, formatMoney, type CheckoutInput, type EnrollmentStatus } from '@azza/shared';
+import { cleanAttribution, filsToAed, formatMoney, type CheckoutInput, type EnrollmentStatus } from '@azza/shared';
 import { BusinessRuleError, ConflictError, ForbiddenError, NotFoundError } from '../../core/errors';
 import type { PaymentWebhookEvent } from '../../core/ports';
 import { addHours, formatInZone } from '../../core/time';
@@ -128,6 +128,7 @@ export class CheckoutService {
       appleAppAccountToken: started.appleAppAccountToken ?? null,
       bankAccountId: started.bankAccountId ?? null,
       expiresAt: started.expiresAt,
+      attribution: cleanAttribution(input.attribution),
     });
     await started.onCreated?.(order);
     await this.lifecycle.syncFullness(batch.id);

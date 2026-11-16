@@ -7,3 +7,4 @@ export * from './course-media';
 export * from './subscriptions';
 export * from './countries';
 export * from './phone';
+export * from './attribution';

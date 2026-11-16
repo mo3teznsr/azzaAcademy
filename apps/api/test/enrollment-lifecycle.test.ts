@@ -314,6 +314,12 @@ describe('enrollment lifecycle', () => {
     expect(email?.html).toContain('/checkout/b08');
   });
 
+  test('the order keeps where the buyer came from, known tags only', async () => {
+    const res = await checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED', attribution: { utm_source: 'snapchat', utm_campaign: 'nd55', junk: 'x' } });
+    if (res.waitlisted) throw new Error();
+    expect((repo.orders.find((o) => o.id === res.order.id) as unknown as { attribution: unknown }).attribution).toEqual({ utm_source: 'snapchat', utm_campaign: 'nd55' });
+  });
+
   test('state machine rejects illegal moves', () => {
     const m = new EnrollmentStateMachine();
     expect(m.canMove(null, 'AWAITING_TRANSFER')).toBe(true);

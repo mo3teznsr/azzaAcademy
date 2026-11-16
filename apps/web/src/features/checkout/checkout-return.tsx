@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { SOCKET_EVENTS } from '@azza/shared';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
 import { useSocketEvent } from '@/lib/realtime/socket';
 import { cn } from '@/lib/utils';
+import { track } from '@/lib/analytics';
 
 /** Poll every 2 s while the webhook hasn't landed, for about a minute. */
 const POLL_MS = 2_000;
@@ -54,6 +56,13 @@ function ReturnView({ reference, cancelled }: { reference: string; cancelled: bo
   const batchId = q.data?.enrollment?.batch.id;
   const polls = qc.getQueryState(key)?.dataUpdateCount ?? 0;
   const view = q.data ? viewOf(q.data, cancelled, polls) : null;
+  const paidOrder = view === 'paid' ? q.data : null;
+  const reported = useRef(false);
+  useEffect(() => {
+    if (!paidOrder || reported.current) return;
+    reported.current = true;
+    track('purchase', { transaction_id: paidOrder.reference, value: paidOrder.totalFils / 100, currency: 'AED', item_id: paidOrder.enrollment?.batch.id });
+  }, [paidOrder]);
   // Only the failed state needs the course slug ("Choose another batch").
   const batch = useQuery({ queryKey: qk.batch(batchId ?? ''), queryFn: () => batchesApi.get(batchId!), enabled: !!batchId && view === 'failed' });
 
