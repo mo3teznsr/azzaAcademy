@@ -107,6 +107,7 @@ import { PrismaSessionReminderRepository, SessionReminderService } from './modul
 import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.service';
 import { PrismaAuditLog } from './modules/audit/audit-log';
 import { LifecycleService, PrismaLifecycleRepository } from './modules/lifecycle/lifecycle.service';
+import { TaxDocumentService } from './modules/invoices/tax-document.service';
 
 export interface Adapters {
   db: Db;
@@ -321,6 +322,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator(), undefined, notifications, config.WEB_URL);
   const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
   resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
+  const taxDocuments = new TaxDocumentService(db, clock);
   const services = {
     settings,
     siteSettings,
@@ -356,6 +358,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     certificates,
     reports: new ReportService(new PrismaReportRepository(db), clock),
     growth: new GrowthService(new PrismaGrowthRepository(db), clock),
+    taxDocuments,
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
     lessons: new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
@@ -390,6 +393,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
         return null; // quiet: the scheduler logs non-zero results
       },
     },
+    // UAE tax invoices for new payments and credit notes for refunds (nothing until a TRN is set).
+    { name: 'issue-tax-documents', everyMs: 10 * 60_000, run: () => taxDocuments.issuePending() },
     // Welcome, inactivity nudges and win-back messages (each sent once per user and key).
     { name: 'lifecycle-messages', everyMs: 60 * 60_000, run: () => lifecycleMessages.run() },
     // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.

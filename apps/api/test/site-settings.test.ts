@@ -345,6 +345,7 @@ describe('HTTP', () => {
       integrations: INTEGRATIONS,
       contact: { contactEmail: null, contactPhone: null, whatsappNumber: null, addressEn: null, addressAr: null },
       socials: {},
+      legal: { legalName: null, legalAddress: null, taxRegistrationNumber: null, invoicingFrom: null },
     });
     const put = await app.request('/admin/settings/rules', json('PUT', { vatPercent: 8 }));
     expect(put.status).toBe(200);
@@ -357,5 +358,18 @@ describe('HTTP', () => {
     expect((await app.request('/admin/settings/rules', json('PUT', { vatPercent: 50 }))).status).toBe(400);
     const ok = await app.request('/admin/settings/contact', json('PUT', { addressEn: 'Dubai', socials: { youtube: 'https://youtube.com/@azza' } }));
     expect(await ok.json()).toMatchObject({ contact: { addressEn: 'Dubai' }, socials: { youtube: 'https://youtube.com/@azza' } });
+  });
+});
+
+describe('tax invoicing settings', () => {
+  test('saving the first TRN starts invoicing; later edits keep the start date', async () => {
+    const { svc } = build();
+    const first = await svc.updateContact({ legalName: 'Future Tech FZ-LLC', taxRegistrationNumber: '100123456700003' });
+    expect(first.legal).toMatchObject({ legalName: 'Future Tech FZ-LLC', taxRegistrationNumber: '100123456700003' });
+    const started = first.legal.invoicingFrom;
+    expect(started).not.toBeNull();
+    const again = await svc.updateContact({ taxRegistrationNumber: '100123456700011' });
+    expect(again.legal.invoicingFrom).toEqual(started);
+    expect(await svc.siteSettings()).not.toHaveProperty('taxRegistrationNumber'); // not in the public settings
   });
 });

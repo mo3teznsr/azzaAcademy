@@ -221,6 +221,7 @@ model User {
   @@map("user")
   auditEntries    AuditLog[] @relation("AuditActor")
   lifecycleMessages LifecycleMessage[]
+  taxDocuments    TaxDocument[]
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -528,6 +529,7 @@ model Order {
   supportTickets             SupportTicket[]
 
   @@index([status, method])
+  taxDocuments TaxDocument[]
 }
 
 model BankAccount {
@@ -1007,6 +1009,12 @@ model PlatformSettings {
   addressAr      String?
   /// { instagram?, x?, facebook?, linkedin?, youtube?, tiktok?, snapchat? } — https URLs.
   socials        Json     @default("{}")
+  /// Tax invoices (UAE FTA): the supplier's legal name, address and TRN. Invoices are issued only once a TRN is set,
+  /// for payments made from `invoicingFrom` (set when the TRN is first saved).
+  legalName             String?
+  legalAddress          String?
+  taxRegistrationNumber String?
+  invoicingFrom         DateTime?
   updatedAt          DateTime @updatedAt
 }
 
@@ -1084,6 +1092,7 @@ model SubscriptionPayment {
 
   @@index([subscriptionId])
   @@index([status])
+  taxDocuments TaxDocument[]
 }
 
 enum QuizStatus {
@@ -1322,4 +1331,50 @@ model LifecycleMessage {
   sentAt DateTime @default(now())
 
   @@id([userId, key])
+}
+
+enum TaxDocumentKind {
+  INVOICE
+  CREDIT_NOTE
+}
+
+/// A UAE tax invoice or credit note. Numbers are sequential with no gaps (TaxDocumentCounter); documents are never
+/// edited or deleted. Supplier and buyer details are snapshots taken at issue.
+model TaxDocument {
+  id                    String          @id @default(cuid())
+  kind                  TaxDocumentKind
+  /// Position in its series (invoices and credit notes are numbered separately).
+  seq                   Int
+  number                String          @unique
+  /// A credit note's original invoice.
+  invoiceId             String?
+  invoice               TaxDocument?    @relation("CreditNotes", fields: [invoiceId], references: [id])
+  creditNotes           TaxDocument[]   @relation("CreditNotes")
+  orderId               String?
+  order                 Order?          @relation(fields: [orderId], references: [id])
+  subscriptionPaymentId String?
+  subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id])
+  userId                String
+  user                  User            @relation(fields: [userId], references: [id])
+  description           String
+  subtotalFils          Int
+  discountFils          Int             @default(0)
+  vatPercent            Int
+  vatFils               Int
+  totalFils             Int
+  supplier              Json
+  buyer                 Json
+  issuedAt              DateTime        @default(now())
+
+  @@unique([kind, seq])
+  @@index([userId, issuedAt])
+  @@index([orderId])
+  @@index([subscriptionPaymentId])
+}
+
+/// The last number used in each series (`INVOICE`, `CREDIT_NOTE`). Incremented in the same transaction as the document
+/// it numbers, so each series has no gaps.
+model TaxDocumentCounter {
+  id   String @id
+  last Int    @default(0)
 }
