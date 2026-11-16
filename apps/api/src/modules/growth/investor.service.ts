@@ -15,7 +15,7 @@ export interface MarketingSpendRecord {
 }
 
 export interface InvestorRepository {
-  /** Paid (or later refunded) seat orders and plan payments, with their money. */
+  /** Paid (or later refunded) seat orders and plan payments with money in them (free ones don't make a paying customer). */
   payments(): Promise<Payment[]>;
   /** Teacher earnings summed by the month they were recorded (UTC), every kind, signed. */
   teacherByMonth(): Promise<Map<string, number>>;
@@ -74,8 +74,8 @@ export class PrismaInvestorRepository implements InvestorRepository {
   async payments() {
     const select = { userId: true, paidAt: true, totalFils: true, vatFils: true, refundedFils: true, feeFils: true } as const;
     const [orders, plans] = await Promise.all([
-      this.db.order.findMany({ where: { status: { in: ['PAID', 'REFUNDED'] }, paidAt: { not: null } }, select }),
-      this.db.subscriptionPayment.findMany({ where: { status: { in: ['PAID', 'REFUNDED'] }, paidAt: { not: null } }, select }),
+      this.db.order.findMany({ where: { status: { in: ['PAID', 'REFUNDED'] }, totalFils: { gt: 0 }, paidAt: { not: null } }, select }),
+      this.db.subscriptionPayment.findMany({ where: { status: { in: ['PAID', 'REFUNDED'] }, totalFils: { gt: 0 }, paidAt: { not: null } }, select }),
     ]);
     return [...orders, ...plans].map((p) => ({ userId: p.userId, at: p.paidAt!, totalFils: p.totalFils, vatFils: p.vatFils, refundedFils: p.refundedFils, feeFils: p.feeFils }));
   }
