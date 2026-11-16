@@ -1,5 +1,6 @@
 import type { AttendanceMark, BatchStatus, OrganizationInput, OrganizationRole, SessionStatus } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
+import type { EnrollmentRecord } from '../payments/payments.repository';
 import { SEAT_PACK_LIVE, type SeatPackStatus } from './seat-pack-policy';
 
 export interface OrganizationRecord {
@@ -171,10 +172,13 @@ export interface OrganizationRepository {
   expireSeatSubscriptions(now: Date): Promise<number>;
   completedLessons(userId: string, courseId: string): Promise<number>;
 
-  enrollmentOf(enrollmentId: string): Promise<{ id: string; userId: string; batchId: string; status: import('@azza/shared').EnrollmentStatus; updatedAt: Date } | null>;
+  enrollmentOf(enrollmentId: string): Promise<EnrollmentRecord | null>;
+  enrollmentFor(userId: string, batchId: string): Promise<EnrollmentRecord | null>;
 
   reportData(organizationId: string): Promise<ReportData>;
 }
+
+const enrollmentSelect = { id: true, userId: true, batchId: true, status: true, updatedAt: true } as const;
 
 const orgSelect = {
   id: true, name: true, legalName: true, trn: true, address: true, contactName: true, contactEmail: true, contactPhone: true, billingEmail: true, createdAt: true,
@@ -372,7 +376,11 @@ export class PrismaOrganizationRepository implements OrganizationRepository {
   }
 
   enrollmentOf(enrollmentId: string) {
-    return this.db.enrollment.findUnique({ where: { id: enrollmentId }, select: { id: true, userId: true, batchId: true, status: true, updatedAt: true } });
+    return this.db.enrollment.findUnique({ where: { id: enrollmentId }, select: enrollmentSelect });
+  }
+
+  enrollmentFor(userId: string, batchId: string) {
+    return this.db.enrollment.findUnique({ where: { userId_batchId: { userId, batchId } }, select: enrollmentSelect });
   }
 
   async reportData(organizationId: string): Promise<ReportData> {
