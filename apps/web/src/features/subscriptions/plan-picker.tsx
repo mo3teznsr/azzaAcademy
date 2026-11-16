@@ -20,6 +20,7 @@ import { useAuth } from '@/lib/auth/use-auth';
 import { cn } from '@/lib/utils';
 import { BankTransferDetails } from '../checkout/bank-details';
 import { track } from '@/lib/analytics';
+import { PhoneGate } from '../auth/phone-gate';
 
 type Method = 'CARD' | 'BANK';
 
@@ -236,9 +237,12 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
           <Link href={href}>{t.recorded.signInToStart}</Link>
         </Button>
       ) : (
-        <Button variant="ink" size="lg" className="w-full" disabled={start.isPending || redirecting} onClick={() => start.mutate()}>
-          {redirecting ? t.recorded.redirecting : start.isPending ? t.recorded.working : method === 'BANK' ? t.recorded.getBankDetails : t.recorded.start}
-        </Button>
+        // Google/Apple accounts start without a phone: asked once here, before the first purchase.
+        <PhoneGate compact>
+          <Button variant="ink" size="lg" className="w-full" disabled={start.isPending || redirecting} onClick={() => start.mutate()}>
+            {redirecting ? t.recorded.redirecting : start.isPending ? t.recorded.working : method === 'BANK' ? t.recorded.getBankDetails : t.recorded.start}
+          </Button>
+        </PhoneGate>
       )}
       {method === 'CARD' && (
         <>

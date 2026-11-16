@@ -12,6 +12,8 @@ import { authClient } from '@/lib/auth/client';
 import { homeFor, safeNext, rolesForPath } from '@/lib/auth/roles';
 import { useI18n } from '@/lib/i18n/provider';
 import { AuthShell, FormBanner } from './auth-shell';
+import { socialErrorKind } from '@/lib/auth/social-redirects';
+import { SocialButtons } from './social-buttons';
 import { Field, IconInput, PasswordInput } from './fields';
 import { signInSchema, type SignInValues } from './schemas';
 
@@ -25,6 +27,8 @@ export function SignInForm() {
   const emailValue = useWatch({ control: form.control, name: 'email' });
   const remember = useWatch({ control: form.control, name: 'remember' });
   const nextParam = safeNext(params.get('next'));
+  // Back from Google/Apple with `?error=` (or from /auth/continue without a session).
+  const oauthError = socialErrorKind(params.get('error'));
   const signUpHref = nextParam ? `/sign-up?next=${encodeURIComponent(nextParam)}` : '/sign-up';
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -48,8 +52,10 @@ export function SignInForm() {
 
   return (
     <AuthShell kicker={t.auth.signIn.kicker} title={t.auth.signIn.title} sub={t.auth.signIn.sub}>
+      <SocialButtons next={nextParam} from="/sign-in" />
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         {error && <FormBanner tone="error">{error}</FormBanner>}
+        {!error && oauthError && <FormBanner tone="error">{t.auth.social[oauthError]}</FormBanner>}
         <Field id="email" label={t.auth.signIn.email} error={errors.email && t.auth.errors.email}>
           <IconInput
             id="email"

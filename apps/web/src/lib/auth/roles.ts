@@ -26,8 +26,16 @@ export function rolesForPath(pathname: string): Role[] | null {
 
 export const AUTH_PAGES = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password'];
 
-/** Only allow same-origin relative redirects. */
+/** Only allow same-origin relative redirects (`//host` and `/\host` lead to other origins in a browser). */
 export function safeNext(next: string | null | undefined): string | null {
-  if (!next || !next.startsWith('/') || next.startsWith('//')) return null;
+  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) return null;
   return next;
 }
+
+/** Where a freshly signed-in user goes: `next` when it is safe and their role may open it, else their home. */
+export function landingFor(next: string | null | undefined, role: string | null | undefined): string {
+  const safe = safeNext(next);
+  const allowed = safe ? rolesForPath(safe.split(/[?#]/)[0] ?? safe) : null;
+  return safe && (!allowed || allowed.includes((role ?? 'STUDENT') as Role)) ? safe : homeFor(role);
+}
+
