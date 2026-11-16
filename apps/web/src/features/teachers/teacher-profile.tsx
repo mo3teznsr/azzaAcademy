@@ -9,7 +9,7 @@ import { Chip } from '@/components/brand/status-chip';
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states';
 import { ApiError, coursesApi, type TeacherProfile as Profile } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { Price } from '@/components/brand/price';
 import { useCategoryLabel } from '@/components/brand/category';
 
@@ -40,6 +40,7 @@ export function TeacherProfile({ id }: { id: string }) {
 function ProfileView({ p }: { p: Profile }) {
   const { t, f, fill, pick } = useI18n();
   const categoryLabel = useCategoryLabel();
+  const href = useLocaleHref();
   return (
     <>
       <section aria-labelledby="teacher-name" className="grid items-end gap-8 pt-6 md:grid-cols-[auto_1fr]">
@@ -82,7 +83,7 @@ function ProfileView({ p }: { p: Profile }) {
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-4">
             {p.courses.map((c, i) => (
               <li key={c.id}>
-                <Link href={`/courses/${c.slug}`} className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-3 text-foreground no-underline">
+                <Link href={href(`/courses/${c.slug}`)} className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-3 text-foreground no-underline">
                   <CourseCover course={{ ...c, coverStyle: STYLES[i % STYLES.length] }} showMeta={false} className="h-48" />
                   <span className="flex items-center justify-between gap-2 px-2 pb-2">
                     <span className="flex min-w-0 flex-col gap-1">
@@ -114,7 +115,7 @@ function ProfileView({ p }: { p: Profile }) {
                   </b>
                   {b.status === 'FULL' || b.seatsLeft <= 0 ? <Chip tone="peach">{t.teacherProfile.full}</Chip> : <Chip tone="sage">{fill(t.common.seatsLeft, { n: f.number(b.seatsLeft) })}</Chip>}
                 </div>
-                <Link href={`/courses/${b.courseSlug}`} className="font-bold text-foreground no-underline hover:underline">
+                <Link href={href(`/courses/${b.courseSlug}`)} className="font-bold text-foreground no-underline hover:underline">
                   {pick(b.courseTitle, b.courseTitleAr).text}
                 </Link>
                 <span className="font-display text-lg">
@@ -125,7 +126,7 @@ function ProfileView({ p }: { p: Profile }) {
                 </span>
                 <div className="mt-auto flex items-end justify-between gap-2 border-t border-border pt-3">
                   <Price fils={b.priceFils} className="text-lg font-bold" />
-                  <Link href={`/courses/${b.courseSlug}?batch=${b.id}`} className="link-sun inline-flex min-h-11 items-center text-sm">
+                  <Link href={href(`/courses/${b.courseSlug}?batch=${b.id}`)} className="link-sun inline-flex min-h-11 items-center text-sm">
                     {t.teacherProfile.viewBatch}
                   </Link>
                 </div>
