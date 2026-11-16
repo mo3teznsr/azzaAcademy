@@ -1,7 +1,7 @@
 // Composition root: the only place that knows concrete classes. Everything else
 // receives its dependencies through constructors (DIP), so tests swap adapters freely.
 
-import { createAuth } from './auth/auth';
+import { createAuth, type OnUserCreated } from './auth/auth';
 import { BetterAuthUserProvisioner, InviteRegistry } from './auth/user-provisioner';
 import { msUntilUtcHour, type Job } from './jobs/scheduler';
 import type { AppConfig } from './core/config';
@@ -103,6 +103,8 @@ import { SupportService } from './modules/support/support.service';
 import { PrismaSubscriptionRepository } from './modules/subscriptions/subscription.repository';
 import { SubscriptionService } from './modules/subscriptions/subscription.service';
 import { SubscriptionTransferQueries } from './modules/subscriptions/transfer-queries';
+import { PrismaReferralRepository } from './modules/referrals/referral.repository';
+import { ReferralService } from './modules/referrals/referral.service';
 import { PrismaSessionReminderRepository, SessionReminderService } from './modules/sessions/session-reminders';
 import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.service';
 import { PrismaAuditLog } from './modules/audit/audit-log';
@@ -187,7 +189,9 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const { db, clock, mailer, push, video, payments, realtime } = adapters;
   const invites = new InviteRegistry();
   const currencies = new CurrencyService(new PrismaCurrencyRepository(db));
-  const auth = createAuth(db, config, mailer, invites, currencies);
+  // New accounts are linked to whoever invited them; the referral service is built below.
+  let onUserCreated: OnUserCreated = async () => undefined;
+  const auth = createAuth(db, config, mailer, invites, currencies, (user) => onUserCreated(user));
 
   // repositories
   const courseRepo = new PrismaCourseRepository(db);
@@ -238,6 +242,11 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const vatSnapshot = () => siteSettings.ruleSnapshot().vatPercent;
   if (adapters.vat) adapters.vat.current = vatSnapshot;
   const prices = new PriceCalculator(vatSnapshot);
+  const referrals = new ReferralService(new PrismaReferralRepository(db), notifications, clock, {
+    holdDays: async () => (await rules()).earningHoldDays,
+    webUrl: config.WEB_URL,
+  });
+  onUserCreated = (user) => referrals.linkNewUser(user.id, user.acquisition);
   const payouts = new PayoutService(
     new PrismaPayoutRepository(db),
     new EarningsCalculator(),
@@ -359,6 +368,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     reports: new ReportService(new PrismaReportRepository(db), clock),
     growth: new GrowthService(new PrismaGrowthRepository(db), clock),
     taxDocuments,
+    referrals,
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
     lessons: new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
@@ -399,6 +409,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     { name: 'lifecycle-messages', everyMs: 60 * 60_000, run: () => lifecycleMessages.run() },
     // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.
     { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
+    // Referral rewards once the friend's first payment has passed the earning hold without a refund.
+    { name: 'referral-rewards', everyMs: 60 * 60_000, run: () => referrals.run() },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 

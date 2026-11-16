@@ -11,6 +11,8 @@ export const ATTRIBUTION_KEYS = [
   'sccid',
   'referrer',
   'landing',
+  /** A referral code from an invite link (`?ref=CODE`). */
+  'ref',
 ] as const;
 export type AttributionKey = (typeof ATTRIBUTION_KEYS)[number];
 export type Attribution = Partial<Record<AttributionKey, string>>;

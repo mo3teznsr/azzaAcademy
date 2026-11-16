@@ -356,6 +356,7 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
         minOrderFils: true,
         courseId: true,
         batchId: true,
+        ownerId: true,
       },
     });
   }

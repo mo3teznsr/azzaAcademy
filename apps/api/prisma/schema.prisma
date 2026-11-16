@@ -167,6 +167,8 @@ model User {
   role            Role     @default(STUDENT)
   /// First-touch attribution at sign-up (UTM tags, click ids, referrer), as JSON text; set once, never edited.
   acquisition     String?
+  /// Personal referral code (`https://azza.academy/?ref=CODE`); created the first time the user opens their invite page.
+  referralCode    String?  @unique
   locale          String   @default("en")
   timezone        String   @default("Asia/Dubai")
   displayCurrency String   @default("AED")
@@ -222,6 +224,9 @@ model User {
   auditEntries    AuditLog[] @relation("AuditActor")
   lifecycleMessages LifecycleMessage[]
   taxDocuments    TaxDocument[]
+  referralsMade   Referral[] @relation("ReferralReferrer")
+  referredBy      Referral?  @relation("ReferralReferred")
+  ownCoupons      Coupon[]   @relation("CouponOwner")
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -588,8 +593,15 @@ model Coupon {
   course         Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
   batchId        String?
   batch          Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  /// Personal coupon (referral rewards): only this user can use it. null = anyone.
+  ownerId        String?
+  owner          User?              @relation("CouponOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt      DateTime           @default(now())
   usages         CouponRedemption[]
+  referralRewardOf  Referral?       @relation("ReferralReferrerCoupon")
+  referralWelcomeOf Referral?       @relation("ReferralReferredCoupon")
+
+  @@index([ownerId])
 }
 
 /// One row per paid order that used a coupon (written when the order is PAID).
@@ -774,6 +786,7 @@ model Earning {
   payout                Payout?              @relation(fields: [payoutId], references: [id])
   note                  String?
   createdAt             DateTime             @default(now())
+  referral              Referral?            @relation("ReferralBonus")
 
   @@unique([sessionId, teacherId, kind])
   @@unique([subscriptionPaymentId, kind])
@@ -1377,4 +1390,56 @@ model TaxDocument {
 model TaxDocumentCounter {
   id   String @id
   last Int    @default(0)
+}
+
+enum ReferralStatus {
+  /// Signed up with a referral link; no paid order or plan payment yet.
+  PENDING
+  /// First paid seat order or plan payment recorded; rewards wait until the earning hold has passed without a refund.
+  QUALIFIED
+  REWARDED
+  /// The first payment was refunded before the rewards were issued.
+  VOID
+}
+
+/// A user who signed up through someone's referral link. One referrer per user (referredId is unique).
+model Referral {
+  id                String         @id @default(cuid())
+  referrerId        String
+  referrer          User           @relation("ReferralReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredId        String         @unique
+  referred          User           @relation("ReferralReferred", fields: [referredId], references: [id], onDelete: Cascade)
+  /// The code used at sign-up.
+  code              String
+  status            ReferralStatus @default(PENDING)
+  /// The referred user's first payment: ORDER (a seat) or PLAN (a subscription payment).
+  firstPaymentKind  String?
+  firstPaymentId    String?
+  firstPaidAt       DateTime?
+  qualifiedAt       DateTime?
+  rewardedAt        DateTime?
+  voidedAt          DateTime?
+  referrerCouponId  String?        @unique
+  referrerCoupon    Coupon?        @relation("ReferralReferrerCoupon", fields: [referrerCouponId], references: [id], onDelete: SetNull)
+  referredCouponId  String?        @unique
+  referredCoupon    Coupon?        @relation("ReferralReferredCoupon", fields: [referredCouponId], references: [id], onDelete: SetNull)
+  referrerEarningId String?        @unique
+  referrerEarning   Earning?       @relation("ReferralBonus", fields: [referrerEarningId], references: [id], onDelete: SetNull)
+  createdAt         DateTime       @default(now())
+
+  @@index([referrerId, status])
+  @@index([status])
+}
+
+/// Referral program rules (a single row, id 1), edited by admins.
+model ReferralProgram {
+  id               Int      @id @default(1)
+  enabled          Boolean  @default(true)
+  /// PERCENT (rewardValue = percent off) or AMOUNT (rewardValue = fils off).
+  rewardType       String   @default("PERCENT")
+  rewardValue      Int      @default(10)
+  couponValidDays  Int      @default(90)
+  /// Teachers who refer a paying student get this as a BONUS earning instead of a coupon. 0 = they get the coupon.
+  teacherBonusFils Int      @default(2500)
+  updatedAt        DateTime @updatedAt
 }

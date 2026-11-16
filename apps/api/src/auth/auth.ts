@@ -90,7 +90,10 @@ function updatePhone(raw: unknown): string | null {
   return e164;
 }
 
-export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: InviteRegistry, currencies?: CurrencyCheck) {
+/** Called after every new account is written (the referral program links it to whoever invited it). Must not throw. */
+export type OnUserCreated = (user: { id: string; acquisition?: unknown }) => Promise<unknown>;
+
+export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: InviteRegistry, currencies?: CurrencyCheck, onUserCreated?: OnUserCreated) {
   return betterAuth({
     secret: config.BETTER_AUTH_SECRET,
     baseURL: config.BETTER_AUTH_URL,
@@ -133,6 +136,15 @@ export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: 
       },
     },
     hooks: { before: createUserHooks(currencies) },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            if (onUserCreated) await onUserCreated({ id: user.id, acquisition: user.acquisition }).catch(() => undefined);
+          },
+        },
+      },
+    },
     // Mobile (Flutter) sends `Authorization: Bearer <token>`; web uses cookies.
     plugins: [bearer()],
   });

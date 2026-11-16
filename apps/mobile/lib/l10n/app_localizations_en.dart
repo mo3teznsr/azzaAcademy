@@ -6634,4 +6634,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errWatchMore =>
       'Watch most of the video before marking this lesson complete.';
+
+  @override
+  String get inviteFriends => 'Invite friends';
+
+  @override
+  String get inviteFriendsHint =>
+      'You both get a reward after their first payment';
+
+  @override
+  String get inviteShareSubject => 'Join me on Azza';
 }

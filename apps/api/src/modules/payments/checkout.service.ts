@@ -64,6 +64,7 @@ export class CheckoutService {
         batchId: b.id,
         subtotalFils: priceFils,
         userUses: userId ? await this.repo.couponUsesBy(coupon.id, coupon.code, userId) : null,
+        userId: userId ?? null,
       });
       if (reason) {
         throw new BusinessRuleError(COUPON_REFUSAL_MESSAGES[reason], 'COUPON_INVALID', {

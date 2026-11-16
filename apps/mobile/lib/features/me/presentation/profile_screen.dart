@@ -9,6 +9,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/money/money.dart';
 import '../../../core/widgets/price.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/network/error_text.dart';
 import '../../../core/prefs/app_prefs.dart';
 import '../../../core/providers.dart';
 import '../../../core/push/push_service.dart';
@@ -21,6 +22,7 @@ import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/guest_gate.dart';
 import '../data/me_repository.dart';
+import '../data/referral_repository.dart';
 
 /// "Me" — shared by every role, with role-specific rows.
 class ProfileScreen extends ConsumerWidget {
@@ -136,6 +138,17 @@ class ProfileScreen extends ConsumerWidget {
                   row(l.teachOnAzza, l.teachRowHint, icon: Icons.co_present_outlined, onTap: () => context.push(Routes.teachOnAzza)),
                 if (user.role == Role.teacher)
                   row(l.payoutMethod, '', icon: Icons.account_balance_outlined, onTap: () => context.go(Routes.teacherPayoutMethod)),
+                if (user.role != Role.admin)
+                  ListTile(
+                    key: const Key('invite-friends'),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    minTileHeight: 56,
+                    leading: Icon(Icons.card_giftcard_rounded, color: p.muted),
+                    title: Text(l.inviteFriends),
+                    subtitle: Text(l.inviteFriendsHint, style: t.bodySmall),
+                    trailing: const Icon(Icons.ios_share_rounded),
+                    onTap: () => _shareInvite(context, ref),
+                  ),
               ],
             ),
             CardGroup(
@@ -213,6 +226,16 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   /// Notification choices live in the OS settings; asking first if the user was never prompted.
+  /// Opens the share sheet with the reader's invite link (`?ref=CODE`).
+  Future<void> _shareInvite(BuildContext context, WidgetRef ref) async {
+    final subject = context.l10n.inviteShareSubject;
+    try {
+      await ref.read(shareInviteProvider)(subject: subject);
+    } catch (e) {
+      if (context.mounted) showToast(context, errorText(context, e));
+    }
+  }
+
   Future<void> _openNotificationSettings(BuildContext context, WidgetRef ref) async {
     final push = ref.read(pushServiceProvider);
     if (!await push.permitted() && await push.requestPermission()) {

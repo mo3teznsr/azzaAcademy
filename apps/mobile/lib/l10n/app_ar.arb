@@ -1844,5 +1844,8 @@
   "lessonVideoPlay": "تشغيل",
   "lessonVideoPause": "إيقاف مؤقت",
   "lessonVideoSpeed": "سرعة التشغيل",
-  "errWatchMore": "شاهد معظم الفيديو قبل أن تعلّم هذا الدرس مكتملًا."
+  "errWatchMore": "شاهد معظم الفيديو قبل أن تعلّم هذا الدرس مكتملًا.",
+  "inviteFriends": "ادعُ أصدقاءك",
+  "inviteFriendsHint": "تحصلان كلاكما على مكافأة بعد أول دفع له",
+  "inviteShareSubject": "انضم إليّ في عازة"
 }

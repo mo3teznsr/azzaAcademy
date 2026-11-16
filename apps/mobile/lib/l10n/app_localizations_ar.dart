@@ -6795,4 +6795,13 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get errWatchMore =>
       'شاهد معظم الفيديو قبل أن تعلّم هذا الدرس مكتملًا.';
+
+  @override
+  String get inviteFriends => 'ادعُ أصدقاءك';
+
+  @override
+  String get inviteFriendsHint => 'تحصلان كلاكما على مكافأة بعد أول دفع له';
+
+  @override
+  String get inviteShareSubject => 'انضم إليّ في عازة';
 }

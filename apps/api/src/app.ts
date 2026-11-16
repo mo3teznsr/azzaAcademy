@@ -38,6 +38,7 @@ import { adminSubscriptionRoutes, teacherSubscriberRoutes } from './modules/subs
 import { subscriptionRoutes } from './modules/subscriptions/subscription.routes';
 import { adminGrowthRoutes } from './modules/growth/growth.routes';
 import { adminTaxDocumentRoutes, taxDocumentRoutes } from './modules/invoices/tax-document.routes';
+import { adminReferralRoutes, referralRoutes } from './modules/referrals/referral.routes';
 
 /** `apps/api/public/media/` regardless of the process cwd. */
 const MEDIA_ROOT = fileURLToPath(new URL('../public/media/', import.meta.url));
@@ -123,6 +124,8 @@ export function createApp(container: Container) {
     .route('/admin', adminSubscriptionRoutes(services.subscriptions))
     .route('/admin', adminGrowthRoutes(services.growth))
     .route('/admin', adminTaxDocumentRoutes(services.taxDocuments))
+    .route('/admin', adminReferralRoutes(services.referrals))
+    .route('/referrals', referralRoutes(services.referrals))
     .route('/', taxDocumentRoutes(services.taxDocuments))
     // Teachers upload covers and intro videos for the courses they propose.
     .route('/courses', adminMediaRoutes(services.courseMedia, ['TEACHER', 'ADMIN']))
