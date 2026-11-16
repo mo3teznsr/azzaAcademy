@@ -11113,6 +11113,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Playback speed'**
   String get lessonVideoSpeed;
+
+  /// No description provided for @errWatchMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch most of the video before marking this lesson complete.'**
+  String get errWatchMore;
 }
 
 class _AppLocalizationsDelegate

@@ -18,7 +18,7 @@ void reportLessonVideoProgress(
   VideoPositionTracker tracker,
 ) {
   if (!value.isInitialized) return;
-  tracker.update(value.position.inSeconds);
+  tracker.update(value.position.inSeconds, durationSec: value.duration.inSeconds);
   final atEnd =
       value.duration > Duration.zero &&
       value.position >= value.duration - const Duration(milliseconds: 500);

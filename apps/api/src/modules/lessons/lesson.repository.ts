@@ -2,6 +2,7 @@ import type { CourseType, LessonAttachment } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
 import type { AccessSubscription } from '../subscriptions/access-policy';
 import { everSubscribed, learnerSubscription, newestLiveSubscription, type LearnerSubscription } from '../subscriptions/recorded-subscription';
+import type { WatchProgress } from './watch-policy';
 
 export type RecordedSubscription = AccessSubscription;
 
@@ -75,7 +76,9 @@ export interface LessonRepository {
   hadSubscription(courseId: string, userId: string): Promise<boolean>;
   /** Saved video position in seconds; null when never saved. */
   videoPosition(userId: string, lessonId: string): Promise<number | null>;
-  setVideoPosition(userId: string, lessonId: string, positionSec: number): Promise<void>;
+  /** Saves the position; keeps the furthest point reached and the length when given (`ended` counts as watched to the end). */
+  setVideoPosition(userId: string, lessonId: string, positionSec: number, watch?: { durationSec?: number; ended?: boolean }): Promise<void>;
+  watchProgress(userId: string, lessonId: string): Promise<WatchProgress | null>;
 }
 
 const asRecord = <T extends { attachments: unknown }>(row: T) => ({ ...row, attachments: (row.attachments ?? []) as LessonAttachment[] });
@@ -180,11 +183,20 @@ export class PrismaLessonRepository implements LessonRepository {
     return row?.positionSec ?? null;
   }
 
-  async setVideoPosition(userId: string, lessonId: string, positionSec: number) {
+  async setVideoPosition(userId: string, lessonId: string, positionSec: number, watch: { durationSec?: number; ended?: boolean } = {}) {
+    const key = { userId_lessonId: { userId, lessonId } };
+    const before = await this.db.lessonVideoPosition.findUnique({ where: key, select: { maxSec: true, durationSec: true } });
+    const durationSec = watch.durationSec ?? before?.durationSec ?? null;
+    const reached = watch.ended && durationSec ? durationSec : positionSec;
+    const maxSec = Math.max(before?.maxSec ?? 0, reached);
     await this.db.lessonVideoPosition.upsert({
-      where: { userId_lessonId: { userId, lessonId } },
-      create: { userId, lessonId, positionSec },
-      update: { positionSec },
+      where: key,
+      create: { userId, lessonId, positionSec, maxSec, durationSec },
+      update: { positionSec, maxSec, durationSec },
     });
+  }
+
+  async watchProgress(userId: string, lessonId: string) {
+    return this.db.lessonVideoPosition.findUnique({ where: { userId_lessonId: { userId, lessonId } }, select: { maxSec: true, durationSec: true } });
   }
 }

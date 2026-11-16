@@ -727,7 +727,13 @@ export const subscribeInput = z.object({
 export type SubscribeInput = z.infer<typeof subscribeInput>;
 
 /** PUT /lessons/:id/position */
-export const videoPositionInput = z.object({ positionSec: z.number().int().min(0) });
+export const videoPositionInput = z.object({
+  positionSec: z.number().int().min(0),
+  /** The video's length in seconds, when the player knows it (lets the API tell how much was watched). */
+  durationSec: z.number().int().min(1).max(86_400).optional(),
+  /** The video played to the end. */
+  ended: z.boolean().optional(),
+});
 export type VideoPositionInput = z.infer<typeof videoPositionInput>;
 
 // ---------- Currencies (display only; AED is the base) ----------

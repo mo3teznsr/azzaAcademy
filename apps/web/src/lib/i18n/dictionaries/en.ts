@@ -2193,6 +2193,7 @@ const en = {
       doneSr: 'Completed',
       markedComplete: 'Lesson marked complete',
       markedIncomplete: 'Lesson marked as not complete',
+      watchMore: 'Watch most of the video first: you’ve seen {p}% and need 80%.',
       completeError: 'We couldn’t save your progress. Please try again.',
       upNext: 'Up next',
       moduleQuiz: 'Practise what this module covered',

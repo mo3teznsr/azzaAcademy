@@ -3848,5 +3848,6 @@
   "errBaseCurrencyLocked": "The dirham is the base currency and can't be changed that way.",
   "lessonVideoPlay": "Play",
   "lessonVideoPause": "Pause",
-  "lessonVideoSpeed": "Playback speed"
+  "lessonVideoSpeed": "Playback speed",
+  "errWatchMore": "Watch most of the video before marking this lesson complete."
 }

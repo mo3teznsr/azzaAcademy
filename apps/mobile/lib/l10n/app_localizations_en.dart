@@ -6630,4 +6630,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lessonVideoSpeed => 'Playback speed';
+
+  @override
+  String get errWatchMore =>
+      'Watch most of the video before marking this lesson complete.';
 }

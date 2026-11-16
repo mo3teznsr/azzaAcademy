@@ -2192,6 +2192,7 @@ const ar: Dictionary = {
       doneSr: 'مكتمل',
       markedComplete: 'سُجّل الدرس مكتملًا',
       markedIncomplete: 'أُلغي تسجيل الدرس مكتملًا',
+      watchMore: 'شاهد معظم الفيديو أولًا: شاهدت {p}٪ والمطلوب ٨٠٪.',
       completeError: 'تعذّر حفظ تقدّمك. حاول مرة أخرى.',
       upNext: 'التالي',
       moduleQuiz: 'تدرّب على ما تناولته هذه الوحدة',

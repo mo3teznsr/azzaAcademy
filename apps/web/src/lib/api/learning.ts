@@ -222,16 +222,18 @@ export const learningApi = {
   previewLesson: (lessonId: string) => http.get<PreviewLesson>(`/api/v1/lessons/${lessonId}/preview`),
   /** One lesson with the caller's saved video position. */
   lesson: (lessonId: string) => http.get<Lesson>(`/api/v1/lessons/${lessonId}`),
-  saveVideoPosition: (lessonId: string, positionSec: number) => http.put<unknown>(`/api/v1/lessons/${lessonId}/video-position`, { positionSec: Math.max(0, Math.floor(positionSec)) }),
+  /** `completed: true` when this save finished the lesson (most of an uploaded video watched). */
+  saveVideoPosition: (lessonId: string, positionSec: number, watch: { durationSec?: number; ended?: boolean } = {}) =>
+    http.put<{ lessonId: string; positionSec: number; completed?: boolean }>(`/api/v1/lessons/${lessonId}/video-position`, { positionSec: Math.max(0, Math.floor(positionSec)), ...watch }),
   /** Same save for `pagehide`: `keepalive` lets it finish after the page is gone. Failures are ignored. */
-  saveVideoPositionOnExit: (lessonId: string, positionSec: number) => {
+  saveVideoPositionOnExit: (lessonId: string, positionSec: number, watch: { durationSec?: number; ended?: boolean } = {}) => {
     try {
       void fetch(`${API_URL}/api/v1/lessons/${lessonId}/video-position`, {
         method: 'PUT',
         credentials: 'include',
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ positionSec: Math.max(0, Math.floor(positionSec)) }),
+        body: JSON.stringify({ positionSec: Math.max(0, Math.floor(positionSec)), ...watch }),
       }).catch(() => undefined);
     } catch {
       /* best effort */

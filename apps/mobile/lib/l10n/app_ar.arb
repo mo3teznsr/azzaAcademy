@@ -1843,5 +1843,6 @@
   "errBaseCurrencyLocked": "الدرهم هو العملة الأساسية ولا يمكن تغييرها بهذه الطريقة.",
   "lessonVideoPlay": "تشغيل",
   "lessonVideoPause": "إيقاف مؤقت",
-  "lessonVideoSpeed": "سرعة التشغيل"
+  "lessonVideoSpeed": "سرعة التشغيل",
+  "errWatchMore": "شاهد معظم الفيديو قبل أن تعلّم هذا الدرس مكتملًا."
 }
