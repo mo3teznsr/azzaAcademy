@@ -128,6 +128,16 @@ function notificationHref(type: string, data: unknown, role: Role | null): strin
     }
     case 'WELCOME':
       return '/';
+    case 'LESSON_QUESTION': {
+      // The course author answers from the studio inbox.
+      const courseId = field('courseId');
+      return courseId ? `/studio/courses/${courseId}/questions` : null;
+    }
+    case 'LESSON_ANSWER': {
+      const slug = field('courseSlug');
+      const lessonId = field('lessonId');
+      return slug ? `/learn/courses/${slug}${lessonId ? `?lesson=${lessonId}` : ''}#qa` : null;
+    }
     case 'CERTIFICATE_ISSUED':
       return '/certificates';
     case 'TRANSFER_HOLD_ENDING': {

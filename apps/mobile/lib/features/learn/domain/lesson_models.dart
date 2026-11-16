@@ -203,7 +203,7 @@ class CourseProgress {
 /// `GET /courses/:idOrSlug/lessons`.
 @immutable
 class CourseLessons {
-  const CourseLessons({required this.courseId, required this.slug, required this.titleEn, this.titleAr, this.modules = const [], this.progress});
+  const CourseLessons({required this.courseId, required this.slug, required this.titleEn, this.titleAr, this.modules = const [], this.progress, this.isRecorded = false});
 
   factory CourseLessons.fromJson(Json j) {
     final c = obj(j, 'course');
@@ -212,6 +212,7 @@ class CourseLessons {
       slug: str(c, 'slug'),
       titleEn: str(c, 'titleEn'),
       titleAr: strOrNull(c, 'titleAr'),
+      isRecorded: str(c, 'type') == 'RECORDED',
       modules: list(j, 'modules').map(LessonModule.fromJson).toList()..sort((a, b) => a.order.compareTo(b.order)),
       progress: j['progress'] is Map ? LessonProgress.fromJson(obj(j, 'progress')) : null,
     );
@@ -222,6 +223,9 @@ class CourseLessons {
   final String titleEn;
   final String? titleAr;
   final List<LessonModule> modules;
+
+  /// A recorded course (plans, video progress and lesson Q&A) rather than a live one.
+  final bool isRecorded;
 
   /// As served (the server's view before any local, not-yet-confirmed toggle).
   final LessonProgress? progress;

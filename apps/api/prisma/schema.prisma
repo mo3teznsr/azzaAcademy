@@ -228,6 +228,8 @@ model User {
   referralsMade   Referral[] @relation("ReferralReferrer")
   referredBy      Referral?  @relation("ReferralReferred")
   ownCoupons      Coupon[]   @relation("CouponOwner")
+  lessonQuestions LessonQuestion[] @relation("LessonQuestionAuthor")
+  lessonAnswers   LessonAnswer[]   @relation("LessonAnswerAuthor")
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -972,6 +974,7 @@ model Lesson {
   updatedAt   DateTime              @updatedAt
   progress    LessonProgress[]
   positions   LessonVideoPosition[]
+  questions   LessonQuestion[]
 
   @@index([moduleId, order])
 }
@@ -1002,6 +1005,44 @@ model LessonVideoPosition {
   updatedAt   DateTime @updatedAt
 
   @@id([userId, lessonId])
+  @@index([lessonId])
+}
+
+/// A learner's question under a lesson of a recorded course; answered by the course author or an admin.
+model LessonQuestion {
+  id         String         @id @default(cuid())
+  lessonId   String
+  lesson     Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User           @relation("LessonQuestionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body       String
+  /// Hidden by the course author or an admin (abuse); only they and the asker still see it.
+  hiddenAt   DateTime?
+  hiddenById String?
+  /// Deleted by the asker (only while unanswered). Kept so deleted questions still count toward the daily limit.
+  deletedAt  DateTime?
+  createdAt  DateTime       @default(now())
+  answers    LessonAnswer[]
+
+  @@index([lessonId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+/// An answer to a lesson question, by the course author or an admin.
+model LessonAnswer {
+  id         String         @id @default(cuid())
+  questionId String
+  question   LessonQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User           @relation("LessonAnswerAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body       String
+  /// The asker marked this answer as the one that helped (at most one per question).
+  acceptedAt DateTime?
+  hiddenAt   DateTime?
+  hiddenById String?
+  createdAt  DateTime       @default(now())
+
+  @@index([questionId, createdAt])
 }
 
 /// Platform-wide settings: a single row with id 'default'.

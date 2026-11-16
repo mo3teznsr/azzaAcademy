@@ -113,6 +113,10 @@ import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.s
 import { PrismaAuditLog } from './modules/audit/audit-log';
 import { LifecycleService, PrismaLifecycleRepository } from './modules/lifecycle/lifecycle.service';
 import { TaxDocumentService } from './modules/invoices/tax-document.service';
+import { PrismaLessonQaRepository } from './modules/lesson-qa/qa.repository';
+import { LessonQaService } from './modules/lesson-qa/qa.service';
+import { PrismaCourseAnalyticsRepository } from './modules/course-analytics/analytics.repository';
+import { CourseAnalyticsService } from './modules/course-analytics/analytics.service';
 
 export interface Adapters {
   db: Db;
@@ -356,6 +360,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
   resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
   const taxDocuments = new TaxDocumentService(db, clock);
+  const lessons = new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId));
   const services = {
     settings,
     siteSettings,
@@ -396,7 +401,9 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     referrals,
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
-    lessons: new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
+    lessons,
+    lessonQa: new LessonQaService(new PrismaLessonQaRepository(db), lessons, notifications, clock, config.WEB_URL),
+    courseAnalytics: new CourseAnalyticsService(new PrismaCourseAnalyticsRepository(db), lessons, clock),
     quizzes: new QuizService(new PrismaQuizRepository(db), access, notifications, clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
     courseMedia: new CourseMediaService(adapters.storage),
     announcements: new AnnouncementService(new PrismaAnnouncementRepository(db), access, notifications, config.WEB_URL),

@@ -15,6 +15,7 @@ import { ApiError, learningApi, subscriptionsApi, type CourseLessons, type Lesso
 import { qk } from '@/lib/query-keys';
 import { LockedLessonPanel } from '../subscriptions/locked-panel';
 import { PlanBanner } from '../subscriptions/plan-banner';
+import { LessonQaPanel } from './lesson-qa';
 import { useI18n } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 
@@ -316,6 +317,7 @@ function LessonView({
         </span>
         {completed && <NextStep courseId={courseId} lesson={lesson} upNext={upNext} lastInModule={lastInModule} progress={progress} onGo={onGo} />}
       </section>
+      {recorded && <LessonQaPanel lessonId={lesson.id} />}
       <footer className="flex flex-wrap justify-between gap-3 border-t border-border pt-5">
         {prev ? (
           <Button variant="outline" onClick={() => onGo(prev.id)}>

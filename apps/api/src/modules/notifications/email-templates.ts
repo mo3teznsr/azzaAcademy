@@ -341,3 +341,32 @@ export const communicationEmails = {
     };
   },
 };
+
+const QA = {
+  en: { newQuestion: 'New question', asked: 'asked under', answer: 'Answer it', newAnswer: 'Your question was answered', answered: 'answered your question under', open: 'Open the lesson', hi: 'Hi' },
+  ar: { newQuestion: 'سؤال جديد', asked: 'سأل في درس', answer: 'أجب عن السؤال', newAnswer: 'وصلتك إجابة عن سؤالك', answered: 'أجاب عن سؤالك في درس', open: 'افتح الدرس', hi: 'مرحبًا' },
+} as const;
+
+/** Lesson questions and answers (recorded courses); pass the reader's locale (English when unknown). */
+export const lessonQaEmails = {
+  /** To the course author: a learner asked under one of their lessons. */
+  newQuestion: (asker: string, lessonTitle: string, body: string, url: string, locale?: string | null) => {
+    const lang = langOf(locale);
+    const c = QA[lang];
+    return {
+      subject: `${c.newQuestion} · ${lessonTitle}`,
+      html: layout(lang, c.newQuestion, `<p><b>${escapeHtml(asker)}</b> ${c.asked} “${escapeHtml(lessonTitle)}”:</p>${paragraphs(body)}${button(url, c.answer)}`),
+      text: `${asker} ${c.asked} "${lessonTitle}":\n\n${body}\n\n${url}`,
+    };
+  },
+  /** To the asker: the course author or an admin answered. */
+  newAnswer: (name: string, answerer: string, lessonTitle: string, body: string, url: string, locale?: string | null) => {
+    const lang = langOf(locale);
+    const c = QA[lang];
+    return {
+      subject: `${c.newAnswer} · ${lessonTitle}`,
+      html: layout(lang, `${c.hi} ${escapeHtml(name)}`, `<p><b>${escapeHtml(answerer)}</b> ${c.answered} “${escapeHtml(lessonTitle)}”:</p>${paragraphs(body)}${button(url, c.open)}`),
+      text: `${answerer} ${c.answered} "${lessonTitle}":\n\n${body}\n\n${url}`,
+    };
+  },
+};

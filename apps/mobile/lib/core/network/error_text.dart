@@ -17,6 +17,8 @@ extension AppExceptionText on AppException {
       'FORBIDDEN' => l.errForbidden,
       'NOT_FOUND' => l.errNotFound,
       'WATCH_MORE' => l.errWatchMore,
+      'QA_DAILY_LIMIT' => l.errQaDailyLimit,
+      'QA_HAS_ANSWERS' => l.errQaHasAnswers,
       'INVALID_EMAIL_OR_PASSWORD' => l.errBadCredentials,
       'USER_ALREADY_EXISTS' || 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL' => l.errEmailTaken,
       'TOO_MANY_REQUESTS' => l.errTooMany,
