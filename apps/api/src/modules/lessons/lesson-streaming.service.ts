@@ -195,8 +195,9 @@ export class LessonStreamingService {
     return { started, skipped };
   }
 
-  /** Admin view of one lesson's stream (unsigned). */
+  /** Admin view of one lesson's stream (unsigned); 503 when no video service is configured (the editor then hides it). */
   async status(lessonId: string) {
+    if (!this.transcoder.enabled) throw new AppError('Adaptive streaming is not configured', 503, 'TRANSCODER_DISABLED');
     const s = await this.repo.find(lessonId);
     if (!s) throw new NotFoundError('Lesson', lessonId);
     return this.view(s);

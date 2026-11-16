@@ -471,6 +471,9 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     { name: 'referral-rewards', everyMs: 60 * 60_000, run: () => referrals.run() },
     // Lesson videos still encoding at the video service (webhooks can be lost). A no-op without Bunny Stream.
     { name: 'sync-lesson-streams', everyMs: 2 * 60_000, run: () => lessonStreaming.syncProcessing() },
+    ...(config.VIDEO_TRANSCODE_BACKFILL === 'true' && adapters.transcoder?.enabled
+      ? [{ name: 'backfill-lesson-streams', everyMs: 60 * 60_000, runAtBoot: false, run: () => lessonStreaming.backfill(5) }]
+      : []),
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 

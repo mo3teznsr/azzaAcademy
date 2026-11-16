@@ -74,6 +74,8 @@ const envSchema = z.object({
   BUNNY_STREAM_TOKEN_KEY: z.string().optional(),
   /** Send a lesson's video to the transcoder as soon as it is saved (else only via the admin action / backfill). */
   VIDEO_TRANSCODE_ON_UPLOAD: z.enum(['true', 'false']).default('true'),
+  /** Hourly job that sends lessons uploaded before streaming was set up, a few at a time (the admin backfill does it on demand). */
+  VIDEO_TRANSCODE_BACKFILL: z.enum(['true', 'false']).default('false'),
   /** Offline lesson downloads play at most this many days without the app re-checking access online. */
   OFFLINE_DOWNLOAD_MAX_DAYS: z.coerce.number().int().min(1).max(90).default(30),
 

@@ -1,4 +1,4 @@
-import type { LessonInput, QuizInput, QuizQuestionType, QuizStatus, SubscriptionStatus, UpdateLessonInput, UpdateQuizInput } from '@azza/shared';
+import type { LessonInput, LessonStreamPlayback, QuizInput, QuizQuestionType, QuizStatus, SubscriptionStatus, UpdateLessonInput, UpdateQuizInput } from '@azza/shared';
 import { API_URL, http } from './client';
 import type { ISODate } from './types';
 
@@ -28,6 +28,10 @@ export interface Lesson {
   locked?: boolean;
   /** Where the caller stopped watching (seconds); on `GET /lessons/:id`. */
   videoPositionSec?: number | null;
+  /** Adaptive streaming (signed HLS when READY); null = play `videoUrl`. On `GET /lessons/:id` and the preview. */
+  stream?: LessonStreamPlayback | null;
+  /** An uploaded video the mobile app may save for offline viewing. */
+  downloadable?: boolean;
 }
 
 /** A module's lesson titles on the public course page (the syllabus preview). */
