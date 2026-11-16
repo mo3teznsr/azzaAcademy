@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useMotionValueEvent, useScroll } from 'motion/react';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 import { LANDING_IMAGES } from './content';
 import { useCalm } from './hooks';
@@ -15,6 +15,7 @@ import { Wrap } from './wrap';
 /** 2 · Small classes: the spotlight class's real places light up one by one as it scrolls in. */
 export function House() {
   const { t, f, fill } = useI18n();
+  const href = useLocaleHref();
   const h = t.landing.house;
   const batch = useSpotlightBatch();
   const largest = useLargestRoom();
@@ -92,7 +93,7 @@ export function House() {
                 <span className="label-mono text-muted-foreground" dir="ltr">
                   {batch.code} · {batch.schedule?.startTime}
                 </span>
-                <Link href={`/courses/${batch.course.slug}?batch=${batch.id}`} className="link-sun">
+                <Link href={href(`/courses/${batch.course.slug}?batch=${batch.id}`)} className="link-sun">
                   {fill(h.cta, { code: batch.code })}
                 </Link>
               </div>

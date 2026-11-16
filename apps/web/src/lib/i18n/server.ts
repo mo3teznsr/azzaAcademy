@@ -2,9 +2,12 @@ import 'server-only';
 import { cookies, headers } from 'next/headers';
 import type { Locale } from '@azza/shared';
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from './config';
+import { LOCALE_HEADER } from './routing';
 
-/** Locale from cookie, else the first of Arabic or English in Accept-Language, else Arabic. */
+/** Locale from the `/ar` or `/en` URL (set by the proxy), else the cookie, else the first of Arabic or English in Accept-Language, else Arabic. */
 export async function getLocale(): Promise<Locale> {
+  const fromUrl = (await headers()).get(LOCALE_HEADER);
+  if (isLocale(fromUrl)) return fromUrl;
   const fromCookie = (await cookies()).get(LOCALE_COOKIE)?.value;
   if (isLocale(fromCookie)) return fromCookie;
   return localeFromAcceptLanguage((await headers()).get('accept-language'));

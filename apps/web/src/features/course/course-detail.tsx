@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Check, ChevronRight, Lock, PlayCircle, Share2 } from 'lucide-react';
@@ -23,7 +23,7 @@ import { ApiError, batchesApi, coursesApi, meApi, learningApi, subscriptionsApi,
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { Price } from '@/components/brand/price';
 import { useAuth } from '@/lib/auth/use-auth';
 import { gmtOffset, sessionCode } from '@/lib/i18n/format';
@@ -39,6 +39,8 @@ import { CourseReviews } from './reviews';
 import { track } from '@/lib/analytics';
 
 const ZONES = ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Africa/Cairo', 'Europe/London'];
+const noSubscribe = () => () => {};
+const browserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export function CourseDetail({ slug }: { slug: string }) {
   const { t } = useI18n();
@@ -106,19 +108,22 @@ function CourseView({ course }: { course: Course }) {
   const list = useMemo(() => [...(batches.data?.items ?? [])].sort((a, b) => a.startsOn.localeCompare(b.startsOn)), [batches.data]);
   const [picked, setPicked] = useState<string | null>(params.get('batch'));
   const selectedId = picked ?? list.find((b) => b.status === 'ENROLLING')?.id ?? list[0]?.id ?? null;
-  const localTz = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'Asia/Dubai';
-  const [tz, setTz] = useState(localTz);
+  // The server renders Dubai time; the browser switches to its own zone after hydration (no mismatch).
+  const localTz = useSyncExternalStore(noSubscribe, browserTimeZone, () => 'Asia/Dubai');
+  const [tzChoice, setTz] = useState<string | null>(null);
+  const tz = tzChoice ?? localTz;
+  const href = useLocaleHref();
   const zones = useMemo(() => Array.from(new Set([localTz, ...ZONES])), [localTz]);
   const teacher = list[0]?.teacher;
   // Teachers of this course (its proposer, or anyone running one of its batches) reply to reviews; admins moderate.
   const canModerate = role === 'ADMIN';
   const canReply = canModerate || (role === 'TEACHER' && !!user && (course.createdById === user.id || list.some((b) => b.teacherId === user.id)));
-  const categoryHref = `/?category=${encodeURIComponent(course.category)}#catalog`;
+  const categoryHref = href(`/categories/${encodeURIComponent(course.category)}`);
 
   return (
     <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-14 px-4 sm:px-6 lg:px-10">
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/#catalog" className="hover:text-foreground">
+        <Link href={href('/#catalog')} className="hover:text-foreground">
           {t.nav.public.courses}
         </Link>
         <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
@@ -134,9 +139,11 @@ function CourseView({ course }: { course: Course }) {
       <section className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap gap-2">
-            <Chip tone="ivory">
-              {categoryLabel(course)} · {t.status.level[course.level]}
-            </Chip>
+            <Link href={categoryHref} className="no-underline transition-opacity hover:opacity-80">
+              <Chip tone="ivory">
+                {categoryLabel(course)} · {t.status.level[course.level]}
+              </Chip>
+            </Link>
             {recorded ? (
               <Chip tone="sun">{t.catalog.recordedMarker}</Chip>
             ) : (
@@ -168,7 +175,7 @@ function CourseView({ course }: { course: Course }) {
             <div className="flex items-center gap-3">
               <InitialsAvatar name={teacher.name} src={teacher.image} size={48} />
               <div>
-                <Link href={`/teachers/${teacher.id}`} className="block font-bold text-foreground underline-offset-4 hover:underline">
+                <Link href={href(`/teachers/${teacher.id}`)} className="block font-bold text-foreground underline-offset-4 hover:underline">
                   <bdi>{teacher.name}</bdi>
                 </Link>
                 <span className="text-sm text-muted-foreground">{t.course.leadTeacher}</span>
@@ -323,7 +330,7 @@ function CourseView({ course }: { course: Course }) {
           <h2 id="course-faq" className="font-display text-[44px] font-extrabold leading-none">
             {t.course.faqTitle}
           </h2>
-          <Accordion className="border-t-0" items={course.faq.map((q) => ({ q: pick(q.qEn, q.qAr).text, a: pick(q.aEn, q.aAr).text }))} />
+          <Accordion className="border-t-0" mountAll items={course.faq.map((q) => ({ q: pick(q.qEn, q.qAr).text, a: pick(q.aEn, q.aAr).text }))} />
         </Panel>
       )}
 

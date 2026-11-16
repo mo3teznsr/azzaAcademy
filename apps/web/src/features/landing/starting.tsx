@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states';
 import { gmtOffset } from '@/lib/i18n/format';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { describeRule } from '@/lib/schedule';
 import { useCalm } from './hooks';
 import { MarqueeRow } from './marquee-row';
@@ -29,7 +29,8 @@ export function Starting() {
   const sign = dir === 'rtl' ? -1 : 1;
 
   const seatsLeft = (b: (typeof items)[number]) => Math.max(0, b.capacity - (b._count?.enrollments ?? 0));
-  const href = (b: (typeof items)[number]) => `/courses/${b.course.slug}?batch=${b.id}`;
+  const localeHref = useLocaleHref();
+  const href = (b: (typeof items)[number]) => localeHref(`/courses/${b.course.slug}?batch=${b.id}`);
 
   return (
     <section id="starting" aria-labelledby="starting-title" className="theme-ink scroll-mt-8 overflow-hidden bg-ink py-[clamp(4rem,9vw,7rem)] text-foreground">

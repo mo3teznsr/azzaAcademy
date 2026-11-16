@@ -1,37 +1,36 @@
 import type { Metadata } from 'next';
-import { API_URL, mediaUrl } from '@/lib/api/client';
-import type { TeacherProfile as Profile } from '@/lib/api/types';
-import { SITE_URL, jsonLd } from '@/lib/site';
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
+import { mediaUrl } from '@/lib/api/client';
+import { getTeacher, seedCategories, serverQueryClient } from '@/lib/api/server';
+import { qk } from '@/lib/query-keys';
+import { getLocale } from '@/lib/i18n/server';
+import { SITE_URL, jsonLd, ogLocale, pageAlternates, pageUrl } from '@/lib/site';
 import { TeacherProfile } from '@/features/teachers/teacher-profile';
 
-async function loadTeacher(id: string): Promise<Profile | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/v1/teachers/${encodeURIComponent(id)}`, { next: { revalidate: 300 } });
-    return res.ok ? ((await res.json()) as Profile) : null;
-  } catch {
-    return null;
-  }
-}
+const pathOf = (id: string) => `/teachers/${encodeURIComponent(id)}`;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const p = await loadTeacher(id);
+  const [p, locale] = await Promise.all([getTeacher(id), getLocale()]);
   if (!p) return {};
   const image = mediaUrl(p.image);
-  const url = `${SITE_URL}/teachers/${encodeURIComponent(p.id)}`;
   const description = p.headline ?? p.bio?.slice(0, 200) ?? undefined;
   return {
     title: p.name,
     description,
-    alternates: { canonical: url },
-    openGraph: { type: 'profile', url, title: p.name, description, ...(image && { images: [{ url: image, alt: p.name }] }) },
+    alternates: pageAlternates(locale, pathOf(p.id)),
+    openGraph: { type: 'profile', url: pageUrl(locale, pathOf(p.id)), title: p.name, description, locale: ogLocale(locale), ...(image && { images: [{ url: image, alt: p.name }] }) },
   };
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const p = await loadTeacher(id);
+  const [p, locale] = await Promise.all([getTeacher(id), getLocale()]);
   const image = p && mediaUrl(p.image);
+  // Server-render the profile (name, bio, courses, upcoming classes) under the key `TeacherProfile` reads.
+  const queryClient = serverQueryClient();
+  if (p) queryClient.setQueryData(qk.teacher(id), p);
+  await seedCategories(queryClient);
   return (
     <>
       {p && (
@@ -42,15 +41,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               '@context': 'https://schema.org',
               '@type': 'Person',
               name: p.name,
-              url: `${SITE_URL}/teachers/${encodeURIComponent(p.id)}`,
+              url: pageUrl(locale, pathOf(p.id)),
               ...(p.headline && { jobTitle: p.headline }),
+              ...(p.bio && { description: p.bio.slice(0, 500) }),
               ...(image && { image }),
-              worksFor: { '@type': 'Organization', name: 'Azza', url: SITE_URL },
+              worksFor: { '@type': 'Organization', name: locale === 'ar' ? 'عازة' : 'Azza', url: SITE_URL },
             }),
           }}
         />
       )}
-      <TeacherProfile id={id} />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <TeacherProfile id={id} />
+      </HydrationBoundary>
     </>
   );
 }

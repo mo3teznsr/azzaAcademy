@@ -1,19 +1,13 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { API_URL, mediaUrl } from '@/lib/api/client';
-import type { Course } from '@/lib/api/types';
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
+import { mediaUrl } from '@/lib/api/client';
+import { getCourse, publicGet, seedCategories, serverQueryClient } from '@/lib/api/server';
+import type { BatchSummary, Course, Paged } from '@/lib/api/types';
+import { qk } from '@/lib/query-keys';
 import { getLocale } from '@/lib/i18n/server';
-import { SITE_URL, jsonLd } from '@/lib/site';
+import { SITE_URL, jsonLd, ogLocale, pageAlternates, pageUrl } from '@/lib/site';
 import { CourseDetail } from '@/features/course/course-detail';
-
-async function loadCourse(slug: string): Promise<Course | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/v1/courses/${encodeURIComponent(slug)}`, { next: { revalidate: 300 } });
-    return res.ok ? ((await res.json()) as Course) : null;
-  } catch {
-    return null;
-  }
-}
 
 /** The course's title and description in the page language (Arabic falls back to English when missing). */
 function textOf(c: Course, locale: 'ar' | 'en') {
@@ -23,35 +17,48 @@ function textOf(c: Course, locale: 'ar' | 'en') {
   return { title, description };
 }
 
+const pathOf = (c: Course) => `/courses/${encodeURIComponent(c.slug)}`;
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const c = await loadCourse(slug);
+  const [c, locale] = await Promise.all([getCourse(slug), getLocale()]);
   if (!c) return {};
-  const { title, description } = textOf(c, await getLocale());
+  const { title, description } = textOf(c, locale);
   // Absolute (API or CDN origin): course media is not served by the web app.
   const image = mediaUrl(c.coverImageUrl);
-  const url = `${SITE_URL}/courses/${encodeURIComponent(c.slug)}`;
+  const url = pageUrl(locale, pathOf(c));
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: pageAlternates(locale, pathOf(c)),
     openGraph: {
       type: 'website',
       url,
       title,
       description,
+      locale: ogLocale(locale),
       ...(image && { images: [{ url: image, alt: title }] }),
     },
     twitter: { card: image ? 'summary_large_image' : 'summary', title, description, ...(image && { images: [image] }) },
   };
 }
 
-/** schema.org `Course` (with its rating) and `FAQPage`, so search results can show the course, its stars and its questions. */
-function structuredData(c: Course, locale: 'ar' | 'en') {
+/** schema.org `Course` (with its rating and upcoming classes) and `FAQPage`, so search results can show the course, its stars and its questions. */
+function structuredData(c: Course, batches: BatchSummary[], locale: 'ar' | 'en') {
   const { title, description } = textOf(c, locale);
-  const url = `${SITE_URL}/courses/${encodeURIComponent(c.slug)}`;
+  const url = pageUrl(locale, pathOf(c));
   const image = mediaUrl(c.coverImageUrl);
   const ar = locale === 'ar';
+  const instances = batches.length
+    ? batches.map((b) => ({
+        '@type': 'CourseInstance',
+        courseMode: 'online',
+        startDate: b.startsOn,
+        endDate: b.endsOn,
+        inLanguage: b.language === 'AR' ? 'ar' : 'en',
+        instructor: { '@type': 'Person', name: b.teacher.name },
+      }))
+    : { '@type': 'CourseInstance', courseMode: 'online' };
   const course = {
     '@context': 'https://schema.org',
     '@type': 'Course',
@@ -61,7 +68,7 @@ function structuredData(c: Course, locale: 'ar' | 'en') {
     inLanguage: ar ? 'ar' : 'en',
     ...(image && { image }),
     provider: { '@type': 'Organization', name: ar ? 'عازة' : 'Azza', sameAs: SITE_URL },
-    hasCourseInstance: { '@type': 'CourseInstance', courseMode: 'online' },
+    hasCourseInstance: instances,
     ...(c.ratingCount > 0 && {
       aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(c.ratingAvg.toFixed(1)), ratingCount: c.ratingCount, bestRating: 5, worstRating: 1 },
     }),
@@ -79,15 +86,31 @@ function structuredData(c: Course, locale: 'ar' | 'en') {
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [course, locale] = await Promise.all([loadCourse(slug), getLocale()]);
+  const [course, locale] = await Promise.all([getCourse(slug), getLocale()]);
+  const published = course?.status === 'PUBLISHED' ? course : null;
+
+  // Server-render the course and its classes (title, outcomes, FAQ, teacher, dates) with the same query keys
+  // `CourseDetail` reads, so the HTML carries the content and the browser starts from it without refetching.
+  const queryClient = serverQueryClient();
+  let batches: BatchSummary[] = [];
+  await seedCategories(queryClient);
+  if (published) {
+    queryClient.setQueryData(qk.course(slug), published);
+    if (published.type === 'LIVE') {
+      const p = { courseId: published.id, pageSize: 50 };
+      await queryClient.prefetchQuery({ queryKey: qk.batches(p), queryFn: () => publicGet<Paged<BatchSummary>>('/api/v1/batches', p) });
+      batches = queryClient.getQueryData<Paged<BatchSummary>>(qk.batches(p))?.items ?? [];
+    }
+  }
+
   return (
     <>
-      {course && course.status === 'PUBLISHED' && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structuredData(course, locale)) }} />
-      )}
-      <Suspense>
-        <CourseDetail slug={slug} />
-      </Suspense>
+      {published && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structuredData(published, batches, locale)) }} />}
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <Suspense>
+          <CourseDetail slug={slug} />
+        </Suspense>
+      </HydrationBoundary>
     </>
   );
 }
