@@ -141,8 +141,16 @@ class RecordedLessons implements LessonRepository {
   async videoPosition(userId: string, lessonId: string) {
     return this.positions.get(`${userId}:${lessonId}`) ?? null;
   }
-  async setVideoPosition(userId: string, lessonId: string, positionSec: number) {
-    this.positions.set(`${userId}:${lessonId}`, positionSec);
+  watched = new Map<string, { maxSec: number; durationSec: number | null }>();
+  async setVideoPosition(userId: string, lessonId: string, positionSec: number, watch: { durationSec?: number; ended?: boolean } = {}) {
+    const key = `${userId}:${lessonId}`;
+    this.positions.set(key, positionSec);
+    const before = this.watched.get(key);
+    const durationSec = watch.durationSec ?? before?.durationSec ?? null;
+    this.watched.set(key, { durationSec, maxSec: Math.max(before?.maxSec ?? 0, watch.ended && durationSec ? durationSec : positionSec) });
+  }
+  async watchProgress(userId: string, lessonId: string) {
+    return this.watched.get(`${userId}:${lessonId}`) ?? null;
   }
 }
 
@@ -280,6 +288,49 @@ describe('recorded lessons', () => {
     expect(err).toMatchObject({ status: 404, code: 'NOT_FOUND' });
     expect(JSON.stringify(err)).not.toContain('body l1');
     expect((await service.list('logo-design', lina)).modules[0]!.lessons).toHaveLength(3); // the author still sees it
+  });
+
+  describe('lessons with an uploaded video complete once mostly watched', () => {
+    const withVideo = () => {
+      const ctx = lessonSetup();
+      ctx.repo.rows[1]!.videoUrl = 'https://cdn.azza.test/videos/l2.mp4';
+      return ctx;
+    };
+
+    test('marking complete is refused below 80% watched, with how far they got', async () => {
+      const { service } = withVideo();
+      await service.saveVideoPosition('l2', { positionSec: 300, durationSec: 600 }, sam);
+      expect(await errorOf(service.setCompleted('l2', true, sam))).toMatchObject({ status: 422, code: 'WATCH_MORE', details: { watchedPercent: 50, requiredPercent: 80 } });
+      await service.saveVideoPosition('l2', { positionSec: 500, durationSec: 600 }, sam);
+      expect(await service.setCompleted('l2', true, sam)).toEqual({ lessonId: 'l2', completed: true });
+    });
+
+    test('rewinding keeps the furthest point; an unknown length does not block', async () => {
+      const { service } = withVideo();
+      await service.saveVideoPosition('l2', { positionSec: 520, durationSec: 600 }, sam);
+      await service.saveVideoPosition('l2', { positionSec: 30 }, sam);
+      expect((await service.setCompleted('l2', true, sam)).completed).toBe(true);
+      const other = withVideo();
+      await other.service.saveVideoPosition('l2', { positionSec: 10 }, sam); // older app: no length sent
+      expect((await other.service.setCompleted('l2', true, sam)).completed).toBe(true);
+    });
+
+    test('watching 90% or to the end completes the lesson on its own, once', async () => {
+      const { repo, service } = withVideo();
+      expect(await service.saveVideoPosition('l2', { positionSec: 545, durationSec: 600 }, sam)).toEqual({ lessonId: 'l2', positionSec: 545, completed: true });
+      expect(await repo.completedLessonIds(sam.id, ['l2'])).toEqual(['l2']);
+      expect(await service.saveVideoPosition('l2', { positionSec: 590, durationSec: 600 }, sam)).toEqual({ lessonId: 'l2', positionSec: 590 });
+      const other = withVideo();
+      expect((await other.service.saveVideoPosition('l2', { positionSec: 0, durationSec: 600, ended: true }, sam)).completed).toBe(true);
+    });
+
+    test('YouTube lessons and lessons without video are never blocked', async () => {
+      const { repo, service } = lessonSetup();
+      repo.rows[1]!.videoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+      expect((await service.setCompleted('l2', true, sam)).completed).toBe(true);
+      repo.rows[2]!.videoUrl = null;
+      expect((await service.setCompleted('l3', true, sam)).completed).toBe(true);
+    });
   });
 
   test('a video position round-trips and rides on the lesson payload', async () => {

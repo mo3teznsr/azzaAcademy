@@ -159,6 +159,9 @@ describe('triggers', () => {
       courseOfLesson: async () => 'rc',
       findCourse: async () => ({ id: 'rc', slug: 'logo', titleEn: 'L', titleAr: null, status: 'PUBLISHED', createdById: null, type: 'RECORDED', modules: [] }),
       setCompleted: async () => {},
+      // A lesson without an uploaded video: completing it needs no watch check.
+      find: async () => ({ id: 'l1', videoUrl: null }),
+      watchProgress: async () => null,
     } as unknown as LessonRepository;
     const ok = new LessonService(repo, { now: () => new Date() }, async (u, c) => void calls.push([u, c]));
     await ok.setCompleted('l1', true, { id: 'sam', role: 'ADMIN' });

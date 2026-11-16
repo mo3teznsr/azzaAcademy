@@ -634,7 +634,7 @@ export interface EarningsBatch {
 
 export interface LedgerEntry {
   id: string;
-  kind: 'SESSION' | 'REFUND_ADJUSTMENT' | 'BONUS' | 'DEDUCTION' | string;
+  kind: 'SESSION' | 'REFUND_ADJUSTMENT' | 'TRUE_UP' | 'BONUS' | 'DEDUCTION' | string;
   amountFils: number;
   status: EarningStatus;
   availableAt: ISODate;
@@ -725,6 +725,8 @@ export interface PayoutRun extends PayoutRunBase {
 /** GET /admin/payout-runs/:id */
 export interface PayoutRunDetail extends PayoutRunBase {
   payouts: RunPayout[];
+  /** Who created, adjusted, approved, exported and paid the run, oldest first. */
+  audit?: Array<{ id: string; action: string; actorId: string | null; actorName: string | null; createdAt: ISODate; data: Record<string, unknown> }>;
   totals: { totalFils: number; readyFils: number; [k: string]: number };
 }
 
@@ -946,6 +948,19 @@ export interface RecordedRevenue {
   /** The part of `vatFils` Apple collects and pays on App Store sales. */
   appleVatFils?: number;
   netFils: number;
+}
+
+/** GET /admin/growth?days */
+export interface AdminGrowth {
+  range: { from: ISODate; to: ISODate; days: number };
+  plans: { mrrFils: number; arrFils: number; live: number; churn: { atStart: number; ended: number; rate: number | null } };
+  customers: {
+    total: number;
+    repeat90: { eligible: number; repeated: number; rate: number | null };
+    cohorts: Array<{ month: string; customers: number; returned: number; rate: number | null }>;
+  };
+  teachers: { totalFils: number; topFiveShare: number | null; teachers: Array<{ teacherId: string; name: string; amountFils: number; share: number }> };
+  signups: { total: number; sources: Array<{ source: string; signups: number }> };
 }
 
 /** GET /admin/reports?from&to */

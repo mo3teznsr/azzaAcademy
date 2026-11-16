@@ -43,6 +43,7 @@ export function AdminSettings() {
       <div className="grid items-start gap-5 xl:grid-cols-2">
         <RulesCard />
         <ContactCard />
+        <LegalCard />
         <CutsCard />
         <AppStoreCard />
         <Panel>
@@ -278,6 +279,59 @@ function ContactCard() {
             </Fld>
           ))}
         </fieldset>
+        <Button type="submit" variant="ink" className="self-start" disabled={save.isPending || q.isPending}>
+          {save.isPending ? t.common.saving : c.save}
+        </Button>
+      </form>
+    </Panel>
+  );
+}
+
+/** The supplier details on tax invoices. Saving a TRN starts invoicing for payments from that moment. */
+function LegalCard() {
+  const { t, f } = useI18n();
+  const c = t.admin.settingsPage.legalCard;
+  const errorText = useProposalError();
+  const qc = useQueryClient();
+  const q = useAdminSettings();
+  const [v, setV] = useState({ legalName: '', legalAddress: '', taxRegistrationNumber: '' });
+  const [tried, setTried] = useState(false);
+  const seed = (d: AdminSettings) => setV({ legalName: d.legal.legalName ?? '', legalAddress: d.legal.legalAddress ?? '', taxRegistrationNumber: d.legal.taxRegistrationNumber ?? '' });
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- seed the inputs once the saved values arrive
+    if (q.data) seed(q.data);
+  }, [q.data]);
+  const trnBad = !!v.taxRegistrationNumber.trim() && !/^\d{15}$/.test(v.taxRegistrationNumber.trim());
+  const save = useMutation({
+    mutationFn: (input: ContactSettingsInput) => adminApi.saveContact(input),
+    onSuccess: (d) => {
+      qc.setQueryData(SETTINGS_KEY, d);
+      seed(d);
+      toast.success(c.saved);
+    },
+    onError: (e) => toast.error(errorText(e)),
+  });
+  const nul = (s: string) => s.trim() || null;
+  const submit = () => {
+    setTried(true);
+    if (trnBad) return;
+    save.mutate({ legalName: nul(v.legalName), legalAddress: nul(v.legalAddress), taxRegistrationNumber: nul(v.taxRegistrationNumber) });
+  };
+  const since = q.data?.legal.invoicingFrom;
+  return (
+    <Panel className="xl:col-span-2">
+      <SectionHeader title={c.title} size="sm" />
+      <p className="text-sm text-muted-foreground">{since ? `${c.active} ${f.dateLong(String(since))}.` : c.intro}</p>
+      <form className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => (e.preventDefault(), submit())} noValidate>
+        <Fld id="lg-name" label={c.legalName}>
+          <Input id="lg-name" value={v.legalName} onChange={(e) => setV((s) => ({ ...s, legalName: e.target.value }))} disabled={q.isPending} />
+        </Fld>
+        <Fld id="lg-trn" label={c.trn} hint={c.trnHint} error={trnBad && (tried || v.taxRegistrationNumber.length >= 15) ? c.trnError : undefined}>
+          <Input id="lg-trn" dir="ltr" inputMode="numeric" autoComplete="off" value={v.taxRegistrationNumber} onChange={(e) => setV((s) => ({ ...s, taxRegistrationNumber: e.target.value }))} disabled={q.isPending} aria-invalid={trnBad || undefined} aria-describedby="lg-trn-hint" />
+        </Fld>
+        <Fld id="lg-addr" label={c.legalAddress} className="sm:col-span-2">
+          <Input id="lg-addr" value={v.legalAddress} onChange={(e) => setV((s) => ({ ...s, legalAddress: e.target.value }))} disabled={q.isPending} />
+        </Fld>
         <Button type="submit" variant="ink" className="self-start" disabled={save.isPending || q.isPending}>
           {save.isPending ? t.common.saving : c.save}
         </Button>

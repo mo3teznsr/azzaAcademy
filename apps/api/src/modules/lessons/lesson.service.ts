@@ -1,9 +1,10 @@
-import type { LessonInput, ReorderLessonsInput, Role, UpdateLessonInput, VideoPositionInput } from '@azza/shared';
+import { parseCourseVideoUrl, type LessonInput, type ReorderLessonsInput, type Role, type UpdateLessonInput, type VideoPositionInput } from '@azza/shared';
 import { BusinessRuleError, ForbiddenError, NotFoundError, PlanRequiredError } from '../../core/errors';
 import type { Clock } from '../../core/ports';
 import { assertCanEditCourse } from '../courses/course.service';
 import { effectivePreviewLessonId } from '../courses/preview-lesson';
 import { canAccessRecorded } from '../subscriptions/access-policy';
+import { mayComplete, watchedShare, WATCH_TO_AUTOCOMPLETE, WATCH_TO_COMPLETE } from './watch-policy';
 import type { LessonCourse, LessonRepository } from './lesson.repository';
 
 type Actor = { id: string; role: Role };
@@ -70,10 +71,19 @@ export class LessonService {
 
   /** `PUT /lessons/:id/video-position` — under the same read rule as the lesson. */
   async saveVideoPosition(lessonId: string, input: VideoPositionInput, viewer: Actor) {
-    const { course } = await this.lessonOf(lessonId);
+    const { lesson, course } = await this.lessonOf(lessonId);
     await this.assertCanRead(course, viewer);
-    await this.repo.setVideoPosition(viewer.id, lessonId, input.positionSec);
-    return { lessonId, positionSec: input.positionSec };
+    await this.repo.setVideoPosition(viewer.id, lessonId, input.positionSec, { durationSec: input.durationSec, ended: input.ended });
+    // Watching nearly all of an uploaded video completes the lesson on its own (once).
+    let completed = false;
+    if (parseCourseVideoUrl(lesson.videoUrl)?.kind === 'file') {
+      const share = watchedShare(await this.repo.watchProgress(viewer.id, lessonId));
+      if (share !== null && share >= WATCH_TO_AUTOCOMPLETE && !(await this.repo.completedLessonIds(viewer.id, [lessonId])).length) {
+        await this.markDone(viewer.id, lessonId, course.id);
+        completed = true;
+      }
+    }
+    return { lessonId, positionSec: input.positionSec, ...(completed && { completed: true }) };
   }
 
   /** `PUT|DELETE /lessons/:id/complete` — the reader marks a lesson done (or undone). */
@@ -81,15 +91,28 @@ export class LessonService {
     const courseId = await this.repo.courseOfLesson(lessonId);
     if (!courseId) throw new NotFoundError('Lesson', lessonId);
     await this.assertCanRead(await this.course(courseId), viewer);
-    await this.repo.setCompleted(viewer.id, lessonId, completed);
-    if (completed && this.onCourseProgress) {
-      try {
-        await this.onCourseProgress(viewer.id, courseId);
-      } catch (err) {
-        console.error('[certificates] issue after lesson completion failed', err);
-      }
+    if (!completed) {
+      await this.repo.setCompleted(viewer.id, lessonId, false);
+      return { lessonId, completed };
     }
+    // An uploaded video must be mostly watched first, so a certificate can't be earned by clicking through.
+    const lesson = await this.repo.find(lessonId);
+    const verdict = mayComplete(lesson?.videoUrl ?? null, await this.repo.watchProgress(viewer.id, lessonId));
+    if (!verdict.ok) {
+      throw new BusinessRuleError('Watch most of the video before marking this lesson complete', 'WATCH_MORE', { watchedPercent: verdict.watchedPercent, requiredPercent: WATCH_TO_COMPLETE * 100 });
+    }
+    await this.markDone(viewer.id, lessonId, courseId);
     return { lessonId, completed };
+  }
+
+  private async markDone(userId: string, lessonId: string, courseId: string) {
+    await this.repo.setCompleted(userId, lessonId, true);
+    if (!this.onCourseProgress) return;
+    try {
+      await this.onCourseProgress(userId, courseId);
+    } catch (err) {
+      console.error('[certificates] issue after lesson completion failed', err);
+    }
   }
 
   /**

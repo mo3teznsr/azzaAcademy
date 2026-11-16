@@ -45,6 +45,20 @@ export class EarningsCalculator {
     return Math.round((cutPercent / 100) * (netFils / sessionCount));
   }
 
+  /**
+   * When a batch ends: what the delivered sessions should have earned from the batch's final net, minus what was already
+   * accrued for it (sessions, refund adjustments, an earlier true-up). Session earnings are frozen when each session ends,
+   * so students who joined later are missing from the early ones; this closes that gap (or claws back an overshoot).
+   * Differences under 1 AED are rounding and give 0.
+   */
+  trueUp(args: { netFils: number; cutPercent: number; sessionCount: number; deliveredSessions: number; accruedFils: number }): number {
+    if (args.sessionCount <= 0) return 0;
+    const delivered = Math.min(args.deliveredSessions, args.sessionCount);
+    const target = args.netFils > 0 ? Math.round((args.cutPercent / 100) * args.netFils * (delivered / args.sessionCount)) : 0;
+    const delta = target - args.accruedFils;
+    return Math.abs(delta) < 100 ? 0 : delta;
+  }
+
   /** round(cut% × net) — the teacher's share of one payment (recorded plans have no sessions). */
   paymentShare(netFils: number, cutPercent: number): number {
     if (netFils <= 0) return 0;

@@ -379,7 +379,11 @@ export const payoutAdjustmentInput = z.object({
   amountAed: z.number(), // positive bonus, negative deduction
   reason: z.string().min(3),
 });
-export const markPayoutPaidInput = z.object({ transferReference: z.string().min(3) });
+export const markPayoutPaidInput = z.object({
+  transferReference: z.string().min(3),
+  /** A payout's own bank reference (payout id → reference); the others get `transferReference`. */
+  references: z.record(z.string(), z.string().trim().min(3).max(100)).optional(),
+});
 
 // ---------- Content ----------
 export const materialInput = z.object({
@@ -727,7 +731,13 @@ export const subscribeInput = z.object({
 export type SubscribeInput = z.infer<typeof subscribeInput>;
 
 /** PUT /lessons/:id/position */
-export const videoPositionInput = z.object({ positionSec: z.number().int().min(0) });
+export const videoPositionInput = z.object({
+  positionSec: z.number().int().min(0),
+  /** The video's length in seconds, when the player knows it (lets the API tell how much was watched). */
+  durationSec: z.number().int().min(1).max(86_400).optional(),
+  /** The video played to the end. */
+  ended: z.boolean().optional(),
+});
 export type VideoPositionInput = z.infer<typeof videoPositionInput>;
 
 // ---------- Currencies (display only; AED is the base) ----------
@@ -818,6 +828,10 @@ export const contactSettingsInput = z.object({
   whatsappNumber: clearable(z.string().trim().regex(WHATSAPP_NUMBER_PATTERN, 'Digits only, with the country code (8–15 digits)')),
   addressEn: clearable(z.string().trim().max(300)),
   addressAr: clearable(z.string().trim().max(300)),
+  /** Tax invoices (UAE FTA): the supplier's legal name and address, and its 15-digit TRN. Saving a TRN starts invoicing. */
+  legalName: clearable(z.string().trim().max(200)),
+  legalAddress: clearable(z.string().trim().max(400)),
+  taxRegistrationNumber: clearable(z.string().trim().regex(/^\d{15}$/, 'A UAE TRN has 15 digits')),
   socials: z
     .object({
       instagram: clearable(httpsUrl),
@@ -855,8 +869,17 @@ export interface RuleSettings {
   APPLE_COMMISSION_PERCENT: number;
 }
 
+/** The supplier details printed on tax invoices; invoicing starts on `invoicingFrom` (when the TRN was first saved). */
+export interface LegalSettings {
+  legalName: string | null;
+  legalAddress: string | null;
+  taxRegistrationNumber: string | null;
+  invoicingFrom: string | Date | null;
+}
+
 /** `GET /admin/settings`, and the response of `PUT /admin/settings/rules` and `/contact`. */
 export interface AdminSettings {
+  legal: LegalSettings;
   rules: RuleSettings & { TEACHER_SHARE_PERCENT: number };
   ruleDefaults: RuleSettings;
   integrations: { stripe: boolean; appleIap: boolean; livekit: boolean; smtp: boolean; push: boolean; appStoreConnect: boolean };

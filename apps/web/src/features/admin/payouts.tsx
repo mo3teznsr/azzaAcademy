@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Chip, PayoutStatusChip, RunStatusChip } from '@/components/brand/status-chip';
 import { PageTitle, Panel, SectionHeader } from '@/components/brand/section';
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/brand/states';
-import { adminApi, type PayoutRunDetail, type RunPayout } from '@/lib/api';
+import { adminApi, ApiError, type PayoutRunDetail, type RunPayout } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
@@ -88,7 +88,11 @@ function RunDetail({ id }: { id: string }) {
     void qc.invalidateQueries({ queryKey: qk.admin.payoutRun(id) });
     void qc.invalidateQueries({ queryKey: qk.admin.payoutRuns });
   };
-  const approve = useMutation({ mutationFn: () => adminApi.approveRun(id), onSuccess: () => (toast.success(t.admin.payouts.approved), refresh()), onError: (e: Error) => toast.error(e.message) });
+  const approve = useMutation({
+    mutationFn: () => adminApi.approveRun(id),
+    onSuccess: () => (toast.success(t.admin.payouts.approved), refresh()),
+    onError: (e: Error) => toast.error(e instanceof ApiError && e.code === 'SECOND_ADMIN_REQUIRED' ? t.admin.payouts.secondAdmin : e.message),
+  });
   const verify = useMutation({ mutationFn: (teacherId: string) => adminApi.verifyTeacherBank(teacherId), onSuccess: () => (toast.success(t.common.saved), refresh()), onError: (e: Error) => toast.error(e.message) });
   const exportCsv = useMutation({
     mutationFn: () => adminApi.exportRun(id),
@@ -194,6 +198,20 @@ function RunDetail({ id }: { id: string }) {
             </TableRow>
           </TableBody>
         </Table>
+      )}
+      {run.audit && run.audit.length > 0 && (
+        <section aria-labelledby="run-audit" className="flex flex-col gap-2 border-t border-border pt-4">
+          <h3 id="run-audit" className="label-mono text-muted-foreground">{t.admin.payouts.auditTitle}</h3>
+          <ol className="flex flex-col gap-1.5 text-sm">
+            {run.audit.map((e) => (
+              <li key={e.id} className="flex flex-wrap gap-x-2">
+                <span className="tabular-nums text-muted-foreground">{f.dateTime(e.createdAt)}</span>
+                <bdi className="font-semibold">{e.actorName ?? '—'}</bdi>
+                <span>{t.admin.payouts.auditActions[e.action as keyof typeof t.admin.payouts.auditActions] ?? e.action}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
       )}
     </Panel>
   );

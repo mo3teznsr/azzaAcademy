@@ -464,6 +464,9 @@ class InMemoryLessons implements LessonRepository {
     return null;
   }
   async setVideoPosition() {}
+  async watchProgress() {
+    return null;
+  }
 }
 
 describe('lessons', () => {

@@ -6,11 +6,17 @@ import { mediaUrl } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 /** Pick up where the viewer stopped: start at `startSec`, and report the position every 10 s, on pause and when leaving. */
+/** What the player knows besides the position: the video's length, and whether it just played to the end. */
+export interface VideoWatch {
+  durationSec?: number;
+  ended?: boolean;
+}
+
 export interface VideoResume {
   startSec: number;
-  onSave: (sec: number) => void;
+  onSave: (sec: number, watch: VideoWatch) => void;
   /** Called when the page is being hidden or closed, so the save can outlive the page. */
-  onExit: (sec: number) => void;
+  onExit: (sec: number, watch: VideoWatch) => void;
 }
 
 const SAVE_EVERY_MS = 10_000;
@@ -74,6 +80,12 @@ function ResumableVideo({ src, title, resume }: { src: string | undefined; title
     if (v && v.readyState >= 1) seek();
   }, [resume.startSec]);
 
+  /** The video's length in whole seconds, once the browser knows it. */
+  const length = (): VideoWatch => {
+    const d = ref.current?.duration;
+    return d && Number.isFinite(d) && d >= 1 ? { durationSec: Math.round(d) } : {};
+  };
+
   useEffect(() => {
     const video = ref.current;
     const position = () => Math.floor(video?.currentTime ?? 0);
@@ -82,14 +94,14 @@ function ResumableVideo({ src, title, resume }: { src: string | undefined; title
       const sec = position();
       if (sec === lastSaved.current) return;
       lastSaved.current = sec;
-      latest.current.onSave(sec);
+      latest.current.onSave(sec, length());
     };
     const exit = () => {
       if (ended.current) return;
       const sec = position();
       if (sec === lastSaved.current) return;
       lastSaved.current = sec;
-      latest.current.onExit(sec);
+      latest.current.onExit(sec, length());
     };
     const timer = window.setInterval(() => {
       if (video && !video.paused) save();
@@ -124,14 +136,14 @@ function ResumableVideo({ src, title, resume }: { src: string | undefined; title
         const sec = Math.floor(ref.current?.currentTime ?? 0);
         if (sec !== lastSaved.current) {
           lastSaved.current = sec;
-          latest.current.onSave(sec);
+          latest.current.onSave(sec, length());
         }
       }}
       onEnded={() => {
         ended.current = true;
         // Finished: next time starts from the top.
         lastSaved.current = 0;
-        latest.current.onSave(0);
+        latest.current.onSave(0, { ...length(), ended: true });
       }}
     />
   );

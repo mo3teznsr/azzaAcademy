@@ -8,6 +8,8 @@ import type { EarningsAccrual } from '../sessions/session.service';
 import type { EarningsCalculator } from './earnings-calculator';
 import { cutFor, type SettingsService } from '../settings/settings.service';
 import type { PayoutRepository } from './payout.repository';
+import { noAuditLog, type AuditLog } from '../audit/audit-log';
+import { approvalBlocked } from './payout-approval';
 
 export interface PayoutRules {
   earningHoldDays: number;
@@ -42,6 +44,8 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     private readonly notifier: Notifier,
     private readonly clock: Clock,
     private readonly rules: PayoutRulesSource,
+    /** Who created, adjusted, approved, exported and paid each run (append-only). */
+    private readonly audit: AuditLog = noAuditLog,
   ) {}
 
   private async currentRules(): Promise<PayoutRules> {
@@ -127,6 +131,33 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
       sessionId: s.id,
       amountFils,
       availableAt: new Date(endedAt.getTime() + rules.earningHoldDays * DAY_MS),
+    });
+  }
+
+  /**
+   * When a batch completes: pays the teacher what the delivered sessions earn from the batch's final net, less what was
+   * accrued (a TRUE_UP earning, positive or negative, on the usual hold). Idempotent: a rerun finds nothing left to add.
+   */
+  async trueUpBatch(batchId: string) {
+    const rules = await this.currentRules();
+    const b = await this.repo.batchForTrueUp(batchId);
+    if (!b || b.status !== 'COMPLETED') return null;
+    const amountFils = this.calculator.trueUp({
+      netFils: this.calculator.batchNet(await this.repo.batchOrders(b.id)),
+      cutPercent: cutFor(b.course, await this.settings.cuts()),
+      sessionCount: b.schedule?.sessionCount ?? b._count.sessions,
+      deliveredSessions: b.sessions.length,
+      accruedFils: await this.repo.batchAccrued(b.id),
+    });
+    if (amountFils === 0) return null;
+    return this.repo.createEarning({
+      teacherId: b.teacherId,
+      batchId: b.id,
+      kind: 'TRUE_UP',
+      amountFils,
+      status: 'PENDING',
+      availableAt: new Date(this.clock.now().getTime() + rules.earningHoldDays * DAY_MS),
+      note: `Batch ${b.code} final share`,
     });
   }
 
@@ -250,10 +281,11 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     return details;
   }
 
-  async verifyBankDetails(teacherId: string) {
+  async verifyBankDetails(teacherId: string, actorId: string | null = null) {
     const rules = await this.currentRules();
     if (!(await this.repo.bankDetails(teacherId))) throw new NotFoundError('Bank details for teacher', teacherId);
     const details = await this.repo.verifyBankDetails(teacherId, this.clock.now());
+    await this.audit.record({ actorId, action: 'BANK_DETAILS_VERIFIED', entityType: 'TeacherBankDetails', entityId: teacherId });
     // re-evaluate payouts held only because of the bank in draft runs
     for (const p of await this.repo.draftPayoutsOf(teacherId)) {
       const d = this.calculator.payoutDecision({
@@ -269,7 +301,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
 
   // ───────── admin payout runs ─────────
 
-  async createRun(input: { periodStart: string; periodEnd: string }) {
+  async createRun(input: { periodStart: string; periodEnd: string }, actorId: string | null = null) {
     const rules = await this.currentRules();
     const periodStart = new Date(`${input.periodStart}T00:00:00.000Z`);
     const periodEnd = new Date(`${input.periodEnd}T00:00:00.000Z`);
@@ -296,7 +328,8 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
       });
       return { teacherId, ...agg, ...decision };
     });
-    const run = await this.repo.createRun(periodStart, periodEnd, payouts);
+    const run = await this.repo.createRun(periodStart, periodEnd, payouts, actorId);
+    await this.audit.record({ actorId, action: 'PAYOUT_RUN_CREATED', entityType: 'PayoutRun', entityId: run.id, data: { periodStart: input.periodStart, periodEnd: input.periodEnd, payouts: payouts.length } });
     return this.getRun(run.id);
   }
 
@@ -323,6 +356,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     return {
       ...run,
       payouts,
+      audit: await this.audit.forEntity('PayoutRun', run.id),
       totals: {
         totalFils: payouts.reduce((s, p) => s + p.totalFils, 0),
         readyFils: payouts.filter((p) => p.status === 'READY' || p.status === 'PAID').reduce((s, p) => s + p.totalFils, 0),
@@ -332,7 +366,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     };
   }
 
-  async adjust(input: { payoutId: string; amountAed: number; reason: string }) {
+  async adjust(input: { payoutId: string; amountAed: number; reason: string }, actorId: string | null = null) {
     const rules = await this.currentRules();
     const payout = await this.repo.findPayout(input.payoutId);
     if (!payout) throw new NotFoundError('Payout', input.payoutId);
@@ -364,18 +398,28 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
       minPayoutFils: rules.minPayoutFils,
     });
     await this.repo.updatePayout(payout.id, { adjustmentsFils, status: decision.status, holdReason: decision.holdReason });
+    await this.audit.record({ actorId, action: 'PAYOUT_ADJUSTED', entityType: 'PayoutRun', entityId: payout.runId, data: { payoutId: payout.id, teacherId: payout.teacherId, amountFils, reason: input.reason } });
     return this.getRun(payout.runId);
   }
 
   async approve(id: string, adminId: string) {
     const run = await this.getRun(id);
     if (run.status !== 'DRAFT') throw new BusinessRuleError(`Run is ${run.status}`, 'RUN_NOT_DRAFT');
+    const involved = new Set<string>(run.createdById ? [run.createdById] : []);
+    for (const e of run.audit) if (e.actorId && (e.action === 'PAYOUT_RUN_CREATED' || e.action === 'PAYOUT_ADJUSTED')) involved.add(e.actorId);
+    const admins = await this.repo.activeAdminCount();
+    if (approvalBlocked(admins, involved, adminId)) {
+      throw new BusinessRuleError('Another admin must approve this run: you created or adjusted it', 'SECOND_ADMIN_REQUIRED');
+    }
     await this.repo.updateRun(id, { status: 'APPROVED', approvedById: adminId, approvedAt: this.clock.now() });
+    await this.audit.record({ actorId: adminId, action: 'PAYOUT_RUN_APPROVED', entityType: 'PayoutRun', entityId: id, data: { secondPerson: !involved.has(adminId), activeAdmins: admins } });
     return this.getRun(id);
   }
 
-  async exportCsv(id: string) {
+  async exportCsv(id: string, actorId: string | null = null) {
     const run = await this.getRun(id);
+    // The file carries full IBANs for the bank upload, so every export is on the record.
+    await this.audit.record({ actorId, action: 'PAYOUT_RUN_EXPORTED', entityType: 'PayoutRun', entityId: id });
     const esc = (v: unknown) => {
       const s = String(v ?? '');
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -402,18 +446,24 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     };
   }
 
-  async markPaid(id: string, transferReference: string) {
+  async markPaid(id: string, transferReference: string, actorId: string | null = null, references: Record<string, string> = {}) {
     const run = await this.getRun(id);
     if (run.status !== 'APPROVED') throw new BusinessRuleError('Approve the run before marking it paid', 'RUN_NOT_APPROVED');
-    const paid = await this.repo.settleRun(id, transferReference, this.clock.now());
+    const inRun = new Set(run.payouts.map((p) => p.id));
+    const foreign = Object.keys(references).filter((k) => !inRun.has(k));
+    if (foreign.length) throw new BusinessRuleError('A transfer reference names a payout outside this run', 'UNKNOWN_PAYOUT', { payoutIds: foreign });
+    const paid = await this.repo.settleRun(id, transferReference, this.clock.now(), references);
+    await this.audit.record({ actorId, action: 'PAYOUT_RUN_PAID', entityType: 'PayoutRun', entityId: id, data: { transferReference, references, paid: paid.length } });
     for (const p of paid) {
       const amount = formatMoney((p.amountFils + p.adjustmentsFils) / 100, 'AED');
+      const ref = references[p.id] ?? transferReference;
       await this.notifier.notify([p.teacherId], {
         type: 'PAYOUT_PAID',
         title: `Payout sent · ${amount}`,
-        body: `Transfer reference ${transferReference}`,
+        body: `Transfer reference ${ref}`,
+        ar: { title: `أُرسلت مستحقاتك · ${amount}`, body: `مرجع التحويل ${ref}` },
         data: { payoutId: p.id },
-        email: (r) => emailsIn(r.locale).payoutPaid(r.name, amount, transferReference),
+        email: (r) => emailsIn(r.locale).payoutPaid(r.name, amount, ref),
       });
     }
     return this.getRun(id);

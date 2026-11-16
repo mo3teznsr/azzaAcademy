@@ -29,9 +29,10 @@ void main() {
       );
     });
 
-    test('reports the position while the video plays', () {
+    test('reports the position and the length while the video plays', () {
       reportLessonVideoProgress(playing(42), tracker);
       expect(tracker.positionSec, 42);
+      expect(tracker.durationSec, 600);
       expect(tracker.ended, isFalse);
     });
 

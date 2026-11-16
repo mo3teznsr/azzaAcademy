@@ -136,6 +136,26 @@ const enApp = {
     html: layout('en', `Still interested, ${name}?`, `<p>Your payment for ${course} · ${batch} didn't go through, so we released the seat. Seats are still open: you can finish in a minute.</p>${button(url, 'Finish checkout')}`),
     text: `Your checkout for ${course} ${batch} didn't finish. Seats are still open: ${url}`,
   }),
+  welcome: (name: string, url: string) => ({
+    subject: 'Welcome to Azza',
+    html: layout('en', `Welcome, ${name}`, `<p>Start with a free preview lesson from any recorded course, or pick a live class with a teacher who knows you by name.</p>${button(url, 'Find a course')}`),
+    text: `Welcome to Azza. Start with a free preview lesson or pick a live class: ${url}`,
+  }),
+  welcomeFollowUp: (name: string, url: string) => ({
+    subject: 'Not sure where to start?',
+    html: layout('en', `Hi ${name}`, `<p>Every recorded course has a free lesson you can watch now, and new live classes start every month. Small classes, real feedback.</p>${button(url, 'Browse courses')}`),
+    text: `Every recorded course has a free lesson, and live classes start every month: ${url}`,
+  }),
+  learningNudge: (name: string, course: string, url: string) => ({
+    subject: `Pick up ${course} where you left off`,
+    html: layout('en', `Ready for the next lesson, ${name}?`, `<p>It's been a week since your last lesson in <b>${course}</b>. A short lesson today keeps it moving.</p>${button(url, 'Continue learning')}`),
+    text: `Pick up ${course} where you left off: ${url}`,
+  }),
+  planWinback: (name: string, course: string, url: string) => ({
+    subject: `Come back to ${course}`,
+    html: layout('en', `We saved your place, ${name}`, `<p>Your plan for <b>${course}</b> ended, but your progress is saved. Renew any time and carry on from the same lesson.</p>${button(url, 'Renew my plan')}`),
+    text: `Your progress in ${course} is saved. Renew any time: ${url}`,
+  }),
   invite: (name: string, role: string, url: string) => ({
     subject: 'You’re invited to Azza',
     html: layout('en', `Welcome, ${name}`, `<p>An administrator created a <b>${role.toLowerCase()}</b> account for you. Choose a password to get started.</p>${button(url, 'Set my password')}`),
@@ -232,6 +252,26 @@ const arApp: typeof enApp = {
     subject: `لم يكتمل الدفع · ${course} ${batch}`,
     html: layout('ar', `ما زلت مهتمًا يا ${name}؟`, `<p>لم يكتمل الدفع في ${course} · ${ltr(batch)}، فحرّرنا المقعد. ما زالت المقاعد متاحة ويمكنك الإكمال في دقيقة.</p>${button(url, 'أكمل الدفع')}`),
     text: `لم يكتمل الدفع في ${course} ${batch}. ما زالت المقاعد متاحة: ${url}`,
+  }),
+  welcome: (name, url) => ({
+    subject: 'أهلًا بك في عازة',
+    html: layout('ar', `أهلًا بك يا ${name}`, `<p>ابدأ بدرس مجاني للمعاينة من أي دورة مسجّلة، أو اختر صفًا مباشرًا مع معلّم يعرفك باسمك.</p>${button(url, 'اعثر على دورة')}`),
+    text: `أهلًا بك في عازة. ابدأ بدرس مجاني أو اختر صفًا مباشرًا: ${url}`,
+  }),
+  welcomeFollowUp: (name, url) => ({
+    subject: 'لا تعرف من أين تبدأ؟',
+    html: layout('ar', `مرحبًا ${name}`, `<p>لكل دورة مسجّلة درس مجاني تشاهده الآن، وتبدأ صفوف مباشرة جديدة كل شهر. صفوف صغيرة وملاحظات حقيقية.</p>${button(url, 'تصفّح الدورات')}`),
+    text: `لكل دورة مسجّلة درس مجاني، والصفوف المباشرة تبدأ كل شهر: ${url}`,
+  }),
+  learningNudge: (name, course, url) => ({
+    subject: `أكمل ${course} من حيث توقفت`,
+    html: layout('ar', `جاهز للدرس التالي يا ${name}؟`, `<p>مرّ أسبوع على آخر درس لك في <b>${course}</b>. درس قصير اليوم يبقيك في الطريق.</p>${button(url, 'تابع التعلّم')}`),
+    text: `أكمل ${course} من حيث توقفت: ${url}`,
+  }),
+  planWinback: (name, course, url) => ({
+    subject: `عُد إلى ${course}`,
+    html: layout('ar', `حفظنا مكانك يا ${name}`, `<p>انتهى اشتراكك في <b>${course}</b>، لكن تقدّمك محفوظ. جدّد في أي وقت وأكمل من الدرس نفسه.</p>${button(url, 'جدّد اشتراكي')}`),
+    text: `تقدّمك في ${course} محفوظ. جدّد في أي وقت: ${url}`,
   }),
   invite: (name, role, url) => ({
     subject: 'دعوة للانضمام إلى عازة',

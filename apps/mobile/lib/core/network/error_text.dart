@@ -16,6 +16,7 @@ extension AppExceptionText on AppException {
       'UNAUTHORIZED' => l.errSignedOut,
       'FORBIDDEN' => l.errForbidden,
       'NOT_FOUND' => l.errNotFound,
+      'WATCH_MORE' => l.errWatchMore,
       'INVALID_EMAIL_OR_PASSWORD' => l.errBadCredentials,
       'USER_ALREADY_EXISTS' || 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL' => l.errEmailTaken,
       'TOO_MANY_REQUESTS' => l.errTooMany,

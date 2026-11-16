@@ -104,6 +104,10 @@ import { PrismaSubscriptionRepository } from './modules/subscriptions/subscripti
 import { SubscriptionService } from './modules/subscriptions/subscription.service';
 import { SubscriptionTransferQueries } from './modules/subscriptions/transfer-queries';
 import { PrismaSessionReminderRepository, SessionReminderService } from './modules/sessions/session-reminders';
+import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.service';
+import { PrismaAuditLog } from './modules/audit/audit-log';
+import { LifecycleService, PrismaLifecycleRepository } from './modules/lifecycle/lifecycle.service';
+import { TaxDocumentService } from './modules/invoices/tax-document.service';
 
 export interface Adapters {
   db: Db;
@@ -234,10 +238,18 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const vatSnapshot = () => siteSettings.ruleSnapshot().vatPercent;
   if (adapters.vat) adapters.vat.current = vatSnapshot;
   const prices = new PriceCalculator(vatSnapshot);
-  const payouts = new PayoutService(new PrismaPayoutRepository(db), new EarningsCalculator(), settings, notifications, clock, async () => {
-    const r = await rules();
-    return { earningHoldDays: r.earningHoldDays, minPayoutFils: Math.round(r.minPayoutAed * 100) };
-  });
+  const payouts = new PayoutService(
+    new PrismaPayoutRepository(db),
+    new EarningsCalculator(),
+    settings,
+    notifications,
+    clock,
+    async () => {
+      const r = await rules();
+      return { earningHoldDays: r.earningHoldDays, minPayoutFils: Math.round(r.minPayoutAed * 100) };
+    },
+    new PrismaAuditLog(db),
+  );
 
   const rescheduleRequestRepo = new PrismaRescheduleRequestRepository(db);
   const sessions = new SessionService(
@@ -310,6 +322,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator(), undefined, notifications, config.WEB_URL);
   const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
   resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
+  const taxDocuments = new TaxDocumentService(db, clock);
   const services = {
     settings,
     siteSettings,
@@ -344,6 +357,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     waitlist: new WaitlistQueries(db),
     certificates,
     reports: new ReportService(new PrismaReportRepository(db), clock),
+    growth: new GrowthService(new PrismaGrowthRepository(db), clock),
+    taxDocuments,
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
     lessons: new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
@@ -355,6 +370,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     admin: new AdminService(new PrismaAdminRepository(db), new BetterAuthUserProvisioner(auth, invites, config.WEB_URL), video, clock),
   };
 
+  const lifecycleMessages = new LifecycleService(new PrismaLifecycleRepository(db), notifications, clock, config.WEB_URL);
   const sessionReminders = new SessionReminderService(new PrismaSessionReminderRepository(db), notifications, clock, config.WEB_URL);
 
   /** Background jobs (started by index.ts only, never in tests). */
@@ -377,6 +393,10 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
         return null; // quiet: the scheduler logs non-zero results
       },
     },
+    // UAE tax invoices for new payments and credit notes for refunds (nothing until a TRN is set).
+    { name: 'issue-tax-documents', everyMs: 10 * 60_000, run: () => taxDocuments.issuePending() },
+    // Welcome, inactivity nudges and win-back messages (each sent once per user and key).
+    { name: 'lifecycle-messages', everyMs: 60 * 60_000, run: () => lifecycleMessages.run() },
     // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.
     { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },

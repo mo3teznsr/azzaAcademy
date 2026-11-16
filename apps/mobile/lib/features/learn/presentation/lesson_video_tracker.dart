@@ -21,13 +21,19 @@ class VideoPositionTracker {
   bool _ended = false;
   Timer? _timer;
 
+  int? _durationSec;
+
   int get positionSec => _position;
   bool get ended => _ended;
 
+  /// The video's length in seconds, once the player has reported it.
+  int? get durationSec => _durationSec;
+
   void start() => _timer ??= Timer.periodic(interval, (_) => unawaited(flush()));
 
-  /// The player reports where it is (call it as often as it likes).
-  void update(int sec) {
+  /// The player reports where it is, and the video's length when it knows it (call it as often as it likes).
+  void update(int sec, {int? durationSec}) {
+    if (durationSec != null && durationSec > 0) _durationSec = durationSec;
     if (!_ended) _position = sec < 0 ? 0 : sec;
   }
 
@@ -123,7 +129,10 @@ class _ResumableLessonVideoState extends ConsumerState<ResumableLessonVideo> {
   void initState() {
     super.initState();
     _repo = ref.read(lessonProgressRepositoryProvider);
-    _tracker = VideoPositionTracker(save: (sec) => _repo.saveVideoPosition(widget.lessonId, sec), startSec: widget.startSec)..start();
+    _tracker = VideoPositionTracker(
+      save: (sec) => _repo.saveVideoPosition(widget.lessonId, sec, durationSec: _tracker.durationSec, ended: _tracker.ended),
+      startSec: widget.startSec,
+    )..start();
   }
 
   @override

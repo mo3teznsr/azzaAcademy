@@ -6791,4 +6791,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get lessonVideoSpeed => 'سرعة التشغيل';
+
+  @override
+  String get errWatchMore =>
+      'شاهد معظم الفيديو قبل أن تعلّم هذا الدرس مكتملًا.';
 }

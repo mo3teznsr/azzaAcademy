@@ -57,7 +57,7 @@ function withCompletion(data: CourseLessons, lessonId: string, completed: boolea
 
 /** Toggles a lesson's completion with an optimistic update; rolls back on error and refreshes progress everywhere once settled. */
 function useLessonCompletion(courseKey: string) {
-  const { t } = useI18n();
+  const { t, f, fill } = useI18n();
   const qc = useQueryClient();
   const queryKey = qk.lessons(courseKey);
   const mutationKey = ['lesson-complete', courseKey];
@@ -70,8 +70,13 @@ function useLessonCompletion(courseKey: string) {
       if (previous) qc.setQueryData<CourseLessons>(queryKey, withCompletion(previous, lessonId, completed));
       return { previous };
     },
-    onError: (_e, _vars, ctx) => {
+    onError: (e, _vars, ctx) => {
       if (ctx?.previous) qc.setQueryData(queryKey, ctx.previous);
+      if (e instanceof ApiError && e.code === 'WATCH_MORE') {
+        const watched = (e.details as { watchedPercent?: number } | undefined)?.watchedPercent ?? 0;
+        toast.error(fill(t.learning.lessons.watchMore, { p: f.number(watched) }));
+        return;
+      }
       toast.error(t.learning.lessons.completeError);
     },
     onSettled: () => {
@@ -236,6 +241,7 @@ function LessonView({
   onToggle: (completed: boolean) => void;
 }) {
   const { t, f, fill, pick, locale } = useI18n();
+  const qc = useQueryClient();
   const completed = !!lesson.completed;
   // Recorded lessons remember where the viewer stopped (the list payload may not carry it, so ask for the lesson).
   const saved = useQuery({ queryKey: ['lesson', lesson.id], queryFn: () => learningApi.lesson(lesson.id), enabled: recorded && !!lesson.videoUrl, staleTime: 0, gcTime: 0, retry: false });
@@ -247,11 +253,18 @@ function LessonView({
       recorded
         ? {
             startSec,
-            onSave: (sec) => void learningApi.saveVideoPosition(lesson.id, sec).catch(() => undefined),
-            onExit: (sec) => learningApi.saveVideoPositionOnExit(lesson.id, sec),
+            onSave: (sec, watch) =>
+              void learningApi
+                .saveVideoPosition(lesson.id, sec, watch)
+                .then((r) => {
+                  // Watching most of the video completed the lesson: show it ticked and the progress moved.
+                  if (r.completed) void qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === 'course' && q.queryKey[2] === 'lessons' });
+                })
+                .catch(() => undefined),
+            onExit: (sec, watch) => learningApi.saveVideoPositionOnExit(lesson.id, sec, watch),
           }
         : undefined,
-    [recorded, startSec, lesson.id],
+    [recorded, startSec, lesson.id, qc],
   );
   const [announce, setAnnounce] = useState('');
   const toggle = () => {

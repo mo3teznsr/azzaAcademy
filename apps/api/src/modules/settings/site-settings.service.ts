@@ -28,6 +28,7 @@ export interface SiteSettingsDeps {
 }
 
 const CONTACT_KEYS = ['contactEmail', 'contactPhone', 'whatsappNumber', 'addressEn', 'addressAr'] as const;
+const LEGAL_KEYS = ['legalName', 'legalAddress', 'taxRegistrationNumber'] as const;
 const RULE_KEYS = ['vatPercent', 'earningHoldDays', 'minPayoutAed', 'bankTransferHoldHours', 'appleCommissionPercent'] as const;
 
 const toEnvKeys = (r: RuleValues): RuleSettings => ({
@@ -108,6 +109,7 @@ export class SiteSettingsService {
       integrations: this.deps.integrations,
       contact: pickContact(row),
       socials: setSocials(row.socials),
+      legal: { legalName: row.legalName, legalAddress: row.legalAddress, taxRegistrationNumber: row.taxRegistrationNumber, invoicingFrom: row.invoicingFrom },
     };
   }
 
@@ -136,6 +138,9 @@ export class SiteSettingsService {
   async updateContact(input: ContactSettingsInput): Promise<AdminSettings> {
     const data: Partial<SiteSettingsRow> = {};
     for (const key of CONTACT_KEYS) if (input[key] !== undefined) data[key] = input[key] ?? null;
+    for (const key of LEGAL_KEYS) if (input[key] !== undefined) data[key] = input[key] ?? null;
+    // Saving the first TRN starts tax invoicing from now (earlier payments are not invoiced after the fact).
+    if (input.taxRegistrationNumber && !(await this.row()).invoicingFrom) data.invoicingFrom = new Date(this.now());
     if (input.socials) {
       const current = (await this.row()).socials;
       const merged: SocialLinks = { ...setSocials(current) };

@@ -39,6 +39,10 @@ Status: done. Items 1–4 in PR #8, items 5–8 in PR #9. Still open from this p
 
 ## Phase 2: 30 days
 
+Status: done in PR #10, with two changes from the plan:
+- Coupons on subscriptions use Stripe promotion codes (made in the Stripe dashboard), not the admin coupons, so plan discounts stay out of our earnings logic. Bank transfer and App Store plans take no code yet.
+- The payout CSV keeps full IBANs (the bank needs them); every download is in the audit log instead.
+
 1. **Growth dashboard for admins.** MRR and ARR, monthly churn, retention by signup month, second purchase within 90 days, revenue and net margin by teacher, share of the top five teachers.
 2. **FTA tax invoices.** Sequential invoice numbers, the platform TRN (a setting), the customer's TRN when given, and credit notes for refunds. A PDF on the receipt page. This sets up the UAE e-invoicing rollout from 2027.
 3. **Coupons on subscriptions.** `couponCode` on subscribe, passed to Stripe as a discount, so seasonal campaigns (Ramadan, National Day, White Friday) work on plans.
