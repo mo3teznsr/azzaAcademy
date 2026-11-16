@@ -361,6 +361,9 @@ void main() {
         expect(find.byKey(const Key('method-bank')), findsNothing);
         expect(find.textContaining('AED 51.45'), findsWidgets);
 
+        // Yearly is chosen first; this learner picks monthly.
+        await tester.tap(find.byKey(const Key('plan-monthly')));
+        await tester.pump();
         await tester.tap(find.byKey(const Key('plan-start')));
         await settle(tester, 10);
         expect(repo.subscribed, [('rec', SubscriptionPlan.monthly, SubscribeMethod.appleIap)]);
@@ -405,6 +408,7 @@ void main() {
         );
         final picker = FakeReceiptPicker(const PickedFile(name: 'receipt.pdf', size: 1200, bytes: [1, 2, 3]));
         await _pumpApp(tester, _common(repo: repo, picker: picker));
+        await _tapKey(tester, 'plan-monthly'); // yearly is chosen first; this learner picks monthly
         await _tapKey(tester, 'method-bank');
         expect(find.text('Pay by bank transfer. Your access starts once we confirm it, usually within 1 working day.'), findsOneWidget);
 

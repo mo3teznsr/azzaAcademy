@@ -13,7 +13,7 @@ import type { sessionFeedbackInput, updateAgendaInput } from '@azza/shared';
 import { BusinessRuleError, ConflictError, ForbiddenError, NotFoundError } from '../../core/errors';
 import type { Clock, RealtimeBroadcaster, VideoProvider, VideoWebhookEvent } from '../../core/ports';
 import { addMinutes, formatInZone } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { ClassroomState } from './classroom-state';
 import { DemoReviewers, demoRoomName } from './demo-reviewers';
@@ -200,7 +200,7 @@ export class SessionService {
         title: `Session moved · ${s.title}`,
         body: `${course} ${s.batch.code}: now ${formatInZone(startsAt, s.batch.timezone)}`,
         data: { sessionId: id, startsAt: startsAt.toISOString() },
-        email: (r) => appEmails.sessionRescheduled(course, s.title, formatInZone(startsAt, r.timezone, r.locale), input.reason),
+        email: (r) => emailsIn(r.locale).sessionRescheduled(course, s.title, formatInZone(startsAt, r.timezone, r.locale), input.reason),
       });
     }
     return { requested: false as const, session: updated };
@@ -218,7 +218,7 @@ export class SessionService {
         title: `Session cancelled · ${s.title}`,
         body: `${course} ${s.batch.code} on ${formatInZone(s.startsAt, s.batch.timezone)}`,
         data: { sessionId: id },
-        email: (r) => appEmails.sessionCancelled(course, s.title, formatInZone(s.startsAt, r.timezone, r.locale), input.reason),
+        email: (r) => emailsIn(r.locale).sessionCancelled(course, s.title, formatInZone(s.startsAt, r.timezone, r.locale), input.reason),
       });
     }
     return updated;

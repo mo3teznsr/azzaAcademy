@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CreditCard, Landmark, Smartphone, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, CreditCard, Landmark, ShieldCheck } from 'lucide-react';
 import type { CheckoutInput, PaymentMethod } from '@azza/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,8 +23,10 @@ import { describeRule } from '@/lib/schedule';
 import { cn } from '@/lib/utils';
 import { BankTransferDetails } from './bank-details';
 import { useCategoryLabel } from '@/components/brand/category';
+import { WhatsAppButton } from '@/components/brand/whatsapp-button';
 
-type Choice = 'CARD' | 'WALLET' | 'BANK';
+/** Card covers Apple Pay and Google Pay too: Stripe's page offers them. */
+type Choice = 'CARD' | 'BANK';
 const methodOf = (c: Choice): PaymentMethod => (c === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE');
 
 export function CheckoutPage({ batchId }: { batchId: string }) {
@@ -36,36 +38,16 @@ export function CheckoutPage({ batchId }: { batchId: string }) {
   return <Checkout batch={batch.data} />;
 }
 
-function Stepper({ current }: { current: number }) {
-  const { t, f } = useI18n();
-  return (
-    <ol className="flex flex-wrap gap-2" aria-label="Checkout steps">
-      {t.checkout.steps.map((label, i) => (
-        <li
-          key={label}
-          aria-current={i + 1 === current ? 'step' : undefined}
-          className={cn(
-            'label-mono flex h-8 items-center gap-2 rounded-full px-3',
-            i + 1 < current && 'bg-secondary text-foreground',
-            i + 1 === current && 'bg-primary text-primary-foreground',
-            i + 1 > current && 'border border-border text-muted-foreground',
-          )}
-        >
-          {f.number(i + 1)} · {label}
-        </li>
-      ))}
-    </ol>
-  );
-}
-
 function Checkout({ batch }: { batch: BatchDetail }) {
-  const { t, f, fill, pick } = useI18n();
+  const { t, f, pick } = useI18n();
   const categoryLabel = useCategoryLabel();
   const money = useMoney();
   const router = useRouter();
   const [choice, setChoice] = useState<Choice>('CARD');
-  const [couponDraft, setCouponDraft] = useState('');
-  const [coupon, setCoupon] = useState<string | undefined>();
+  // A campaign link can carry the code: /checkout/<batch>?coupon=RAMADAN20 applies it at once.
+  const linked = useSearchParams().get('coupon')?.trim().toUpperCase() || undefined;
+  const [couponDraft, setCouponDraft] = useState(linked ?? '');
+  const [coupon, setCoupon] = useState<string | undefined>(linked);
   const [bankAccountId, setBankAccountId] = useState<string | undefined>();
   const [result, setResult] = useState<CheckoutResult | null>(null);
   const [redirecting, setRedirecting] = useState(false);
@@ -94,12 +76,10 @@ function Checkout({ batch }: { batch: BatchDetail }) {
 
   const total = quote.data?.totalFils;
   const title = pick(batch.course.titleEn, batch.course.titleAr).text;
-  const step = 3;
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <Stepper current={step} />
+      <div className="flex flex-wrap items-center justify-end gap-4">
         <CurrencySwitcher />
       </div>
       <div className="rounded-2xl bg-sun p-4 text-ink">
@@ -111,8 +91,7 @@ function Checkout({ batch }: { batch: BatchDetail }) {
       <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
         <section className="flex flex-col gap-6" aria-labelledby="pay-title">
           <div>
-            <span className="label-mono text-muted-foreground">{fill(t.checkout.stepOf, { n: f.number(3), label: t.checkout.steps[2] ?? '' })}</span>
-            <h1 id="pay-title" className="mt-2 font-display text-[clamp(44px,6vw,72px)] font-extrabold leading-[0.9]">
+            <h1 id="pay-title" className="font-display text-[clamp(44px,6vw,72px)] font-extrabold leading-[0.9]">
               {t.checkout.titleA} <span className="font-light">{t.checkout.titleB}</span> <bdi dir="ltr">{batch.code}.</bdi>
             </h1>
           </div>
@@ -124,7 +103,6 @@ function Checkout({ batch }: { batch: BatchDetail }) {
                 {(
                   [
                     { v: 'CARD', icon: CreditCard, title: t.checkout.card, sub: t.checkout.cardSub, disabled: false },
-                    { v: 'WALLET', icon: Smartphone, title: t.checkout.wallets, sub: t.checkout.walletsSub, disabled: false },
                     { v: 'BANK', icon: Landmark, title: t.checkout.bank, sub: t.checkout.bankSub, disabled: false },
                   ] as const
                 ).map((o) => (
@@ -180,6 +158,10 @@ function Checkout({ batch }: { batch: BatchDetail }) {
                   <ShieldCheck className="size-4 shrink-0" /> {t.checkout.secured}
                 </p>
               )}
+              <div className="flex flex-wrap items-center gap-3 text-[13px] text-muted-foreground">
+                <span>{t.checkout.questions}</span>
+                <WhatsAppButton course={title} batchCode={batch.code} size="sm" />
+              </div>
             </>
           )}
 
@@ -192,6 +174,12 @@ function Checkout({ batch }: { batch: BatchDetail }) {
               expiresAt={result.expiresAt}
               onUploaded={() => router.push(`/orders/${result.order.id}`)}
             />
+          )}
+          {result && !result.waitlisted && !isStripeResult(result) && (
+            <div className="flex flex-wrap items-center gap-3 text-[13px] text-muted-foreground">
+              <span>{t.checkout.transferHelp}</span>
+              <WhatsAppButton course={title} batchCode={batch.code} size="sm" />
+            </div>
           )}
         </section>
 
@@ -215,6 +203,9 @@ function Checkout({ batch }: { batch: BatchDetail }) {
             </div>
           </div>
           <Summary quote={quote.data} pending={quote.isPending} error={quote.error} />
+          <p className="flex items-start gap-2 rounded-2xl bg-secondary p-3 text-[13px]">
+            <BadgeCheck className="mt-0.5 size-4 shrink-0" /> <span><b>{t.checkout.guaranteeTitle}</b> {t.checkout.guaranteeBody}</span>
+          </p>
           {!result && (
             <form
               className="flex gap-2"

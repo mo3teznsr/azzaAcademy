@@ -20,6 +20,8 @@ export interface Notice {
   title: string;
   body: string;
   data?: Record<string, string>;
+  /** Arabic title and body, used for recipients whose locale is Arabic (in-app, realtime and push). */
+  ar?: { title: string; body: string };
   /** Per-recipient email body; omit (or return null) to skip email for this notice. */
   email?: (recipient: Recipient) => EmailContent | null;
 }
@@ -30,6 +32,11 @@ export interface Delivery {
   recipient: Recipient;
   notice: Notice;
   createdAt: Date;
+}
+
+/** The title and body in the recipient's language: Arabic when the notice has it and the recipient reads Arabic. */
+export function localizedText(notice: Notice, recipient: Pick<Recipient, 'locale'>): { title: string; body: string } {
+  return notice.ar && recipient.locale.startsWith('ar') ? notice.ar : { title: notice.title, body: notice.body };
 }
 
 export type ChannelName = 'in-app' | 'realtime' | 'email' | 'push';

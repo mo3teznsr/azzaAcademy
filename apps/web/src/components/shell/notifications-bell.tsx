@@ -116,7 +116,11 @@ function notificationHref(type: string, data: unknown, role: Role | null): strin
     case 'RECORDING_NOT_STARTED':
       return '/studio/recordings';
     case 'RECORDING_READY':
+    case 'SESSION_MISSED':
       return sessionId ? `/library/${sessionId}` : '/library';
+    case 'SESSION_LIVE':
+    case 'SESSION_STARTING':
+      return sessionId ? `/live/${sessionId}` : null;
     case 'INSTRUCTOR_APPLIED':
       return '/admin/instructors';
     case 'INSTRUCTOR_APPROVED':

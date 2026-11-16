@@ -4,7 +4,7 @@ import { filsToAed, formatMoney, YEARLY_REMINDER_DAYS, type Role, type Subscribe
 import { AppError, BusinessRuleError, ForbiddenError, NotFoundError } from '../../core/errors';
 import { addHours, formatInZone } from '../../core/time';
 import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction, Clock, PaymentGateway, PaymentWebhookEvent, WebhookInvoice, WebhookSubscription } from '../../core/ports';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notice, Notifier } from '../notifications/notification.types';
 import { appleCommissionFils } from '../payments/apple/apple-iap-policy';
 import { resolveBankAccount } from '../payments/checkout/bank-transfer-checkout';
@@ -285,7 +285,7 @@ export class SubscriptionService {
         ? `حوّل ${amount} بالمرجع ${payment.reference} قبل ${when}. يبدأ وصولك بعد تأكيدنا للتحويل، عادةً خلال يوم عمل واحد.`
         : `Transfer ${amount} with reference ${payment.reference} before ${when}. Your access starts once we confirm it, usually within 1 working day.`,
       data: { paymentId: payment.id, subscriptionId: row.id, reference: payment.reference },
-      email: (r) => appEmails.transferInstructions(r.name, amount, payment.reference, account.bankName, account.iban, formatInZone(expiresAt, r.timezone, r.locale)),
+      email: (r) => emailsIn(r.locale).transferInstructions(r.name, amount, payment.reference, account.bankName, account.iban, formatInZone(expiresAt, r.timezone, r.locale)),
     });
     return { plan, bankAccount: account, reference: payment.reference, amountFils: total, expiresAt, paymentId: payment.id };
   }
@@ -425,7 +425,7 @@ export class SubscriptionService {
         title: `New receipt needed · ${payment.reference}`,
         body: note,
         data: { paymentId: payment.id },
-        email: (r) => appEmails.newReceiptRequested(r.name, payment.reference, note, formatInZone(expiresAt, r.timezone, r.locale)),
+        email: (r) => emailsIn(r.locale).newReceiptRequested(r.name, payment.reference, note, formatInZone(expiresAt, r.timezone, r.locale)),
       });
       return this.transferView(reopened);
     }
@@ -444,7 +444,7 @@ export class SubscriptionService {
       title: `Transfer not verified · ${payment.reference}`,
       body: note,
       data: { paymentId: payment.id },
-      email: (r) => appEmails.transferRejected(r.name, payment.reference, note),
+      email: (r) => emailsIn(r.locale).transferRejected(r.name, payment.reference, note),
     });
     return this.transferView(rejected);
   }
@@ -832,7 +832,7 @@ export class SubscriptionService {
       : ar
         ? { title: `يتجدّد اشتراكك قريبًا · ${name}`, body: `يتجدّد اشتراكك السنوي في ${date}. يمكنك إدارته في أي وقت.`, label: 'إدارة اشتراكي' }
         : { title: `Your plan renews soon · ${name}`, body: `Your yearly plan renews on ${date}. You can manage it any time.`, label: 'Manage my plan' };
-    const email = appEmails.subscriptionRenewsSoon(user?.name ?? '', copy.title, copy.body, `${this.webUrl}/plans`, copy.label);
+    const email = emailsIn(user?.locale).subscriptionRenewsSoon(user?.name ?? '', copy.title, copy.body, `${this.webUrl}/plans`, copy.label);
     await this.notifier.notify([c.userId], {
       type: 'SUBSCRIPTION_RENEWS_SOON',
       title: copy.title,
@@ -1397,7 +1397,7 @@ export class SubscriptionService {
     const course = await this.repo.courseOf(row.courseId);
     const ar = user?.locale === 'ar';
     const learnUrl = `${this.webUrl}/plans`;
-    const email = appEmails.subscriptionPaymentFailed(user?.name ?? '', course?.titleEn ?? '', learnUrl);
+    const email = emailsIn(user?.locale).subscriptionPaymentFailed(user?.name ?? '', (user?.locale === 'ar' ? course?.titleAr : null) ?? course?.titleEn ?? '', learnUrl);
     await this.notifier.notify([row.userId], {
       type: 'SUBSCRIPTION_PAYMENT_FAILED',
       title: ar ? 'تعذّرت عملية الدفع' : "Your payment didn't go through",
@@ -1451,7 +1451,7 @@ export class SubscriptionService {
     const user = await this.repo.findUser(row.userId);
     const amount = formatMoney(filsToAed(amountFils), 'AED');
     const until = periodEnd.toISOString().slice(0, 10);
-    const email = appEmails.subscriptionReceipt(user?.name ?? '', course?.titleEn ?? '', amount, until, `${this.webUrl}/plans`);
+    const email = emailsIn(user?.locale).subscriptionReceipt(user?.name ?? '', (user?.locale === 'ar' ? course?.titleAr : null) ?? course?.titleEn ?? '', amount, until, `${this.webUrl}/plans`);
     const ar = user?.locale === 'ar';
     const name = (ar ? course?.titleAr : null) ?? course?.titleEn;
     const notice: Notice = {

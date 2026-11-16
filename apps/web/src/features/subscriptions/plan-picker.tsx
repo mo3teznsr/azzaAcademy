@@ -59,7 +59,8 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
   const { isSignedIn, isPending: authPending } = useAuth();
   const monthly = course.monthlyPriceFils;
   const yearly = course.yearlyPriceFils;
-  const [plan, setPlan] = useState<SubscriptionPlan>('MONTHLY');
+  // Yearly first when the course has a yearly price: it saves the learner money and is paid up front.
+  const [plan, setPlan] = useState<SubscriptionPlan>(yearly != null ? 'YEARLY' : 'MONTHLY');
   const [method, setMethod] = useState<Method>(renewing ? 'BANK' : 'CARD');
   const [transfer, setTransfer] = useState<SubscribeTransfer | null>(null);
   const [uploaded, setUploaded] = useState(false);

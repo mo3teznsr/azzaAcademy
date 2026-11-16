@@ -2,7 +2,7 @@ import { aedToFils, formatMoney, type TeacherBankDetailsInput } from '@azza/shar
 import { BusinessRuleError, ConflictError, NotFoundError } from '../../core/errors';
 import type { Clock } from '../../core/ports';
 import { addDays, isoDay, zonedToUtc } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { EarningsAccrual } from '../sessions/session.service';
 import type { EarningsCalculator } from './earnings-calculator';
@@ -413,7 +413,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
         title: `Payout sent · ${amount}`,
         body: `Transfer reference ${transferReference}`,
         data: { payoutId: p.id },
-        email: (r) => appEmails.payoutPaid(r.name, amount, transferReference),
+        email: (r) => emailsIn(r.locale).payoutPaid(r.name, amount, transferReference),
       });
     }
     return this.getRun(id);

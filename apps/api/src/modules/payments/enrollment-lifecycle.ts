@@ -1,7 +1,7 @@
 import { SOCKET_EVENTS, type EnrollmentStatus, type OrderUpdatedEvent } from '@azza/shared';
 import type { Clock, RealtimeBroadcaster } from '../../core/ports';
 import { formatInZone } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { EnrollmentStateMachine } from './enrollment-state';
 import type { EnrollmentRecord, OrderRecord, PaymentsRepository } from './payments.repository';
@@ -39,11 +39,11 @@ export class EnrollmentLifecycle {
         body: batch.firstSessionAt ? `First session ${formatInZone(batch.firstSessionAt, batch.timezone)}` : 'See your schedule',
         data: { batchId: batch.id, enrollmentId },
         email: (r) =>
-          appEmails.enrolled(
+          emailsIn(r.locale).enrolled(
             r.name,
             batch.courseTitle,
             batch.code,
-            batch.firstSessionAt ? formatInZone(batch.firstSessionAt, r.timezone, r.locale) : 'to be announced',
+            batch.firstSessionAt ? formatInZone(batch.firstSessionAt, r.timezone, r.locale) : (r.locale.startsWith('ar') ? 'يُعلن لاحقًا' : 'to be announced'),
             `${this.webUrl}/schedule`,
           ),
       });
@@ -70,7 +70,7 @@ export class EnrollmentLifecycle {
         title: `A seat opened · ${batch.courseTitle} ${batch.code}`,
         body: 'Complete checkout within 24 hours to keep it',
         data: { batchId },
-        email: (r) => appEmails.seatAvailable(r.name, batch.courseTitle, batch.code, `${this.webUrl}/checkout/${batchId}`),
+        email: (r) => emailsIn(r.locale).seatAvailable(r.name, batch.courseTitle, batch.code, `${this.webUrl}/checkout/${batchId}`),
       });
     }
     return promoted;
