@@ -90,12 +90,23 @@ export function attributionFrom(url: string, referrer: string): Attribution | nu
   return cleanAttribution(raw);
 }
 
-/** First touch wins: remembers where this visitor first came from, for 30 days, unless already remembered. */
+/**
+ * Pure: what to remember given the stored first touch and this visit. First touch wins, except that a referral code
+ * (`?ref=`) is added to a first touch that has none, so an invite still counts after an earlier ad visit.
+ */
+export function nextAttribution(stored: Attribution | null, found: Attribution | null): Attribution | null {
+  if (!found) return null;
+  if (!stored) return found;
+  if (found.ref && !stored.ref) return { ...stored, ref: found.ref };
+  return null;
+}
+
+/** Remembers where this visitor first came from (and any invite code), for 30 days. */
 export function captureAttribution() {
-  if (typeof document === 'undefined' || readAttribution()) return;
-  const found = attributionFrom(window.location.href, document.referrer);
-  if (!found) return;
-  document.cookie = `${ATTRIBUTION_COOKIE}=${encodeURIComponent(JSON.stringify(found))}; Max-Age=${THIRTY_DAYS}; Path=/; SameSite=Lax`;
+  if (typeof document === 'undefined') return;
+  const next = nextAttribution(readAttribution(), attributionFrom(window.location.href, document.referrer));
+  if (!next) return;
+  document.cookie = `${ATTRIBUTION_COOKIE}=${encodeURIComponent(JSON.stringify(next))}; Max-Age=${THIRTY_DAYS}; Path=/; SameSite=Lax`;
 }
 
 /** The remembered first touch, or null. */
