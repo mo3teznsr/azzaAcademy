@@ -189,6 +189,7 @@ model User {
   instructorApplications       InstructorApplication[] @relation("Applicant")
   lessonProgress               LessonProgress[]
   videoPositions               LessonVideoPosition[]
+  watchTimes                   LessonWatchTime[]
   subscriptions                Subscription[]
   reviewedSubscriptionPayments SubscriptionPayment[]   @relation("SubscriptionPaymentReviewer")
   savedCourses                 SavedCourse[]
@@ -347,6 +348,8 @@ model Course {
   reviews       CourseReview[]
   savedBy       SavedCourse[]
   subscriptions Subscription[]
+  watchTimes      LessonWatchTime[]
+  allAccessShares AllAccessShare[]
   quizzes       Quiz[]
   earnings      Earning[]
   certificates  Certificate[]
@@ -790,6 +793,7 @@ model Earning {
   note                  String?
   createdAt             DateTime             @default(now())
   referral              Referral?            @relation("ReferralBonus")
+  allAccessShare        AllAccessShare?
 
   @@unique([sessionId, teacherId, kind])
   @@unique([subscriptionPaymentId, kind])
@@ -972,6 +976,7 @@ model Lesson {
   updatedAt   DateTime              @updatedAt
   progress    LessonProgress[]
   positions   LessonVideoPosition[]
+  watchTimes  LessonWatchTime[]
 
   @@index([moduleId, order])
 }
@@ -1034,14 +1039,17 @@ model PlatformSettings {
   updatedAt          DateTime @updatedAt
 }
 
-/// A learner's plan on a recorded course. At most one live (INCOMPLETE/ACTIVE/PAST_DUE/CANCELLING) per user and course:
-/// the partial unique index "subscription_one_live_per_course" lives in the migration (Prisma can't express it).
+/// A learner's plan on a recorded course, or the all-access plan when `courseId` is null (every published recorded course).
+/// At most one live (INCOMPLETE/ACTIVE/PAST_DUE/CANCELLING) per user and course, and one live all-access plan per user:
+/// the partial unique indexes "subscription_one_live_per_course" and "subscription_one_live_all_access" live in the
+/// migrations (Prisma can't express them).
 model Subscription {
   id                         String               @id @default(cuid())
   userId                     String
   user                       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId                   String
-  course                     Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  /// Null = the all-access plan (`ALL_ACCESS_ID` in @azza/shared; the repository maps it both ways).
+  courseId                   String?
+  course                     Course?              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   plan                       SubscriptionPlan
   provider                   SubscriptionProvider
   status                     SubscriptionStatus
@@ -1105,10 +1113,60 @@ model SubscriptionPayment {
   updatedAt         DateTime                  @updatedAt
 
   earnings Earning[]
+  /// All-access plans only: when the period's teacher shares were worked out (once, after `periodEnd`).
+  allAccessAccruedAt DateTime?
+  allAccessShares    AllAccessShare[]
 
   @@index([subscriptionId])
   @@index([status])
   taxDocuments TaxDocument[]
+}
+
+/// The all-access plan's settings: a single row with id 'default'. Prices before VAT, synced to one Stripe Product.
+model AllAccessPlan {
+  id                   String   @id @default("default")
+  enabled              Boolean  @default(false)
+  monthlyPriceFils     Int?
+  yearlyPriceFils      Int?
+  stripeProductId      String?
+  stripeMonthlyPriceId String?
+  stripeYearlyPriceId  String?
+  updatedAt            DateTime @updatedAt
+}
+
+/// Seconds of a lesson's video a learner actually watched on a UTC day (from the player's position reports; recorded
+/// courses only). Splits an all-access period's teacher pool between the courses the subscriber watched.
+model LessonWatchTime {
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId String
+  lesson   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  day      DateTime @db.Date
+  seconds  Int      @default(0)
+
+  @@id([userId, lessonId, day])
+  @@index([userId, day])
+}
+
+/// One course's slice of an all-access period: the minutes the subscriber watched it and the teacher earning it made.
+model AllAccessShare {
+  id                    String              @id @default(cuid())
+  subscriptionPaymentId String
+  subscriptionPayment   SubscriptionPayment @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Restrict)
+  courseId              String
+  course                Course              @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  teacherId             String
+  watchedSec            Int
+  amountFils            Int
+  earningId             String              @unique
+  earning               Earning             @relation(fields: [earningId], references: [id], onDelete: Restrict)
+  /// What refunds of the payment have taken back from this share so far (cumulative, in fils).
+  reversedFils          Int                 @default(0)
+  createdAt             DateTime            @default(now())
+
+  @@unique([subscriptionPaymentId, courseId])
 }
 
 enum QuizStatus {

@@ -158,7 +158,7 @@ export class PrismaLessonRepository implements LessonRepository {
       this.db.subscription.findMany({ where: { userId, status: { in: ['ACTIVE', 'CANCELLING', 'PAST_DUE'] }, course: { type: 'RECORDED' } }, select: { courseId: true } }),
       this.db.course.findMany({ where: { type: 'RECORDED', modules: { some: { lessons: { some: { progress: { some: { userId } } } } } } }, select: { id: true } }),
     ]);
-    return [...new Set([...enrolled.map((r) => r.batch.courseId), ...plans.map((p) => p.courseId), ...progress.map((c) => c.id)])];
+    return [...new Set([...enrolled.map((r) => r.batch.courseId), ...plans.flatMap((p) => (p.courseId ? [p.courseId] : [])), ...progress.map((c) => c.id)])];
   }
 
   learnerSubscription(courseId: string, userId: string) {

@@ -1,5 +1,6 @@
 import type { CourseStatus, CourseType, SubscriptionPaymentStatus, SubscriptionPlan, SubscriptionProvider, SubscriptionStatus } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
+import { allAccessCourse, ALL_ACCESS_TITLE, courseKey, dbCourseId } from '../all-access/all-access-course';
 
 /** What the service needs to sell a plan of a recorded course. */
 export interface SubscribableCourse {
@@ -265,6 +266,14 @@ const courseSelect = {
   appleYearlyProductId: true,
 } as const;
 
+/** A row as stored (`courseId` null = all-access) → as the services see it (`ALL_ACCESS_ID`). */
+function toRow<T extends { courseId: string | null }>(r: T): Omit<T, 'courseId'> & { courseId: string } {
+  return { ...r, courseId: courseKey(r.courseId) };
+}
+const toRowOrNull = <T extends { courseId: string | null }>(r: T | null) => (r ? toRow(r) : null);
+type CourseSummary = { id: string; slug: string; titleEn: string; titleAr: string | null; coverImageUrl: string | null };
+const allAccessSummary = (): CourseSummary => ({ id: courseKey(null), slug: courseKey(null), titleEn: ALL_ACCESS_TITLE.en, titleAr: ALL_ACCESS_TITLE.ar, coverImageUrl: null });
+
 const transferSelect = {
   id: true, subscriptionId: true, userId: true, reference: true, plan: true, status: true, periodStart: true, periodEnd: true,
   subtotalFils: true, vatFils: true, totalFils: true, refundedFils: true, paidAt: true, bankAccountId: true, receiptUrl: true,
@@ -274,11 +283,17 @@ const transferSelect = {
 export class PrismaSubscriptionRepository implements SubscriptionRepository, SubscriptionTransferRepository, SubscriptionAdminRepository {
   constructor(private readonly db: Db) {}
 
+  private async allAccess() {
+    return allAccessCourse(await this.db.allAccessPlan.findUnique({ where: { id: 'default' } }));
+  }
+
   findCourse(idOrSlug: string) {
+    if (dbCourseId(idOrSlug) === null) return this.allAccess();
     return this.db.course.findFirst({ where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] }, select: courseSelect });
   }
 
   courseOf(courseId: string) {
+    if (dbCourseId(courseId) === null) return this.allAccess();
     return this.db.course.findUnique({ where: { id: courseId }, select: courseSelect });
   }
 
@@ -286,35 +301,37 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository, Sub
     return this.db.user.findUnique({ where: { id }, select: { id: true, name: true, email: true, locale: true, timezone: true } });
   }
 
-  forUserCourse(userId: string, courseId: string) {
-    return this.db.subscription.findMany({ where: { userId, courseId }, select: subscriptionSelect });
+  async forUserCourse(userId: string, courseId: string) {
+    return (await this.db.subscription.findMany({ where: { userId, courseId: dbCourseId(courseId) }, select: subscriptionSelect })).map(toRow);
   }
 
-  create(data: NewSubscription) {
-    return this.db.subscription.create({ data, select: subscriptionSelect });
+  async create(data: NewSubscription) {
+    return toRow(await this.db.subscription.create({ data: { ...data, courseId: dbCourseId(data.courseId) }, select: subscriptionSelect }));
   }
 
-  findById(id: string) {
-    return this.db.subscription.findUnique({ where: { id }, select: subscriptionSelect });
+  async findById(id: string) {
+    return toRowOrNull(await this.db.subscription.findUnique({ where: { id }, select: subscriptionSelect }));
   }
 
-  findByProviderSubscriptionId(id: string) {
-    return this.db.subscription.findUnique({ where: { providerSubscriptionId: id }, select: subscriptionSelect });
+  async findByProviderSubscriptionId(id: string) {
+    return toRowOrNull(await this.db.subscription.findUnique({ where: { providerSubscriptionId: id }, select: subscriptionSelect }));
   }
 
-  update(id: string, patch: SubscriptionPatch) {
-    return this.db.subscription.update({ where: { id }, data: patch, select: subscriptionSelect });
+  async update(id: string, patch: SubscriptionPatch) {
+    return toRow(await this.db.subscription.update({ where: { id }, data: patch, select: subscriptionSelect }));
   }
 
-  listForUser(userId: string) {
-    return this.db.subscription.findMany({
+  async listForUser(userId: string) {
+    const rows = await this.db.subscription.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       select: { ...subscriptionSelect, course: { select: { id: true, slug: true, titleEn: true, titleAr: true, coverImageUrl: true } } },
     });
+    return rows.map((r) => ({ ...toRow(r), course: r.course ?? allAccessSummary() }));
   }
 
   async nextLessonId(courseId: string, userId: string) {
+    if (dbCourseId(courseId) === null) return null;
     const modules = await this.db.courseModule.findMany({
       where: { courseId },
       orderBy: { order: 'asc' },
@@ -344,12 +361,12 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository, Sub
     }
   }
 
-  findByAppleToken(token: string) {
-    return this.db.subscription.findUnique({ where: { appleAppAccountToken: token }, select: subscriptionSelect });
+  async findByAppleToken(token: string) {
+    return toRowOrNull(await this.db.subscription.findUnique({ where: { appleAppAccountToken: token }, select: subscriptionSelect }));
   }
 
-  findByAppleOriginalTransactionId(id: string) {
-    return this.db.subscription.findUnique({ where: { appleOriginalTransactionId: id }, select: subscriptionSelect });
+  async findByAppleOriginalTransactionId(id: string) {
+    return toRowOrNull(await this.db.subscription.findUnique({ where: { appleOriginalTransactionId: id }, select: subscriptionSelect }));
   }
 
   paymentByProviderId(providerPaymentId: string) {
@@ -415,16 +432,17 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository, Sub
     });
   }
 
-  endedTransferSubscriptions(now: Date) {
-    return this.db.subscription.findMany({
+  async endedTransferSubscriptions(now: Date) {
+    const rows = await this.db.subscription.findMany({
       where: { provider: 'BANK_TRANSFER', status: { in: ['ACTIVE', 'CANCELLING', 'PAST_DUE'] }, currentPeriodEnd: { lte: now } },
       select: subscriptionSelect,
     });
+    return rows.map(toRow);
   }
   // ───────── admin and reminders ─────────
 
   async listForAdmin(f: { courseId?: string; status?: SubscriptionStatus; provider?: SubscriptionProvider; skip: number; take: number }) {
-    const where = { ...(f.courseId && { courseId: f.courseId }), ...(f.status && { status: f.status }), ...(f.provider && { provider: f.provider }) };
+    const where = { ...(f.courseId && { courseId: dbCourseId(f.courseId) }), ...(f.status && { status: f.status }), ...(f.provider && { provider: f.provider }) };
     const [rows, total] = await this.db.$transaction([
       this.db.subscription.findMany({
         where,
@@ -444,7 +462,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository, Sub
       items: rows.map((r) => ({
         id: r.id,
         user: r.user,
-        course: r.course,
+        course: r.course ?? allAccessSummary(),
         plan: r.plan,
         provider: r.provider,
         status: r.status,
@@ -474,11 +492,12 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository, Sub
     return { createdById: course.createdById, active: n('ACTIVE'), cancelling: n('CANCELLING'), pastDue: n('PAST_DUE') };
   }
 
-  endingBetween(after: Date, until: Date) {
-    return this.db.subscription.findMany({
+  async endingBetween(after: Date, until: Date) {
+    const rows = await this.db.subscription.findMany({
       where: { status: 'ACTIVE', currentPeriodEnd: { gt: after, lte: until } },
       select: { id: true, userId: true, courseId: true, plan: true, provider: true, currentPeriodEnd: true, reminderSentForPeriodEnd: true, reminderEndDaySentFor: true },
-    }) as Promise<ReminderCandidate[]>;
+    });
+    return rows.map(toRow) as ReminderCandidate[];
   }
 
   async releaseReminder(id: string, kind: 'SOON' | 'END_DAY', periodEnd: Date, previous: Date | null) {

@@ -10,3 +10,4 @@ export * from './phone';
 export * from './attribution';
 export * from './referrals';
 export * from './tabby';
+export * from './all-access';
