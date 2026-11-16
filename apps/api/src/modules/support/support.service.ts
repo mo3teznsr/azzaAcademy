@@ -100,6 +100,7 @@ export class SupportService {
         type: 'SUPPORT_TICKET',
         title: 'New support ticket',
         body: `${ticket.user.name}: ${ticket.subject}`,
+        ar: { title: 'تذكرة دعم جديدة', body: `${ticket.user.name}: ${ticket.subject}` },
         data: { ticketId: ticket.id },
         email: (r) => communicationEmails.supportTicket(ticket.user.name, ticket.subject, input.body, url, r.locale),
       },
@@ -148,6 +149,7 @@ export class SupportService {
         type: 'SUPPORT_REPLY',
         title: 'The Azza team replied',
         body: preview,
+        ar: { title: 'ردّ فريق عازة', body: preview },
         data: { ticketId: ticket.id },
         email: (r) => communicationEmails.supportReply(r.name, ticket.subject, body, url, r.locale),
       });
@@ -159,6 +161,7 @@ export class SupportService {
           type: 'SUPPORT_REPLY',
           title: `New reply · ${ticket.subject}`,
           body: `${ticket.user.name}: ${preview}`,
+          ar: { title: `ردّ جديد · ${ticket.subject}`, body: `${ticket.user.name}: ${preview}` },
           data: { ticketId: ticket.id },
           email: (r) => communicationEmails.supportUserReply(ticket.user.name, ticket.subject, body, url, r.locale),
         },

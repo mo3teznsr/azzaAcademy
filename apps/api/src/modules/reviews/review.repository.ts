@@ -8,7 +8,7 @@ export class PrismaReviewRepository implements ReviewRepository {
   constructor(private readonly db: Db) {}
 
   courseExists(courseId: string) {
-    return this.db.course.findFirst({ where: { OR: [{ id: courseId }, { slug: courseId }] }, select: { id: true, titleEn: true } });
+    return this.db.course.findFirst({ where: { OR: [{ id: courseId }, { slug: courseId }] }, select: { id: true, titleEn: true, titleAr: true } });
   }
 
   async list(courseId: string, o: { includeHidden: boolean; skip: number; take: number }) {

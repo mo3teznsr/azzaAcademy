@@ -19,7 +19,7 @@ export interface ReviewRecord {
 }
 
 export interface ReviewRepository {
-  courseExists(courseId: string): Promise<{ id: string; titleEn: string } | null>;
+  courseExists(courseId: string): Promise<{ id: string; titleEn: string; titleAr?: string | null } | null>;
   list(courseId: string, opts: { includeHidden: boolean; skip: number; take: number }): Promise<{ items: ReviewRecord[]; total: number }>;
   distribution(courseId: string): Promise<Record<1 | 2 | 3 | 4 | 5, number>>;
   find(id: string): Promise<ReviewRecord | null>;
@@ -84,6 +84,7 @@ export class ReviewService {
           type: 'COURSE_REVIEWED',
           title: `New ${input.rating}★ review`,
           body: `${course.titleEn}${input.body ? `: ${input.body.slice(0, 120)}` : ''}`,
+          ar: { title: `تقييم جديد ${input.rating}★`, body: `${course.titleAr ?? course.titleEn}${input.body ? `: ${input.body.slice(0, 120)}` : ''}` },
           data: { courseId, reviewId: review.id },
         });
       }
@@ -110,6 +111,7 @@ export class ReviewService {
       type: 'COURSE_REVIEW_REPLIED',
       title: 'Your review got a reply',
       body: reply.slice(0, 140),
+      ar: { title: 'وصلك ردّ على تقييمك', body: reply.slice(0, 140) },
       data: { courseId: review.courseId, reviewId: id },
     });
     return updated;

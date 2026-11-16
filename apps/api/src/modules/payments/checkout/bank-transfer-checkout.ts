@@ -42,6 +42,10 @@ export class BankTransferCheckout implements CheckoutStrategy {
           type: 'TRANSFER_INSTRUCTIONS',
           title: `Seat held · ${ctx.batch.courseTitle} ${ctx.batch.code}`,
           body: `Transfer ${amount} with reference ${order.reference} before ${formatInZone(expiresAt, ctx.user.timezone)}`,
+          ar: {
+            title: `حجزنا مقعدك · ${ctx.batch.courseTitleAr ?? ctx.batch.courseTitle} ${ctx.batch.code}`,
+            body: `حوّل ${amount} بالمرجع ${order.reference} قبل ${formatInZone(expiresAt, ctx.user.timezone, 'ar')}`,
+          },
           data: { orderId: order.id, reference: order.reference },
           email: (r) =>
             emailsIn(r.locale).transferInstructions(r.name, amount, order.reference, account.bankName, account.iban, formatInZone(expiresAt, r.timezone, r.locale)),

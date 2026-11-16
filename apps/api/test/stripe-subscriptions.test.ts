@@ -484,8 +484,8 @@ describe('invoice.paid', () => {
     repo.subs[0]!.userId = 'mia';
     await service.handleStripeEvent(invoiceEvent('invoice.paid'));
     const receipt = notifier.sent.find((n) => n.notice.type === 'SUBSCRIPTION_RECEIPT')!.notice;
-    expect(receipt.title).toBe('إيصال · تصميم الشعارات');
-    expect(receipt.body).toContain('استلمنا');
+    expect(receipt.ar?.title).toBe('إيصال · تصميم الشعارات');
+    expect(receipt.ar?.body).toContain('استلمنا');
   });
 
   test('a payout problem never breaks the webhook', async () => {
@@ -577,7 +577,7 @@ describe('invoice.failed', () => {
     expect(notifier.sent.at(-1)?.notice.body).toBe("Your last payment didn't go through. Update your card to keep learning.");
     repo.subs[0]!.userId = 'mia';
     await service.handleStripeEvent(invoiceEvent('invoice.failed', { id: 'in_ar' }));
-    expect(notifier.sent.at(-1)?.notice.body).toBe('لم تتم آخر عملية دفع. حدّث بطاقتك لتواصل التعلّم.');
+    expect(notifier.sent.at(-1)?.notice.ar?.body).toBe('لم تتم آخر عملية دفع. حدّث بطاقتك لتواصل التعلّم.');
   });
 });
 

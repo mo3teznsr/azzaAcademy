@@ -185,7 +185,7 @@ describe('remindRenewals', () => {
     const apple = card(repo, { provider: 'APPLE', userId: 'noor' });
     expect(await service.remindRenewals()).toEqual({ reminders: 2 });
     expect(repo.reminders.map((r) => r.id).sort()).toEqual([a.id, apple.id].sort());
-    expect(notifier.sent.find((s) => s.userIds[0] === 'noor')!.notice.title).toContain('يتجدّد'); // the learner's language
+    expect(notifier.sent.find((s) => s.userIds[0] === 'noor')!.notice.ar?.title).toContain('يتجدّد'); // the learner's language
     await repo.update(a.id, { currentPeriodEnd: inDays(6.2) }); // renewed and moved on
     expect(await service.remindRenewals()).toEqual({ reminders: 1 });
   });

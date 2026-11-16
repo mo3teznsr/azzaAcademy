@@ -37,6 +37,10 @@ export class EnrollmentLifecycle {
         type: 'ENROLLED',
         title: `You’re enrolled · ${batch.courseTitle} ${batch.code}`,
         body: batch.firstSessionAt ? `First session ${formatInZone(batch.firstSessionAt, batch.timezone)}` : 'See your schedule',
+        ar: {
+          title: `تم تسجيلك · ${batch.courseTitleAr ?? batch.courseTitle} ${batch.code}`,
+          body: batch.firstSessionAt ? `الحصة الأولى ${formatInZone(batch.firstSessionAt, batch.timezone, 'ar')}` : 'اطّلع على جدولك',
+        },
         data: { batchId: batch.id, enrollmentId },
         email: (r) =>
           emailsIn(r.locale).enrolled(
@@ -69,6 +73,7 @@ export class EnrollmentLifecycle {
         type: 'WAITLIST_SEAT_OPEN',
         title: `A seat opened · ${batch.courseTitle} ${batch.code}`,
         body: 'Complete checkout within 24 hours to keep it',
+        ar: { title: `توفّر مقعد · ${batch.courseTitleAr ?? batch.courseTitle} ${batch.code}`, body: 'أكمل الدفع خلال 24 ساعة لتحتفظ به' },
         data: { batchId },
         email: (r) => emailsIn(r.locale).seatAvailable(r.name, batch.courseTitle, batch.code, `${this.webUrl}/checkout/${batchId}`),
       });

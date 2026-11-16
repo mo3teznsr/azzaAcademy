@@ -51,6 +51,7 @@ export class FinanceAdminService {
           type: 'TRANSFER_AMOUNT_MISMATCH',
           title: `Transfer amount differs · ${order.reference}`,
           body: `Received ${aed(receivedFils)}, expected ${aed(order.totalFils)}`,
+          ar: { title: `مبلغ التحويل مختلف · ${order.reference}`, body: `وصلنا ${aed(receivedFils)}، والمطلوب ${aed(order.totalFils)}` },
           data: { orderId: order.id },
           email: (r) => emailsIn(r.locale).amountMismatch(r.name, order.reference, aed(order.totalFils), aed(receivedFils)),
         });
@@ -85,6 +86,7 @@ export class FinanceAdminService {
         type: 'TRANSFER_REJECTED',
         title: `Transfer not verified · ${order.reference}`,
         body: input.reason,
+        ar: { title: `لم نتمكن من تأكيد التحويل · ${order.reference}`, body: input.reason },
         data: { orderId: order.id },
         email: (r) => emailsIn(r.locale).transferRejected(r.name, order.reference, input.reason),
       });
@@ -106,6 +108,7 @@ export class FinanceAdminService {
       type: 'TRANSFER_NEW_RECEIPT',
       title: `New receipt needed · ${order.reference}`,
       body: input.reason,
+      ar: { title: `نحتاج إيصالًا جديدًا · ${order.reference}`, body: input.reason },
       data: { orderId: order.id },
       email: (r) => emailsIn(r.locale).newReceiptRequested(r.name, order.reference, input.reason, formatInZone(expiresAt, r.timezone, r.locale)),
     });
@@ -177,6 +180,7 @@ export class FinanceAdminService {
           type: 'PAYMENT_DISPUTED',
           title: `Payment disputed · ${order.reference}`,
           body: `${aed(amountFils)} disputed with the card issuer. Respond in the Stripe dashboard before the deadline.`,
+          ar: { title: `اعتراض على دفعة · ${order.reference}`, body: `اعترض حامل البطاقة على ${aed(amountFils)} لدى البنك المُصدر. ردّ من لوحة Stripe قبل الموعد النهائي.` },
           data: { orderId: order.id, reference: order.reference },
         },
         { channels: ['in-app', 'realtime', 'email'] },
@@ -219,6 +223,7 @@ export class FinanceAdminService {
       type: 'ORDER_REFUNDED',
       title: `Refund issued · ${order.reference}`,
       body: `${aed(amountFils)} — ${reason}`,
+      ar: { title: `تم استرداد المبلغ · ${order.reference}`, body: `${aed(amountFils)} — ${reason}` },
       data: { orderId: order.id },
       email: (r) => emailsIn(r.locale).refunded(r.name, aed(amountFils), order.reference),
     });

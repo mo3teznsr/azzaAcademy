@@ -14,6 +14,8 @@ export interface SaleBatch {
   teacherId: string;
   courseId: string;
   courseTitle: string;
+  /** Arabic course title, falling back to English, for Arabic notices. */
+  courseTitleAr?: string;
   firstSessionAt: Date | null;
 }
 
@@ -222,13 +224,13 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
         priceFils: true,
         timezone: true,
         teacherId: true,
-        course: { select: { id: true, titleEn: true } },
+        course: { select: { id: true, titleEn: true, titleAr: true } },
         sessions: { where: { status: { not: 'CANCELLED' } }, orderBy: { startsAt: 'asc' }, take: 1, select: { startsAt: true } },
       },
     });
     if (!b) return null;
     const { course, sessions, ...rest } = b;
-    return { ...rest, courseId: course.id, courseTitle: course.titleEn, firstSessionAt: sessions[0]?.startsAt ?? null };
+    return { ...rest, courseId: course.id, courseTitle: course.titleEn, courseTitleAr: course.titleAr ?? course.titleEn, firstSessionAt: sessions[0]?.startsAt ?? null };
   }
 
   heldSeats(batchId: string, excludeUserId?: string) {

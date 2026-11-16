@@ -53,6 +53,7 @@ export class InstructorApplicationService {
       type: 'INSTRUCTOR_APPLIED',
       title: 'New instructor application',
       body: `${app.user.name} — ${app.headline}`,
+      ar: { title: 'طلب جديد للتدريس', body: `${app.user.name} — ${app.headline}` },
       data: { applicationId: app.id },
     });
     return app;
@@ -68,8 +69,20 @@ export class InstructorApplicationService {
     if (app.status !== 'PENDING') throw new BusinessRuleError('This application was already decided', 'APPLICATION_DECIDED');
     const decided = await this.repo.decide(id, { approve: decision.approve, note: decision.note ?? null, adminId: admin.id, at: this.now() });
     await this.notifier.notify([app.userId], decision.approve
-      ? { type: 'INSTRUCTOR_APPROVED', title: "You're an instructor on Azza", body: 'Sign in again if needed, then propose your first course from the studio.', data: { applicationId: id } }
-      : { type: 'INSTRUCTOR_DECLINED', title: 'About your instructor application', body: decision.note ?? '', data: { applicationId: id } });
+      ? {
+          type: 'INSTRUCTOR_APPROVED',
+          title: "You're an instructor on Azza",
+          body: 'Sign in again if needed, then propose your first course from the studio.',
+          ar: { title: 'أصبحت مدرّسًا في عازة', body: 'سجّل الدخول من جديد إن لزم، ثم اقترح دورتك الأولى من الاستوديو.' },
+          data: { applicationId: id },
+        }
+      : {
+          type: 'INSTRUCTOR_DECLINED',
+          title: 'About your instructor application',
+          body: decision.note ?? '',
+          ar: { title: 'بخصوص طلبك للتدريس', body: decision.note ?? '' },
+          data: { applicationId: id },
+        });
     return decided;
   }
 }

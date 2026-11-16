@@ -298,6 +298,7 @@ export class CourseService {
       type: 'COURSE_SUBMITTED',
       title: 'Course waiting for review',
       body: `${course.titleEn} was submitted by a teacher`,
+      ar: { title: 'دورة بانتظار المراجعة', body: `أرسل مدرّس دورة ${course.titleAr ?? course.titleEn} للمراجعة` },
       data: { courseId: id },
     });
     return present(updated, actor);
@@ -318,6 +319,9 @@ export class CourseService {
         type: decision.approve ? 'COURSE_APPROVED' : 'COURSE_CHANGES_REQUESTED',
         title: decision.approve ? 'Your course is live' : 'Your course needs changes',
         body: decision.approve ? `${course.titleEn} is now published` : `${course.titleEn}: ${decision.note}`,
+        ar: decision.approve
+          ? { title: 'دورتك منشورة الآن', body: `نُشرت دورة ${course.titleAr ?? course.titleEn}` }
+          : { title: 'دورتك تحتاج إلى تعديلات', body: `${course.titleAr ?? course.titleEn}: ${decision.note}` },
         data: { courseId: id },
       });
     }

@@ -168,6 +168,7 @@ export class CheckoutService {
       type: 'WAITLISTED',
       title: `You’re on the waitlist · ${batch.courseTitle} ${batch.code}`,
       body: 'We’ll let you know as soon as a seat opens',
+      ar: { title: `أنت على قائمة الانتظار · ${batch.courseTitleAr ?? batch.courseTitle} ${batch.code}`, body: 'سنخبرك فور توفّر مقعد' },
       data: { batchId: batch.id },
       email: (r) => emailsIn(r.locale).waitlisted(r.name, batch.courseTitle, batch.code),
     });
@@ -211,6 +212,7 @@ export class CheckoutService {
         type: 'TRANSFER_TO_VERIFY',
         title: `Transfer to verify · ${order.reference}`,
         body: `${(order.totalFils / 100).toFixed(2)} AED receipt uploaded`,
+        ar: { title: `تحويل بانتظار التحقق · ${order.reference}`, body: `رُفع إيصال بمبلغ ${(order.totalFils / 100).toFixed(2)} AED` },
         data: { orderId: order.id, reference: order.reference },
       },
       { channels: ['in-app', 'realtime'] },
