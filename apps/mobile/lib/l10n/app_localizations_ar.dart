@@ -6793,6 +6793,74 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lessonVideoSpeed => 'سرعة التشغيل';
 
   @override
+  String get lessonVideoDataSaver => 'توفير البيانات';
+
+  @override
+  String get lessonVideoDataSaverHint =>
+      'تُشغَّل فيديوهات الدروس بأقل جودة لاستهلاك بيانات أقل. يُحفظ اختيارك على هذا الهاتف.';
+
+  @override
+  String get downloadsTitle => 'التنزيلات';
+
+  @override
+  String get downloadLesson => 'تنزيل للمشاهدة دون اتصال';
+
+  @override
+  String get downloadingLesson => 'جارٍ التنزيل…';
+
+  @override
+  String get downloadCancel => 'إلغاء التنزيل';
+
+  @override
+  String get downloadedLesson => 'محفوظ للمشاهدة دون اتصال';
+
+  @override
+  String get downloadDelete => 'حذف التنزيل';
+
+  @override
+  String get downloadNeedsWifi =>
+      'اتصل بشبكة Wi-Fi للتنزيل، أو اسمح باستخدام بيانات الجوال من صفحة التنزيلات.';
+
+  @override
+  String get downloadOffline => 'أنت غير متصل. اتصل بالإنترنت للتنزيل.';
+
+  @override
+  String get downloadStorageFull =>
+      'لا توجد مساحة كافية للتنزيلات. احذف بعضها أولًا.';
+
+  @override
+  String get downloadFailed => 'لم يكتمل التنزيل. حاول مرة أخرى.';
+
+  @override
+  String get downloadsEmpty => 'لا توجد تنزيلات بعد';
+
+  @override
+  String get downloadsEmptyBody => 'احفظ فيديوهات الدروس لتشاهدها دون اتصال.';
+
+  @override
+  String get downloadsWifiOnly => 'التنزيل عبر Wi-Fi فقط';
+
+  @override
+  String get downloadsWifiOnlyHint => 'يوفّر بيانات الجوال.';
+
+  @override
+  String downloadsStorage(String used, String total) {
+    return '$used من $total مستخدمة';
+  }
+
+  @override
+  String downloadPlaysUntil(String date) {
+    return 'يُشغَّل دون اتصال حتى $date';
+  }
+
+  @override
+  String get downloadExpired => 'اتصل بالإنترنت لمتابعة المشاهدة';
+
+  @override
+  String get downloadsRemoved =>
+      'حُذفت بعض التنزيلات لانتهاء وصولك إلى الدروس.';
+
+  @override
   String get errWatchMore =>
       'شاهد معظم الفيديو قبل أن تعلّم هذا الدرس مكتملًا.';
 

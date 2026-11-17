@@ -57,6 +57,7 @@ import '../features/home/presentation/student_home_screen.dart';
 import '../features/instructors/presentation/instructors_screen.dart';
 import '../features/instructors/presentation/teach_screen.dart';
 import '../features/learn/presentation/assignments_screen.dart';
+import '../features/learn/presentation/downloads_screen.dart';
 import '../features/learn/presentation/library_screen.dart';
 import '../features/learn/presentation/course_lessons_screen.dart';
 import '../features/learn/presentation/lesson_screen.dart';
@@ -382,6 +383,9 @@ List<RouteBase> buildRoutes() => [
       _route('/sessions/:id/reschedule', _reschedule),
       _route('/sessions/:id/attendance', _attendance),
       _route(Routes.assignments, _assignments),
+      _route(Routes.downloads, (_) => const DownloadsScreen(), routes: [
+        _route(':lessonId', (s) => OfflineLessonScreen(lessonId: s.pathParameters['lessonId']!)),
+      ]),
       _route(Routes.notifications, (_) => const NotificationsScreen()),
       _route(Routes.messages, (_) => const MessagesInboxScreen(), routes: [
         _route(':id', _chat),

@@ -24,7 +24,33 @@ export class LessonService {
     private readonly clock: Clock = { now: () => new Date() },
     /** Told after a lesson is completed (the certificate check). Failures are logged, never thrown. */
     private readonly onCourseProgress?: (userId: string, courseId: string) => Promise<unknown>,
+    /** Told after a lesson's `videoUrl` is set or changed (adaptive streaming starts over). Failures are logged, never thrown. */
+    private readonly onVideoChanged?: (lessonId: string, videoUrl: string | null) => Promise<unknown>,
   ) {}
+
+  /**
+   * The read rule of `GET /lessons/:id`, for streaming and downloads: throws the same 403 / `PLAN_REQUIRED` / 404, else
+   * returns when the viewer's access ends (`accessUntil`, the recorded plan's period end; null = no known end: staff, live
+   * courses, or a plan without an end date).
+   */
+  async readAccess(lessonId: string, viewer: Actor): Promise<{ lessonId: string; courseId: string; videoUrl: string | null; accessUntil: Date | null }> {
+    const { lesson, course } = await this.lessonOf(lessonId);
+    await this.assertCanRead(course, viewer);
+    let accessUntil: Date | null = null;
+    if (course.type === 'RECORDED' && viewer.role !== 'ADMIN' && course.createdById !== viewer.id) {
+      accessUntil = (await this.repo.recordedSubscription(course.id, viewer.id))?.currentPeriodEnd ?? null;
+    }
+    return { lessonId, courseId: course.id, videoUrl: lesson.videoUrl, accessUntil };
+  }
+
+  private async videoChanged(lessonId: string, videoUrl: string | null) {
+    if (!this.onVideoChanged) return;
+    try {
+      await this.onVideoChanged(lessonId, videoUrl);
+    } catch (err) {
+      console.error('[streaming] video change hook failed', err);
+    }
+  }
 
   async list(courseIdOrSlug: string, viewer: Actor) {
     const course = await this.course(courseIdOrSlug);
@@ -189,6 +215,7 @@ export class LessonService {
     const siblings = await this.repo.lessonsOfModules([moduleId]);
     const { order, videoUrl, ...data } = input;
     const lesson = await this.repo.create(moduleId, { ...data, videoUrl: videoUrl ?? null, order: order ?? siblings.length });
+    if (lesson.videoUrl) await this.videoChanged(lesson.id, lesson.videoUrl);
     if (order !== undefined && order < siblings.length) {
       const ids = siblings.map((l) => l.id);
       ids.splice(order, 0, lesson.id);
@@ -200,9 +227,11 @@ export class LessonService {
 
   async update(courseId: string, moduleId: string, lessonId: string, input: UpdateLessonInput, actor: Actor) {
     await this.editableModule(courseId, moduleId, actor);
-    await this.lessonIn(moduleId, lessonId);
+    const before = await this.lessonIn(moduleId, lessonId);
     const { order: _order, ...data } = input; // position changes go through `reorder`
-    return this.repo.update(lessonId, data);
+    const updated = await this.repo.update(lessonId, data);
+    if (data.videoUrl !== undefined && (data.videoUrl ?? null) !== before.videoUrl) await this.videoChanged(lessonId, data.videoUrl ?? null);
+    return updated;
   }
 
   async remove(courseId: string, moduleId: string, lessonId: string, actor: Actor) {

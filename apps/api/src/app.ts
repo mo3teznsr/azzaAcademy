@@ -15,6 +15,7 @@ import { batchRoutes } from './modules/batches/batch.routes';
 import { certificateRoutes } from './modules/certificates/certificate.routes';
 import { contentRoutes } from './modules/content/content.routes';
 import { lessonRoutes } from './modules/lessons/lesson.routes';
+import { lessonStreamingRoutes } from './modules/lessons/lesson-streaming.routes';
 import { quizRoutes } from './modules/quizzes/quiz.routes';
 import { adminCourseRoutes, courseRoutes } from './modules/courses/course.routes';
 import { adminCategoryImageRoutes, categoryRoutes } from './modules/categories/category.routes';
@@ -82,6 +83,7 @@ export function createApp(container: Container) {
       sessions: services.sessions,
       appleIap: services.appleIap,
       tabby: services.tabby,
+      lessonStreaming: services.lessonStreaming,
     }),
   );
   // Public, token-signed ICS feed (calendar apps send no cookies).
@@ -151,8 +153,9 @@ export function createApp(container: Container) {
     .route('/', currencyRoutes(services.currencies))
     .route('/', paymentRoutes(services))
     .route('/', contentRoutes(services.content))
-    .route('/', lessonRoutes(services.lessons))
+    .route('/', lessonRoutes(services.lessons, services.lessonStreaming))
     .route('/', lessonQaRoutes(services.lessonQa))
+    .route('/', lessonStreamingRoutes(services.lessonStreaming))
     .route('/', quizRoutes(services.quizzes))
     .route('/', subscriptionRoutes(services.subscriptions, services.receipts))
     .route('/', allAccessRoutes(services.allAccessPlan))

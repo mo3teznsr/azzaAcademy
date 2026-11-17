@@ -7,6 +7,9 @@ import type { WatchProgress } from './watch-policy';
 
 export type RecordedSubscription = AccessSubscription;
 
+const STREAM_COLUMNS = ['streamStatus', 'streamProvider', 'streamAssetId', 'streamSourceUrl', 'hlsUrl', 'posterUrl', 'lowMp4Url', 'durationSec', 'streamError', 'streamUpdatedAt'] as const;
+type StreamColumn = (typeof STREAM_COLUMNS)[number];
+
 export interface LessonRecord {
   id: string;
   moduleId: string;
@@ -88,7 +91,12 @@ export interface LessonRepository {
   watchProgress(userId: string, lessonId: string): Promise<WatchProgress | null>;
 }
 
-const asRecord = <T extends { attachments: unknown }>(row: T) => ({ ...row, attachments: (row.attachments ?? []) as LessonAttachment[] });
+/** Row → `LessonRecord`. The streaming columns stay out (`LessonStreamRepository` reads them), so no response leaks unsigned URLs. */
+const asRecord = <T extends { attachments: unknown }>(row: T): Omit<T, StreamColumn | 'attachments'> & { attachments: LessonAttachment[] } => {
+  const out: Record<string, unknown> = { ...row, attachments: (row.attachments ?? []) as LessonAttachment[] };
+  for (const k of STREAM_COLUMNS) delete out[k];
+  return out as Omit<T, StreamColumn | 'attachments'> & { attachments: LessonAttachment[] };
+};
 
 export class PrismaLessonRepository implements LessonRepository {
   constructor(private readonly db: Db) {}

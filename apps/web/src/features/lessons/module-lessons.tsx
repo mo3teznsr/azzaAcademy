@@ -30,6 +30,7 @@ import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 import { IntroVideoField } from '../admin/course-media-fields';
+import { LessonStreamStatus } from './stream-admin';
 
 /** Lessons of one course, shared by every module row of the course editor (one request). */
 export function useCourseLessons(courseId: string | undefined) {
@@ -249,6 +250,7 @@ function LessonDialog({
           <div className="flex flex-col gap-1.5">
             <span className="text-sm font-medium">{t.learning.editor.video}</span>
             <IntroVideoField value={d.videoUrl} onChange={(videoUrl) => patch({ videoUrl })} title={d.titleEn || t.learning.editor.video} uploader={uploader} />
+            {lesson?.videoUrl && d.videoUrl === lesson.videoUrl && <LessonStreamStatus lessonId={lesson.id} />}
           </div>
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-1.5 text-sm font-medium">{t.learning.editor.attachments}</legend>

@@ -56,7 +56,7 @@ export function CoursePreview({ slug }: { slug: string }) {
         <span className="label-mono text-muted-foreground">{t.recorded.previewTitle}</span>
         <h1 className="font-display text-[clamp(32px,5vw,48px)] font-extrabold leading-tight">{title}</h1>
       </header>
-      <CourseIntroVideo url={l.videoUrl} title={title} />
+      <CourseIntroVideo url={l.videoUrl} title={title} stream={l.stream} />
       {body.text.trim() && <Markdown source={body.text} dir={bodyDir} className="max-w-[70ch]" />}
       <div className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-5">
         <b className="text-lg">{t.recorded.tagline}</b>

@@ -282,7 +282,7 @@ function LessonView({
         <span className="label-mono text-muted-foreground">{fill(t.learning.lessons.lessonOf, { a: f.number(position), b: f.number(total) })}</span>
         <h1 className="font-display text-4xl font-extrabold leading-tight">{title}</h1>
       </header>
-      {positionReady ? <CourseIntroVideo url={lesson.videoUrl} title={title} resume={resume} /> : <div className="aspect-video w-full animate-pulse rounded-2xl bg-muted" aria-hidden />}
+      {positionReady ? <CourseIntroVideo url={lesson.videoUrl} title={title} resume={resume} stream={lesson.stream} /> : <div className="aspect-video w-full animate-pulse rounded-2xl bg-muted" aria-hidden />}
       {body.text.trim() ? (
         <Markdown source={body.text} dir={bodyDir} className="max-w-[70ch]" />
       ) : (

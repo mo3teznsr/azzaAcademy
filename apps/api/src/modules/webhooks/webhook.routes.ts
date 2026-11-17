@@ -6,6 +6,7 @@ import type { AppleIapService } from '../payments/apple/apple-iap.service';
 import type { CheckoutService } from '../payments/checkout.service';
 import type { FinanceAdminService } from '../payments/finance-admin.service';
 import type { TabbyPaymentService } from '../payments/tabby/tabby-payment.service';
+import type { LessonStreamingService } from '../lessons/lesson-streaming.service';
 import type { SubscriptionService } from '../subscriptions/subscription.service';
 import type { SessionService } from '../sessions/session.service';
 
@@ -19,6 +20,7 @@ export function webhookRoutes(deps: {
   sessions: SessionService;
   appleIap: AppleIapService;
   tabby: Pick<TabbyPaymentService, 'handleWebhook'>;
+  lessonStreaming?: Pick<LessonStreamingService, 'handleWebhook'>;
 }) {
   return new Hono<AppEnv>()
     .post('/stripe', async (c) => {
@@ -39,6 +41,12 @@ export function webhookRoutes(deps: {
     .post('/tabby', async (c) => {
       const raw = await c.req.text();
       return c.json({ received: true, ...(await deps.tabby.handleWebhook(raw, (name) => c.req.header(name))) });
+    })
+    // Bunny Stream encoding events: HMAC-signed with the library's read-only key; the video is re-read from Bunny's API.
+    .post('/bunny-stream', async (c) => {
+      const raw = await c.req.text();
+      if (!deps.lessonStreaming) return c.json({ received: true, handled: false });
+      return c.json({ received: true, ...(await deps.lessonStreaming.handleWebhook(raw, (name) => c.req.header(name))) });
     })
     // App Store Server Notifications V2: `{ signedPayload }`, verified against Apple's certificate chain.
     .post('/apple', async (c) => {

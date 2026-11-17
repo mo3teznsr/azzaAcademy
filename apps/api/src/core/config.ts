@@ -62,6 +62,23 @@ const envSchema = z.object({
   LIVEKIT_API_KEY: z.string().optional(),
   LIVEKIT_API_SECRET: z.string().optional(),
 
+  /**
+   * Adaptive streaming of lesson videos through Bunny Stream (optional; off unless the library id, API key and CDN host are
+   * set — lessons then play their uploaded MP4). See `BunnyStreamTranscoder` for the setup. The webhook is verified with the
+   * read-only API key; the token key signs playback URLs when the library's pull zone has token authentication on.
+   */
+  BUNNY_STREAM_LIBRARY_ID: z.string().optional(),
+  BUNNY_STREAM_API_KEY: z.string().optional(),
+  BUNNY_STREAM_READONLY_API_KEY: z.string().optional(),
+  BUNNY_STREAM_CDN_HOST: z.string().optional(),
+  BUNNY_STREAM_TOKEN_KEY: z.string().optional(),
+  /** Send a lesson's video to the transcoder as soon as it is saved (else only via the admin action / backfill). */
+  VIDEO_TRANSCODE_ON_UPLOAD: z.enum(['true', 'false']).default('true'),
+  /** Hourly job that sends lessons uploaded before streaming was set up, a few at a time (the admin backfill does it on demand). */
+  VIDEO_TRANSCODE_BACKFILL: z.enum(['true', 'false']).default('false'),
+  /** Offline lesson downloads play at most this many days without the app re-checking access online. */
+  OFFLINE_DOWNLOAD_MAX_DAYS: z.coerce.number().int().min(1).max(90).default(30),
+
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
@@ -169,6 +186,10 @@ export function resolveSocialAuth(
   return { google, apple };
 }
 
+/** Bunny Stream transcoding is on only with a library id, an API key and the CDN host. */
+export const bunnyStreamConfigured = (c: Pick<AppConfig, 'BUNNY_STREAM_LIBRARY_ID' | 'BUNNY_STREAM_API_KEY' | 'BUNNY_STREAM_CDN_HOST'>) =>
+  !!(c.BUNNY_STREAM_LIBRARY_ID?.trim() && c.BUNNY_STREAM_API_KEY?.trim() && c.BUNNY_STREAM_CDN_HOST?.trim());
+
 /** Tabby is offered only with a secret key and a merchant code. */
 export const tabbyConfigured = (c: Pick<AppConfig, 'TABBY_SECRET_KEY' | 'TABBY_MERCHANT_CODE'>) => !!(c.TABBY_SECRET_KEY?.trim() && c.TABBY_MERCHANT_CODE?.trim());
 
@@ -210,6 +231,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (unknown.length) throw new Error(`Invalid environment:\n  APPLE_IAP_ENVIRONMENT: unknown ${unknown.join(', ')} (use Production and/or Sandbox)`);
   if (parsed.data.TABBY_SECRET_KEY && parsed.data.TABBY_MERCHANT_CODE && !parsed.data.TABBY_WEBHOOK_SECRET && parsed.data.NODE_ENV === 'production') {
     throw new Error('Invalid environment:\n  TABBY_WEBHOOK_SECRET is required when Tabby is configured');
+  }
+  if (bunnyStreamConfigured(parsed.data) && !parsed.data.BUNNY_STREAM_READONLY_API_KEY && parsed.data.NODE_ENV === 'production') {
+    throw new Error('Invalid environment:\n  BUNNY_STREAM_READONLY_API_KEY is required when Bunny Stream is configured (it verifies webhooks)');
   }
   if (appleEnvironments.includes('Production') && !parsed.data.APPLE_APP_APPLE_ID) {
     throw new Error('Invalid environment:\n  APPLE_APP_APPLE_ID is required when APPLE_IAP_ENVIRONMENT includes Production');

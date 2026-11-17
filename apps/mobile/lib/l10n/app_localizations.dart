@@ -11114,6 +11114,126 @@ abstract class AppLocalizations {
   /// **'Playback speed'**
   String get lessonVideoSpeed;
 
+  /// No description provided for @lessonVideoDataSaver.
+  ///
+  /// In en, this message translates to:
+  /// **'Data saver'**
+  String get lessonVideoDataSaver;
+
+  /// No description provided for @lessonVideoDataSaverHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson videos play in the lowest quality to use less data. Remembered on this phone.'**
+  String get lessonVideoDataSaverHint;
+
+  /// No description provided for @downloadsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloadsTitle;
+
+  /// No description provided for @downloadLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Download for offline'**
+  String get downloadLesson;
+
+  /// No description provided for @downloadingLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading…'**
+  String get downloadingLesson;
+
+  /// No description provided for @downloadCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get downloadCancel;
+
+  /// No description provided for @downloadedLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved for offline'**
+  String get downloadedLesson;
+
+  /// No description provided for @downloadDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete download'**
+  String get downloadDelete;
+
+  /// No description provided for @downloadNeedsWifi.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Wi-Fi to download, or allow mobile data in Downloads.'**
+  String get downloadNeedsWifi;
+
+  /// No description provided for @downloadOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Connect to download.'**
+  String get downloadOffline;
+
+  /// No description provided for @downloadStorageFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough space for downloads. Delete some first.'**
+  String get downloadStorageFull;
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The download didn\'t finish. Try again.'**
+  String get downloadFailed;
+
+  /// No description provided for @downloadsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloads yet'**
+  String get downloadsEmpty;
+
+  /// No description provided for @downloadsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save lesson videos to watch them without a connection.'**
+  String get downloadsEmptyBody;
+
+  /// No description provided for @downloadsWifiOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Download on Wi-Fi only'**
+  String get downloadsWifiOnly;
+
+  /// No description provided for @downloadsWifiOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves your mobile data.'**
+  String get downloadsWifiOnlyHint;
+
+  /// No description provided for @downloadsStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'{used} of {total} used'**
+  String downloadsStorage(String used, String total);
+
+  /// No description provided for @downloadPlaysUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays offline until {date}'**
+  String downloadPlaysUntil(String date);
+
+  /// No description provided for @downloadExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to the internet to keep watching'**
+  String get downloadExpired;
+
+  /// No description provided for @downloadsRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Some downloads were removed because your access ended.'**
+  String get downloadsRemoved;
+
   /// No description provided for @errWatchMore.
   ///
   /// In en, this message translates to:

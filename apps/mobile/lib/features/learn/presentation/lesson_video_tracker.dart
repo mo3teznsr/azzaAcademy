@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers.dart';
+import '../data/lesson_media_repository.dart';
 import '../data/lesson_progress_repository.dart';
+import '../domain/download_policy.dart';
 import '../domain/lesson_models.dart';
 import 'lesson_screen.dart' show LessonVideoCard;
 
@@ -67,11 +69,15 @@ class VideoPositionTracker {
 
 /// What an in-app lesson player is given: where to start, and the tracker it reports to.
 /// The player seeks to [startSec], calls `tracker.update(seconds)` as it plays and `tracker.finish()` at the end.
+/// [url] is an https file, an HLS playlist (`.m3u8`) or a `file://` saved copy. With [onDataSaver], the player shows a
+/// data-saver toggle (the URL then changes to the lowest rendition and the player is rebuilt at the same spot).
 class LessonPlayerRequest {
-  const LessonPlayerRequest({required this.url, required this.startSec, required this.tracker});
+  const LessonPlayerRequest({required this.url, required this.startSec, required this.tracker, this.dataSaver = false, this.onDataSaver});
   final String url;
   final int startSec;
   final VideoPositionTracker tracker;
+  final bool dataSaver;
+  final ValueChanged<bool>? onDataSaver;
 }
 
 typedef LessonPlayerBuilder = Widget Function(BuildContext context, LessonPlayerRequest request);
@@ -93,15 +99,21 @@ class LessonVideo extends ConsumerWidget {
     final builder = ref.watch(lessonPlayerBuilderProvider);
     final source = CourseVideoSource.parse(url);
     if (builder == null || source == null || source.kind != CourseVideoKind.file) return LessonVideoCard(url: url);
-    final start = ref.watch(lessonVideoPositionProvider(lessonId));
-    // Wait for the saved position so the player opens at it; a failed lookup just starts from 0.
-    if (start.isLoading) return const SizedBox(key: Key('lesson-video-loading'), height: 200, child: Center(child: CircularProgressIndicator()));
+    final playback = ref.watch(lessonPlaybackProvider(lessonId));
+    // Wait for the saved position (and the stream) so the player opens at it; a failed lookup just plays the file from 0.
+    if (playback.isLoading) return const SizedBox(key: Key('lesson-video-loading'), height: 200, child: Center(child: CircularProgressIndicator()));
+    final dataSaver = ref.watch(dataSaverProvider);
+    final pb = playback.value;
+    final fileUrl = ref.read(appConfigProvider).resolveMediaUrl(source.url) ?? source.url;
     return ResumableLessonVideo(
       key: Key('resumable-$lessonId'),
       lessonId: lessonId,
-      url: ref.read(appConfigProvider).resolveMediaUrl(source.url) ?? source.url,
-      startSec: start.value ?? 0,
+      url: pickLessonVideoUrl(fileUrl: fileUrl, playback: pb, dataSaver: dataSaver),
+      startSec: pb?.positionSec ?? 0,
       builder: builder,
+      // Data saver only changes something when there is a low rendition to switch to.
+      dataSaver: dataSaver,
+      onDataSaver: pb != null && pb.ready && pb.lowMp4Url != null ? (on) => ref.read(dataSaverProvider.notifier).set(on) : null,
     );
   }
 }
@@ -111,11 +123,25 @@ final lessonVideoPositionProvider = FutureProvider.autoDispose.family<int, Strin
 );
 
 class ResumableLessonVideo extends ConsumerStatefulWidget {
-  const ResumableLessonVideo({super.key, required this.lessonId, required this.url, required this.startSec, required this.builder});
+  const ResumableLessonVideo({
+    super.key,
+    required this.lessonId,
+    required this.url,
+    required this.startSec,
+    required this.builder,
+    this.dataSaver = false,
+    this.onDataSaver,
+    this.save,
+  });
   final String lessonId;
   final String url;
   final int startSec;
   final LessonPlayerBuilder builder;
+  final bool dataSaver;
+  final ValueChanged<bool>? onDataSaver;
+
+  /// Where positions go; defaults to the server (`PUT /lessons/:id/video-position`). Offline copies save locally.
+  final Future<void> Function(int sec, {int? durationSec, bool ended})? save;
 
   @override
   ConsumerState<ResumableLessonVideo> createState() => _ResumableLessonVideoState();
@@ -130,7 +156,9 @@ class _ResumableLessonVideoState extends ConsumerState<ResumableLessonVideo> {
     super.initState();
     _repo = ref.read(lessonProgressRepositoryProvider);
     _tracker = VideoPositionTracker(
-      save: (sec) => _repo.saveVideoPosition(widget.lessonId, sec, durationSec: _tracker.durationSec, ended: _tracker.ended),
+      save: (sec) => widget.save != null
+          ? widget.save!(sec, durationSec: _tracker.durationSec, ended: _tracker.ended)
+          : _repo.saveVideoPosition(widget.lessonId, sec, durationSec: _tracker.durationSec, ended: _tracker.ended),
       startSec: widget.startSec,
     )..start();
   }
@@ -142,6 +170,26 @@ class _ResumableLessonVideoState extends ConsumerState<ResumableLessonVideo> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      widget.builder(context, LessonPlayerRequest(url: widget.url, startSec: widget.startSec, tracker: _tracker));
+  Widget build(BuildContext context) => KeyedSubtree(
+        // A new URL (data saver on or off) is a new player, opened where the learner was.
+        key: ValueKey(widget.url),
+        child: widget.builder(
+          context,
+          LessonPlayerRequest(
+            url: widget.url,
+            startSec: _switched ? _tracker.positionSec : widget.startSec,
+            tracker: _tracker,
+            dataSaver: widget.dataSaver,
+            onDataSaver: widget.onDataSaver,
+          ),
+        ),
+      );
+
+  bool _switched = false;
+
+  @override
+  void didUpdateWidget(ResumableLessonVideo old) {
+    super.didUpdateWidget(old);
+    if (old.url != widget.url) _switched = true;
+  }
 }

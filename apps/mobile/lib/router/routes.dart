@@ -101,6 +101,8 @@ abstract final class Routes {
   static String reschedule(String sessionId) => '/sessions/$sessionId/reschedule';
   static String attendance(String sessionId) => '/sessions/$sessionId/attendance';
   static const assignments = '/assignments';
+  static const downloads = '/downloads';
+  static String offlineLesson(String lessonId) => '/downloads/$lessonId';
   static String courseLessons(String courseId) => '/courses/$courseId/lessons';
   static String lesson(String courseId, String lessonId) => '/courses/$courseId/lessons/$lessonId';
   /// A recorded course's free lesson (readable without an account).
@@ -217,6 +219,7 @@ abstract final class Routes {
       (RegExp(r'^/teach$'), studentMe),
       (RegExp(r'^/quizzes(/[^/]+(/attempts/[^/]+)?)?$'), studentHome),
       (RegExp(r'^/assignments$'), studentHome),
+      (RegExp(r'^/downloads(/[^/]+)?$'), studentLibrary),
       (RegExp(r'^/messages(/[^/]+)?$'), studentHome),
       (RegExp(r'^/(announcements|notifications)$'), studentHome),
       (RegExp(r'^/support(/[^/]+)?$'), studentMe),

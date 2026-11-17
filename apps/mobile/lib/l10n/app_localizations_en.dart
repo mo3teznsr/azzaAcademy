@@ -6632,6 +6632,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonVideoSpeed => 'Playback speed';
 
   @override
+  String get lessonVideoDataSaver => 'Data saver';
+
+  @override
+  String get lessonVideoDataSaverHint =>
+      'Lesson videos play in the lowest quality to use less data. Remembered on this phone.';
+
+  @override
+  String get downloadsTitle => 'Downloads';
+
+  @override
+  String get downloadLesson => 'Download for offline';
+
+  @override
+  String get downloadingLesson => 'Downloading…';
+
+  @override
+  String get downloadCancel => 'Cancel download';
+
+  @override
+  String get downloadedLesson => 'Saved for offline';
+
+  @override
+  String get downloadDelete => 'Delete download';
+
+  @override
+  String get downloadNeedsWifi =>
+      'Connect to Wi-Fi to download, or allow mobile data in Downloads.';
+
+  @override
+  String get downloadOffline => 'You\'re offline. Connect to download.';
+
+  @override
+  String get downloadStorageFull =>
+      'Not enough space for downloads. Delete some first.';
+
+  @override
+  String get downloadFailed => 'The download didn\'t finish. Try again.';
+
+  @override
+  String get downloadsEmpty => 'No downloads yet';
+
+  @override
+  String get downloadsEmptyBody =>
+      'Save lesson videos to watch them without a connection.';
+
+  @override
+  String get downloadsWifiOnly => 'Download on Wi-Fi only';
+
+  @override
+  String get downloadsWifiOnlyHint => 'Saves your mobile data.';
+
+  @override
+  String downloadsStorage(String used, String total) {
+    return '$used of $total used';
+  }
+
+  @override
+  String downloadPlaysUntil(String date) {
+    return 'Plays offline until $date';
+  }
+
+  @override
+  String get downloadExpired => 'Connect to the internet to keep watching';
+
+  @override
+  String get downloadsRemoved =>
+      'Some downloads were removed because your access ended.';
+
+  @override
   String get errWatchMore =>
       'Watch most of the video before marking this lesson complete.';
 
