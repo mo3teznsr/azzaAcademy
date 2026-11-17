@@ -532,6 +532,10 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
   async markPaid(id: string, transferReference: string, actorId: string | null = null, references: Record<string, string> = {}) {
     const run = await this.getRun(id);
     if (run.status !== 'APPROVED') throw new BusinessRuleError('Approve the run before marking it paid', 'RUN_NOT_APPROVED');
+    // A payout sent through the provider is settled by the provider, never by hand.
+    if (run.payouts.some((p) => p.status === 'PROCESSING')) {
+      throw new BusinessRuleError('Some payouts are still being sent through the payout provider', 'PAYOUTS_PROCESSING');
+    }
     const inRun = new Set(run.payouts.map((p) => p.id));
     const foreign = Object.keys(references).filter((k) => !inRun.has(k));
     if (foreign.length) throw new BusinessRuleError('A transfer reference names a payout outside this run', 'UNKNOWN_PAYOUT', { payoutIds: foreign });

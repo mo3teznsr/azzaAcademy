@@ -84,6 +84,7 @@ export function createApp(container: Container) {
       appleIap: services.appleIap,
       tabby: services.tabby,
       lessonStreaming: services.lessonStreaming,
+      payoutDispatch: services.payoutDispatch,
     }),
   );
   // Public, token-signed ICS feed (calendar apps send no cookies).
@@ -146,7 +147,7 @@ export function createApp(container: Container) {
     // Teachers upload covers and intro videos for the courses they propose.
     .route('/courses', adminMediaRoutes(services.courseMedia, ['TEACHER', 'ADMIN']))
     .route('/admin', adminFinanceRoutes(services))
-    .route('/admin', adminPayoutRoutes(services.payouts))
+    .route('/admin', adminPayoutRoutes(services.payouts, services.payoutDispatch))
     .route('/admin', adminReconciliationRoutes(services.reconciliation))
     .route('/admin', adminReportRoutes(services.reports))
     .route('/', siteSettingsRoutes(services.siteSettings))

@@ -137,6 +137,8 @@ enum PayoutStatus {
   HELD
   PAID
   CARRIED_OVER
+  /// Sent through the payout provider; PAID once the provider confirms, back to READY when it fails.
+  PROCESSING
 }
 
 enum AttendanceMarkKind {
@@ -896,10 +898,21 @@ model Payout {
   transferReference String?
   paidAt            DateTime?
   createdAt         DateTime     @default(now())
+  /// Payout provider (e.g. "stripe_connect"): set on the first send.
+  provider              String?
+  /// The provider's id for the latest attempt (Stripe: "<connected account>/<payout id>").
+  providerTransferId    String?      @unique
+  /// PENDING | IN_TRANSIT | PAID | FAILED (the provider's view of the latest attempt).
+  providerStatus        String?
+  providerFailureReason String?
+  /// Each send is one attempt; the attempt number is part of the idempotency key.
+  providerAttempts      Int          @default(0)
+  providerSentAt        DateTime?
 
   earnings Earning[]
 
   @@unique([runId, teacherId])
+  @@index([status, provider])
 }
 
 model TeacherBankDetails {
@@ -912,6 +925,8 @@ model TeacherBankDetails {
   swift         String
   verified      Boolean   @default(false)
   verifiedAt    DateTime?
+  /// Stripe Connect connected account (acct_...) that receives provider payouts; set by an admin after onboarding.
+  stripeAccountId String?
   updatedAt     DateTime  @updatedAt
 }
 

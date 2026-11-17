@@ -94,6 +94,8 @@ import { CurrencyService, PrismaCurrencyRepository } from './modules/currencies/
 import { EarningsCalculator } from './modules/payouts/earnings-calculator';
 import { PrismaPayoutRepository } from './modules/payouts/payout.repository';
 import { PayoutService } from './modules/payouts/payout.service';
+import { PayoutDispatchService } from './modules/payouts/payout-dispatch.service';
+import { StripeConnectPayoutProvider } from './infrastructure/payments/stripe-connect-payouts';
 import { ClassroomState } from './modules/sessions/classroom-state';
 import { JoinPolicy } from './modules/sessions/join-policy';
 import { DemoReviewers } from './modules/sessions/demo-reviewers';
@@ -301,6 +303,16 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     },
     new PrismaAuditLog(db),
   );
+  const payoutKey = (config.STRIPE_PAYOUTS_SECRET_KEY ?? config.STRIPE_SECRET_KEY)?.trim();
+  const payoutDispatch = new PayoutDispatchService(
+    new PrismaPayoutRepository(db),
+    config.PAYOUT_PROVIDER === 'stripe_connect' && payoutKey
+      ? new StripeConnectPayoutProvider({ secretKey: payoutKey, webhookSecret: config.STRIPE_PAYOUTS_WEBHOOK_SECRET?.trim() || undefined })
+      : null,
+    notifications,
+    clock,
+    new PrismaAuditLog(db),
+  );
 
   const rescheduleRequestRepo = new PrismaRescheduleRequestRepository(db);
   const sessions = new SessionService(
@@ -448,6 +460,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     sessions,
     rescheduleRequests: new RescheduleRequestService(rescheduleRequestRepo, sessions, notifications, clock),
     payouts,
+    payoutDispatch,
     checkout,
     subscriptions,
     allAccessPlan,
@@ -522,6 +535,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     ...(config.VIDEO_TRANSCODE_BACKFILL === 'true' && adapters.transcoder?.enabled
       ? [{ name: 'backfill-lesson-streams', everyMs: 60 * 60_000, runAtBoot: false, run: () => lessonStreaming.backfill(5) }]
       : []),
+    // Provider payouts still in flight (webhooks can be lost). A no-op without a payout provider.
+    { name: 'poll-provider-payouts', everyMs: 15 * 60_000, run: () => payoutDispatch.poll() },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 

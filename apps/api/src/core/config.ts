@@ -81,6 +81,15 @@ const envSchema = z.object({
 
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  /**
+   * Teacher payouts through a provider (off by default: the payout CSV and "mark paid" stay the way). `stripe_connect`
+   * sends each READY payout of an approved run to the teacher's Stripe connected account and pays it out to their UAE
+   * bank in AED. Uses STRIPE_PAYOUTS_SECRET_KEY, else STRIPE_SECRET_KEY. The Connect webhook endpoint
+   * (`/api/webhooks/payouts`, events payout.paid/failed/canceled/updated on connected accounts) has its own secret.
+   */
+  PAYOUT_PROVIDER: z.enum(['none', 'stripe_connect']).default('none'),
+  STRIPE_PAYOUTS_SECRET_KEY: z.string().optional(),
+  STRIPE_PAYOUTS_WEBHOOK_SECRET: z.string().optional(),
 
   /** Tabby "pay in 4" (UAE). The method is offered only when the secret key and merchant code are set.
    * `sk_test_…` keys hit Tabby's test environment on the same base URL. The public key is not used by the
