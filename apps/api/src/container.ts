@@ -36,6 +36,8 @@ import { CategoryService, PrismaCategoryRepository } from './modules/categories/
 import { PrismaReviewRepository } from './modules/reviews/review.repository';
 import { ReviewService } from './modules/reviews/review.service';
 import { SavedCourseService } from './modules/reviews/saved-course.service';
+import { BlogService } from './modules/blog/blog.service';
+import { PrismaBlogRepository } from './modules/blog/blog.repository';
 import { InstructorApplicationService } from './modules/instructors/instructor-application.service';
 import { PrismaApplicationRepository } from './modules/instructors/instructor-application.repository';
 import { PrismaAdminRepository } from './modules/admin/admin.repository';
@@ -448,6 +450,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     categories,
     reviews: new ReviewService(new PrismaReviewRepository(db), notifications, () => clock.now()),
     savedCourses: new SavedCourseService(db),
+    blog: new BlogService(new PrismaBlogRepository(db), () => clock.now()),
     instructorApplications: new InstructorApplicationService(new PrismaApplicationRepository(db), notifications, () => clock.now()),
     batches: new BatchService(batchRepo, courseRepo, new ScheduleGenerator(), access, notifications, clock, appStoreSync),
     notifications,

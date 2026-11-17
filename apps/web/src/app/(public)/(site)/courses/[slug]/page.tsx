@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
 import { mediaUrl } from '@/lib/api/client';
-import { getCourse, publicGet, seedCategories, serverQueryClient } from '@/lib/api/server';
+import { getCourse, prefetchGet, publicGet, seedCategories, serverQueryClient } from '@/lib/api/server';
 import type { BatchSummary, Course, Paged } from '@/lib/api/types';
 import { qk } from '@/lib/query-keys';
 import { getLocale } from '@/lib/i18n/server';
@@ -96,6 +96,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   await seedCategories(queryClient);
   if (published) {
     queryClient.setQueryData(qk.course(slug), published);
+    await prefetchGet(queryClient, qk.testimonials(published.slug), '/api/v1/testimonials', { course: published.slug, limit: 6 });
     if (published.type === 'LIVE') {
       const p = { courseId: published.id, pageSize: 50 };
       await queryClient.prefetchQuery({ queryKey: qk.batches(p), queryFn: () => publicGet<Paged<BatchSummary>>('/api/v1/batches', p) });

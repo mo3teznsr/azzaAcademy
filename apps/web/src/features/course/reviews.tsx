@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   AlertDialog,
@@ -185,9 +186,11 @@ function MyReviewForm({ courseId, mine }: { courseId: string; mine: CourseReview
   const reviewError = useReviewError();
   const [rating, setRating] = useState(mine?.rating ?? 0);
   const [body, setBody] = useState(mine?.body ?? '');
+  // Explicit opt-in: never pre-ticked for a new review.
+  const [consent, setConsent] = useState(mine?.quoteConsent ?? false);
   const [error, setError] = useState<string | null>(null);
   const save = useMutation({
-    mutationFn: () => coursesApi.saveMyReview(courseId, { rating, body: body.trim() }),
+    mutationFn: () => coursesApi.saveMyReview(courseId, { rating, body: body.trim(), quoteConsent: consent }),
     onSuccess: () => (toast.success(t.reviews.posted), refresh()),
     onError: (e) => toast.error(reviewError(e)),
   });
@@ -224,6 +227,12 @@ function MyReviewForm({ courseId, mine }: { courseId: string; mine: CourseReview
           {t.reviews.bodyLabel}
         </Label>
         <Textarea id={`${id}-body`} rows={4} maxLength={2000} dir="auto" value={body} onChange={(e) => setBody(e.target.value)} />
+      </div>
+      <div className="flex items-start gap-3">
+        <Checkbox id={`${id}-consent`} checked={consent} onCheckedChange={(v) => setConsent(v === true)} className="mt-0.5" />
+        <Label htmlFor={`${id}-consent`} className="text-[13px] leading-snug font-normal text-muted-foreground">
+          {t.reviews.quoteConsent}
+        </Label>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button type="submit" variant="ink" disabled={save.isPending}>
@@ -279,6 +288,7 @@ function ReviewItem({ review: r, courseId, canReply, canModerate }: { review: Co
           </span>
         </span>
         {r.hidden && <Chip tone="dashed">{t.reviews.hidden}</Chip>}
+        {canModerate && r.featuredAt && <Chip>{t.reviews.featuredBadge}</Chip>}
       </header>
       {r.body && (
         <p className="whitespace-pre-line text-[15px] leading-relaxed" dir="auto">

@@ -20,6 +20,7 @@ import { quizRoutes } from './modules/quizzes/quiz.routes';
 import { adminCourseRoutes, courseRoutes } from './modules/courses/course.routes';
 import { adminCategoryImageRoutes, categoryRoutes } from './modules/categories/category.routes';
 import { engagementRoutes } from './modules/reviews/review.routes';
+import { adminBlogRoutes, blogRoutes } from './modules/blog/blog.routes';
 import { instructorApplicationRoutes } from './modules/instructors/instructor-application.routes';
 import { meRoutes } from './modules/me/me.routes';
 import { progressRoutes } from './modules/progress/progress.routes';
@@ -114,6 +115,7 @@ export function createApp(container: Container) {
 
   const api = new Hono<AppEnv>()
     .route('/', engagementRoutes(services.reviews, services.savedCourses))
+    .route('/blog', blogRoutes(services.blog))
     .route('/courses', courseRoutes(services.courses))
     .route('/categories', categoryRoutes(services.categories))
     .route('/instructor-applications', instructorApplicationRoutes(services.instructorApplications))
@@ -130,6 +132,7 @@ export function createApp(container: Container) {
     .route('/teachers', teacherRoutes(services.teachers))
     .route('/admin', adminRoutes(services.admin, services.siteSettings))
     .route('/admin', adminMediaRoutes(services.courseMedia))
+    .route('/admin', adminBlogRoutes(services.blog))
     .route('/admin', adminSettingsRoutes(services.settings, services.siteSettings))
     .route('/admin', adminCurrencyRoutes(services.currencies))
     .route('/admin', adminCategoryImageRoutes(services.categories))

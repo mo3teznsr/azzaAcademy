@@ -1065,6 +1065,10 @@ export interface CourseReview {
   repliedAt: ISODate | null;
   /** Only admins ever see hidden reviews. */
   hidden: boolean;
+  /** The learner agreed that Azza may quote this review on its website. */
+  quoteConsent?: boolean;
+  /** Set while an admin features it as a testimonial. */
+  featuredAt?: ISODate | null;
   createdAt: ISODate;
   updatedAt: ISODate;
   user: { id: string; name: string; image: string | null };

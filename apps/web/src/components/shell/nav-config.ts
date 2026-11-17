@@ -29,6 +29,8 @@ import {
   GraduationCap,
   LifeBuoy,
   Megaphone,
+  Newspaper,
+  Quote,
   Gift,
   Building2,
   type LucideIcon, Clapperboard, Repeat } from 'lucide-react';
@@ -93,6 +95,8 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
       { href: '/admin/people', label: t.nav.admin.people, icon: Users },
       { href: '/admin/instructors', label: t.nav.admin.instructors, icon: GraduationCap, badge: 'applications' },
       { href: '/admin/announcements', label: t.nav.admin.announcements, icon: Megaphone },
+      { href: '/admin/blog', label: t.nav.admin.blog, icon: Newspaper },
+      { href: '/admin/testimonials', label: t.nav.admin.testimonials, icon: Quote },
       { href: '/admin/support', label: t.nav.admin.support, icon: LifeBuoy, badge: 'support' },
     ],
   },

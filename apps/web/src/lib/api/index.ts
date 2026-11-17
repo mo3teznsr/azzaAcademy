@@ -20,3 +20,4 @@ export * from './lesson-qa';
 export * from './organizations';
 export * from './all-access';
 export * from './progress';
+export * from './blog';

@@ -35,15 +35,25 @@ function localized(path: string, extra: Omit<Entry, 'url' | 'alternates'>): Entr
 
 /** Public pages, every category, published course and teacher profile, in Arabic and English. The API being down still yields the static pages. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [courses, people, categories] = await Promise.all([
+  const [courses, people, categories, posts] = await Promise.all([
     publishedCourses(),
     list<{ id: string }>('/api/v1/teachers'),
     list<{ slug: string; courseCount: number }>('/api/v1/categories'),
+    list<{ slug: string; updatedAt: string; hasEn: boolean }>('/api/v1/blog/sitemap'),
   ]);
   return [
     ...localized('/', { changeFrequency: 'daily', priority: 1 }),
     ...localized('/teachers', { changeFrequency: 'weekly', priority: 0.6 }),
     ...localized('/teach', { changeFrequency: 'monthly', priority: 0.5 }),
+    ...localized('/blog', { changeFrequency: 'weekly', priority: 0.6 }),
+    // Arabic-only posts have just the Arabic URL (their English URL's canonical points to it).
+    ...posts.flatMap((p) => {
+      const path = `/blog/${encodeURIComponent(p.slug)}`;
+      const extra = { lastModified: new Date(p.updatedAt), changeFrequency: 'monthly' as const, priority: 0.6 };
+      if (p.hasEn) return localized(path, extra);
+      const ar = pageUrl('ar', path);
+      return [{ url: ar, alternates: { languages: { ar, 'x-default': ar } }, ...extra }];
+    }),
     ...categories
       .filter((c) => c.courseCount > 0)
       .flatMap((c) => localized(`/categories/${encodeURIComponent(c.slug)}`, { changeFrequency: 'weekly', priority: 0.7 })),

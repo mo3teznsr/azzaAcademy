@@ -188,6 +188,7 @@ model User {
   teaching                     Batch[]                 @relation("BatchTeacher")
   coursesProposed              Course[]                @relation("CourseAuthor")
   courseReviews                CourseReview[]
+  blogPosts                    BlogPost[]
   instructorApplications       InstructorApplication[] @relation("Applicant")
   lessonProgress               LessonProgress[]
   videoPositions               LessonVideoPosition[]
@@ -355,6 +356,7 @@ model Course {
   batches       Batch[]
   coupons       Coupon[]
   reviews       CourseReview[]
+  blogPosts     BlogPostCourse[]
   savedBy       SavedCourse[]
   subscriptions Subscription[]
   seatPacks     SeatPack[]
@@ -950,7 +952,8 @@ model Category {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  courses Course[]
+  courses   Course[]
+  blogPosts BlogPost[]
 }
 
 /// One review per student per course; only students who attended a session may post.
@@ -966,11 +969,16 @@ model CourseReview {
   repliedAt    DateTime?
   /// Hidden by an admin (moderation); excluded from the average.
   hidden       Boolean   @default(false)
+  /// The learner's own choice: "Azza may quote this review on its website". Withdrawing it unfeatures the review.
+  quoteConsent Boolean   @default(false)
+  /// Picked by an admin as a testimonial (landing page and course page). Needs consent, text, and a visible review.
+  featuredAt   DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   @@unique([courseId, userId])
   @@index([courseId, hidden, createdAt])
+  @@index([featuredAt])
 }
 
 model SavedCourse {
@@ -1800,4 +1808,52 @@ model LearnerBadge {
   earnedAt DateTime @default(now())
 
   @@id([userId, badge])
+}
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// An article on the public blog. Arabic is required; the English version is optional.
+model BlogPost {
+  id            String           @id @default(cuid())
+  /// Latin letters, digits and dashes; the same slug serves /ar/blog/<slug> and /en/blog/<slug>.
+  slug          String           @unique
+  titleAr       String
+  titleEn       String?
+  excerptAr     String           @default("")
+  excerptEn     String?
+  /// Markdown.
+  bodyAr        String
+  bodyEn        String?
+  coverImageUrl String?
+  /// A course category the post belongs to (filter on /blog).
+  categorySlug  String?
+  category      Category?        @relation(fields: [categorySlug], references: [slug], onUpdate: Cascade, onDelete: SetNull)
+  tags          String[]         @default([])
+  /// A teacher shown as the author; null = written by Azza.
+  authorId      String?
+  author        User?            @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  status        BlogPostStatus   @default(DRAFT)
+  /// Public once PUBLISHED and this moment has passed (a future date schedules the post).
+  publishedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  courses       BlogPostCourse[]
+
+  @@index([status, publishedAt])
+  @@index([categorySlug])
+}
+
+/// Related courses shown as cards at the end of a post, in order.
+model BlogPostCourse {
+  postId   String
+  post     BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  position Int      @default(0)
+
+  @@id([postId, courseId])
+  @@index([courseId])
 }
