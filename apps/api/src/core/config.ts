@@ -63,15 +63,25 @@ const envSchema = z.object({
   LIVEKIT_API_SECRET: z.string().optional(),
 
   /**
-   * Adaptive streaming of lesson videos through Bunny Stream (optional; off unless the library id, API key and CDN host are
-   * set — lessons then play their uploaded MP4). See `BunnyStreamTranscoder` for the setup. The webhook is verified with the
-   * read-only API key; the token key signs playback URLs when the library's pull zone has token authentication on.
+   * Adaptive streaming of lesson videos through AWS Elemental MediaConvert (optional; off unless the role ARN is set and
+   * S3 storage is on — lessons then play their uploaded MP4). See `MediaConvertTranscoder` and docs/ARCHITECTURE.md for
+   * the setup. Outputs go to `<S3_BUCKET>/<STREAMS_PREFIX>/…` and play through `CLOUDFRONT_URL`.
    */
-  BUNNY_STREAM_LIBRARY_ID: z.string().optional(),
-  BUNNY_STREAM_API_KEY: z.string().optional(),
-  BUNNY_STREAM_READONLY_API_KEY: z.string().optional(),
-  BUNNY_STREAM_CDN_HOST: z.string().optional(),
-  BUNNY_STREAM_TOKEN_KEY: z.string().optional(),
+  MEDIACONVERT_ROLE_ARN: z.string().optional(),
+  /** Region of the MediaConvert jobs (default AWS_REGION); the SDK uses the regional endpoint unless MEDIACONVERT_ENDPOINT is set. */
+  MEDIACONVERT_REGION: z.string().optional(),
+  MEDIACONVERT_ENDPOINT: z.url().optional().or(z.literal('')),
+  MEDIACONVERT_QUEUE_ARN: z.string().optional(),
+  /** SNS topic the EventBridge "MediaConvert Job State Change" rule publishes to; its HTTPS subscription is /api/webhooks/mediaconvert. */
+  MEDIACONVERT_SNS_TOPIC_ARN: z.string().optional(),
+  STREAMS_PREFIX: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).default('streams'),
+  /**
+   * CloudFront signed URLs (optional): the public key id in the distribution's trusted key group and its RSA private key
+   * (PEM; `\n` escapes allowed, or a file path). When set, stream files and uploaded lesson videos are served signed.
+   */
+  CLOUDFRONT_KEY_PAIR_ID: z.string().optional(),
+  CLOUDFRONT_PRIVATE_KEY: z.string().optional(),
+  CLOUDFRONT_PRIVATE_KEY_PATH: z.string().optional(),
   /** Send a lesson's video to the transcoder as soon as it is saved (else only via the admin action / backfill). */
   VIDEO_TRANSCODE_ON_UPLOAD: z.enum(['true', 'false']).default('true'),
   /** Hourly job that sends lessons uploaded before streaming was set up, a few at a time (the admin backfill does it on demand). */
@@ -186,9 +196,35 @@ export function resolveSocialAuth(
   return { google, apple };
 }
 
-/** Bunny Stream transcoding is on only with a library id, an API key and the CDN host. */
-export const bunnyStreamConfigured = (c: Pick<AppConfig, 'BUNNY_STREAM_LIBRARY_ID' | 'BUNNY_STREAM_API_KEY' | 'BUNNY_STREAM_CDN_HOST'>) =>
-  !!(c.BUNNY_STREAM_LIBRARY_ID?.trim() && c.BUNNY_STREAM_API_KEY?.trim() && c.BUNNY_STREAM_CDN_HOST?.trim());
+/** MediaConvert transcoding is on only with a role ARN and S3 + CloudFront storage (jobs read and write the bucket). */
+export const mediaConvertConfigured = (c: Pick<AppConfig, 'MEDIACONVERT_ROLE_ARN' | 'S3_BUCKET' | 'CLOUDFRONT_URL'>) =>
+  !!(c.MEDIACONVERT_ROLE_ARN?.trim() && c.S3_BUCKET?.trim() && c.CLOUDFRONT_URL);
+
+/**
+ * CloudFront URL signing: key pair id + private key (file path first, then the inline PEM) + CLOUDFRONT_URL. Never throws:
+ * an unreadable or malformed key leaves signing off (with a warning). The key is never logged.
+ */
+export function resolveCloudFrontSigning(
+  env: Pick<AppConfig, 'CLOUDFRONT_URL' | 'CLOUDFRONT_KEY_PAIR_ID' | 'CLOUDFRONT_PRIVATE_KEY' | 'CLOUDFRONT_PRIVATE_KEY_PATH'>,
+  readFile: (path: string) => string = (p) => readFileSync(p, 'utf8'),
+): { baseUrl: string; keyPairId: string; privateKey: string } | null {
+  const keyPairId = env.CLOUDFRONT_KEY_PAIR_ID?.trim();
+  if (!keyPairId || !env.CLOUDFRONT_URL) return null;
+  let privateKey: string | undefined;
+  if (env.CLOUDFRONT_PRIVATE_KEY_PATH?.trim()) {
+    try {
+      privateKey = readFile(env.CLOUDFRONT_PRIVATE_KEY_PATH.trim());
+    } catch {
+      console.warn('[cloudfront] CLOUDFRONT_PRIVATE_KEY_PATH could not be read; URL signing is off');
+    }
+  }
+  if (!privateKey && env.CLOUDFRONT_PRIVATE_KEY?.trim()) privateKey = env.CLOUDFRONT_PRIVATE_KEY.replace(/\\n/g, '\n');
+  if (!privateKey?.includes('PRIVATE KEY')) {
+    console.warn('[cloudfront] CLOUDFRONT_KEY_PAIR_ID is set without a readable private key; URL signing is off');
+    return null;
+  }
+  return { baseUrl: env.CLOUDFRONT_URL, keyPairId, privateKey };
+}
 
 /** Tabby is offered only with a secret key and a merchant code. */
 export const tabbyConfigured = (c: Pick<AppConfig, 'TABBY_SECRET_KEY' | 'TABBY_MERCHANT_CODE'>) => !!(c.TABBY_SECRET_KEY?.trim() && c.TABBY_MERCHANT_CODE?.trim());
@@ -232,8 +268,11 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (parsed.data.TABBY_SECRET_KEY && parsed.data.TABBY_MERCHANT_CODE && !parsed.data.TABBY_WEBHOOK_SECRET && parsed.data.NODE_ENV === 'production') {
     throw new Error('Invalid environment:\n  TABBY_WEBHOOK_SECRET is required when Tabby is configured');
   }
-  if (bunnyStreamConfigured(parsed.data) && !parsed.data.BUNNY_STREAM_READONLY_API_KEY && parsed.data.NODE_ENV === 'production') {
-    throw new Error('Invalid environment:\n  BUNNY_STREAM_READONLY_API_KEY is required when Bunny Stream is configured (it verifies webhooks)');
+  if (mediaConvertConfigured(parsed.data) && !parsed.data.MEDIACONVERT_SNS_TOPIC_ARN?.trim() && parsed.data.NODE_ENV === 'production') {
+    throw new Error('Invalid environment:\n  MEDIACONVERT_SNS_TOPIC_ARN is required when MediaConvert is configured (only that topic may report job changes)');
+  }
+  if (parsed.data.MEDIACONVERT_ROLE_ARN?.trim() && !parsed.data.S3_BUCKET) {
+    console.warn('[mediaconvert] MEDIACONVERT_ROLE_ARN is set but S3 storage is not; adaptive streaming is off');
   }
   if (appleEnvironments.includes('Production') && !parsed.data.APPLE_APP_APPLE_ID) {
     throw new Error('Invalid environment:\n  APPLE_APP_APPLE_ID is required when APPLE_IAP_ENVIRONMENT includes Production');

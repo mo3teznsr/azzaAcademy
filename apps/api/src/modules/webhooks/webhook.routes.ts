@@ -42,8 +42,9 @@ export function webhookRoutes(deps: {
       const raw = await c.req.text();
       return c.json({ received: true, ...(await deps.tabby.handleWebhook(raw, (name) => c.req.header(name))) });
     })
-    // Bunny Stream encoding events: HMAC-signed with the library's read-only key; the video is re-read from Bunny's API.
-    .post('/bunny-stream', async (c) => {
+    // MediaConvert job state changes: EventBridge → SNS (HTTPS subscription). The SNS signature and topic are verified,
+    // subscription confirmations are answered, and the job is re-read with GetJob.
+    .post('/mediaconvert', async (c) => {
       const raw = await c.req.text();
       if (!deps.lessonStreaming) return c.json({ received: true, handled: false });
       return c.json({ received: true, ...(await deps.lessonStreaming.handleWebhook(raw, (name) => c.req.header(name))) });
