@@ -107,7 +107,7 @@ export class LessonStreamingService {
     if (!s) return { stream: null, downloadable: false };
     const downloadable = parseCourseVideoUrl(s.videoUrl)?.kind === 'file';
     const exp = new Date(this.clock.now().getTime() + this.opts.playbackTtlSec * 1000);
-    // Originals are signed too when the CDN restricts `course-videos/*` (they no longer rely on unguessable URLs).
+    // Originals are signed too, so `course-videos/*` can be restricted at the CDN (see docs/ARCHITECTURE.md).
     const signedFile = downloadable && this.signing?.signer.enabled && this.signing.signer.covers(s.videoUrl!) ? { videoUrl: this.sign(s.videoUrl!, exp) } : {};
     if (!s.streamStatus || !this.current(s)) return { stream: null, downloadable, ...signedFile };
     const ready = s.streamStatus === 'READY';

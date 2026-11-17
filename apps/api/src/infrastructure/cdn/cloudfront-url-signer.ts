@@ -17,7 +17,9 @@ export interface CloudFrontSignerConfig {
  *   HLS players resolve segment URIs against the playlist URL and drop its query string, so the API rewrites playlists and
  *   appends this query to every segment (see `modules/lessons/hls-playlist.ts`).
  * Setup: CloudFront → Public keys → add the public key; Key groups → add a group with it; on the distribution, set
- * "Restrict viewer access → Trusted key groups" on the `streams/*` and `course-videos/*` behaviours.
+ * "Restrict viewer access → Trusted key groups" on the `streams/*` behaviour. Uploaded lesson videos are signed too, but
+ * `course-videos/*` also holds public course intro videos, so that behaviour can only be restricted once those are signed
+ * or moved (docs/ARCHITECTURE.md).
  */
 export class CloudFrontUrlSigner implements MediaUrlSigner {
   readonly enabled = true;
