@@ -1040,14 +1040,14 @@ model Lesson {
   questions   LessonQuestion[]
   watchTimes  LessonWatchTime[]
 
-  /// Adaptive streaming (HLS) of an uploaded `videoUrl`, made by the `VideoTranscoder` (Bunny Stream). Null = never prepared.
+  /// Adaptive streaming (HLS) of an uploaded `videoUrl`, made by the `VideoTranscoder` (AWS MediaConvert). Null = never prepared.
   streamStatus    VideoStreamStatus?
-  /// Who made the asset (`bunny`) and its id there.
+  /// Who made the asset (`mediaconvert`) and its id there (the MediaConvert job id).
   streamProvider  String?
   streamAssetId   String?
   /// The `videoUrl` the asset was made from; a new upload resets the stream.
   streamSourceUrl String?
-  /// Unsigned playback URLs; signed per request when CDN token auth is on.
+  /// Unsigned CloudFront URLs; signed per request when CloudFront signing is configured.
   hlsUrl          String?
   posterUrl       String?
   /// Lowest-quality progressive MP4 (data saver and offline downloads); null when the provider has none.
