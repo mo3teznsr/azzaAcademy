@@ -122,6 +122,8 @@ import { PrismaAuditLog } from './modules/audit/audit-log';
 import { PrismaReconciliationRepository } from './modules/reconciliation/reconciliation.repository';
 import { ReconciliationService } from './modules/reconciliation/reconciliation.service';
 import { LifecycleService, PrismaLifecycleRepository } from './modules/lifecycle/lifecycle.service';
+import { PrismaProgressRepository } from './modules/progress/progress.repository';
+import { ProgressService } from './modules/progress/progress.service';
 import { TaxDocumentService } from './modules/invoices/tax-document.service';
 import { PrismaLessonQaRepository } from './modules/lesson-qa/qa.repository';
 import { LessonQaService } from './modules/lesson-qa/qa.service';
@@ -425,6 +427,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     clock,
     vatPercentNow,
   );
+  const progress = new ProgressService(new PrismaProgressRepository(db), notifications, clock, config.WEB_URL);
   const services = {
     settings,
     siteSettings,
@@ -471,6 +474,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
     lessons,
+    progress,
     lessonQa: new LessonQaService(new PrismaLessonQaRepository(db), lessons, notifications, clock, config.WEB_URL),
     courseAnalytics: new CourseAnalyticsService(new PrismaCourseAnalyticsRepository(db), lessons, clock),
     lessonStreaming,
@@ -511,6 +515,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     { name: 'expire-organization-seats', everyMs: 60 * 60_000, run: () => organizations.expireSeats() },
     // Welcome, inactivity nudges and win-back messages (each sent once per user and key).
     { name: 'lifecycle-messages', everyMs: 60 * 60_000, run: () => lifecycleMessages.run() },
+    // Badges for recently active learners and the one late-week goal reminder (each once).
+    { name: 'learning-progress', everyMs: 60 * 60_000, run: () => progress.run() },
     // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.
     { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
     // Referral rewards once the friend's first payment has passed the earning hold without a refund.

@@ -236,6 +236,8 @@ model User {
   organizationMemberships OrganizationMember[]
   seatAssignments         SeatAssignment[] @relation("SeatAssignee")
   seatPacksCreated        SeatPack[]       @relation("SeatPackCreator")
+  learningGoal            LearningGoal?
+  badges                  LearnerBadge[]
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -1770,4 +1772,32 @@ model SeatAssignment {
 
   @@index([seatPackId, status])
   @@index([userId])
+}
+
+// ───────────────────────── Learning progress (docs/PROGRESS.md) ─────────────────────────
+
+enum LearningGoalUnit {
+  DAYS
+  LESSONS
+}
+
+/// The learner's weekly goal (learning days or lessons per week) and whether they want the late-week reminder.
+model LearningGoal {
+  userId    String           @id
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unit      LearningGoalUnit
+  target    Int
+  reminders Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+/// A personal badge (`BADGE_IDS` in @azza/shared), earned once. Never shown to other learners.
+model LearnerBadge {
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge    String
+  earnedAt DateTime @default(now())
+
+  @@id([userId, badge])
 }
