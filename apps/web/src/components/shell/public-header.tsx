@@ -33,6 +33,9 @@ export function PublicHeader() {
         <Link href={href('/teachers')} className="hover:text-foreground">
           {t.nav.public.teachers}
         </Link>
+        <Link href={href('/blog')} className="hover:text-foreground">
+          {t.nav.public.blog}
+        </Link>
         <Link href={href('/#how')} className="hover:text-foreground">
           {t.nav.public.howItWorks}
         </Link>
@@ -96,6 +99,7 @@ export function PublicFooter() {
       links: [
         { href: '/verify', label: t.landing.footerVerify },
         { href: '/teachers', label: t.nav.public.teachers },
+        { href: '/blog', label: t.nav.public.blog },
         { href: '/teach', label: t.catalog.teach },
         { href: '/support', label: t.comms.support.nav },
       ],
