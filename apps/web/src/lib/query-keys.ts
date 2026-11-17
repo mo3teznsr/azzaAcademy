@@ -38,6 +38,8 @@ export const qk = {
   /** Lesson progress across my courses ("Continue learning"); invalidate after completing a lesson. */
   mySubscriptions: ['me', 'subscriptions'] as const,
   learningProgress: ['me', 'learning-progress'] as const,
+  progress: ['me', 'progress'] as const,
+  badges: ['me', 'badges'] as const,
   /** `scopeKey` is a batch id, or `course:<id>` for a recorded course's quizzes. */
   quizzes: (scopeKey: string) => ['quizzes', scopeKey] as const,
   quiz: (id: string) => ['quiz', id] as const,
