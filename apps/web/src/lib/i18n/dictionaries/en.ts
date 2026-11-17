@@ -2075,7 +2075,19 @@ const en = {
     payouts: {
       secondAdmin: 'Another admin must approve this run: you created or adjusted it.',
       auditTitle: 'History',
-      auditActions: { PAYOUT_RUN_CREATED: 'created the run', PAYOUT_ADJUSTED: 'adjusted a payout', PAYOUT_RUN_APPROVED: 'approved the run', PAYOUT_RUN_EXPORTED: 'downloaded the bank file', PAYOUT_RUN_PAID: 'marked the run paid' },
+      auditActions: { PAYOUT_RUN_CREATED: 'created the run', PAYOUT_ADJUSTED: 'adjusted a payout', PAYOUT_RUN_APPROVED: 'approved the run', PAYOUT_RUN_EXPORTED: 'downloaded the bank file', PAYOUT_RUN_PAID: 'marked the run paid', PAYOUT_PROVIDER_SENT: 'sent a payout through the provider', PAYOUT_PROVIDER_SEND_FAILED: 'tried to send a payout (failed)', PAYOUT_PROVIDER_PAID: 'provider confirmed a payout', PAYOUT_PROVIDER_FAILED: 'provider reported a failed payout' },
+      provider: {
+        send: 'Send through {provider}',
+        sendTitle: 'Send this run through {provider}?',
+        sendBody: 'Each ready payout is sent to the teacher’s account. A payout is marked paid only when {provider} confirms it; failed ones come back as ready with the reason.',
+        sendConfirm: 'Send payouts',
+        sent: '{n} payouts sent',
+        failedReason: 'Not sent: {reason}',
+        status: { PENDING: 'Sent, waiting', IN_TRANSIT: 'On its way', PAID: 'Confirmed', FAILED: 'Failed' },
+        account: 'Payout account',
+        accountTitle: 'Stripe connected account',
+        accountHint: 'The teacher’s Stripe account id (acct_…) after onboarding. Leave empty to remove it.',
+      },
       title: 'Instructor payouts',
       policyTitle: 'Payout policy',
       policy: [

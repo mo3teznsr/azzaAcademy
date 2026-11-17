@@ -2072,7 +2072,19 @@ const ar: Dictionary = {
     payouts: {
       secondAdmin: 'يجب أن يعتمد هذه الدورة مسؤول آخر: أنت أنشأتها أو عدّلتها.',
       auditTitle: 'السجل',
-      auditActions: { PAYOUT_RUN_CREATED: 'أنشأ الدورة', PAYOUT_ADJUSTED: 'عدّل مستحقًا', PAYOUT_RUN_APPROVED: 'اعتمد الدورة', PAYOUT_RUN_EXPORTED: 'نزّل ملف البنك', PAYOUT_RUN_PAID: 'علّم الدورة مدفوعة' },
+      auditActions: { PAYOUT_RUN_CREATED: 'أنشأ الدورة', PAYOUT_ADJUSTED: 'عدّل مستحقًا', PAYOUT_RUN_APPROVED: 'اعتمد الدورة', PAYOUT_RUN_EXPORTED: 'نزّل ملف البنك', PAYOUT_RUN_PAID: 'علّم الدورة مدفوعة', PAYOUT_PROVIDER_SENT: 'أرسل مستحقًا عبر مزوّد الدفع', PAYOUT_PROVIDER_SEND_FAILED: 'حاول إرسال مستحق (تعذّر)', PAYOUT_PROVIDER_PAID: 'أكّد المزوّد وصول مستحق', PAYOUT_PROVIDER_FAILED: 'أبلغ المزوّد بفشل مستحق' },
+      provider: {
+        send: 'أرسل عبر {provider}',
+        sendTitle: 'إرسال هذه الدورة عبر {provider}؟',
+        sendBody: 'يُرسَل كل مستحق جاهز إلى حساب المدرّس. لا يُعلَّم المستحق مدفوعًا إلا بعد تأكيد {provider}، ويعود المتعذّر منها جاهزًا مع السبب.',
+        sendConfirm: 'أرسل المستحقات',
+        sent: 'أُرسل {n} من المستحقات',
+        failedReason: 'لم يُرسل: {reason}',
+        status: { PENDING: 'أُرسل، بانتظار التأكيد', IN_TRANSIT: 'في الطريق', PAID: 'مؤكَّد', FAILED: 'تعذّر' },
+        account: 'حساب الاستلام',
+        accountTitle: 'حساب Stripe المرتبط',
+        accountHint: 'معرّف حساب Stripe للمدرّس (acct_…) بعد التسجيل. اتركه فارغًا لإزالته.',
+      },
       title: 'مستحقات المعلّمين',
       policyTitle: 'سياسة المستحقات',
       policy: [

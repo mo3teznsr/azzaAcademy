@@ -79,6 +79,7 @@ export const qk = {
     payoutRuns: ['admin', 'payout-runs'] as const,
     appStore: ['admin', 'app-store'] as const,
     payoutRun: (id: string) => ['admin', 'payout-runs', id] as const,
+    payoutProvider: ['admin', 'payout-provider'] as const,
     /** Prefix `['admin', 'instructor-applications']` invalidates every tab. */
     instructorApplications: (status?: string) => ['admin', 'instructor-applications', status ?? 'all'] as const,
     admins: ['admin', 'users', 'admins'] as const,

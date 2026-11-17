@@ -679,6 +679,8 @@ export interface TeacherBankDetails {
   swift: string;
   verified: boolean;
   verifiedAt: ISODate | null;
+  /** Stripe Connect connected account for provider payouts (admin-set). */
+  stripeAccountId?: string | null;
   updatedAt: ISODate;
 }
 
@@ -695,6 +697,19 @@ export interface Payout {
   transferReference: string | null;
   paidAt: ISODate | null;
   createdAt: ISODate;
+  /** Payout provider (e.g. "stripe_connect") once sent through it. */
+  provider?: string | null;
+  providerTransferId?: string | null;
+  providerStatus?: 'PENDING' | 'IN_TRANSIT' | 'PAID' | 'FAILED' | null;
+  providerFailureReason?: string | null;
+  providerAttempts?: number;
+}
+
+/** GET /admin/payout-provider */
+export interface PayoutProviderInfo {
+  enabled: boolean;
+  name: string | null;
+  label: string | null;
 }
 
 /** GET /teacher/payouts item. */
