@@ -20,6 +20,8 @@ import '../../../router/routes.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/guest_gate.dart';
 import '../../subscriptions/data/subscription_repository.dart';
+import '../../subscriptions/domain/subscription_models.dart' show allAccessId;
+import '../../subscriptions/presentation/all_access_screen.dart';
 import '../../subscriptions/presentation/plan_picker.dart';
 import '../data/catalog_repository.dart';
 import '../domain/catalog_models.dart';
@@ -128,7 +130,8 @@ class CourseDetailScreen extends ConsumerWidget {
                         StatusChip(label: l.certificate, look: ChipLook.outline, color: p.muted),
                       ],
                     ),
-                    if (c.isRecorded) PlanPicker(course: c, subscription: subscriptionFor(mySubs, c.id)),
+                    if (c.isRecorded) PlanPicker(course: c, subscription: subscriptionFor(mySubs, c.id), allAccess: subscriptionFor(mySubs, allAccessId)),
+                    if (c.isRecorded && !(subscriptionFor(mySubs, c.id)?.hasAccess ?? false)) const AllAccessEntryCard(),
                     if (teachers.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       CardGroup(
@@ -269,7 +272,7 @@ class CourseDetailScreen extends ConsumerWidget {
         },
       ),
       bottomNavigationBar: course.hasValue && course.requireValue.isRecorded
-          ? PlanStartBar(course: course.requireValue, subscription: subscriptionFor(mySubs, course.requireValue.id))
+          ? PlanStartBar(course: course.requireValue, subscription: subscriptionFor(mySubs, course.requireValue.id), allAccess: subscriptionFor(mySubs, allAccessId))
           : course.hasValue
           ? BottomActionBar(
               children: [

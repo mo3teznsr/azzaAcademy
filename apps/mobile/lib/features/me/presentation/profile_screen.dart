@@ -130,6 +130,7 @@ class ProfileScreen extends ConsumerWidget {
                   row(l.savedCoursesTitle, '', icon: Icons.favorite_border_rounded, onTap: () => context.push(Routes.savedCourses)),
                   row(l.myOrders, '', icon: Icons.receipt_long_outlined, onTap: () => context.push(Routes.myOrders)),
                   row(l.plansTitle, '', icon: Icons.autorenew_rounded, onTap: () => context.push(Routes.myPlans)),
+                  row(l.allAccessTitle, '', icon: Icons.all_inclusive_rounded, onTap: () => context.push(Routes.allAccess)),
                   row(l.certificatesTitle, '', icon: Icons.workspace_premium_outlined, onTap: () => context.push(Routes.certificates)),
                   row(l.assignments, '', icon: Icons.assignment_outlined, onTap: () => context.push(Routes.assignments)),
                   row(l.myQuizzesTitle, '', icon: Icons.quiz_outlined, onTap: () => context.push(Routes.myQuizzes)),

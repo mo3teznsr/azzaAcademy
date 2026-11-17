@@ -94,6 +94,7 @@ import '../features/teacher/presentation/teacher_batches_screen.dart';
 import '../features/teacher/presentation/teacher_today_screen.dart';
 import '../features/teachers/presentation/teacher_profile_screen.dart';
 import '../features/subscriptions/domain/subscription_models.dart' show TransferStart;
+import '../features/subscriptions/presentation/all_access_screen.dart';
 import '../features/subscriptions/presentation/my_plans_screen.dart';
 import '../features/subscriptions/presentation/plan_transfer_screen.dart';
 import '../features/subscriptions/presentation/preview_lesson_screen.dart';
@@ -371,6 +372,7 @@ List<RouteBase> buildRoutes() => [
       ]),
       _route(Routes.myOrders, (_) => const MyOrdersScreen()),
       _route(Routes.myPlans, (_) => const MyPlansScreen()),
+      _route(Routes.allAccess, (_) => const AllAccessScreen()),
       _route(Routes.savedCourses, (_) => const SavedCoursesScreen()),
       _route(Routes.certificates, (_) => const CertificatesScreen(), routes: [_route(':code', _certificate)]),
       _route(Routes.instructors, (_) => const InstructorsScreen()),

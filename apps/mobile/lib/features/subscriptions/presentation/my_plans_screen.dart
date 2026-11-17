@@ -15,6 +15,7 @@ import '../../../router/routes.dart';
 import '../../checkout/domain/apple_iap.dart' show usesAppStorePayments;
 import '../data/subscription_repository.dart';
 import '../domain/subscription_models.dart';
+import 'all_access_screen.dart';
 import 'plan_actions.dart';
 import 'plan_picker.dart' show planName;
 
@@ -44,6 +45,7 @@ class MyPlansScreen extends ConsumerWidget {
         data: (list) => RefreshList(
           onRefresh: () async => ref.invalidate(mySubscriptionsProvider),
           children: [
+            const AllAccessEntryCard(margin: EdgeInsets.only(bottom: 12)),
             for (final s in list) ...[
               _PlanCard(subscription: s),
               const SizedBox(height: 12),
