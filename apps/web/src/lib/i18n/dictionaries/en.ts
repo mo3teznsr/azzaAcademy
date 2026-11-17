@@ -653,6 +653,18 @@ const en = {
     direct: 'Direct or unknown',
   },
   investors: {
+    deferred: {
+      title: 'Plan revenue by month',
+      intro: 'A plan is earned over the months it covers: a yearly plan a twelfth a month. Deferred revenue is money collected for months still to come, net of VAT and refunds.',
+      deferred: 'Deferred revenue',
+      deferredNote: 'Collected, not yet earned',
+      collected: 'Plan money collected',
+      recognised: 'Recognised to date',
+      colCollected: 'Collected',
+      colRecognised: 'Recognised',
+      upcoming: 'Still to recognise',
+      none: 'No plan payments yet.',
+    },
     tabs: { overview: 'Overview', investors: 'Investors' },
     intro: 'Calendar months in UTC. Revenue is what was kept after refunds, without VAT. The running month is marked and left out of retention and churn.',
     months: 'Months shown',

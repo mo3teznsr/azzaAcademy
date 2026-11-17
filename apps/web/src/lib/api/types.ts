@@ -1017,6 +1017,14 @@ export interface AdminInvestors {
     ltvCac: number | null;
     paybackMonths: number | null;
   }>;
+  /** Plan revenue spread over the months it covers (yearly plans in 12 slices), net of VAT and refunds. */
+  revenueRecognition: {
+    deferredFils: number;
+    collectedFils: number;
+    recognisedToDateFils: number;
+    months: Array<{ month: string; collectedFils: number; recognisedFils: number }>;
+    upcoming: Array<{ month: string; recognisedFils: number }>;
+  };
 }
 
 /** GET /admin/marketing-spend */

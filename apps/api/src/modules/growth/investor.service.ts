@@ -3,6 +3,7 @@ import type { Clock } from '../../core/ports';
 import { NotFoundError } from '../../core/errors';
 import type { Db } from '../../infrastructure/db';
 import type { AuditLog } from '../audit/audit-log';
+import { revenueRecognition, type PlanPaymentForRecognition } from './deferred-revenue';
 import { addMonths, investorCsv, investorMetrics, monthKey, type Payment, type SpendRow } from './investor-math';
 
 export interface MarketingSpendRecord {
@@ -17,6 +18,8 @@ export interface MarketingSpendRecord {
 export interface InvestorRepository {
   /** Paid (or later refunded) seat orders and plan payments with money in them (free ones don't make a paying customer). */
   payments(): Promise<Payment[]>;
+  /** Paid (or later refunded) plan payments with money in them, with the period they cover (deferred revenue). */
+  planPayments(): Promise<PlanPaymentForRecognition[]>;
   /** Teacher earnings summed by the month they were recorded (UTC), every kind, signed. */
   teacherByMonth(): Promise<Map<string, number>>;
   /** First-touch attribution of these customers: their sign-up acquisition, else their first order's attribution. */
@@ -36,12 +39,18 @@ export class InvestorService {
 
   async metrics(months = 12) {
     const payments = await this.repo.payments();
-    const [teacherByMonth, attribution, spend] = await Promise.all([
+    const [teacherByMonth, attribution, spend, plans] = await Promise.all([
       this.repo.teacherByMonth(),
       this.repo.attribution([...new Set(payments.map((p) => p.userId))]),
       this.repo.spend(),
+      this.repo.planPayments(),
     ]);
-    return investorMetrics({ payments, teacherByMonth, attribution, spend: spend as SpendRow[], now: this.clock.now(), months });
+    const now = this.clock.now();
+    return {
+      ...investorMetrics({ payments, teacherByMonth, attribution, spend: spend as SpendRow[], now, months }),
+      /** Plan revenue spread over the months it covers: deferred (collected, not yet earned) and recognised per month. */
+      revenueRecognition: revenueRecognition(plans, now, months),
+    };
   }
 
   async csv(months = 12) {
@@ -78,6 +87,14 @@ export class PrismaInvestorRepository implements InvestorRepository {
       this.db.subscriptionPayment.findMany({ where: { status: { in: ['PAID', 'REFUNDED'] }, totalFils: { gt: 0 }, paidAt: { not: null } }, select }),
     ]);
     return [...orders, ...plans].map((p) => ({ userId: p.userId, at: p.paidAt!, totalFils: p.totalFils, vatFils: p.vatFils, refundedFils: p.refundedFils, feeFils: p.feeFils }));
+  }
+
+  async planPayments() {
+    const rows = await this.db.subscriptionPayment.findMany({
+      where: { status: { in: ['PAID', 'REFUNDED'] }, totalFils: { gt: 0 }, paidAt: { not: null } },
+      select: { plan: true, paidAt: true, periodStart: true, totalFils: true, vatFils: true, refundedFils: true },
+    });
+    return rows.map((r) => ({ ...r, paidAt: r.paidAt! }));
   }
 
   async teacherByMonth() {
