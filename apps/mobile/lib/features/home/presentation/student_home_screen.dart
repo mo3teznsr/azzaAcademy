@@ -33,6 +33,8 @@ import '../../me/data/me_repository.dart';
 import '../../me/domain/me_models.dart';
 import '../../waitlist/data/waitlist_repository.dart';
 import '../../waitlist/presentation/waitlist_section.dart';
+import '../../progress/data/progress_repository.dart';
+import '../../progress/presentation/progress_card.dart';
 
 String greeting(AppLocalizations l, String name, DateTime now) {
   if (now.hour < 12) return l.greetingMorning(name);
@@ -71,6 +73,7 @@ class StudentHomeScreen extends ConsumerWidget {
       ref.invalidate(waitlistProvider);
       ref.invalidate(myAnnouncementsProvider);
       ref.invalidate(conversationsProvider);
+      ref.invalidate(myProgressProvider);
       await ref.read(enrollmentsProvider.future);
     }
 
@@ -146,6 +149,7 @@ class StudentHomeScreen extends ConsumerWidget {
                     const SizedBox(height: 10),
                   ],
                   _PracticeDue(active: active),
+                  const ProgressCard(),
                   if (week.isNotEmpty) _ThisWeek(sessions: week),
                   const WaitlistSection(),
                   const _CatchUp(),

@@ -117,6 +117,8 @@ String? notificationRoute(String type, Map<String, dynamic> data) {
   if (type == 'SESSION_STARTING' && data['sessionId'] != null) return '/sessions/${data['sessionId']}/lobby';
   if (type == 'SESSION_MISSED') return '/student/library';
   if (type == 'CERTIFICATE_ISSUED') return '/me/certificates';
+  // Badges and the weekly goal reminder open My progress.
+  if (type == 'BADGE_EARNED' || type == 'LEARNING_GOAL_REMINDER') return '/me/progress';
   // An answer to the learner's lesson question opens that lesson (its Q&A is under the text).
   if (type == 'LESSON_ANSWER' && _present(data['courseId']) != null && _present(data['lessonId']) != null) {
     return '/courses/${data['courseId']}/lessons/${data['lessonId']}';

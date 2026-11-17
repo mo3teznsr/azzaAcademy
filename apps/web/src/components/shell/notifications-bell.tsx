@@ -128,6 +128,9 @@ function notificationHref(type: string, data: unknown, role: Role | null): strin
     }
     case 'WELCOME':
       return '/';
+    case 'BADGE_EARNED':
+    case 'LEARNING_GOAL_REMINDER':
+      return '/progress';
     case 'LESSON_QUESTION': {
       // The course author answers from the studio inbox.
       const courseId = field('courseId');

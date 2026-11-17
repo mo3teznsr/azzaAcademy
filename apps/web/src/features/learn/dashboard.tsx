@@ -24,6 +24,7 @@ import { useNow } from '@/lib/use-now';
 import { cn } from '@/lib/utils';
 import { useEnrollments, useLearningProgress, useMyAssignments, useMySchedule, useRecordings } from './hooks';
 import { WaitlistPanel } from '../waitlist/waitlist-panel';
+import { ProgressCard } from '../progress/progress-card';
 import { QuizzesDuePanel } from '../quizzes/my-quizzes';
 import { useCategoryLabel } from '@/components/brand/category';
 import { LatestFromClasses } from '../comms/announcements';
@@ -57,6 +58,8 @@ export function LearnDashboard() {
       )}
 
       <ContinueLearning />
+
+      <ProgressCard />
 
       <WaitlistPanel />
 

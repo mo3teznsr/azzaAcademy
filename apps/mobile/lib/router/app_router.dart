@@ -42,6 +42,7 @@ import '../features/catalog/presentation/batch_picker_screen.dart';
 import '../features/certificates/presentation/certificate_detail_screen.dart';
 import '../features/certificates/presentation/certificate_verify_screen.dart';
 import '../features/certificates/presentation/certificates_screen.dart';
+import '../features/progress/presentation/progress_screen.dart';
 import '../features/catalog/presentation/batch_schedule_screen.dart';
 import '../features/catalog/presentation/course_detail_screen.dart';
 import '../features/catalog/presentation/explore_screen.dart';
@@ -207,6 +208,7 @@ List<RouteBase> _studentInTab() => [
       _route('me/plans', (_) => const MyPlansScreen()),
       _route('me/saved', (_) => const SavedCoursesScreen()),
       _route('me/certificates', (_) => const CertificatesScreen(), routes: [_route(':code', _certificate)]),
+      _route('me/progress', (_) => const ProgressScreen()),
       ..._settingsRoutes(),
     ];
 
@@ -373,6 +375,7 @@ List<RouteBase> buildRoutes() => [
       _route(Routes.myPlans, (_) => const MyPlansScreen()),
       _route(Routes.savedCourses, (_) => const SavedCoursesScreen()),
       _route(Routes.certificates, (_) => const CertificatesScreen(), routes: [_route(':code', _certificate)]),
+      _route(Routes.myProgress, (_) => const ProgressScreen()),
       _route(Routes.instructors, (_) => const InstructorsScreen()),
       _route(Routes.teachOnAzza, (_) => const TeachScreen()),
       _route('/teachers/:id', _teacherProfile),

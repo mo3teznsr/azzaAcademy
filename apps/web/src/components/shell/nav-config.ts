@@ -58,6 +58,7 @@ export const studentNav = (t: Dictionary): NavGroup[] => [
       { href: '/assignments', label: t.nav.student.assignments, icon: ClipboardList },
       { href: '/quizzes', label: t.learning.quizzes.nav, icon: ListChecks },
       { href: '/certificates', label: t.nav.student.certificates, icon: Award },
+      { href: '/progress', label: t.nav.student.progress, icon: TrendingUp },
       { href: '/invite', label: t.nav.student.invite, icon: Gift },
       { href: '/settings', label: t.nav.student.settings, icon: Settings },
     ],

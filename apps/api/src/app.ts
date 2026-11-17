@@ -22,6 +22,7 @@ import { adminCategoryImageRoutes, categoryRoutes } from './modules/categories/c
 import { engagementRoutes } from './modules/reviews/review.routes';
 import { instructorApplicationRoutes } from './modules/instructors/instructor-application.routes';
 import { meRoutes } from './modules/me/me.routes';
+import { progressRoutes } from './modules/progress/progress.routes';
 import { adminFinanceRoutes, paymentRoutes } from './modules/payments/payments.routes';
 import { adminPayoutRoutes, teacherPayoutRoutes } from './modules/payouts/payout.routes';
 import { sessionRoutes } from './modules/sessions/session.routes';
@@ -118,6 +119,7 @@ export function createApp(container: Container) {
     .route('/instructor-applications', instructorApplicationRoutes(services.instructorApplications))
     .route('/batches', batchRoutes(services.batches))
     .route('/me', meRoutes(services.me, services.notifications, services.calendar))
+    .route('/me', progressRoutes(services.progress))
     .route('/stats', statsRoutes(services.stats))
     .route('/sessions', sessionRoutes(services.sessions))
     .route('/reschedule-requests', rescheduleRequestRoutes(services.rescheduleRequests))
