@@ -53,6 +53,11 @@ Status: done in PR #10, with two changes from the plan:
 
 ## Phase 3: 90 days
 
+Status: done in PR #11. Notes:
+- Payouts through a provider API were not built; bank transfers are matched from the bank's CSV statement instead.
+- Google and Apple sign-in is web only; mobile needs Apple and Google console setup first (steps in the PR).
+- Tabby is off until its keys are set and has not been tried against Tabby itself.
+
 1. **Arabic SEO done properly.** Server-render course, teacher and landing pages; `/ar` and `/en` routes with `hreflang`; category pages.
 2. **Referral program.** Codes for students and teachers; a reward for both sides after the first paid order; a teacher bonus (`Earning.kind = BONUS`) on students they bring.
 3. **Sign in with Apple and Google** (better-auth social providers).
@@ -61,6 +66,10 @@ Status: done in PR #10, with two changes from the plan:
 6. **Lesson Q&A** for recorded courses, and teacher analytics (drop-off by lesson, inactive students).
 
 ## Phase 4: 180 days
+
+Status: done in PR #11. Notes:
+- The all-access plan is sold by card and bank transfer, not in the iPhone app (needs an App Store product), and has no mobile purchase screen.
+- Streaming uses Bunny Stream and is off until its keys are set; offline copies are the low MP4 rendition.
 
 1. **All-access subscription** for recorded courses, with teacher shares split by minutes watched.
 2. **Companies and schools.** `Organization`, seat packs, invoices by bank transfer, completion reports per organization, manual enrolment by admins.
