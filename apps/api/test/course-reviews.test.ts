@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import type { CategoryInput, CourseReviewInput } from '@azza/shared';
+import type { CategoryInput } from '@azza/shared';
 import type { AppError } from '../src/core/errors';
 import { CategoryService, type CategoryRecord, type CategoryRepository } from '../src/modules/categories/category.service';
-import { ReviewService, type ReviewRecord, type ReviewRepository } from '../src/modules/reviews/review.service';
+import { ReviewService, firstName, type ReviewRecord, type ReviewRepository, type ReviewWrite, type TestimonialRecord } from '../src/modules/reviews/review.service';
 import { RecordingNotifier } from './fakes/in-memory';
 
 const codeOf = (p: Promise<unknown>) => p.then(() => null, (e: AppError) => e.code);
@@ -14,6 +14,8 @@ const admin = { id: 'nour', role: 'ADMIN' as const };
 class InMemoryReviews implements ReviewRepository {
   rows: ReviewRecord[] = [];
   eligible = new Set(['sara']);
+  names: Record<string, string> = {};
+  coursePublished = true;
   aggregate = { ratingAvg: 0, ratingCount: 0 };
   async courseExists(id: string) {
     return id === 'c1' || id === 'ux-basics' ? { id: 'c1', titleEn: 'UX Basics' } : null;
@@ -36,13 +38,41 @@ class InMemoryReviews implements ReviewRepository {
   async canReview(_c: string, userId: string) {
     return this.eligible.has(userId);
   }
-  async upsert(courseId: string, userId: string, input: CourseReviewInput) {
+  async upsert(courseId: string, userId: string, input: ReviewWrite) {
     const mine = await this.findMine(courseId, userId);
     if (mine) return Object.assign(mine, input);
     const at = new Date();
-    const row = { id: `r${this.rows.length + 1}`, courseId, userId, ...input, teacherReply: null, repliedAt: null, hidden: false, createdAt: at, updatedAt: at, user: { id: userId, name: userId, image: null } };
+    const { featuredAt: _f, ...create } = input;
+    const row: ReviewRecord = {
+      id: `r${this.rows.length + 1}`,
+      courseId,
+      userId,
+      quoteConsent: false,
+      featuredAt: null,
+      ...create,
+      teacherReply: null,
+      repliedAt: null,
+      hidden: false,
+      createdAt: at,
+      updatedAt: at,
+      user: { id: userId, name: this.names[userId] ?? userId, image: null },
+    };
     this.rows.push(row);
     return row;
+  }
+  private withCourse(r: ReviewRecord): TestimonialRecord {
+    return { ...r, course: { id: 'c1', slug: 'ux-basics', titleEn: 'UX Basics', titleAr: 'أساسيات تجربة المستخدم' } };
+  }
+  async featured(o: { courseId?: string; take: number }) {
+    if (!this.coursePublished) return [];
+    return this.rows
+      .filter((r) => r.featuredAt && r.quoteConsent && !r.hidden && (!o.courseId || r.courseId === o.courseId))
+      .slice(0, o.take)
+      .map((r) => this.withCourse(r));
+  }
+  async consented(o: { featured?: boolean; courseId?: string; skip: number; take: number }) {
+    const items = this.rows.filter((r) => r.quoteConsent && (o.featured === undefined || !!r.featuredAt === o.featured));
+    return { items: items.slice(o.skip, o.skip + o.take).map((r) => this.withCourse(r)), total: items.length };
   }
   async delete(id: string) {
     this.rows = this.rows.filter((r) => r.id !== id);
@@ -106,6 +136,97 @@ describe('course reviews', () => {
     expect(repo.aggregate.ratingCount).toBe(0);
     expect((await service.list('c1', 1, 20, null)).items).toHaveLength(0);
     expect((await service.list('c1', 1, 20, admin)).items).toHaveLength(1);
+  });
+});
+
+describe('testimonials', () => {
+  const long = 'The teacher explained every step and checked our work each week.';
+
+  test('a new review starts without consent; leaving it out on an edit keeps the choice', async () => {
+    const { service } = setup();
+    const r = await service.upsert('c1', { rating: 5, body: long }, sara);
+    expect(r.quoteConsent).toBe(false);
+    await service.upsert('c1', { rating: 5, body: long, quoteConsent: true }, sara);
+    const kept = await service.upsert('c1', { rating: 4, body: long }, sara);
+    expect(kept.quoteConsent).toBe(true);
+  });
+
+  test('admins feature only consented, visible reviews with enough text from learners still enrolled', async () => {
+    const { repo, service } = setup();
+    repo.eligible.add('omar');
+    const noConsent = await service.upsert('c1', { rating: 5, body: long }, sara);
+    expect(await codeOf(service.feature(noConsent.id, true))).toBe('TESTIMONIAL_NO_CONSENT');
+
+    const short = await service.upsert('c1', { rating: 5, body: 'Great', quoteConsent: true }, omar);
+    expect(await codeOf(service.feature(short.id, true))).toBe('TESTIMONIAL_TOO_SHORT');
+
+    const ok = await service.upsert('c1', { rating: 4, body: long, quoteConsent: true }, sara);
+    await service.moderate(ok.id, true);
+    expect(await codeOf(service.feature(ok.id, true))).toBe('TESTIMONIAL_HIDDEN');
+    await service.moderate(ok.id, false);
+
+    repo.eligible.delete('sara'); // refunded or removed from the class since writing
+    expect(await codeOf(service.feature(ok.id, true))).toBe('TESTIMONIAL_NOT_ELIGIBLE');
+    repo.eligible.add('sara');
+
+    const featured = await service.feature(ok.id, true);
+    expect(featured.featuredAt).toEqual(new Date('2026-11-06T10:00:00Z'));
+    expect(await codeOf(service.feature('missing', true))).toBe('NOT_FOUND');
+    expect((await service.feature(ok.id, false)).featuredAt).toBeNull();
+  });
+
+  test('withdrawing consent, cutting the text or hiding the review unfeatures it', async () => {
+    const { repo, service } = setup();
+    const r = await service.upsert('c1', { rating: 5, body: long, quoteConsent: true }, sara);
+    await service.feature(r.id, true);
+    await service.upsert('c1', { rating: 5, body: long, quoteConsent: false }, sara);
+    expect(repo.rows[0]!.featuredAt).toBeNull();
+
+    await service.upsert('c1', { rating: 5, body: long, quoteConsent: true }, sara);
+    await service.feature(r.id, true);
+    await service.upsert('c1', { rating: 5, body: 'ok' }, sara);
+    expect(repo.rows[0]!.featuredAt).toBeNull();
+
+    await service.upsert('c1', { rating: 5, body: long }, sara);
+    await service.feature(r.id, true);
+    await service.moderate(r.id, true);
+    expect(repo.rows[0]!.featuredAt).toBeNull();
+  });
+
+  test('the public list shows the first name, the course and the text only', async () => {
+    const { repo, service } = setup();
+    repo.names.sara = 'Sara Al Mansoori';
+    const r = await service.upsert('c1', { rating: 5, body: `  ${long}  `, quoteConsent: true }, sara);
+    expect((await service.testimonials(undefined, 6)).items).toEqual([]);
+    await service.feature(r.id, true);
+    const { items } = await service.testimonials('ux-basics', 6);
+    expect(items).toEqual([{ id: r.id, firstName: 'Sara', body: long, course: { slug: 'ux-basics', titleEn: 'UX Basics', titleAr: 'أساسيات تجربة المستخدم' } }]);
+    expect(JSON.stringify(items)).not.toContain('Mansoori');
+    expect(JSON.stringify(items)).not.toContain('rating');
+    expect((await service.testimonials('unknown-course', 6)).items).toEqual([]);
+    repo.coursePublished = false;
+    expect((await service.testimonials(undefined, 6)).items).toEqual([]);
+  });
+
+  test('admin list marks which consented reviews can be featured', async () => {
+    const { repo, service } = setup();
+    repo.eligible.add('omar');
+    await service.upsert('c1', { rating: 5, body: long, quoteConsent: true }, sara);
+    await service.upsert('c1', { rating: 5, body: 'Short', quoteConsent: true }, omar);
+    await service.upsert('c1', { rating: 5, body: long }, { id: 'omar', role: 'STUDENT' });
+    const res = await service.consented({ page: 1, pageSize: 10 });
+    expect(res.total).toBe(2);
+    expect(res.items.map((i) => [i.userId, i.quotable])).toEqual([
+      ['sara', true],
+      ['omar', true],
+    ]);
+  });
+
+  test('first names keep Arabic compound names whole', () => {
+    expect(firstName('عبد الله الكعبي')).toBe('عبد الله');
+    expect(firstName('  مريم   سالم ')).toBe('مريم');
+    expect(firstName('Abdul Rahman Khan')).toBe('Abdul Rahman');
+    expect(firstName('Lina')).toBe('Lina');
   });
 });
 

@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { courseReviewInput, paginationQuery, reviewModerationInput, reviewReplyInput } from '@azza/shared';
+import { adminTestimonialQuery, courseReviewInput, paginationQuery, reviewFeatureInput, reviewModerationInput, reviewReplyInput, testimonialQuery } from '@azza/shared';
 import { currentUser, requireRole } from '../../http/middleware';
 import type { AppEnv } from '../../http/types';
 import { validate } from '../../http/validate';
@@ -23,6 +23,19 @@ export function engagementRoutes(reviews: ReviewService, saved: SavedCourseServi
     )
     .patch('/reviews/:id', requireRole('ADMIN'), validate('json', reviewModerationInput), async (c) =>
       c.json(await reviews.moderate(c.req.param('id'), c.req.valid('json').hidden)),
+    )
+    // Featured testimonials: the landing page (no course) or one course page. First name and course only.
+    .get('/testimonials', validate('query', testimonialQuery), async (c) => {
+      const { course, limit } = c.req.valid('query');
+      c.header('Cache-Control', 'public, max-age=60');
+      return c.json(await reviews.testimonials(course, limit));
+    })
+    .get('/admin/testimonials', requireRole('ADMIN'), validate('query', adminTestimonialQuery), async (c) => {
+      const q = c.req.valid('query');
+      return c.json(await reviews.consented({ featured: q.featured === undefined ? undefined : q.featured === 'true', courseId: q.courseId, page: q.page, pageSize: q.pageSize }));
+    })
+    .put('/admin/reviews/:id/featured', requireRole('ADMIN'), validate('json', reviewFeatureInput), async (c) =>
+      c.json(await reviews.feature(c.req.param('id'), c.req.valid('json').featured)),
     )
     .get('/me/saved-courses', requireRole('STUDENT', 'TEACHER', 'ADMIN'), async (c) => c.json(await saved.list(currentUser(c).id, currentUser(c).role)))
     .put('/courses/:id/save', requireRole('STUDENT', 'TEACHER', 'ADMIN'), async (c) => c.json(await saved.save(currentUser(c).id, c.req.param('id'))))

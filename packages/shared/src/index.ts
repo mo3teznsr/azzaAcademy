@@ -15,3 +15,4 @@ export * from './bank-statements';
 export * from './marketing';
 export * from './organizations';
 export * from './all-access';
+export * from './blog';

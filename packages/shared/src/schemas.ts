@@ -171,6 +171,8 @@ export type UpdateCategoryInput = z.infer<typeof updateCategoryInput>;
 export const courseReviewInput = z.object({
   rating: z.number().int().min(1).max(5),
   body: z.string().trim().max(2000).default(''),
+  /** "Azza may quote this review on its website." Left out on an edit = unchanged; a new review starts without consent. */
+  quoteConsent: z.boolean().optional(),
 });
 export type CourseReviewInput = z.infer<typeof courseReviewInput>;
 export const reviewReplyInput = z.object({ reply: z.string().trim().min(2).max(2000) });
