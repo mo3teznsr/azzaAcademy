@@ -53,6 +53,14 @@ export class PrismaBlogRepository implements BlogRepository {
     return row ? toRecord(row) : null;
   }
 
+  liveCategories(now: Date) {
+    return this.db.category.findMany({
+      where: { blogPosts: { some: live(now) } },
+      select: { slug: true, nameEn: true, nameAr: true },
+      orderBy: [{ order: 'asc' }, { nameEn: 'asc' }],
+    });
+  }
+
   async publishedSlugs(now: Date) {
     const rows = await this.db.blogPost.findMany({
       where: live(now),

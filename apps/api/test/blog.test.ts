@@ -43,6 +43,9 @@ class MemBlog implements BlogRepository {
   async findPublishedBySlug(slug: string, now: Date) {
     return this.rows.find((p) => p.slug === slug && this.live(p, now)) ?? null;
   }
+  async liveCategories(now: Date) {
+    return this.rows.some((p) => this.live(p, now) && p.categorySlug === 'design') ? [{ slug: 'design', nameEn: 'Design', nameAr: 'تصميم' }] : [];
+  }
   async publishedSlugs(now: Date) {
     return this.rows.filter((p) => this.live(p, now)).map((p) => ({ slug: p.slug, updatedAt: p.updatedAt, hasEn: !!p.titleEn && !!p.bodyEn, categorySlug: p.categorySlug }));
   }
@@ -155,6 +158,7 @@ describe('blog: public pages', () => {
     expect(all.items.map((p) => p.hasEn)).toEqual([true, false]);
     expect(all.items[0]).not.toHaveProperty('bodyAr');
     expect(all.pageCount).toBe(1);
+    expect(all.categories.map((c) => c.slug)).toEqual(['design']);
     expect((await service.list({ page: 1, pageSize: 12, category: 'design' })).items.map((p) => p.slug)).toEqual(['one']);
     expect((await service.list({ page: 2, pageSize: 1 })).items.map((p) => p.slug)).toEqual(['one']);
   });

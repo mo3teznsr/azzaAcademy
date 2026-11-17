@@ -52,6 +52,8 @@ export type BlogPostData = Omit<BlogPostInput, 'courseIds' | 'publishedAt'> & { 
 export interface BlogRepository {
   listPublished(o: { now: Date; category?: string; skip: number; take: number }): Promise<{ items: BlogPostRecord[]; total: number }>;
   findPublishedBySlug(slug: string, now: Date): Promise<BlogPostRecord | null>;
+  /** Categories that have at least one live post (the filter on /blog). */
+  liveCategories(now: Date): Promise<BlogCategoryRef[]>;
   /** Slugs of every live post, with whether it has an English version (sitemap). */
   publishedSlugs(now: Date): Promise<{ slug: string; updatedAt: Date; hasEn: boolean; categorySlug: string | null }[]>;
   listAll(o: { status?: BlogPostStatus; q?: string; skip: number; take: number }): Promise<{ items: BlogPostRecord[]; total: number }>;
@@ -80,8 +82,12 @@ export class BlogService {
   // ---------- Public ----------
 
   async list(o: { page: number; pageSize: number; category?: string }) {
-    const { items, total } = await this.repo.listPublished({ now: this.now(), category: o.category, skip: (o.page - 1) * o.pageSize, take: o.pageSize });
-    return { items: items.map(summary), total, page: o.page, pageSize: o.pageSize, pageCount: Math.max(1, Math.ceil(total / o.pageSize)) };
+    const now = this.now();
+    const [{ items, total }, categories] = await Promise.all([
+      this.repo.listPublished({ now, category: o.category, skip: (o.page - 1) * o.pageSize, take: o.pageSize }),
+      this.repo.liveCategories(now),
+    ]);
+    return { items: items.map(summary), total, page: o.page, pageSize: o.pageSize, pageCount: Math.max(1, Math.ceil(total / o.pageSize)), categories };
   }
 
   /** A live post with its published related courses. Drafts and scheduled posts are not found. */
