@@ -6794,4 +6794,86 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errQaHasAnswers =>
       'This question has answers, so it can no longer be deleted.';
+
+  @override
+  String get allAccessTitle => 'All courses';
+
+  @override
+  String get allAccessKicker => 'All-access plan';
+
+  @override
+  String get allAccessHeadline => 'Every recorded course. One plan.';
+
+  @override
+  String get allAccessBody =>
+      'One monthly or yearly plan opens every recorded course on Azza, including new ones as they launch. Live classes are sold separately.';
+
+  @override
+  String allAccessCourseCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recorded courses included',
+      one: '$count recorded course included',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get allAccessGetLessons =>
+      'Every lesson and quiz in every recorded course';
+
+  @override
+  String get allAccessGetCertificate =>
+      'A certificate for each course you finish';
+
+  @override
+  String get allAccessGetCancel => 'Cancel any time, keep your progress';
+
+  @override
+  String get allAccessUnavailable =>
+      'The all-access plan is not available right now.';
+
+  @override
+  String get allAccessYours => 'Your all-access plan is active';
+
+  @override
+  String get allAccessYoursBody =>
+      'Every recorded course is open to you. Pick one and start learning.';
+
+  @override
+  String get allAccessBrowse => 'Browse recorded courses';
+
+  @override
+  String get allAccessManage => 'Manage in Your plans';
+
+  @override
+  String get allAccessEntry => 'All courses in one plan';
+
+  @override
+  String allAccessEntryFrom(String amount) {
+    return 'From $amount a month: every recorded course';
+  }
+
+  @override
+  String get allAccessIncluded => 'Included in your all-access plan';
+
+  @override
+  String get allAccessCoveredTitle =>
+      'Your all-access plan already opens this course';
+
+  @override
+  String get allAccessCoveredBody =>
+      'You can watch every lesson of this course with your all-access plan. A separate plan would charge you again for the same lessons.';
+
+  @override
+  String allAccessCoveredBodyUntil(String date) {
+    return 'You can watch every lesson of this course with your all-access plan, paid until $date. A separate plan would charge you again for the same lessons.';
+  }
+
+  @override
+  String get allAccessCoveredKeep => 'Keep my all-access plan';
+
+  @override
+  String get allAccessCoveredBuy => 'Buy this plan anyway';
 }
