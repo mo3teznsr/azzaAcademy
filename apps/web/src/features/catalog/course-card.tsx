@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { CourseCover } from '@/components/brand/course-cover';
 import { useCategoryLabel } from '@/components/brand/category';
 import { RatingInline } from '@/components/brand/rating';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { Price } from '@/components/brand/price';
 import { batchPriceFils } from '@/lib/schedule';
 import type { BatchSummary, Course } from '@/lib/api/types';
@@ -14,6 +14,7 @@ import { SaveToggle } from '../saved/use-saved';
 export function CourseCard({ course, batches }: { course: Course; batches: BatchSummary[] }) {
   const { t, f, pick } = useI18n();
   const categoryLabel = useCategoryLabel();
+  const href = useLocaleHref();
   const title = pick(course.titleEn, course.titleAr);
   const next = batches.find((b) => b.status === 'ENROLLING') ?? batches[0];
   // "From" = the lowest listed batch price; the course's own derived price when no batches came with it.
@@ -21,7 +22,7 @@ export function CourseCard({ course, batches }: { course: Course; batches: Batch
   const minPrice = recorded ? (course.monthlyPriceFils ?? course.priceFils) : batches.length ? Math.min(...batches.map(batchPriceFils)) : course.priceFils;
   return (
     <article className="group relative h-full">
-      <Link href={`/courses/${course.slug}`} className="flex h-full flex-col gap-4 rounded-[18px] border border-border bg-card p-3 no-underline transition-[translate,box-shadow] duration-300 ease-(--ease-expo) group-hover:-translate-y-1 group-hover:shadow-card">
+      <Link href={href(`/courses/${course.slug}`)} className="flex h-full flex-col gap-4 rounded-[18px] border border-border bg-card p-3 no-underline transition-[translate,box-shadow] duration-300 ease-(--ease-expo) group-hover:-translate-y-1 group-hover:shadow-card">
         <CourseCover course={course} showMeta={false} className="h-56" />
         <div className="flex flex-1 flex-col gap-2 px-2 pb-2">
           <div className="flex items-center justify-between gap-2">

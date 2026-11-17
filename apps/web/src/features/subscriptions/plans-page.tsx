@@ -7,6 +7,7 @@ import { subscriptionsApi } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { ManagePlan } from './manage-plan';
+import { AllAccessTeaser, findAllAccess } from './all-access';
 
 /** "Your plans": one card per recorded-course subscription, with the things a learner may want to change. */
 export function PlansPage() {
@@ -18,6 +19,12 @@ export function PlansPage() {
     <>
       <PageTitle title={t.recorded.plansTitle} />
       <p className="max-w-xl text-muted-foreground">{t.recorded.plansIntro}</p>
+      {/* The all-access offer, until the learner holds that plan (then it is one of the cards below). */}
+      {q.isSuccess && !findAllAccess(q.data, false) && (
+        <div className="max-w-xl">
+          <AllAccessTeaser />
+        </div>
+      )}
       {q.isPending ? (
         <LoadingBlock rows={2} height={160} />
       ) : q.isError ? (

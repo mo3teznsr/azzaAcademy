@@ -286,6 +286,8 @@ export const checkoutInput = z.object({
   couponCode: z.string().trim().optional(),
   displayCurrency: currencyCode.default('AED'),
   bankAccountId: id.optional(),
+  /** Where the buyer came from (UTM tags, click ids); unknown keys are dropped by the API. */
+  attribution: z.record(z.string(), z.string().max(300)).optional(),
 });
 export type CheckoutInput = z.infer<typeof checkoutInput>;
 
@@ -305,6 +307,10 @@ export const reviewTransferInput = z.discriminatedUnion('decision', [
   z.object({ decision: z.literal('REQUEST_NEW_RECEIPT'), reason: z.string().min(3) }),
 ]);
 export type ReviewTransferInput = z.infer<typeof reviewTransferInput>;
+
+/** `GET /payments/tabby/eligibility` — may the signed-in student pay this seat (after the coupon) with Tabby? */
+export const tabbyEligibilityQuery = z.object({ batchId: id, couponCode: z.string().trim().optional(), lang: z.enum(['ar', 'en']).default('en') });
+export type TabbyEligibilityQuery = z.infer<typeof tabbyEligibilityQuery>;
 
 export const refundInput = z.object({ amountAed: z.number().positive(), reason: z.string().min(3) });
 
@@ -377,7 +383,11 @@ export const payoutAdjustmentInput = z.object({
   amountAed: z.number(), // positive bonus, negative deduction
   reason: z.string().min(3),
 });
-export const markPayoutPaidInput = z.object({ transferReference: z.string().min(3) });
+export const markPayoutPaidInput = z.object({
+  transferReference: z.string().min(3),
+  /** A payout's own bank reference (payout id → reference); the others get `transferReference`. */
+  references: z.record(z.string(), z.string().trim().min(3).max(100)).optional(),
+});
 
 // ---------- Content ----------
 export const materialInput = z.object({
@@ -725,8 +735,32 @@ export const subscribeInput = z.object({
 export type SubscribeInput = z.infer<typeof subscribeInput>;
 
 /** PUT /lessons/:id/position */
-export const videoPositionInput = z.object({ positionSec: z.number().int().min(0) });
+export const videoPositionInput = z.object({
+  positionSec: z.number().int().min(0),
+  /** The video's length in seconds, when the player knows it (lets the API tell how much was watched). */
+  durationSec: z.number().int().min(1).max(86_400).optional(),
+  /** The video played to the end. */
+  ended: z.boolean().optional(),
+});
 export type VideoPositionInput = z.infer<typeof videoPositionInput>;
+
+/** `POST /me/lesson-downloads/status` — lessons saved on the device, checked on the app's next online launch. */
+export const lessonDownloadStatusInput = z.object({
+  lessonIds: z.array(z.string().min(1).max(64)).max(200),
+});
+export type LessonDownloadStatusInput = z.infer<typeof lessonDownloadStatusInput>;
+
+/** Adaptive streaming state of a lesson video, as returned next to a lesson (`stream`). */
+export type LessonStreamStatus = 'PROCESSING' | 'READY' | 'FAILED';
+export interface LessonStreamPlayback {
+  status: LessonStreamStatus;
+  /** Signed HLS master playlist (several renditions), only when READY. */
+  hlsUrl: string | null;
+  posterUrl: string | null;
+  /** Lowest progressive MP4 rendition: data saver on players that cannot cap HLS (Safari, mobile). */
+  lowMp4Url: string | null;
+  durationSec: number | null;
+}
 
 // ---------- Currencies (display only; AED is the base) ----------
 const currencyFields = {
@@ -816,6 +850,10 @@ export const contactSettingsInput = z.object({
   whatsappNumber: clearable(z.string().trim().regex(WHATSAPP_NUMBER_PATTERN, 'Digits only, with the country code (8–15 digits)')),
   addressEn: clearable(z.string().trim().max(300)),
   addressAr: clearable(z.string().trim().max(300)),
+  /** Tax invoices (UAE FTA): the supplier's legal name and address, and its 15-digit TRN. Saving a TRN starts invoicing. */
+  legalName: clearable(z.string().trim().max(200)),
+  legalAddress: clearable(z.string().trim().max(400)),
+  taxRegistrationNumber: clearable(z.string().trim().regex(/^\d{15}$/, 'A UAE TRN has 15 digits')),
   socials: z
     .object({
       instagram: clearable(httpsUrl),
@@ -853,11 +891,20 @@ export interface RuleSettings {
   APPLE_COMMISSION_PERCENT: number;
 }
 
+/** The supplier details printed on tax invoices; invoicing starts on `invoicingFrom` (when the TRN was first saved). */
+export interface LegalSettings {
+  legalName: string | null;
+  legalAddress: string | null;
+  taxRegistrationNumber: string | null;
+  invoicingFrom: string | Date | null;
+}
+
 /** `GET /admin/settings`, and the response of `PUT /admin/settings/rules` and `/contact`. */
 export interface AdminSettings {
+  legal: LegalSettings;
   rules: RuleSettings & { TEACHER_SHARE_PERCENT: number };
   ruleDefaults: RuleSettings;
-  integrations: { stripe: boolean; appleIap: boolean; livekit: boolean; smtp: boolean; push: boolean; appStoreConnect: boolean };
+  integrations: { stripe: boolean; appleIap: boolean; livekit: boolean; smtp: boolean; push: boolean; appStoreConnect: boolean; tabby: boolean };
   contact: ContactSettings;
   socials: SocialLinks;
 }

@@ -8,7 +8,7 @@ import { ArrowUpRight, Plus } from 'lucide-react';
 import { InitialsAvatar } from '@/components/brand/initials-avatar';
 import { LoadingBlock } from '@/components/brand/states';
 import { mediaUrl } from '@/lib/api';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 import { EASE, useCalm, useFinePointer } from './hooks';
 import { Kicker } from './seat';
@@ -18,6 +18,7 @@ import { Wrap } from './wrap';
 /** 9 · Your teachers: the real teachers of open classes. The portrait follows the cursor; tap a name to expand on touch. */
 export function Teachers() {
   const { t } = useI18n();
+  const href = useLocaleHref();
   const c = t.landing.teachers;
   const { teachers, isPending } = useLandingTeachers();
   const fine = useFinePointer();
@@ -53,7 +54,7 @@ export function Teachers() {
           </div>
           <div className="flex max-w-md flex-col gap-4 lg:justify-self-end">
             <p className="text-lg text-soft-foreground">{c.body}</p>
-            <Link href="/teachers" className="link-sun flex items-center gap-1 self-start font-bold">
+            <Link href={href('/teachers')} className="link-sun flex items-center gap-1 self-start font-bold">
               {c.seeAll} <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
             </Link>
           </div>
@@ -103,6 +104,7 @@ export function Teachers() {
 
 function Row({ teacher, i, hovered, open, onHover, onToggle }: { teacher: LandingTeacher; i: number; hovered: boolean; open: boolean; onHover: () => void; onToggle: () => void }) {
   const { t, f, pick } = useI18n();
+  const href = useLocaleHref();
   const c = t.landing.teachers;
   const id = useId();
   const subject = teacher.headline || teacher.courses.map((co) => pick(co.titleEn, co.titleAr).text).join(' · ');
@@ -149,7 +151,7 @@ function Row({ teacher, i, hovered, open, onHover, onToggle }: { teacher: Landin
               <div className="flex flex-col gap-2">
                 <p className="text-lg">{subject}</p>
                 <p className="label-mono text-muted-foreground">{c.languages} {langs}</p>
-                <Link href={`/teachers/${teacher.id}`} className="link-sun flex items-center gap-1 self-start">
+                <Link href={href(`/teachers/${teacher.id}`)} className="link-sun flex items-center gap-1 self-start">
                   {c.profile} <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
                 </Link>
               </div>

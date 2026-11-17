@@ -14,6 +14,7 @@ export const COUPON_REFUSALS = [
   'WRONG_BATCH',
   'BELOW_MINIMUM',
   'PER_USER_LIMIT',
+  'NOT_YOURS',
 ] as const;
 export type CouponRefusal = (typeof COUPON_REFUSALS)[number];
 
@@ -28,6 +29,7 @@ export const COUPON_REFUSAL_MESSAGES: Record<CouponRefusal | 'NOT_FOUND', string
   WRONG_BATCH: 'This coupon is for a different batch',
   BELOW_MINIMUM: 'Your order is below this coupon’s minimum',
   PER_USER_LIMIT: 'You have already used this coupon the maximum number of times',
+  NOT_YOURS: 'This coupon belongs to another account',
 };
 
 export interface CouponRules {
@@ -40,6 +42,8 @@ export interface CouponRules {
   minOrderFils: number | null;
   courseId: string | null;
   batchId: string | null;
+  /** Personal coupon (referral rewards): only this user may use it. Absent or null = anyone. */
+  ownerId?: string | null;
 }
 
 export interface CouponContext {
@@ -50,12 +54,15 @@ export interface CouponContext {
   subtotalFils: number;
   /** The student's paid + in-progress uses of this coupon; null when the buyer is anonymous (quote without a session). */
   userUses: number | null;
+  /** The buyer; null when anonymous. */
+  userId?: string | null;
 }
 
 /** null when the coupon applies, otherwise the first rule it breaks (checked in a stable order). */
 export function couponRefusal(c: CouponRules, ctx: CouponContext): CouponRefusal | null {
   const t = ctx.now.getTime();
   if (!c.active) return 'PAUSED';
+  if (c.ownerId && c.ownerId !== ctx.userId) return 'NOT_YOURS';
   if (c.startsOn && t < c.startsOn.getTime()) return 'NOT_STARTED';
   if (c.expiresOn && t >= c.expiresOn.getTime() + DAY_MS) return 'EXPIRED'; // valid through its last day
   if (c.maxRedemptions !== null && c.redemptions >= c.maxRedemptions) return 'EXHAUSTED';

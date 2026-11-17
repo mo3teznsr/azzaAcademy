@@ -1,8 +1,8 @@
-import type { CheckoutInput, EnrollmentStatus } from '@azza/shared';
+import { cleanAttribution, filsToAed, formatMoney, type CheckoutInput, type EnrollmentStatus } from '@azza/shared';
 import { BusinessRuleError, ConflictError, ForbiddenError, NotFoundError } from '../../core/errors';
 import type { PaymentWebhookEvent } from '../../core/ports';
-import { addHours } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { addHours, formatInZone } from '../../core/time';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { CheckoutStrategyRegistry } from './checkout/checkout-strategy';
 import type { EnrollmentLifecycle } from './enrollment-lifecycle';
@@ -39,6 +39,8 @@ export class CheckoutService {
     private readonly notifier: Notifier,
     /** The VAT in effect, awaited at every quote (the admin-editable rule, 30 s cache). Omitted: `prices` as built. */
     private readonly vatPercent?: () => Promise<number>,
+    /** Absolute links in reminder emails. */
+    private readonly webUrl = '',
   ) {}
 
   private async sellableBatch(batchId: string): Promise<SaleBatch> {
@@ -62,6 +64,7 @@ export class CheckoutService {
         batchId: b.id,
         subtotalFils: priceFils,
         userUses: userId ? await this.repo.couponUsesBy(coupon.id, coupon.code, userId) : null,
+        userId: userId ?? null,
       });
       if (reason) {
         throw new BusinessRuleError(COUPON_REFUSAL_MESSAGES[reason], 'COUPON_INVALID', {
@@ -124,8 +127,10 @@ export class CheckoutService {
       stripeCheckoutSessionId: started.stripeCheckoutSessionId ?? null,
       appleProductId: started.appleProductId ?? null,
       appleAppAccountToken: started.appleAppAccountToken ?? null,
+      tabbyPaymentId: started.tabbyPaymentId ?? null,
       bankAccountId: started.bankAccountId ?? null,
       expiresAt: started.expiresAt,
+      attribution: cleanAttribution(input.attribution),
     });
     await started.onCreated?.(order);
     await this.lifecycle.syncFullness(batch.id);
@@ -163,8 +168,9 @@ export class CheckoutService {
       type: 'WAITLISTED',
       title: `You’re on the waitlist · ${batch.courseTitle} ${batch.code}`,
       body: 'We’ll let you know as soon as a seat opens',
+      ar: { title: `أنت على قائمة الانتظار · ${batch.courseTitleAr ?? batch.courseTitle} ${batch.code}`, body: 'سنخبرك فور توفّر مقعد' },
       data: { batchId: batch.id },
-      email: (r) => appEmails.waitlisted(r.name, batch.courseTitle, batch.code),
+      email: (r) => emailsIn(r.locale).waitlisted(r.name, batch.courseTitle, batch.code),
     });
     return enrollment;
   }
@@ -206,6 +212,7 @@ export class CheckoutService {
         type: 'TRANSFER_TO_VERIFY',
         title: `Transfer to verify · ${order.reference}`,
         body: `${(order.totalFils / 100).toFixed(2)} AED receipt uploaded`,
+        ar: { title: `تحويل بانتظار التحقق · ${order.reference}`, body: `رُفع إيصال بمبلغ ${(order.totalFils / 100).toFixed(2)} AED` },
         data: { orderId: order.id, reference: order.reference },
       },
       { channels: ['in-app', 'realtime'] },
@@ -249,6 +256,35 @@ export class CheckoutService {
   }
 
   /** Job: release seats whose payment never arrived, then offer them to the waitlist. */
+  /**
+   * Job: bank transfers still waiting for a receipt 6 hours before their hold ends get one reminder (in-app, push, email)
+   * with the amount, the reference and a link to upload the receipt. Marked first, so it is never sent twice.
+   */
+  async remindExpiringTransfers() {
+    const now = this.lifecycle.now();
+    let reminded = 0;
+    for (const order of await this.repo.transfersExpiringSoon(now, addHours(now, 6))) {
+      await this.repo.markReceiptReminded(order.id, now);
+      const expiresAt = order.expiresAt!;
+      const amount = formatMoney(filsToAed(order.totalFils), 'AED');
+      const url = `${this.webUrl}/orders/${order.id}`;
+      await this.notifier.notify(
+        [order.userId],
+        {
+          type: 'TRANSFER_HOLD_ENDING',
+          title: `Upload your receipt to keep your seat · ${order.reference}`,
+          body: `Transfer ${amount} with reference ${order.reference}. Your seat is held for a few more hours.`,
+          ar: { title: `ارفع الإيصال ليبقى مقعدك · ${order.reference}`, body: `حوّل ${amount} بالمرجع ${order.reference}. مقعدك محجوز لساعات قليلة أخرى.` },
+          data: { orderId: order.id, reference: order.reference },
+          email: (r) => emailsIn(r.locale).transferReminder(r.name, order.reference, amount, formatInZone(expiresAt, r.timezone, r.locale), url),
+        },
+        { channels: ['in-app', 'push', 'email'] },
+      );
+      reminded++;
+    }
+    return { reminded };
+  }
+
   async expireStaleOrders() {
     const now = this.lifecycle.now();
     const batches = new Set<string>();
@@ -262,12 +298,22 @@ export class CheckoutService {
         batches.add(enrollment.batchId);
       }
       this.lifecycle.orderUpdated(expired);
-      await this.notifier.notify([order.userId], {
-        type: 'ORDER_EXPIRED',
-        title: `Seat hold expired · ${order.reference}`,
-        body: 'We released the seat because payment did not arrive in time',
-        data: { orderId: order.id },
-      }, { channels: ['in-app', 'realtime', 'push'] });
+      // A card checkout that lapsed while the class still has room gets an email back to checkout (an abandoned cart).
+      const batch = enrollment && order.method === 'STRIPE' ? await this.repo.findBatchForSale(enrollment.batchId) : null;
+      const recover = batch && batch.status === 'ENROLLING' ? batch : null;
+      const checkoutUrl = recover ? `${this.webUrl}/checkout/${recover.id}` : null;
+      await this.notifier.notify(
+        [order.userId],
+        {
+          type: 'ORDER_EXPIRED',
+          title: `Seat hold expired · ${order.reference}`,
+          body: 'We released the seat because payment did not arrive in time',
+          ar: { title: `انتهى حجز المقعد · ${order.reference}`, body: 'حرّرنا المقعد لأن الدفع لم يصل في الوقت المحدد' },
+          data: { orderId: order.id, ...(recover && { batchId: recover.id }) },
+          ...(recover && checkoutUrl && { email: (r) => emailsIn(r.locale).checkoutLapsed(r.name, recover.courseTitle, recover.code, checkoutUrl) }),
+        },
+        { channels: recover ? ['in-app', 'realtime', 'push', 'email'] : ['in-app', 'realtime', 'push'] },
+      );
     }
     let expiredHolds = 0;
     for (const hold of await this.repo.staleHolds(addHours(now, -PENDING_HOLD_HOURS))) {

@@ -1,4 +1,4 @@
-import type { BatchStatus, EnrollmentStatus, Role } from '@azza/shared';
+import type { BatchStatus, EnrollmentStatus, OrderStatus, Role } from '@azza/shared';
 import type { RealtimeBroadcaster } from '../../src/core/ports';
 import type { Notice, Notifier } from '../../src/modules/notifications/notification.types';
 import { SEAT_HOLDING } from '../../src/modules/payments/enrollment-state';
@@ -80,6 +80,7 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   async createOrder(data: NewOrder) {
     const o: OrderRecord = {
       ...data,
+      tabbyPaymentId: data.tabbyPaymentId ?? null,
       id: this.id('ord'),
       appleTransactionId: null,
       appleOriginalTransactionId: null,
@@ -113,6 +114,9 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
   async findOrderByAppleToken(token: string) {
     return this.orders.find((o) => o.appleAppAccountToken === token.toLowerCase()) ?? null;
   }
+  async findOrderByTabbyPayment(paymentId: string) {
+    return this.orders.find((o) => o.tabbyPaymentId === paymentId) ?? null;
+  }
   async latestUnpaidAppleOrder(userId: string, productId: string) {
     return (
       this.orders
@@ -128,8 +132,21 @@ export class InMemoryPaymentsRepository implements PaymentsRepository {
     Object.assign(o, patch);
     return o;
   }
+  async updateOrderIf(id: string, from: OrderStatus[], patch: OrderPatch) {
+    const o = this.orders.find((x) => x.id === id);
+    if (!o || !from.includes(o.status)) return null;
+    Object.assign(o, patch);
+    return o;
+  }
   async staleOrders(now: Date) {
     return this.orders.filter((o) => (o.status === 'AWAITING_PAYMENT' || o.status === 'AWAITING_RECEIPT') && o.expiresAt && o.expiresAt < now);
+  }
+  reminded = new Set<string>();
+  async transfersExpiringSoon(now: Date, until: Date) {
+    return this.orders.filter((o) => o.status === 'AWAITING_RECEIPT' && !this.reminded.has(o.id) && o.expiresAt && o.expiresAt > now && o.expiresAt <= until);
+  }
+  async markReceiptReminded(orderId: string) {
+    this.reminded.add(orderId);
   }
   async findCoupon(code: string) {
     return this.coupons.find((c) => c.code === code.toUpperCase()) ?? null;

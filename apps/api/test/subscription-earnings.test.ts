@@ -202,5 +202,22 @@ describe('finance report', () => {
     expect(r.recorded.feesFils).toBe(400);
     expect(r.recorded.netFils).toBe(r.recorded.grossFils - r.recorded.refundsFils - r.recorded.feesFils - r.recorded.vatFils);
     expect(r.recorded.vatFils).toBeGreaterThan(0);
+    expect(r.recorded.appleVatFils).toBe(0);
+  });
+
+  test("VAT on App Store sales is reported apart: Apple collects and pays it", async () => {
+    const svc = new ReportService(
+      {
+        ...repo,
+        recordedPayments: async () => [
+          { totalFils: 10_500, vatFils: 500, feeFils: 1_500, refundedFils: 0, subscription: { provider: 'APPLE' } },
+          { totalFils: 10_500, vatFils: 500, feeFils: 300, refundedFils: 0, subscription: { provider: 'STRIPE' } },
+        ],
+      } as never,
+      { now: () => new Date('2026-11-08T10:00:00Z') } as never,
+    );
+    const r = await svc.report({ from: '2026-11-01', to: '2026-11-08' } as never);
+    expect(r.recorded.vatFils).toBe(1_000);
+    expect(r.recorded.appleVatFils).toBe(500);
   });
 });

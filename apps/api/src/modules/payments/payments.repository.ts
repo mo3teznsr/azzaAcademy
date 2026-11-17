@@ -1,5 +1,6 @@
-import type { BatchStatus, EnrollmentStatus, OrderStatus, PaymentMethod } from '@azza/shared';
+import type { Attribution, BatchStatus, EnrollmentStatus, OrderStatus, PaymentMethod } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
+import { SEAT_PACK_LIVE, reservedSeats } from '../organizations/seat-pack-policy';
 import { SEAT_HOLDING } from './enrollment-state';
 import type { CouponState } from './price-calculator';
 
@@ -14,6 +15,8 @@ export interface SaleBatch {
   teacherId: string;
   courseId: string;
   courseTitle: string;
+  /** Arabic course title, falling back to English, for Arabic notices. */
+  courseTitleAr?: string;
   firstSessionAt: Date | null;
 }
 
@@ -49,6 +52,7 @@ export interface OrderRecord {
   appleTransactionId: string | null;
   appleOriginalTransactionId: string | null;
   appleEnvironment: string | null;
+  tabbyPaymentId: string | null;
   bankAccountId: string | null;
   receiptUrl: string | null;
   receiptUploadedAt: Date | null;
@@ -78,6 +82,7 @@ export type NewOrder = Pick<
   | 'stripeCheckoutSessionId'
   | 'appleProductId'
   | 'appleAppAccountToken'
+  | 'tabbyPaymentId'
   | 'bankAccountId'
   | 'expiresAt'
 >;
@@ -103,6 +108,10 @@ export interface UserContact {
   email: string;
   locale: string;
   timezone: string;
+  /** E.164; Tabby needs it. */
+  phone?: string | null;
+  /** Account creation (Tabby `buyer_history.registered_since`). */
+  createdAt?: Date;
 }
 
 export interface CouponRecord extends CouponState {
@@ -127,18 +136,24 @@ export interface PaymentsRepository {
   staleHolds(before: Date): Promise<EnrollmentRecord[]>;
 
   referenceExists(reference: string): Promise<boolean>;
-  createOrder(data: NewOrder): Promise<OrderRecord>;
+  createOrder(data: NewOrder & { attribution?: Attribution | null }): Promise<OrderRecord>;
   findOrder(id: string): Promise<OrderRecord | null>;
   findOrderByPaymentIntent(paymentIntentId: string): Promise<OrderRecord | null>;
   findOrderByCheckoutSession(sessionId: string): Promise<OrderRecord | null>;
   findOrderByAppleTransaction(transactionId: string): Promise<OrderRecord | null>;
   findOrderByAppleToken(appAccountToken: string): Promise<OrderRecord | null>;
+  findOrderByTabbyPayment(paymentId: string): Promise<OrderRecord | null>;
   /** The student's newest APPLE_IAP order for this product that is not PAID/REFUNDED (fallback when a transaction has no token). */
   latestUnpaidAppleOrder(userId: string, productId: string): Promise<OrderRecord | null>;
   openOrderFor(enrollmentId: string): Promise<OrderRecord | null>;
   updateOrder(id: string, patch: OrderPatch): Promise<OrderRecord>;
+  /** Applies `patch` only while the order is still in one of `from`; null when another caller changed it first (atomic claim). */
+  updateOrderIf(id: string, from: OrderStatus[], patch: OrderPatch): Promise<OrderRecord | null>;
   /** AWAITING_PAYMENT / AWAITING_RECEIPT orders whose hold expired. */
   staleOrders(now: Date): Promise<OrderRecord[]>;
+  /** Bank transfer orders still waiting for a receipt whose hold ends in (now, until], not reminded yet. */
+  transfersExpiringSoon(now: Date, until: Date): Promise<OrderRecord[]>;
+  markReceiptReminded(orderId: string, at: Date): Promise<void>;
 
   findCoupon(code: string): Promise<CouponRecord | null>;
   /** Paid redemptions plus the student's still-open orders carrying this coupon. */
@@ -181,6 +196,7 @@ const orderFields = {
   appleTransactionId: true,
   appleOriginalTransactionId: true,
   appleEnvironment: true,
+  tabbyPaymentId: true,
   bankAccountId: true,
   receiptUrl: true,
   receiptUploadedAt: true,
@@ -209,19 +225,27 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
         priceFils: true,
         timezone: true,
         teacherId: true,
-        course: { select: { id: true, titleEn: true } },
+        course: { select: { id: true, titleEn: true, titleAr: true } },
         sessions: { where: { status: { not: 'CANCELLED' } }, orderBy: { startsAt: 'asc' }, take: 1, select: { startsAt: true } },
       },
     });
     if (!b) return null;
     const { course, sessions, ...rest } = b;
-    return { ...rest, courseId: course.id, courseTitle: course.titleEn, firstSessionAt: sessions[0]?.startsAt ?? null };
+    return { ...rest, courseId: course.id, courseTitle: course.titleEn, courseTitleAr: course.titleAr ?? course.titleEn, firstSessionAt: sessions[0]?.startsAt ?? null };
   }
 
-  heldSeats(batchId: string, excludeUserId?: string) {
-    return this.db.enrollment.count({
-      where: { batchId, status: { in: SEAT_HOLDING }, ...(excludeUserId && { userId: { not: excludeUserId } }) },
-    });
+  /** Enrollments on a seat, plus the seats organizations bought and have not assigned yet (held for them). */
+  async heldSeats(batchId: string, excludeUserId?: string) {
+    const [enrolled, packs] = await Promise.all([
+      this.db.enrollment.count({
+        where: { batchId, status: { in: SEAT_HOLDING }, ...(excludeUserId && { userId: { not: excludeUserId } }) },
+      }),
+      this.db.seatPack.findMany({
+        where: { batchId, status: { in: SEAT_PACK_LIVE } },
+        select: { seats: true, _count: { select: { assignments: { where: { status: 'ACTIVE' } } } } },
+      }),
+    ]);
+    return enrolled + reservedSeats(packs.map((p) => ({ seats: p.seats, used: p._count.assignments })));
   }
 
   async setBatchStatus(batchId: string, status: BatchStatus) {
@@ -264,8 +288,8 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
     return (await this.db.order.count({ where: { reference } })) > 0;
   }
 
-  async createOrder(data: NewOrder) {
-    return toOrder(await this.db.order.create({ data, select: orderFields }));
+  async createOrder({ attribution, ...data }: NewOrder & { attribution?: Attribution | null }) {
+    return toOrder(await this.db.order.create({ data: { ...data, ...(attribution && { attribution }) }, select: orderFields }));
   }
 
   async findOrder(id: string) {
@@ -293,6 +317,11 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
     return o && toOrder(o);
   }
 
+  async findOrderByTabbyPayment(paymentId: string) {
+    const o = await this.db.order.findUnique({ where: { tabbyPaymentId: paymentId }, select: orderFields });
+    return o && toOrder(o);
+  }
+
   async latestUnpaidAppleOrder(userId: string, productId: string) {
     const o = await this.db.order.findFirst({
       where: { userId, method: 'APPLE_IAP', appleProductId: productId, status: { notIn: ['PAID', 'REFUNDED'] } },
@@ -315,12 +344,30 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
     return toOrder(await this.db.order.update({ where: { id }, data: patch, select: orderFields }));
   }
 
+  async updateOrderIf(id: string, from: OrderStatus[], patch: OrderPatch) {
+    const { count } = await this.db.order.updateMany({ where: { id, status: { in: from } }, data: patch });
+    return count ? this.findOrder(id) : null;
+  }
+
   async staleOrders(now: Date) {
     const rows = await this.db.order.findMany({
       where: { status: { in: ['AWAITING_PAYMENT', 'AWAITING_RECEIPT'] }, expiresAt: { lt: now } },
       select: orderFields,
     });
     return rows.map(toOrder);
+  }
+
+  async transfersExpiringSoon(now: Date, until: Date) {
+    const rows = await this.db.order.findMany({
+      where: { status: 'AWAITING_RECEIPT', receiptReminderAt: null, expiresAt: { gt: now, lte: until } },
+      select: orderFields,
+      take: 500,
+    });
+    return rows.map(toOrder);
+  }
+
+  async markReceiptReminded(orderId: string, at: Date) {
+    await this.db.order.update({ where: { id: orderId }, data: { receiptReminderAt: at } });
   }
 
   async findCoupon(code: string) {
@@ -340,6 +387,7 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
         minOrderFils: true,
         courseId: true,
         batchId: true,
+        ownerId: true,
       },
     });
   }
@@ -372,6 +420,6 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
   }
 
   findUser(id: string) {
-    return this.db.user.findUnique({ where: { id }, select: { id: true, name: true, email: true, locale: true, timezone: true } });
+    return this.db.user.findUnique({ where: { id }, select: { id: true, name: true, email: true, locale: true, timezone: true, phone: true, createdAt: true } });
   }
 }

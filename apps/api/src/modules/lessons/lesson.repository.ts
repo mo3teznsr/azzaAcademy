@@ -1,9 +1,14 @@
 import type { CourseType, LessonAttachment } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
 import type { AccessSubscription } from '../subscriptions/access-policy';
-import { everSubscribed, learnerSubscription, newestLiveSubscription, type LearnerSubscription } from '../subscriptions/recorded-subscription';
+import { utcDay, watchedDelta } from '../all-access/watch-time';
+import { allAccessSubscription, everSubscribed, learnerSubscription, newestLiveSubscription, type LearnerSubscription } from '../subscriptions/recorded-subscription';
+import type { WatchProgress } from './watch-policy';
 
 export type RecordedSubscription = AccessSubscription;
+
+const STREAM_COLUMNS = ['streamStatus', 'streamProvider', 'streamAssetId', 'streamSourceUrl', 'hlsUrl', 'posterUrl', 'lowMp4Url', 'durationSec', 'streamError', 'streamUpdatedAt'] as const;
+type StreamColumn = (typeof STREAM_COLUMNS)[number];
 
 export interface LessonRecord {
   id: string;
@@ -73,12 +78,25 @@ export interface LessonRepository {
   recordedSubscription(courseId: string, userId: string): Promise<RecordedSubscription | null>;
   /** The user once had a paid period on the course (even one that has expired); an abandoned checkout does not count. */
   hadSubscription(courseId: string, userId: string): Promise<boolean>;
+  /** The learner's live all-access plan; absent (older fakes) means none. */
+  allAccessSubscription?(userId: string): Promise<RecordedSubscription | null>;
   /** Saved video position in seconds; null when never saved. */
   videoPosition(userId: string, lessonId: string): Promise<number | null>;
-  setVideoPosition(userId: string, lessonId: string, positionSec: number): Promise<void>;
+  /**
+   * Saves the position; keeps the furthest point reached and the length when given (`ended` counts as watched to the end).
+   * With `recordedCourseId`, the seconds played since the last report (`watchedDelta`) are added to today's
+   * `LessonWatchTime`, which splits all-access teacher pay.
+   */
+  setVideoPosition(userId: string, lessonId: string, positionSec: number, watch?: { durationSec?: number; ended?: boolean; recordedCourseId?: string }): Promise<void>;
+  watchProgress(userId: string, lessonId: string): Promise<WatchProgress | null>;
 }
 
-const asRecord = <T extends { attachments: unknown }>(row: T) => ({ ...row, attachments: (row.attachments ?? []) as LessonAttachment[] });
+/** Row → `LessonRecord`. The streaming columns stay out (`LessonStreamRepository` reads them), so no response leaks unsigned URLs. */
+const asRecord = <T extends { attachments: unknown }>(row: T): Omit<T, StreamColumn | 'attachments'> & { attachments: LessonAttachment[] } => {
+  const out: Record<string, unknown> = { ...row, attachments: (row.attachments ?? []) as LessonAttachment[] };
+  for (const k of STREAM_COLUMNS) delete out[k];
+  return out as Omit<T, StreamColumn | 'attachments'> & { attachments: LessonAttachment[] };
+};
 
 export class PrismaLessonRepository implements LessonRepository {
   constructor(private readonly db: Db) {}
@@ -155,7 +173,7 @@ export class PrismaLessonRepository implements LessonRepository {
       this.db.subscription.findMany({ where: { userId, status: { in: ['ACTIVE', 'CANCELLING', 'PAST_DUE'] }, course: { type: 'RECORDED' } }, select: { courseId: true } }),
       this.db.course.findMany({ where: { type: 'RECORDED', modules: { some: { lessons: { some: { progress: { some: { userId } } } } } } }, select: { id: true } }),
     ]);
-    return [...new Set([...enrolled.map((r) => r.batch.courseId), ...plans.map((p) => p.courseId), ...progress.map((c) => c.id)])];
+    return [...new Set([...enrolled.map((r) => r.batch.courseId), ...plans.flatMap((p) => (p.courseId ? [p.courseId] : [])), ...progress.map((c) => c.id)])];
   }
 
   learnerSubscription(courseId: string, userId: string) {
@@ -175,16 +193,41 @@ export class PrismaLessonRepository implements LessonRepository {
     return everSubscribed(this.db, courseId, userId);
   }
 
+  allAccessSubscription(userId: string) {
+    return allAccessSubscription(this.db, userId);
+  }
+
   async videoPosition(userId: string, lessonId: string) {
     const row = await this.db.lessonVideoPosition.findUnique({ where: { userId_lessonId: { userId, lessonId } }, select: { positionSec: true } });
     return row?.positionSec ?? null;
   }
 
-  async setVideoPosition(userId: string, lessonId: string, positionSec: number) {
+  async setVideoPosition(userId: string, lessonId: string, positionSec: number, watch: { durationSec?: number; ended?: boolean; recordedCourseId?: string } = {}) {
+    const key = { userId_lessonId: { userId, lessonId } };
+    const before = await this.db.lessonVideoPosition.findUnique({ where: key, select: { maxSec: true, durationSec: true, positionSec: true, updatedAt: true } });
+    if (watch.recordedCourseId) {
+      const now = new Date();
+      const seconds = watchedDelta(before, positionSec, now);
+      if (seconds > 0) {
+        const day = utcDay(now);
+        await this.db.lessonWatchTime.upsert({
+          where: { userId_lessonId_day: { userId, lessonId, day } },
+          create: { userId, lessonId, courseId: watch.recordedCourseId, day, seconds },
+          update: { seconds: { increment: seconds } },
+        });
+      }
+    }
+    const durationSec = watch.durationSec ?? before?.durationSec ?? null;
+    const reached = watch.ended && durationSec ? durationSec : positionSec;
+    const maxSec = Math.max(before?.maxSec ?? 0, reached);
     await this.db.lessonVideoPosition.upsert({
-      where: { userId_lessonId: { userId, lessonId } },
-      create: { userId, lessonId, positionSec },
-      update: { positionSec },
+      where: key,
+      create: { userId, lessonId, positionSec, maxSec, durationSec },
+      update: { positionSec, maxSec, durationSec },
     });
+  }
+
+  async watchProgress(userId: string, lessonId: string) {
+    return this.db.lessonVideoPosition.findUnique({ where: { userId_lessonId: { userId, lessonId } }, select: { maxSec: true, durationSec: true } });
   }
 }

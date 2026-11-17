@@ -15,7 +15,9 @@ abstract class LessonProgressRepository {
   Future<int> videoPosition(String lessonId);
 
   /// `PUT /lessons/:id/video-position` `{ positionSec }`; 0 once the video has been watched to the end.
-  Future<void> saveVideoPosition(String lessonId, int positionSec);
+  /// [durationSec] is the video's length when the player knows it; [ended] when it played to the end. Together they let
+  /// the server tell how much was watched (uploaded videos complete once mostly watched).
+  Future<void> saveVideoPosition(String lessonId, int positionSec, {int? durationSec, bool ended = false});
 
   /// Per course with an ACTIVE enrollment, plus recorded courses with progress: lessons done, total and the next lesson to open.
   Future<List<CourseProgress>> learningProgress();
@@ -35,8 +37,9 @@ class DioLessonProgressRepository extends DioRepository implements LessonProgres
       integer(await getJson('/api/v1/lessons/${Uri.encodeComponent(lessonId)}'), 'videoPositionSec');
 
   @override
-  Future<void> saveVideoPosition(String lessonId, int positionSec) async {
-    await guard(() => dio.put<dynamic>('/api/v1/lessons/${Uri.encodeComponent(lessonId)}/video-position', data: {'positionSec': positionSec}));
+  Future<void> saveVideoPosition(String lessonId, int positionSec, {int? durationSec, bool ended = false}) async {
+    await guard(() => dio.put<dynamic>('/api/v1/lessons/${Uri.encodeComponent(lessonId)}/video-position',
+        data: {'positionSec': positionSec, 'durationSec': ?durationSec, if (ended) 'ended': true}));
   }
 
   @override

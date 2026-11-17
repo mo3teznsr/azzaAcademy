@@ -2,6 +2,8 @@ import {
   Award,
   BadgeDollarSign,
   ChartColumn,
+  TrendingUp,
+  ReceiptText,
   SquareCheck,
   BookOpen,
   CalendarDays,
@@ -27,6 +29,8 @@ import {
   GraduationCap,
   LifeBuoy,
   Megaphone,
+  Gift,
+  Building2,
   type LucideIcon, Clapperboard, Repeat } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/dictionaries/en';
 
@@ -54,6 +58,7 @@ export const studentNav = (t: Dictionary): NavGroup[] => [
       { href: '/assignments', label: t.nav.student.assignments, icon: ClipboardList },
       { href: '/quizzes', label: t.learning.quizzes.nav, icon: ListChecks },
       { href: '/certificates', label: t.nav.student.certificates, icon: Award },
+      { href: '/invite', label: t.nav.student.invite, icon: Gift },
       { href: '/settings', label: t.nav.student.settings, icon: Settings },
     ],
   },
@@ -67,6 +72,7 @@ export const teacherNav = (t: Dictionary): NavGroup[] => [
       { href: '/studio/recordings', label: t.nav.teacher.recordings, icon: Clapperboard },
       { href: '/studio/grading', label: t.nav.teacher.grading, icon: SquareCheck },
       { href: '/studio/earnings', label: t.nav.teacher.earnings, icon: Wallet },
+      { href: '/invite', label: t.nav.teacher.invite, icon: Gift },
       { href: '/studio/settings', label: t.nav.teacher.settings, icon: Settings },
     ],
   },
@@ -77,6 +83,8 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
     items: [
       { href: '/admin', label: t.nav.admin.dashboard, icon: LayoutDashboard, exact: true },
       { href: '/admin/reports', label: t.nav.admin.reports, icon: ChartColumn },
+      { href: '/admin/growth', label: t.nav.admin.growth, icon: TrendingUp },
+      { href: '/admin/invoices', label: t.nav.admin.invoices, icon: ReceiptText },
       { href: '/admin/courses', label: t.nav.admin.courses, icon: BookOpen },
       { href: '/admin/batches', label: t.nav.admin.batches, icon: Layers },
       { href: '/admin/categories', label: t.nav.admin.categories, icon: Shapes },
@@ -96,7 +104,9 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
       { href: '/admin/bank-accounts', label: t.nav.admin.bankAccounts, icon: Landmark },
       { href: '/admin/currencies', label: t.nav.admin.currencies, icon: Coins },
       { href: '/admin/coupons', label: t.nav.admin.coupons, icon: Tags },
+      { href: '/admin/referrals', label: t.nav.admin.referrals, icon: Gift },
       { href: '/admin/payouts', label: t.nav.admin.payouts, icon: BadgeDollarSign },
+      { href: '/admin/organizations', label: t.nav.admin.organizations, icon: Building2 },
     ],
   },
   {

@@ -116,7 +116,42 @@ function notificationHref(type: string, data: unknown, role: Role | null): strin
     case 'RECORDING_NOT_STARTED':
       return '/studio/recordings';
     case 'RECORDING_READY':
+    case 'SESSION_MISSED':
       return sessionId ? `/library/${sessionId}` : '/library';
+    case 'LEARNING_NUDGE': {
+      const slug = field('courseSlug');
+      return slug ? `/learn/courses/${slug}` : '/learn';
+    }
+    case 'PLAN_WINBACK': {
+      const slug = field('courseSlug');
+      return slug ? `/courses/${slug}` : null;
+    }
+    case 'WELCOME':
+      return '/';
+    case 'LESSON_QUESTION': {
+      // The course author answers from the studio inbox.
+      const courseId = field('courseId');
+      return courseId ? `/studio/courses/${courseId}/questions` : null;
+    }
+    case 'LESSON_ANSWER': {
+      const slug = field('courseSlug');
+      const lessonId = field('lessonId');
+      return slug ? `/learn/courses/${slug}${lessonId ? `?lesson=${lessonId}` : ''}#qa` : null;
+    }
+    case 'CERTIFICATE_ISSUED':
+      return '/certificates';
+    case 'TRANSFER_HOLD_ENDING': {
+      const orderId = field('orderId');
+      return orderId ? `/orders/${orderId}` : null;
+    }
+    case 'ORDER_EXPIRED': {
+      // A lapsed card checkout on a class that still has room goes back to checkout.
+      const batchId = field('batchId');
+      return batchId ? `/checkout/${batchId}` : null;
+    }
+    case 'SESSION_LIVE':
+    case 'SESSION_STARTING':
+      return sessionId ? `/live/${sessionId}` : null;
     case 'INSTRUCTOR_APPLIED':
       return '/admin/instructors';
     case 'INSTRUCTOR_APPROVED':

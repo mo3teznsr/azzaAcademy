@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import type { Container } from './container';
 import { errorHandler } from './http/error-handler';
 import { sessionMiddleware } from './http/middleware';
+import { enabledSocialProviders } from './auth/social';
 import type { AppEnv } from './http/types';
 import { adminAppStoreRoutes } from './modules/appstore-sync/appstore-sync.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
@@ -14,6 +15,7 @@ import { batchRoutes } from './modules/batches/batch.routes';
 import { certificateRoutes } from './modules/certificates/certificate.routes';
 import { contentRoutes } from './modules/content/content.routes';
 import { lessonRoutes } from './modules/lessons/lesson.routes';
+import { lessonStreamingRoutes } from './modules/lessons/lesson-streaming.routes';
 import { quizRoutes } from './modules/quizzes/quiz.routes';
 import { adminCourseRoutes, courseRoutes } from './modules/courses/course.routes';
 import { adminCategoryImageRoutes, categoryRoutes } from './modules/categories/category.routes';
@@ -34,8 +36,16 @@ import { webhookRoutes } from './modules/webhooks/webhook.routes';
 import { announcementRoutes } from './modules/announcements/announcement.routes';
 import { conversationRoutes } from './modules/conversations/conversation.routes';
 import { supportRoutes } from './modules/support/support.routes';
+import { lessonQaRoutes } from './modules/lesson-qa/qa.routes';
+import { courseAnalyticsRoutes } from './modules/course-analytics/analytics.routes';
 import { adminSubscriptionRoutes, teacherSubscriberRoutes } from './modules/subscriptions/subscription-admin.routes';
 import { subscriptionRoutes } from './modules/subscriptions/subscription.routes';
+import { adminAllAccessRoutes, allAccessRoutes } from './modules/all-access/all-access.routes';
+import { adminGrowthRoutes, adminInvestorRoutes } from './modules/growth/growth.routes';
+import { adminReconciliationRoutes } from './modules/reconciliation/reconciliation.routes';
+import { adminTaxDocumentRoutes, taxDocumentRoutes } from './modules/invoices/tax-document.routes';
+import { adminOrganizationRoutes, organizationManagerRoutes } from './modules/organizations/organization.routes';
+import { adminReferralRoutes, referralRoutes } from './modules/referrals/referral.routes';
 
 /** `apps/api/public/media/` regardless of the process cwd. */
 const MEDIA_ROOT = fileURLToPath(new URL('../public/media/', import.meta.url));
@@ -58,6 +68,8 @@ export function createApp(container: Container) {
   );
   app.onError(errorHandler);
 
+  // Which "Continue with Google / Apple" buttons to show: public, and outside /api/auth so better-auth never shadows it.
+  app.get('/api/v1/auth-providers', (c) => c.json(enabledSocialProviders(config.socialAuth), 200, { 'Cache-Control': 'public, max-age=300' }));
   app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
   // Webhooks are registered before the session middleware: they authenticate by signature, not by user.
   app.route(
@@ -70,6 +82,8 @@ export function createApp(container: Container) {
       subscriptions: services.subscriptions,
       sessions: services.sessions,
       appleIap: services.appleIap,
+      tabby: services.tabby,
+      lessonStreaming: services.lessonStreaming,
     }),
   );
   // Public, token-signed ICS feed (calendar apps send no cookies).
@@ -110,6 +124,7 @@ export function createApp(container: Container) {
     // First: it answers admins too, which the TEACHER-only payout guard below would refuse.
     .route('/teacher', teacherSubscriberRoutes(services.subscriptions))
     .route('/teacher', teacherPayoutRoutes(services.payouts))
+    .route('/teacher', courseAnalyticsRoutes(services.courseAnalytics))
     .route('/teachers', teacherRoutes(services.teachers))
     .route('/admin', adminRoutes(services.admin, services.siteSettings))
     .route('/admin', adminMediaRoutes(services.courseMedia))
@@ -119,18 +134,31 @@ export function createApp(container: Container) {
     .route('/admin', adminCourseRoutes(services.courses))
     .route('/admin', adminAppStoreRoutes(services.appStoreSync))
     .route('/admin', adminSubscriptionRoutes(services.subscriptions))
+    .route('/admin', adminAllAccessRoutes(services.allAccessPlan))
+    .route('/admin', adminGrowthRoutes(services.growth))
+    .route('/admin', adminInvestorRoutes(services.investors))
+    .route('/admin', adminTaxDocumentRoutes(services.taxDocuments))
+    .route('/admin', adminReferralRoutes(services.referrals))
+    .route('/admin', adminOrganizationRoutes(services.organizations))
+    .route('/org', organizationManagerRoutes(services.organizations, services.taxDocuments))
+    .route('/referrals', referralRoutes(services.referrals))
+    .route('/', taxDocumentRoutes(services.taxDocuments))
     // Teachers upload covers and intro videos for the courses they propose.
     .route('/courses', adminMediaRoutes(services.courseMedia, ['TEACHER', 'ADMIN']))
     .route('/admin', adminFinanceRoutes(services))
     .route('/admin', adminPayoutRoutes(services.payouts))
+    .route('/admin', adminReconciliationRoutes(services.reconciliation))
     .route('/admin', adminReportRoutes(services.reports))
     .route('/', siteSettingsRoutes(services.siteSettings))
     .route('/', currencyRoutes(services.currencies))
     .route('/', paymentRoutes(services))
     .route('/', contentRoutes(services.content))
-    .route('/', lessonRoutes(services.lessons))
+    .route('/', lessonRoutes(services.lessons, services.lessonStreaming))
+    .route('/', lessonQaRoutes(services.lessonQa))
+    .route('/', lessonStreamingRoutes(services.lessonStreaming))
     .route('/', quizRoutes(services.quizzes))
     .route('/', subscriptionRoutes(services.subscriptions, services.receipts))
+    .route('/', allAccessRoutes(services.allAccessPlan))
     .route('/', certificateRoutes(services.certificates))
     .route('/', announcementRoutes(services.announcements))
     .route('/', conversationRoutes(services.conversations))

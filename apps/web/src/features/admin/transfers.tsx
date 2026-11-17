@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { filsToAed, reviewTransferInput } from '@azza/shared';
 import { ExternalLink } from 'lucide-react';
@@ -40,7 +41,15 @@ export function Transfers() {
 
   return (
     <>
-      <PageTitle kicker={t.nav.admin.finance} title={t.admin.transfers.title} />
+      <PageTitle
+        kicker={t.nav.admin.finance}
+        title={t.admin.transfers.title}
+        aside={
+          <Button variant="outline" asChild>
+            <Link href="/admin/transfers/statements">{t.admin.statements.open}</Link>
+          </Button>
+        }
+      />
       <p className="max-w-3xl text-sm text-muted-foreground">{t.admin.transfers.intro}</p>
       <Tabs value={filter} onValueChange={(v) => (setFilter(v as keyof typeof FILTERS), setSelectedId(null))}>
         <TabsList>

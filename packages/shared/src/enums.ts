@@ -37,8 +37,9 @@ export const ENROLLMENT_STATUSES = [
 ] as const;
 export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 
-/** APPLE_IAP is the iOS app's only method (App Store guideline 3.1.1); Android and web use STRIPE / BANK_TRANSFER. */
-export const PAYMENT_METHODS = ['STRIPE', 'BANK_TRANSFER', 'APPLE_IAP'] as const;
+/** APPLE_IAP is the iOS app's only method (App Store guideline 3.1.1); Android and web use STRIPE / BANK_TRANSFER,
+ * and the web also TABBY (pay in 4) for live-class seats when Tabby is configured. */
+export const PAYMENT_METHODS = ['STRIPE', 'BANK_TRANSFER', 'APPLE_IAP', 'TABBY'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const ORDER_STATUSES = [
@@ -90,7 +91,7 @@ export type CourseType = (typeof COURSE_TYPES)[number];
 export const SUBSCRIPTION_PLANS = ['MONTHLY', 'YEARLY'] as const;
 export type SubscriptionPlan = (typeof SUBSCRIPTION_PLANS)[number];
 
-export const SUBSCRIPTION_PROVIDERS = ['STRIPE', 'APPLE', 'BANK_TRANSFER'] as const;
+export const SUBSCRIPTION_PROVIDERS = ['STRIPE', 'APPLE', 'BANK_TRANSFER', 'ORGANIZATION'] as const;
 export type SubscriptionProvider = (typeof SUBSCRIPTION_PROVIDERS)[number];
 
 export const SUBSCRIPTION_STATUSES = ['INCOMPLETE', 'ACTIVE', 'PAST_DUE', 'CANCELLING', 'EXPIRED'] as const;

@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorState } from '@/components/brand/states';
-import { checkoutApi, isAppleProvider, isCardResult, subscriptionsApi, type MySubscription } from '@/lib/api';
+import { checkoutApi, isAllAccessSlug, isAppleProvider, isCardResult, planHref, subscriptionsApi, type MySubscription } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
@@ -95,7 +95,7 @@ export function RenewButton({ subscription, slug, className }: { subscription: M
   if (!subscription) {
     return (
       <Button asChild variant="ink" className={className}>
-        <Link href={`/courses/${slug}#plan`}>{t.recorded.renewToContinue}</Link>
+        <Link href={planHref(slug)}>{t.recorded.renewToContinue}</Link>
       </Button>
     );
   }
@@ -133,7 +133,7 @@ export function PendingTransfer({ subscription, onRestart }: { subscription: MyS
           </Button>
         ) : (
           <Button asChild variant="ink" className="self-start">
-            <Link href={`/courses/${subscription.course.slug}#plan`}>{t.recorded.pendingAgain}</Link>
+            <Link href={planHref(subscription.course.slug)}>{t.recorded.pendingAgain}</Link>
           </Button>
         )}
       </div>
@@ -207,7 +207,7 @@ export function ManagePlan({ subscription: s }: { subscription: MySubscription }
       <CardContent className="flex flex-col gap-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-1">
-            <Link href={`/learn/courses/${s.course.id}`} className="font-display text-xl font-extrabold leading-tight text-foreground hover:underline">
+            <Link href={isAllAccessSlug(s.course.slug) ? '/all-access' : `/learn/courses/${s.course.id}`} className="font-display text-xl font-extrabold leading-tight text-foreground hover:underline">
               {title}
             </Link>
             <span className="text-[13px] text-muted-foreground">

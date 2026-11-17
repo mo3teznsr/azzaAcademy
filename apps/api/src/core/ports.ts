@@ -191,6 +191,74 @@ export interface PaymentGateway {
   parseWebhook(rawBody: string, signature: string | undefined): Promise<PaymentWebhookEvent>;
 }
 
+/** Tabby "pay in 4" (UAE, api.tabby.ai). Amounts are fils here; the adapter converts to Tabby's decimal strings. */
+export type TabbyPaymentStatus = 'CREATED' | 'AUTHORIZED' | 'CLOSED' | 'REJECTED' | 'EXPIRED';
+export interface TabbyBuyer {
+  name: string;
+  email: string;
+  /** E.164 (Tabby accepts +971…). */
+  phone: string;
+}
+export interface TabbyEligibilityArgs {
+  amountFils: number;
+  buyer: TabbyBuyer;
+}
+export interface TabbyEligibilityResult {
+  eligible: boolean;
+  /** `not_available`, `order_amount_too_high`, `order_amount_too_low`, … when not eligible. */
+  rejectionReason: string | null;
+}
+export interface TabbyCreateSessionArgs {
+  /** Our order reference (Tabby `order.reference_id`). */
+  reference: string;
+  /** Equals subtotal − discount + VAT (Tabby validates the lines add up). */
+  amountFils: number;
+  subtotalFils: number;
+  discountFils: number;
+  vatFils: number;
+  buyer: TabbyBuyer;
+  registeredSince: Date | null;
+  item: { reference: string; title: string; category: string };
+  lang: 'ar' | 'en';
+  successUrl: string;
+  cancelUrl: string;
+  failureUrl: string;
+}
+export interface TabbySessionResult {
+  /** `created` = the customer can pay at `webUrl`; `rejected` = hide Tabby and show `rejectionReason`. */
+  status: 'created' | 'rejected' | 'expired';
+  paymentId: string | null;
+  webUrl: string | null;
+  rejectionReason: string | null;
+}
+export interface TabbyPayment {
+  id: string;
+  status: TabbyPaymentStatus;
+  amountFils: number;
+  currency: string;
+  /** Our order reference echoed back (`order.reference_id`). */
+  referenceId: string | null;
+  capturedFils: number;
+  refundedFils: number;
+}
+export interface TabbyGateway {
+  /** Background pre-scoring: may this buyer pay this amount with Tabby? */
+  checkEligibility(args: TabbyEligibilityArgs): Promise<TabbyEligibilityResult>;
+  /** `POST /api/v2/checkout` with the full payload; creates the session and its payment. */
+  createSession(args: TabbyCreateSessionArgs): Promise<TabbySessionResult>;
+  /** `GET /api/v2/payments/{id}` — the source of truth after a redirect or webhook. */
+  getPayment(paymentId: string): Promise<TabbyPayment>;
+  /** `POST /api/v2/payments/{id}/captures`; `referenceId` is Tabby's idempotency key. */
+  capture(paymentId: string, amountFils: number, referenceId: string): Promise<TabbyPayment>;
+  /** `POST /api/v2/payments/{id}/refunds` (CLOSED payments only); `referenceId` is Tabby's idempotency key. */
+  refund(paymentId: string, amountFils: number, referenceId: string, reason: string): Promise<void>;
+  /**
+   * Tabby signs webhooks with the static header set at registration (`header.title` / `header.value`).
+   * Returns the payment id the notification is about, or throws when the header does not match.
+   */
+  parseWebhook(rawBody: string, header: (name: string) => string | undefined): { paymentId: string; status: string };
+}
+
 export interface StoredFile {
   /** Storage key, e.g. `receipts/3f9c….pdf` — safe to put in a URL path. */
   key: string;
@@ -205,6 +273,42 @@ export interface FileStorage {
   keyFromUrl(url: string): string | null;
   /** Removes a stored file; a missing or malformed key is a no-op. Optional so simple fakes need not implement it. */
   delete?(key: string): Promise<void>;
+}
+
+export type TranscodeStatus = 'PROCESSING' | 'READY' | 'FAILED';
+
+/** A transcoded lesson video at the hosted service. URLs are unsigned; `signUrl` signs them per viewer. */
+export interface TranscodeAsset {
+  assetId: string;
+  status: TranscodeStatus;
+  /** HLS master playlist with every rendition (adaptive bitrate). */
+  hlsUrl: string | null;
+  posterUrl: string | null;
+  /** Lowest progressive MP4 rendition (data saver, offline downloads). */
+  lowMp4Url: string | null;
+  durationSec: number | null;
+  /** Heights ready so far, e.g. `[240, 360, 720]`. */
+  renditions: number[];
+  error?: string | null;
+}
+
+/**
+ * Turns an uploaded lesson video into adaptive HLS at a hosted service (`BunnyStreamTranscoder`), or does nothing
+ * (`DisabledVideoTranscoder`) when not configured. The service fetches the source from its public URL.
+ */
+export interface VideoTranscoder {
+  /** `bunny`, or `disabled` (then every other method throws). */
+  readonly provider: string;
+  readonly enabled: boolean;
+  createAsset(input: { sourceUrl: string; title: string }): Promise<{ assetId: string }>;
+  getAsset(assetId: string): Promise<TranscodeAsset>;
+  /**
+   * Verifies a webhook and returns the asset it is about; null when it is about something we don't track. Throws
+   * `AppError` 401 when the signature is wrong. The status is always re-read with `getAsset`, never trusted from the body.
+   */
+  parseWebhook(rawBody: string, header: (name: string) => string | undefined): { assetId: string } | null;
+  /** Short-lived URL for one viewer. `directory` = sign the whole folder (HLS playlists and their segments). */
+  signUrl(url: string, expiresAt: Date, opts?: { directory?: boolean }): string;
 }
 
 /** A StoreKit 2 transaction whose JWS signature, certificate chain, bundle id and environment were verified. */

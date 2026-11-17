@@ -13,8 +13,11 @@ import { homeFor, rolesForPath, safeNext } from '@/lib/auth/roles';
 import { useI18n } from '@/lib/i18n/provider';
 import { useApiError } from '@/lib/api-errors';
 import { AuthShell, FormBanner } from './auth-shell';
+import { socialErrorKind } from '@/lib/auth/social-redirects';
+import { SocialButtons } from './social-buttons';
 import { Field, IconInput, PasswordInput } from './fields';
 import { signUpSchema, type SignUpValues } from './schemas';
+import { readAttribution, track } from '@/lib/analytics';
 
 export function SignUpForm() {
   const { t, locale } = useI18n();
@@ -27,17 +30,22 @@ export function SignUpForm() {
   const nameValue = useWatch({ control: form.control, name: 'name' });
   const emailValue = useWatch({ control: form.control, name: 'email' });
   const nextParam = safeNext(params.get('next'));
+  // Back from Google/Apple with `?error=` (or from /auth/continue without a session).
+  const oauthError = socialErrorKind(params.get('error'));
   const signInHref = nextParam ? `/sign-in?next=${encodeURIComponent(nextParam)}` : '/sign-in';
 
   const onSubmit = form.handleSubmit(async (values) => {
     setError(null);
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const { data, error: err } = await authClient.signUp.email({ ...values, locale, timezone });
+      // Where this visitor first came from (UTM tags, ad click ids), stored once on the account.
+      const attribution = readAttribution();
+      const { data, error: err } = await authClient.signUp.email({ ...values, locale, timezone, ...(attribution && { acquisition: JSON.stringify(attribution) }) });
       if (err || !data) {
         setError(err ? apiError(err) : t.auth.errors.generic);
         return;
       }
+      track('sign_up', { method: 'email' });
       // Same `next` rule as sign-in: only same-origin paths the new role may open (e.g. /teach).
       const role = (data.user as { role?: string }).role;
       const allowed = nextParam ? rolesForPath(nextParam) : null;
@@ -51,8 +59,10 @@ export function SignUpForm() {
 
   return (
     <AuthShell kicker={t.auth.signUp.kicker} title={t.auth.signUp.title} sub={t.auth.signUp.sub}>
+      <SocialButtons next={nextParam} from="/sign-up" />
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         {error && <FormBanner tone="error">{error}</FormBanner>}
+        {!error && oauthError && <FormBanner tone="error">{t.auth.social[oauthError]}</FormBanner>}
         <Field id="name" label={t.auth.signUp.name} error={errors.name && t.auth.errors.name}>
           <IconInput
             id="name"

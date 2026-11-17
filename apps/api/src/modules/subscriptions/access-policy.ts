@@ -38,3 +38,21 @@ export function hasPendingRenewalReceipt(sub: { currentPeriodEnd: Date | null },
   const end = sub.currentPeriodEnd?.getTime();
   return end != null && payments.some((p) => p.status === 'AWAITING_REVIEW' && p.updatedAt.getTime() < end);
 }
+
+/** Where the plans that can open a recorded course come from (the lesson and quiz repositories). */
+export interface RecordedPlanSource {
+  recordedSubscription(courseId: string, userId: string): Promise<AccessSubscription | null>;
+  /** The learner's live all-access plan (null when none). Optional so older fakes keep working: absent means none. */
+  allAccessSubscription?(userId: string): Promise<AccessSubscription | null>;
+}
+
+/**
+ * Can this learner read the recorded course through a plan? (Admins and the author are checked by the callers.)
+ * Their own plan for the course, or a live all-access plan while the course is PUBLISHED: all-access opens every
+ * published recorded course, under the same grace rules (`canAccessRecorded`) as a per-course plan.
+ */
+export async function canReadRecordedCourse(source: RecordedPlanSource, course: { id: string; status: string }, userId: string, now: Date): Promise<boolean> {
+  if (canAccessRecorded(await source.recordedSubscription(course.id, userId), now)) return true;
+  if (course.status !== 'PUBLISHED' || !source.allAccessSubscription) return false;
+  return canAccessRecorded(await source.allAccessSubscription(userId), now);
+}

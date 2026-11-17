@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { SOCKET_EVENTS } from '@azza/shared';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
 import { useSocketEvent } from '@/lib/realtime/socket';
 import { cn } from '@/lib/utils';
+import { track } from '@/lib/analytics';
 
 /** Poll every 2 s while the webhook hasn't landed, for about a minute. */
 const POLL_MS = 2_000;
@@ -27,7 +29,7 @@ function viewOf(o: Order, cancelled: boolean, polls: number): View {
   return polls >= MAX_POLLS ? 'slow' : 'confirming';
 }
 
-/** Stripe Checkout landing (`/checkout/return?ref=…[&cancelled=1]`): confirming → paid / cancelled / failed. */
+/** Stripe Checkout and Tabby landing (`/checkout/return?ref=…[&cancelled=1]`): confirming → paid / cancelled / failed. */
 export function CheckoutReturn({ reference, cancelled }: { reference: string | null; cancelled: boolean }) {
   const { t } = useI18n();
   if (!reference) return <ErrorState error={new Error(t.checkoutReturn.missingRef)} />;
@@ -48,12 +50,32 @@ function ReturnView({ reference, cancelled }: { reference: string; cancelled: bo
       return query.state.dataUpdateCount < MAX_POLLS ? POLL_MS : false;
     },
   });
+  // Tabby: ask the API to verify the payment with Tabby (and capture it) instead of waiting only for the webhook.
+  const tabbyPending = q.data?.method === 'TABBY' && q.data.status === 'AWAITING_PAYMENT';
+  useQuery({
+    queryKey: ['tabby-confirm', q.data?.id],
+    queryFn: async () => {
+      const r = await checkoutApi.confirmTabby(q.data!.id);
+      qc.setQueryData(key, (prev: Order | undefined) => (prev ? { ...prev, ...r.order } : prev));
+      return r.outcome;
+    },
+    enabled: tabbyPending,
+    retry: false,
+    refetchInterval: (query) => (!cancelled && query.state.dataUpdateCount < MAX_POLLS / 2 ? POLL_MS * 2 : false),
+  });
   useSocketEvent<{ orderId?: string; id?: string }>(SOCKET_EVENTS.ORDER_UPDATED, (p) => {
     if (q.data && (p.orderId === q.data.id || p.id === q.data.id)) void qc.invalidateQueries({ queryKey: key });
   });
   const batchId = q.data?.enrollment?.batch.id;
   const polls = qc.getQueryState(key)?.dataUpdateCount ?? 0;
   const view = q.data ? viewOf(q.data, cancelled, polls) : null;
+  const paidOrder = view === 'paid' ? q.data : null;
+  const reported = useRef(false);
+  useEffect(() => {
+    if (!paidOrder || reported.current) return;
+    reported.current = true;
+    track('purchase', { transaction_id: paidOrder.reference, value: paidOrder.totalFils / 100, currency: 'AED', item_id: paidOrder.enrollment?.batch.id });
+  }, [paidOrder]);
   // Only the failed state needs the course slug ("Choose another batch").
   const batch = useQuery({ queryKey: qk.batch(batchId ?? ''), queryFn: () => batchesApi.get(batchId!), enabled: !!batchId && view === 'failed' });
 
@@ -64,15 +86,20 @@ function ReturnView({ reference, cancelled }: { reference: string; cancelled: bo
   const tone = v === 'paid' ? 'good' : v === 'failed' ? 'bad' : 'wait';
   const retryHref = batchId ? `/checkout/${batchId}` : '/learn';
   const otherHref = batch.data ? `/courses/${batch.data.course.slug}` : '/courses';
+  const isTabby = o.method === 'TABBY';
   const copy: Record<View, { title: string; body: string }> = {
-    confirming: { title: t.checkoutReturn.confirmingTitle, body: t.checkoutReturn.confirmingBody },
+    confirming: { title: t.checkoutReturn.confirmingTitle, body: isTabby ? t.checkoutReturn.tabbyConfirmingBody : t.checkoutReturn.confirmingBody },
     slow: { title: t.checkoutReturn.slowTitle, body: t.checkoutReturn.slowBody },
     paid: { title: t.checkout.orderPaid, body: t.checkout.orderPaidSub },
     cancelled: {
       title: t.checkoutReturn.cancelledTitle,
-      body: o.expiresAt ? fill(t.checkoutReturn.cancelledHeld, { d: f.dateTime(o.expiresAt) }) : t.checkoutReturn.cancelledBody,
+      body: isTabby
+        ? t.checkoutReturn.tabbyCancelled
+        : o.expiresAt
+          ? fill(t.checkoutReturn.cancelledHeld, { d: f.dateTime(o.expiresAt) })
+          : t.checkoutReturn.cancelledBody,
     },
-    failed: { title: t.checkoutReturn.failedTitle, body: t.checkoutReturn.failedBody },
+    failed: { title: t.checkoutReturn.failedTitle, body: isTabby ? t.checkoutReturn.tabbyFailed : t.checkoutReturn.failedBody },
   };
 
   return (
@@ -129,8 +156,13 @@ function ReturnView({ reference, cancelled }: { reference: string; cancelled: bo
             </Button>
           </>
         )}
-        {v === 'failed' && (
+        {v === 'failed' && isTabby && o.status === 'FAILED' && (
           <Button asChild size="lg">
+            <Link href={retryHref}>{t.checkoutReturn.otherMethod}</Link>
+          </Button>
+        )}
+        {v === 'failed' && (
+          <Button asChild size="lg" variant={isTabby && o.status === 'FAILED' ? 'outline' : 'default'}>
             <Link href={otherHref}>{t.checkoutReturn.chooseBatch}</Link>
           </Button>
         )}

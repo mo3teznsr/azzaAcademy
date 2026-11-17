@@ -20,14 +20,19 @@ async function withPendingReceipt(db: Db, row: LiveRow): Promise<AccessSubscript
   return { ...base, pendingRenewalReceipt: hasPendingRenewalReceipt(row, waiting) };
 }
 
-/** The subscription that decides the user's access to the course (null when there is none). */
-export async function newestLiveSubscription(db: Db, courseId: string, userId: string): Promise<AccessSubscription | null> {
+/** The subscription that decides the user's access to the course (null when there is none). `courseId` null = the all-access plan. */
+export async function newestLiveSubscription(db: Db, courseId: string | null, userId: string): Promise<AccessSubscription | null> {
   const rows = await db.subscription.findMany({
     where: { courseId, userId, status: { not: 'EXPIRED' } },
     select: { id: true, status: true, currentPeriodEnd: true, provider: true, createdAt: true },
   });
   const row = pickSubscription(rows);
   return row ? withPendingReceipt(db, row) : null;
+}
+
+/** The learner's all-access plan that decides access (null when there is none). */
+export function allAccessSubscription(db: Db, userId: string): Promise<AccessSubscription | null> {
+  return newestLiveSubscription(db, null, userId);
 }
 
 /** What the learner's progress list shows for a recorded course. */

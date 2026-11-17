@@ -2,7 +2,7 @@ import { formatMoney } from '@azza/shared';
 import { BusinessRuleError, NotFoundError } from '../../../core/errors';
 import { resolveRule, type RuleValue } from '../../../core/rule-value';
 import { addHours, formatInZone } from '../../../core/time';
-import { appEmails } from '../../notifications/email-templates';
+import { emailsIn } from '../../notifications/email-templates';
 import type { Notifier } from '../../notifications/notification.types';
 import type { PaymentsRepository } from '../payments.repository';
 import type { CheckoutContext, CheckoutStart, CheckoutStrategy } from './checkout-strategy';
@@ -42,9 +42,13 @@ export class BankTransferCheckout implements CheckoutStrategy {
           type: 'TRANSFER_INSTRUCTIONS',
           title: `Seat held · ${ctx.batch.courseTitle} ${ctx.batch.code}`,
           body: `Transfer ${amount} with reference ${order.reference} before ${formatInZone(expiresAt, ctx.user.timezone)}`,
+          ar: {
+            title: `حجزنا مقعدك · ${ctx.batch.courseTitleAr ?? ctx.batch.courseTitle} ${ctx.batch.code}`,
+            body: `حوّل ${amount} بالمرجع ${order.reference} قبل ${formatInZone(expiresAt, ctx.user.timezone, 'ar')}`,
+          },
           data: { orderId: order.id, reference: order.reference },
           email: (r) =>
-            appEmails.transferInstructions(r.name, amount, order.reference, account.bankName, account.iban, formatInZone(expiresAt, r.timezone, r.locale)),
+            emailsIn(r.locale).transferInstructions(r.name, amount, order.reference, account.bankName, account.iban, formatInZone(expiresAt, r.timezone, r.locale)),
         });
       },
     };

@@ -45,6 +45,8 @@ export class AdminService {
         grossFils: sum.totalFils ?? 0,
         refundedFils: sum.refundedFils ?? 0,
         vatFils: sum.vatFils ?? 0,
+        /** The part of `vatFils` Apple collects and pays on App Store sales (not VAT the platform owes). */
+        appleVatFils: c.appleRevenue._sum.vatFils ?? 0,
         netFils: (sum.totalFils ?? 0) - (sum.refundedFils ?? 0),
         orders: c.revenue._count,
       },

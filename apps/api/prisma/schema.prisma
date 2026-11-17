@@ -24,6 +24,8 @@ enum SubscriptionProvider {
   STRIPE
   APPLE
   BANK_TRANSFER
+  /// A seat from an organization's seat pack (no payments; access ends with the pack).
+  ORGANIZATION
 }
 
 enum SubscriptionStatus {
@@ -101,6 +103,7 @@ enum PaymentMethod {
   STRIPE
   BANK_TRANSFER
   APPLE_IAP
+  TABBY
 }
 
 enum OrderStatus {
@@ -165,6 +168,10 @@ model User {
   emailVerified   Boolean  @default(false)
   image           String?
   role            Role     @default(STUDENT)
+  /// First-touch attribution at sign-up (UTM tags, click ids, referrer), as JSON text; set once, never edited.
+  acquisition     String?
+  /// Personal referral code (`https://azza.academy/?ref=CODE`); created the first time the user opens their invite page.
+  referralCode    String?  @unique
   locale          String   @default("en")
   timezone        String   @default("Asia/Dubai")
   displayCurrency String   @default("AED")
@@ -184,6 +191,7 @@ model User {
   instructorApplications       InstructorApplication[] @relation("Applicant")
   lessonProgress               LessonProgress[]
   videoPositions               LessonVideoPosition[]
+  watchTimes                   LessonWatchTime[]
   subscriptions                Subscription[]
   reviewedSubscriptionPayments SubscriptionPayment[]   @relation("SubscriptionPaymentReviewer")
   savedCourses                 SavedCourse[]
@@ -217,6 +225,17 @@ model User {
   subscriptionPayments         SubscriptionPayment[]
 
   @@map("user")
+  auditEntries    AuditLog[] @relation("AuditActor")
+  lifecycleMessages LifecycleMessage[]
+  taxDocuments    TaxDocument[]
+  referralsMade   Referral[] @relation("ReferralReferrer")
+  referredBy      Referral?  @relation("ReferralReferred")
+  ownCoupons      Coupon[]   @relation("CouponOwner")
+  lessonQuestions LessonQuestion[] @relation("LessonQuestionAuthor")
+  lessonAnswers   LessonAnswer[]   @relation("LessonAnswerAuthor")
+  organizationMemberships OrganizationMember[]
+  seatAssignments         SeatAssignment[] @relation("SeatAssignee")
+  seatPacksCreated        SeatPack[]       @relation("SeatPackCreator")
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -336,6 +355,9 @@ model Course {
   reviews       CourseReview[]
   savedBy       SavedCourse[]
   subscriptions Subscription[]
+  seatPacks     SeatPack[]
+  watchTimes      LessonWatchTime[]
+  allAccessShares AllAccessShare[]
   quizzes       Quiz[]
   earnings      Earning[]
   certificates  Certificate[]
@@ -397,6 +419,7 @@ model Batch {
   announcements  Announcement[]
   conversations  Conversation[]
   supportTickets SupportTicket[]
+  seatPacks      SeatPack[]
 
   @@unique([courseId, code])
   @@index([teacherId, status])
@@ -434,6 +457,11 @@ model LiveSession {
   endedAt      DateTime?
   recordingUrl String?
   egressId     String?
+  /// When each reminder before the session went out (24 h, 1 h, 10 min), and when absentees were told about the recording.
+  reminderDayAt  DateTime?
+  reminderHourAt DateTime?
+  reminderSoonAt DateTime?
+  missedNoticeAt DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -463,7 +491,8 @@ model Enrollment {
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
-  orders Order[]
+  orders          Order[]
+  seatAssignments SeatAssignment[]
 
   @@unique([userId, batchId])
   @@index([batchId, status])
@@ -499,11 +528,17 @@ model Order {
   appleTransactionId         String?           @unique
   appleOriginalTransactionId String?
   appleEnvironment           String?
+  /// Tabby "pay in 4": the payment created with the checkout session; verified, captured and refunded by this id.
+  tabbyPaymentId             String?           @unique
   bankAccountId              String?
   bankAccount                BankAccount?      @relation(fields: [bankAccountId], references: [id])
   receiptUrl                 String?
   receiptUploadedAt          DateTime?
   expiresAt                  DateTime?
+  /// Where the buyer came from for this purchase (UTM tags, click ids).
+  attribution Json?
+  /// When the "your hold ends soon" reminder went out (bank transfers).
+  receiptReminderAt DateTime?
   verifiedById               String?
   verifiedBy                 User?             @relation("OrderVerifier", fields: [verifiedById], references: [id])
   verifiedAt                 DateTime?
@@ -515,6 +550,7 @@ model Order {
   supportTickets             SupportTicket[]
 
   @@index([status, method])
+  taxDocuments TaxDocument[]
 }
 
 model BankAccount {
@@ -531,8 +567,59 @@ model BankAccount {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  /// How this bank's CSV statement maps to date, credit/amount and description columns (see StatementMapping).
+  statementMapping     Json?
+
   orders               Order[]
   subscriptionPayments SubscriptionPayment[]
+  statementImports     BankStatementImport[]
+  statementLines       BankStatementLine[]
+}
+
+/// One uploaded bank statement CSV. Lines already imported from an earlier file are not stored again.
+model BankStatementImport {
+  id             String              @id @default(cuid())
+  bankAccountId  String
+  bankAccount    BankAccount         @relation(fields: [bankAccountId], references: [id])
+  fileName       String
+  importedById   String?
+  creditCount    Int
+  newCount       Int
+  duplicateCount Int
+  skippedCount   Int
+  createdAt      DateTime            @default(now())
+  lines          BankStatementLine[]
+
+  @@index([bankAccountId, createdAt])
+}
+
+/// One credit on a bank statement. OPEN until an admin confirms it against a transfer or ignores it.
+model BankStatementLine {
+  id                    String              @id @default(cuid())
+  importId              String
+  statementImport       BankStatementImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  bankAccountId         String
+  bankAccount           BankAccount         @relation(fields: [bankAccountId], references: [id])
+  /// sha256 of account, date, amount, description and occurrence: re-importing a statement adds nothing.
+  lineHash              String              @unique
+  row                   Int
+  postedOn              DateTime            @db.Date
+  amountFils            Int
+  description           String
+  /// OPEN | CONFIRMED | IGNORED
+  status                String              @default("OPEN")
+  /// What confirming did: PAID, AMOUNT_MISMATCH.
+  outcome               String?
+  orderId               String?
+  subscriptionPaymentId String?
+  decidedById           String?
+  decidedAt             DateTime?
+  createdAt             DateTime            @default(now())
+
+  @@index([importId])
+  @@index([status])
+  @@index([orderId])
+  @@index([subscriptionPaymentId])
 }
 
 /// Display currencies (admin-managed). AED is the base: always present, enabled, rate 1. Display only — charges are always AED.
@@ -573,8 +660,15 @@ model Coupon {
   course         Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
   batchId        String?
   batch          Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  /// Personal coupon (referral rewards): only this user can use it. null = anyone.
+  ownerId        String?
+  owner          User?              @relation("CouponOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt      DateTime           @default(now())
   usages         CouponRedemption[]
+  referralRewardOf  Referral?       @relation("ReferralReferrerCoupon")
+  referralWelcomeOf Referral?       @relation("ReferralReferredCoupon")
+
+  @@index([ownerId])
 }
 
 /// One row per paid order that used a coupon (written when the order is PAID).
@@ -759,6 +853,8 @@ model Earning {
   payout                Payout?              @relation(fields: [payoutId], references: [id])
   note                  String?
   createdAt             DateTime             @default(now())
+  referral              Referral?            @relation("ReferralBonus")
+  allAccessShare        AllAccessShare?
 
   @@unique([sessionId, teacherId, kind])
   @@unique([subscriptionPaymentId, kind])
@@ -773,6 +869,8 @@ model PayoutRun {
   approvedById String?
   approvedAt   DateTime?
   paidAt       DateTime?
+  /// The admin who created the run (approval needs someone else when there is more than one admin).
+  createdById  String?
   createdAt    DateTime        @default(now())
 
   payouts Payout[]
@@ -939,8 +1037,34 @@ model Lesson {
   updatedAt   DateTime              @updatedAt
   progress    LessonProgress[]
   positions   LessonVideoPosition[]
+  questions   LessonQuestion[]
+  watchTimes  LessonWatchTime[]
+
+  /// Adaptive streaming (HLS) of an uploaded `videoUrl`, made by the `VideoTranscoder` (Bunny Stream). Null = never prepared.
+  streamStatus    VideoStreamStatus?
+  /// Who made the asset (`bunny`) and its id there.
+  streamProvider  String?
+  streamAssetId   String?
+  /// The `videoUrl` the asset was made from; a new upload resets the stream.
+  streamSourceUrl String?
+  /// Unsigned playback URLs; signed per request when CDN token auth is on.
+  hlsUrl          String?
+  posterUrl       String?
+  /// Lowest-quality progressive MP4 (data saver and offline downloads); null when the provider has none.
+  lowMp4Url       String?
+  durationSec     Int?
+  streamError     String?
+  streamUpdatedAt DateTime?
 
   @@index([moduleId, order])
+  @@index([streamStatus])
+  @@index([streamAssetId])
+}
+
+enum VideoStreamStatus {
+  PROCESSING
+  READY
+  FAILED
 }
 
 /// A learner marked this lesson complete. Drives "Continue learning" (next lesson + lesson-based progress).
@@ -962,9 +1086,51 @@ model LessonVideoPosition {
   lessonId    String
   lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   positionSec Int
+  /// The furthest point reached (seconds) and the video's length when the player reported it: lessons with an
+  /// uploaded video complete once most of it is watched.
+  maxSec      Int      @default(0)
+  durationSec Int?
   updatedAt   DateTime @updatedAt
 
   @@id([userId, lessonId])
+  @@index([lessonId])
+}
+
+/// A learner's question under a lesson of a recorded course; answered by the course author or an admin.
+model LessonQuestion {
+  id         String         @id @default(cuid())
+  lessonId   String
+  lesson     Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User           @relation("LessonQuestionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body       String
+  /// Hidden by the course author or an admin (abuse); only they and the asker still see it.
+  hiddenAt   DateTime?
+  hiddenById String?
+  /// Deleted by the asker (only while unanswered). Kept so deleted questions still count toward the daily limit.
+  deletedAt  DateTime?
+  createdAt  DateTime       @default(now())
+  answers    LessonAnswer[]
+
+  @@index([lessonId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+/// An answer to a lesson question, by the course author or an admin.
+model LessonAnswer {
+  id         String         @id @default(cuid())
+  questionId String
+  question   LessonQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User           @relation("LessonAnswerAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body       String
+  /// The asker marked this answer as the one that helped (at most one per question).
+  acceptedAt DateTime?
+  hiddenAt   DateTime?
+  hiddenById String?
+  createdAt  DateTime       @default(now())
+
+  @@index([questionId, createdAt])
 }
 
 /// Platform-wide settings: a single row with id 'default'.
@@ -988,17 +1154,26 @@ model PlatformSettings {
   addressAr      String?
   /// { instagram?, x?, facebook?, linkedin?, youtube?, tiktok?, snapchat? } — https URLs.
   socials        Json     @default("{}")
+  /// Tax invoices (UAE FTA): the supplier's legal name, address and TRN. Invoices are issued only once a TRN is set,
+  /// for payments made from `invoicingFrom` (set when the TRN is first saved).
+  legalName             String?
+  legalAddress          String?
+  taxRegistrationNumber String?
+  invoicingFrom         DateTime?
   updatedAt          DateTime @updatedAt
 }
 
-/// A learner's plan on a recorded course. At most one live (INCOMPLETE/ACTIVE/PAST_DUE/CANCELLING) per user and course:
-/// the partial unique index "subscription_one_live_per_course" lives in the migration (Prisma can't express it).
+/// A learner's plan on a recorded course, or the all-access plan when `courseId` is null (every published recorded course).
+/// At most one live (INCOMPLETE/ACTIVE/PAST_DUE/CANCELLING) per user and course, and one live all-access plan per user:
+/// the partial unique indexes "subscription_one_live_per_course" and "subscription_one_live_all_access" live in the
+/// migrations (Prisma can't express them).
 model Subscription {
   id                         String               @id @default(cuid())
   userId                     String
   user                       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId                   String
-  course                     Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  /// Null = the all-access plan (`ALL_ACCESS_ID` in @azza/shared; the repository maps it both ways).
+  courseId                   String?
+  course                     Course?              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   plan                       SubscriptionPlan
   provider                   SubscriptionProvider
   status                     SubscriptionStatus
@@ -1023,6 +1198,7 @@ model Subscription {
   updatedAt                  DateTime             @updatedAt
 
   payments SubscriptionPayment[]
+  seatAssignment SeatAssignment?
 
   @@index([userId, courseId])
   @@index([status, currentPeriodEnd])
@@ -1062,9 +1238,60 @@ model SubscriptionPayment {
   updatedAt         DateTime                  @updatedAt
 
   earnings Earning[]
+  /// All-access plans only: when the period's teacher shares were worked out (once, after `periodEnd`).
+  allAccessAccruedAt DateTime?
+  allAccessShares    AllAccessShare[]
 
   @@index([subscriptionId])
   @@index([status])
+  taxDocuments TaxDocument[]
+}
+
+/// The all-access plan's settings: a single row with id 'default'. Prices before VAT, synced to one Stripe Product.
+model AllAccessPlan {
+  id                   String   @id @default("default")
+  enabled              Boolean  @default(false)
+  monthlyPriceFils     Int?
+  yearlyPriceFils      Int?
+  stripeProductId      String?
+  stripeMonthlyPriceId String?
+  stripeYearlyPriceId  String?
+  updatedAt            DateTime @updatedAt
+}
+
+/// Seconds of a lesson's video a learner actually watched on a UTC day (from the player's position reports; recorded
+/// courses only). Splits an all-access period's teacher pool between the courses the subscriber watched.
+model LessonWatchTime {
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId String
+  lesson   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  day      DateTime @db.Date
+  seconds  Int      @default(0)
+
+  @@id([userId, lessonId, day])
+  @@index([userId, day])
+}
+
+/// One course's slice of an all-access period: the minutes the subscriber watched it and the teacher earning it made.
+model AllAccessShare {
+  id                    String              @id @default(cuid())
+  subscriptionPaymentId String
+  subscriptionPayment   SubscriptionPayment @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Restrict)
+  courseId              String
+  course                Course              @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  teacherId             String
+  watchedSec            Int
+  amountFils            Int
+  earningId             String              @unique
+  earning               Earning             @relation(fields: [earningId], references: [id], onDelete: Restrict)
+  /// What refunds of the payment have taken back from this share so far (cumulative, in fils).
+  reversedFils          Int                 @default(0)
+  createdAt             DateTime            @default(now())
+
+  @@unique([subscriptionPaymentId, courseId])
 }
 
 enum QuizStatus {
@@ -1277,4 +1504,270 @@ model AppleSeatProduct {
   status    String
   detail    String?
   syncedAt  DateTime
+}
+
+/// Append-only record of admin actions on money and sensitive data (payout runs, adjustments, exports, bank checks).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String
+  data       Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+}
+
+/// A lifecycle message (welcome, inactivity nudge, win-back) sent to a learner. The key is unique per user, so a message
+/// is never sent twice.
+model LifecycleMessage {
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key    String
+  sentAt DateTime @default(now())
+
+  @@id([userId, key])
+}
+
+enum TaxDocumentKind {
+  INVOICE
+  CREDIT_NOTE
+}
+
+/// A UAE tax invoice or credit note. Numbers are sequential with no gaps (TaxDocumentCounter); documents are never
+/// edited or deleted. Supplier and buyer details are snapshots taken at issue.
+model TaxDocument {
+  id                    String          @id @default(cuid())
+  kind                  TaxDocumentKind
+  /// Position in its series (invoices and credit notes are numbered separately).
+  seq                   Int
+  number                String          @unique
+  /// A credit note's original invoice.
+  invoiceId             String?
+  invoice               TaxDocument?    @relation("CreditNotes", fields: [invoiceId], references: [id])
+  creditNotes           TaxDocument[]   @relation("CreditNotes")
+  orderId               String?
+  order                 Order?          @relation(fields: [orderId], references: [id])
+  subscriptionPaymentId String?
+  subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id])
+  /// The learner who paid; null on an organization's seat-pack invoice (the buyer is the organization).
+  userId                String?
+  user                  User?           @relation(fields: [userId], references: [id])
+  seatPackId            String?
+  seatPack              SeatPack?       @relation(fields: [seatPackId], references: [id])
+  description           String
+  subtotalFils          Int
+  discountFils          Int             @default(0)
+  vatPercent            Int
+  vatFils               Int
+  totalFils             Int
+  supplier              Json
+  buyer                 Json
+  issuedAt              DateTime        @default(now())
+
+  @@unique([kind, seq])
+  @@index([userId, issuedAt])
+  @@index([orderId])
+  @@index([subscriptionPaymentId])
+  @@index([seatPackId])
+}
+
+/// The last number used in each series (`INVOICE`, `CREDIT_NOTE`). Incremented in the same transaction as the document
+/// it numbers, so each series has no gaps.
+model TaxDocumentCounter {
+  id   String @id
+  last Int    @default(0)
+}
+
+enum ReferralStatus {
+  /// Signed up with a referral link; no paid order or plan payment yet.
+  PENDING
+  /// First paid seat order or plan payment recorded; rewards wait until the earning hold has passed without a refund.
+  QUALIFIED
+  REWARDED
+  /// The first payment was refunded before the rewards were issued.
+  VOID
+}
+
+/// A user who signed up through someone's referral link. One referrer per user (referredId is unique).
+model Referral {
+  id                String         @id @default(cuid())
+  referrerId        String
+  referrer          User           @relation("ReferralReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredId        String         @unique
+  referred          User           @relation("ReferralReferred", fields: [referredId], references: [id], onDelete: Cascade)
+  /// The code used at sign-up.
+  code              String
+  status            ReferralStatus @default(PENDING)
+  /// The referred user's first payment: ORDER (a seat) or PLAN (a subscription payment).
+  firstPaymentKind  String?
+  firstPaymentId    String?
+  firstPaidAt       DateTime?
+  qualifiedAt       DateTime?
+  rewardedAt        DateTime?
+  voidedAt          DateTime?
+  referrerCouponId  String?        @unique
+  referrerCoupon    Coupon?        @relation("ReferralReferrerCoupon", fields: [referrerCouponId], references: [id], onDelete: SetNull)
+  referredCouponId  String?        @unique
+  referredCoupon    Coupon?        @relation("ReferralReferredCoupon", fields: [referredCouponId], references: [id], onDelete: SetNull)
+  referrerEarningId String?        @unique
+  referrerEarning   Earning?       @relation("ReferralBonus", fields: [referrerEarningId], references: [id], onDelete: SetNull)
+  createdAt         DateTime       @default(now())
+
+  @@index([referrerId, status])
+  @@index([status])
+}
+
+/// Referral program rules (a single row, id 1), edited by admins.
+model ReferralProgram {
+  id               Int      @id @default(1)
+  enabled          Boolean  @default(true)
+  /// PERCENT (rewardValue = percent off) or AMOUNT (rewardValue = fils off).
+  rewardType       String   @default("PERCENT")
+  rewardValue      Int      @default(10)
+  couponValidDays  Int      @default(90)
+  /// Teachers who refer a paying student get this as a BONUS earning instead of a coupon. 0 = they get the coupon.
+  teacherBonusFils Int      @default(2500)
+  updatedAt        DateTime @updatedAt
+}
+
+/// Marketing spend admins record per calendar month and channel (fils of AED), for CAC and payback on /admin/growth.
+model MarketingSpend {
+  id          String   @id @default(cuid())
+  /// `YYYY-MM`
+  month       String
+  /// instagram | tiktok | snapchat | google | facebook | other (MARKETING_CHANNELS)
+  channel     String
+  amountFils  Int
+  note        String?
+  /// The admin who last saved it (a plain id, kept if that user is deleted).
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([month, channel])
+}
+
+// ───────────────────────── Companies and schools ─────────────────────────
+
+/// A company or school that buys seats for its people. Its legal name, address and TRN go on its tax invoices.
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  legalName    String
+  /// UAE Tax Registration Number (15 digits), when the organization is VAT registered.
+  trn          String?
+  address      String?
+  contactName  String
+  contactEmail String
+  contactPhone String?
+  /// Where tax invoices are sent.
+  billingEmail String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  members   OrganizationMember[]
+  seatPacks SeatPack[]
+}
+
+enum OrganizationRole {
+  /// A learner who can be given seats.
+  LEARNER
+  /// The organization's contact: assigns and revokes seats and sees the organization report.
+  MANAGER
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           OrganizationRole @default(LEARNER)
+  createdAt      DateTime         @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+enum SeatPackStatus {
+  /// Tax invoice issued, payment (bank transfer) not received yet. Seats can be assigned.
+  INVOICED
+  PAID
+  /// Called off: unused seats go back to the batch; an issued invoice gets a credit note for the unused seats.
+  CANCELLED
+}
+
+/// A corporate deal: `seats` seats in one batch (live) or one recorded course, bought by an organization. Its own
+/// order (not an `Order`, which is one learner's seat): it carries the money, and the tax-invoice job invoices it to the
+/// organization. Unassigned seats of an INVOICED or PAID pack are held in the batch, like seats on hold.
+model SeatPack {
+  id               String         @id @default(cuid())
+  reference        String         @unique
+  organizationId   String
+  organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  batchId          String?
+  batch            Batch?         @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  /// Recorded course (batchId is null then).
+  courseId         String?
+  course           Course?        @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  seats            Int
+  /// Price per seat before VAT, in fils.
+  unitPriceFils    Int
+  subtotalFils     Int
+  discountFils     Int            @default(0)
+  vatFils          Int
+  totalFils        Int
+  /// What has been credited back (cancellation); the tax-invoice job issues credit notes for it.
+  refundedFils     Int            @default(0)
+  status           SeatPackStatus
+  /// Bank transfer reference, once paid.
+  paymentReference String?
+  paidAt           DateTime?
+  invoicedAt       DateTime       @default(now())
+  /// Recorded packs: when the learners' access ends.
+  accessEndsAt     DateTime?
+  note             String?
+  createdById      String?
+  createdBy        User?          @relation("SeatPackCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  cancelledAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  assignments  SeatAssignment[]
+  taxDocuments TaxDocument[]
+
+  @@index([organizationId, createdAt])
+  @@index([batchId, status])
+}
+
+enum SeatAssignmentStatus {
+  ACTIVE
+  /// Taken back: the seat returned to the pack.
+  REVOKED
+}
+
+/// A named learner on one seat of a pack. Live packs enroll the learner (ACTIVE enrollment, no order); recorded packs
+/// give them an ORGANIZATION subscription that ends with the pack.
+model SeatAssignment {
+  id             String               @id @default(cuid())
+  seatPackId     String
+  seatPack       SeatPack             @relation(fields: [seatPackId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                 @relation("SeatAssignee", fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentId   String?
+  enrollment     Enrollment?          @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  subscriptionId String?              @unique
+  subscription   Subscription?        @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  status         SeatAssignmentStatus @default(ACTIVE)
+  assignedById   String?
+  assignedAt     DateTime             @default(now())
+  revokedAt      DateTime?
+  revokedById    String?
+
+  @@index([seatPackId, status])
+  @@index([userId])
 }

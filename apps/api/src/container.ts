@@ -1,12 +1,17 @@
 // Composition root: the only place that knows concrete classes. Everything else
 // receives its dependencies through constructors (DIP), so tests swap adapters freely.
 
-import { createAuth } from './auth/auth';
+import { createAuth, type OnUserCreated } from './auth/auth';
 import { BetterAuthUserProvisioner, InviteRegistry } from './auth/user-provisioner';
 import { msUntilUtcHour, type Job } from './jobs/scheduler';
-import type { AppConfig } from './core/config';
+import { bunnyStreamConfigured, tabbyConfigured, type AppConfig } from './core/config';
 import { fileURLToPath } from 'node:url';
-import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, VideoProvider } from './core/ports';
+import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, TabbyGateway, VideoProvider, VideoTranscoder } from './core/ports';
+import { BunnyStreamTranscoder, DisabledVideoTranscoder } from './infrastructure/video/bunny-stream-transcoder';
+import { DownloadLinkSigner } from './modules/lessons/download-link';
+import { PrismaLessonStreamRepository } from './modules/lessons/lesson-stream.repository';
+import { LessonStreamingService } from './modules/lessons/lesson-streaming.service';
+import { HttpTabbyGateway } from './infrastructure/payments/tabby-gateway';
 import { systemClock } from './infrastructure/clock';
 import { createDb, type Db } from './infrastructure/db';
 import { ConsoleMailer, NodemailerMailer } from './infrastructure/mail/mailers';
@@ -59,6 +64,8 @@ import { AppleIapCheckout } from './modules/payments/checkout/apple-iap-checkout
 import { BankTransferCheckout } from './modules/payments/checkout/bank-transfer-checkout';
 import { CheckoutStrategyRegistry } from './modules/payments/checkout/checkout-strategy';
 import { StripeCheckout } from './modules/payments/checkout/stripe-checkout';
+import { TabbyCheckout } from './modules/payments/checkout/tabby-checkout';
+import { TabbyPaymentService } from './modules/payments/tabby/tabby-payment.service';
 import { CheckoutService } from './modules/payments/checkout.service';
 import { EnrollmentLifecycle } from './modules/payments/enrollment-lifecycle';
 import { EnrollmentStateMachine } from './modules/payments/enrollment-state';
@@ -101,8 +108,27 @@ import { ConversationService } from './modules/conversations/conversation.servic
 import { PrismaSupportRepository } from './modules/support/support.repository';
 import { SupportService } from './modules/support/support.service';
 import { PrismaSubscriptionRepository } from './modules/subscriptions/subscription.repository';
+import { PrismaAllAccessRepository } from './modules/all-access/all-access.repository';
+import { AllAccessEarningsService } from './modules/all-access/all-access-earnings.service';
+import { AllAccessPlanService } from './modules/all-access/all-access-plan.service';
 import { SubscriptionService } from './modules/subscriptions/subscription.service';
 import { SubscriptionTransferQueries } from './modules/subscriptions/transfer-queries';
+import { PrismaReferralRepository } from './modules/referrals/referral.repository';
+import { ReferralService } from './modules/referrals/referral.service';
+import { PrismaSessionReminderRepository, SessionReminderService } from './modules/sessions/session-reminders';
+import { GrowthService, PrismaGrowthRepository } from './modules/growth/growth.service';
+import { InvestorService, PrismaInvestorRepository } from './modules/growth/investor.service';
+import { PrismaAuditLog } from './modules/audit/audit-log';
+import { PrismaReconciliationRepository } from './modules/reconciliation/reconciliation.repository';
+import { ReconciliationService } from './modules/reconciliation/reconciliation.service';
+import { LifecycleService, PrismaLifecycleRepository } from './modules/lifecycle/lifecycle.service';
+import { TaxDocumentService } from './modules/invoices/tax-document.service';
+import { PrismaLessonQaRepository } from './modules/lesson-qa/qa.repository';
+import { LessonQaService } from './modules/lesson-qa/qa.service';
+import { PrismaCourseAnalyticsRepository } from './modules/course-analytics/analytics.repository';
+import { CourseAnalyticsService } from './modules/course-analytics/analytics.service';
+import { OrganizationService } from './modules/organizations/organization.service';
+import { PrismaOrganizationRepository } from './modules/organizations/organization.repository';
 
 export interface Adapters {
   db: Db;
@@ -118,6 +144,10 @@ export interface Adapters {
   appStore?: AppStoreCatalog | null;
   /** What the gateway's PriceCalculator reads the VAT from; createContainer points it at the site settings. */
   vat?: VatHolder;
+  /** Tabby "pay in 4"; null/absent when not configured (the method is then not offered). */
+  tabby?: TabbyGateway | null;
+  /** HLS transcoding of lesson videos; absent = disabled (lessons play their uploaded MP4). */
+  transcoder?: VideoTranscoder;
 }
 
 /** `apps/api/uploads/` regardless of the process cwd. */
@@ -155,6 +185,24 @@ export function createAdapters(config: AppConfig, vat: VatHolder = { current: ()
       ? new StripePaymentGateway(config.STRIPE_SECRET_KEY, config.STRIPE_WEBHOOK_SECRET, prices)
       : new FakePaymentGateway(prices),
     vat,
+    tabby: tabbyConfigured(config)
+      ? new HttpTabbyGateway({
+          secretKey: config.TABBY_SECRET_KEY!.trim(),
+          merchantCode: config.TABBY_MERCHANT_CODE!.trim(),
+          webhookHeader: config.TABBY_WEBHOOK_HEADER,
+          webhookSecret: config.TABBY_WEBHOOK_SECRET,
+          baseUrl: config.TABBY_API_URL,
+        })
+      : null,
+    transcoder: bunnyStreamConfigured(config)
+      ? new BunnyStreamTranscoder({
+          libraryId: config.BUNNY_STREAM_LIBRARY_ID!.trim(),
+          apiKey: config.BUNNY_STREAM_API_KEY!.trim(),
+          readOnlyApiKey: config.BUNNY_STREAM_READONLY_API_KEY?.trim() || undefined,
+          cdnHost: config.BUNNY_STREAM_CDN_HOST!.trim(),
+          tokenKey: config.BUNNY_STREAM_TOKEN_KEY?.trim() || undefined,
+        })
+      : new DisabledVideoTranscoder(),
     apple: new AppStoreSignedDataVerifier({
       bundleId: config.APPLE_BUNDLE_ID,
       environments: config.appleEnvironments,
@@ -182,7 +230,9 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const { db, clock, mailer, push, video, payments, realtime } = adapters;
   const invites = new InviteRegistry();
   const currencies = new CurrencyService(new PrismaCurrencyRepository(db));
-  const auth = createAuth(db, config, mailer, invites, currencies);
+  // New accounts are linked to whoever invited them; the referral service is built below.
+  let onUserCreated: OnUserCreated = async () => undefined;
+  const auth = createAuth(db, config, mailer, invites, currencies, (user) => onUserCreated(user));
 
   // repositories
   const courseRepo = new PrismaCourseRepository(db);
@@ -219,6 +269,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
       smtp: !!config.SMTP_HOST,
       push: !!(config.FIREBASE_PROJECT_ID && config.FIREBASE_CLIENT_EMAIL && config.FIREBASE_PRIVATE_KEY),
       appStoreConnect: !!config.appStoreConnect,
+      tabby: !!adapters.tabby,
     },
     cuts: () => settings.cuts(),
     onVatChanged: () => resyncRecordedPrices(),
@@ -233,10 +284,23 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const vatSnapshot = () => siteSettings.ruleSnapshot().vatPercent;
   if (adapters.vat) adapters.vat.current = vatSnapshot;
   const prices = new PriceCalculator(vatSnapshot);
-  const payouts = new PayoutService(new PrismaPayoutRepository(db), new EarningsCalculator(), settings, notifications, clock, async () => {
-    const r = await rules();
-    return { earningHoldDays: r.earningHoldDays, minPayoutFils: Math.round(r.minPayoutAed * 100) };
+  const referrals = new ReferralService(new PrismaReferralRepository(db), notifications, clock, {
+    holdDays: async () => (await rules()).earningHoldDays,
+    webUrl: config.WEB_URL,
   });
+  onUserCreated = (user) => referrals.linkNewUser(user.id, user.acquisition);
+  const payouts = new PayoutService(
+    new PrismaPayoutRepository(db),
+    new EarningsCalculator(),
+    settings,
+    notifications,
+    clock,
+    async () => {
+      const r = await rules();
+      return { earningHoldDays: r.earningHoldDays, minPayoutFils: Math.round(r.minPayoutAed * 100) };
+    },
+    new PrismaAuditLog(db),
+  );
 
   const rescheduleRequestRepo = new PrismaRescheduleRequestRepository(db);
   const sessions = new SessionService(
@@ -259,6 +323,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     new StripeCheckout(payments, config.WEB_URL),
     new BankTransferCheckout(paymentsRepo, notifications, holdHours),
     new AppleIapCheckout(),
+    // Offered only when configured: without keys TABBY checkouts answer PAYMENT_METHOD_UNAVAILABLE.
+    ...(adapters.tabby ? [new TabbyCheckout(adapters.tabby, config.WEB_URL)] : []),
   ]);
   const checkout = new CheckoutService(
     paymentsRepo,
@@ -270,16 +336,35 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     new ReferenceGenerator(),
     notifications,
     vatPercentNow,
+    config.WEB_URL,
   );
 
-  const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, holdHours);
+  const finance = new FinanceAdminService(paymentsRepo, lifecycle, payments, payouts, notifications, holdHours, adapters.tabby ?? null);
+  const tabby = new TabbyPaymentService(
+    paymentsRepo,
+    adapters.tabby ?? null,
+    checkout,
+    lifecycle,
+    config.TABBY_MERCHANT_CODE ? { merchantCode: config.TABBY_MERCHANT_CODE.trim(), publicKey: config.TABBY_PUBLIC_KEY?.trim() || undefined } : null,
+  );
 
   const subscriptionRepo = new PrismaSubscriptionRepository(db);
+  const allAccessRepo = new PrismaAllAccessRepository(db);
+  const allAccessPlan = new AllAccessPlanService(allAccessRepo, payments);
+  const allAccessEarnings = new AllAccessEarningsService(allAccessRepo, new EarningsCalculator(), settings, clock, async () => (await rules()).earningHoldDays);
   const subscriptions = new SubscriptionService(
     subscriptionRepo,
     payments,
     notifications,
-    payouts,
+    // Per-course charges accrue at once; all-access charges are settled when their period ends (job below). Each
+    // reverser ignores the other's payments, so a refund goes through both.
+    {
+      accrueForSubscriptionPayment: (id) => payouts.accrueForSubscriptionPayment(id),
+      reverseSubscriptionPayment: async (id, refundedFils) => {
+        await payouts.reverseSubscriptionPayment(id, refundedFils);
+        await allAccessEarnings.reversePayment(id, refundedFils);
+      },
+    },
     clock,
     new ReferenceGenerator(),
     prices,
@@ -305,9 +390,41 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   const appStoreSync = new AppStoreSyncCoordinator(appStoreSyncer, new PrismaAppleSyncStore(db), courseRepo, clock);
 
   const meService = new MeService(new PrismaMeRepository(db), clock, lifecycle, adapters.storage, currencies);
-  const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator());
+  const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator(), undefined, notifications, config.WEB_URL);
   const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
-  resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
+  resyncRecordedPrices = async () => {
+    const r = await courses.resyncRecordedStripePrices();
+    await allAccessPlan.resyncStripePrices().catch((e) => console.error('[stripe] re-syncing the all-access prices failed', e));
+    return r;
+  };
+  const taxDocuments = new TaxDocumentService(db, clock);
+  // Lessons tell streaming when a video is saved; streaming reads the lesson read rule back (hence the late binding).
+  let lessonStreaming: LessonStreamingService;
+  const lessons = new LessonService(
+    new PrismaLessonRepository(db),
+    clock,
+    (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId),
+    (lessonId, videoUrl) => lessonStreaming.onVideoChanged(lessonId, videoUrl),
+  );
+  lessonStreaming = new LessonStreamingService(
+    new PrismaLessonStreamRepository(db),
+    adapters.transcoder ?? new DisabledVideoTranscoder(),
+    lessons,
+    new DownloadLinkSigner(config.BETTER_AUTH_SECRET),
+    clock,
+    { transcodeOnUpload: config.VIDEO_TRANSCODE_ON_UPLOAD === 'true', offlineMaxDays: config.OFFLINE_DOWNLOAD_MAX_DAYS, apiUrl: config.API_URL },
+  );
+
+  const organizations = new OrganizationService(
+    new PrismaOrganizationRepository(db),
+    paymentsRepo,
+    lifecycle,
+    new BetterAuthUserProvisioner(auth, invites, config.WEB_URL),
+    new PrismaAuditLog(db),
+    notifications,
+    clock,
+    vatPercentNow,
+  );
   const services = {
     settings,
     siteSettings,
@@ -333,8 +450,11 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     payouts,
     checkout,
     subscriptions,
+    allAccessPlan,
+    allAccessEarnings,
     finance,
     appleIap: new AppleIapService(paymentsRepo, adapters.apple, checkout, finance, subscriptions, appleCommission),
+    tabby,
     fx,
     bankAccounts: new BankAccountService(new PrismaBankAccountRepository(db)),
     coupons: new CouponService(new PrismaCouponRepository(db)),
@@ -342,9 +462,18 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     waitlist: new WaitlistQueries(db),
     certificates,
     reports: new ReportService(new PrismaReportRepository(db), clock),
+    growth: new GrowthService(new PrismaGrowthRepository(db), clock),
+    investors: new InvestorService(new PrismaInvestorRepository(db), clock, new PrismaAuditLog(db)),
+    taxDocuments,
+    organizations,
+    referrals,
+    reconciliation: new ReconciliationService(new PrismaReconciliationRepository(db), finance, subscriptions, new PrismaAuditLog(db), clock),
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
-    lessons: new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
+    lessons,
+    lessonQa: new LessonQaService(new PrismaLessonQaRepository(db), lessons, notifications, clock, config.WEB_URL),
+    courseAnalytics: new CourseAnalyticsService(new PrismaCourseAnalyticsRepository(db), lessons, clock),
+    lessonStreaming,
     quizzes: new QuizService(new PrismaQuizRepository(db), access, notifications, clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId)),
     courseMedia: new CourseMediaService(adapters.storage),
     announcements: new AnnouncementService(new PrismaAnnouncementRepository(db), access, notifications, config.WEB_URL),
@@ -353,9 +482,13 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     admin: new AdminService(new PrismaAdminRepository(db), new BetterAuthUserProvisioner(auth, invites, config.WEB_URL), video, clock),
   };
 
+  const lifecycleMessages = new LifecycleService(new PrismaLifecycleRepository(db), notifications, clock, config.WEB_URL);
+  const sessionReminders = new SessionReminderService(new PrismaSessionReminderRepository(db), notifications, clock, config.WEB_URL);
+
   /** Background jobs (started by index.ts only, never in tests). */
   const jobs: Job[] = [
     { name: 'expire-stale-orders', everyMs: 5 * 60_000, run: () => checkout.expireStaleOrders() },
+    { name: 'remind-expiring-transfers', everyMs: 15 * 60_000, run: () => checkout.remindExpiringTransfers() },
     { name: 'expire-transfer-payments', everyMs: 5 * 60_000, run: () => subscriptions.expireStaleTransferPayments() },
     // Before the expiry job, so a plan ending today is still reminded.
     { name: 'remind-renewals', everyMs: 24 * 3_600_000, run: () => subscriptions.remindRenewals() },
@@ -372,6 +505,23 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
         return null; // quiet: the scheduler logs non-zero results
       },
     },
+    // UAE tax invoices for new payments and credit notes for refunds (nothing until a TRN is set).
+    { name: 'issue-tax-documents', everyMs: 10 * 60_000, run: () => taxDocuments.issuePending() },
+    // Recorded-course seats from organization packs whose access has ended.
+    { name: 'expire-organization-seats', everyMs: 60 * 60_000, run: () => organizations.expireSeats() },
+    // Welcome, inactivity nudges and win-back messages (each sent once per user and key).
+    { name: 'lifecycle-messages', everyMs: 60 * 60_000, run: () => lifecycleMessages.run() },
+    // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.
+    { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
+    // Referral rewards once the friend's first payment has passed the earning hold without a refund.
+    { name: 'referral-rewards', everyMs: 60 * 60_000, run: () => referrals.run() },
+    // All-access teacher shares, once per paid period after it ends (split by minutes watched). Idempotent.
+    { name: 'settle-all-access-periods', everyMs: 60 * 60_000, run: () => allAccessEarnings.run() },
+    // Lesson videos still encoding at the video service (webhooks can be lost). A no-op without Bunny Stream.
+    { name: 'sync-lesson-streams', everyMs: 2 * 60_000, run: () => lessonStreaming.syncProcessing() },
+    ...(config.VIDEO_TRANSCODE_BACKFILL === 'true' && adapters.transcoder?.enabled
+      ? [{ name: 'backfill-lesson-streams', everyMs: 60 * 60_000, runAtBoot: false, run: () => lessonStreaming.backfill(5) }]
+      : []),
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 

@@ -1,13 +1,14 @@
 import { aedToFils, formatMoney, type ReviewTransferInput } from '@azza/shared';
 import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { BusinessRuleError, NotFoundError } from '../../core/errors';
-import type { PaymentGateway, PaymentWebhookEvent } from '../../core/ports';
+import type { PaymentGateway, PaymentWebhookEvent, TabbyGateway } from '../../core/ports';
 import { addHours, formatInZone } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { RefundEarningsReverser } from '../payouts/payout.service';
 import type { EnrollmentLifecycle } from './enrollment-lifecycle';
 import type { OrderRecord, PaymentsRepository } from './payments.repository';
+import { tabbyRefundKey } from './tabby/tabby-payment.service';
 
 const aed = (fils: number) => formatMoney(fils / 100, 'AED');
 
@@ -21,6 +22,8 @@ export class FinanceAdminService {
     private readonly notifier: Notifier,
     /** Fixed, or read per use (the admin-editable rule). */
     private readonly bankTransferHoldHours: RuleValue<number>,
+    /** Refunds of TABBY orders; null when Tabby is not configured. */
+    private readonly tabby: Pick<TabbyGateway, 'refund'> | null = null,
   ) {}
 
   private async loadOrder(id: string) {
@@ -29,15 +32,22 @@ export class FinanceAdminService {
     return order;
   }
 
-  async review(orderId: string, input: ReviewTransferInput, adminId: string) {
+  /**
+   * `fromBankStatement`: the money was seen on the bank statement, which is proof on its own, so an order still waiting
+   * for its receipt can be approved (only approved: rejecting still needs a receipt to look at).
+   */
+  async review(orderId: string, input: ReviewTransferInput, adminId: string, opts: { fromBankStatement?: boolean } = {}) {
     const order = await this.loadOrder(orderId);
     if (order.method !== 'BANK_TRANSFER') throw new BusinessRuleError('Only bank transfers are reviewed', 'NOT_BANK_TRANSFER');
-    if (order.status !== 'VERIFYING' && order.status !== 'AMOUNT_MISMATCH') {
+    const awaitingReceipt = order.status === 'AWAITING_RECEIPT' && opts.fromBankStatement && input.decision === 'APPROVE';
+    if (order.status !== 'VERIFYING' && order.status !== 'AMOUNT_MISMATCH' && !awaitingReceipt) {
       throw new BusinessRuleError(`Order is ${order.status}, nothing to review`, 'ORDER_NOT_REVIEWABLE');
     }
-    const enrollment = await this.repo.findEnrollmentById(order.enrollmentId);
+    let enrollment = await this.repo.findEnrollmentById(order.enrollmentId);
     if (!enrollment) throw new NotFoundError('Enrollment', order.enrollmentId);
     const now = this.lifecycle.now();
+    // No receipt was uploaded: the seat moves on as if it had been (AWAITING_TRANSFER -> VERIFYING), then is decided below.
+    if (awaitingReceipt && enrollment.status === 'AWAITING_TRANSFER') enrollment = await this.lifecycle.move(enrollment, 'VERIFYING');
 
     if (input.decision === 'APPROVE') {
       const receivedFils = aedToFils(input.receivedAed);
@@ -48,8 +58,9 @@ export class FinanceAdminService {
           type: 'TRANSFER_AMOUNT_MISMATCH',
           title: `Transfer amount differs · ${order.reference}`,
           body: `Received ${aed(receivedFils)}, expected ${aed(order.totalFils)}`,
+          ar: { title: `مبلغ التحويل مختلف · ${order.reference}`, body: `وصلنا ${aed(receivedFils)}، والمطلوب ${aed(order.totalFils)}` },
           data: { orderId: order.id },
-          email: (r) => appEmails.amountMismatch(r.name, order.reference, aed(order.totalFils), aed(receivedFils)),
+          email: (r) => emailsIn(r.locale).amountMismatch(r.name, order.reference, aed(order.totalFils), aed(receivedFils)),
         });
         throw new BusinessRuleError('Received amount does not match the order total', 'AMOUNT_MISMATCH', {
           orderId: order.id,
@@ -82,8 +93,9 @@ export class FinanceAdminService {
         type: 'TRANSFER_REJECTED',
         title: `Transfer not verified · ${order.reference}`,
         body: input.reason,
+        ar: { title: `لم نتمكن من تأكيد التحويل · ${order.reference}`, body: input.reason },
         data: { orderId: order.id },
-        email: (r) => appEmails.transferRejected(r.name, order.reference, input.reason),
+        email: (r) => emailsIn(r.locale).transferRejected(r.name, order.reference, input.reason),
       });
       return rejected;
     }
@@ -103,8 +115,9 @@ export class FinanceAdminService {
       type: 'TRANSFER_NEW_RECEIPT',
       title: `New receipt needed · ${order.reference}`,
       body: input.reason,
+      ar: { title: `نحتاج إيصالًا جديدًا · ${order.reference}`, body: input.reason },
       data: { orderId: order.id },
-      email: (r) => appEmails.newReceiptRequested(r.name, order.reference, input.reason, formatInZone(expiresAt, r.timezone, r.locale)),
+      email: (r) => emailsIn(r.locale).newReceiptRequested(r.name, order.reference, input.reason, formatInZone(expiresAt, r.timezone, r.locale)),
     });
     return reopened;
   }
@@ -127,7 +140,13 @@ export class FinanceAdminService {
       const unbooked = bookedBefore + amountFils - fresh.refundedFils;
       return { order: unbooked > 0 ? await this.recordRefund(fresh, unbooked, input.reason) : fresh, refundFils: amountFils, manual };
     }
-    manual = true; // bank refund is sent by finance; we record it
+    if (order.method === 'TABBY') {
+      // Tabby returns the money to the customer (cancelling instalments first); we book it once Tabby accepted it.
+      if (!this.tabby || !order.tabbyPaymentId) throw new BusinessRuleError('Tabby is not configured, refund from the Tabby dashboard', 'TABBY_NOT_CONFIGURED');
+      await this.tabby.refund(order.tabbyPaymentId, amountFils, tabbyRefundKey(order.id, order.refundedFils), input.reason);
+    } else {
+      manual = true; // bank refund is sent by finance; we record it
+    }
     return { order: await this.recordRefund(order, amountFils, input.reason), refundFils: amountFils, manual };
   }
 
@@ -168,6 +187,7 @@ export class FinanceAdminService {
           type: 'PAYMENT_DISPUTED',
           title: `Payment disputed · ${order.reference}`,
           body: `${aed(amountFils)} disputed with the card issuer. Respond in the Stripe dashboard before the deadline.`,
+          ar: { title: `اعتراض على دفعة · ${order.reference}`, body: `اعترض حامل البطاقة على ${aed(amountFils)} لدى البنك المُصدر. ردّ من لوحة Stripe قبل الموعد النهائي.` },
           data: { orderId: order.id, reference: order.reference },
         },
         { channels: ['in-app', 'realtime', 'email'] },
@@ -210,8 +230,9 @@ export class FinanceAdminService {
       type: 'ORDER_REFUNDED',
       title: `Refund issued · ${order.reference}`,
       body: `${aed(amountFils)} — ${reason}`,
+      ar: { title: `تم استرداد المبلغ · ${order.reference}`, body: `${aed(amountFils)} — ${reason}` },
       data: { orderId: order.id },
-      email: (r) => appEmails.refunded(r.name, aed(amountFils), order.reference),
+      email: (r) => emailsIn(r.locale).refunded(r.name, aed(amountFils), order.reference),
     });
     return updated;
   }

@@ -2,12 +2,16 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { bearer } from 'better-auth/plugins';
-import { isValidPhone, toE164 } from '@azza/shared';
+import { cleanAttribution, isValidPhone, toE164 } from '@azza/shared';
 import type { AppConfig } from '../core/config';
 import type { Mailer } from '../core/ports';
 import type { Db } from '../infrastructure/db';
-import { appEmails, authEmails } from '../modules/notifications/email-templates';
+import { authEmailsIn, emailsIn } from '../modules/notifications/email-templates';
+import { createSocialSignUpHook, socialAuthOptions } from './social';
 import type { InviteRegistry } from './user-provisioner';
+
+/** The user's language for auth emails (better-auth passes the user row, which has `locale`). */
+const localeOf = (user: unknown) => (user as { locale?: string | null }).locale ?? null;
 
 /**
  * Sign-up over HTTP needs a valid mobile number, stored in E.164. An input that is not already E.164 is read as a UAE
@@ -30,6 +34,8 @@ export interface CurrencyCheck {
 /**
  * better-auth `before` hook for the user-writing endpoints, so they cannot bypass our validation:
  * - `POST /sign-up/email` (HTTP only): `phone` required and stored in E.164; an unavailable `displayCurrency` becomes AED.
+ *   Google/Apple sign-ups (`/sign-in/social`, `/callback/:id`) are not checked here: they create the account without a phone,
+ *   and the web app asks for it before the first purchase (see `./social.ts`).
  * - `POST /update-user`: `phone`, when sent, must be valid (stored in E.164; `null`/`''` clears it); `displayCurrency`,
  *   when sent, must be an enabled currency (400 `CURRENCY_UNAVAILABLE`).
  */
@@ -38,7 +44,10 @@ export function createUserHooks(currencies?: CurrencyCheck) {
     const body = (ctx.body ?? {}) as Record<string, unknown>;
     if (ctx.path === '/sign-up/email') {
       if (!ctx.request) return;
-      const next: Record<string, unknown> = { ...body, phone: signUpPhone(body) };
+      const acquisition = cleanAttribution(body.acquisition);
+      const next: Record<string, unknown> = { ...body, phone: signUpPhone(body), acquisition: acquisition ? JSON.stringify(acquisition) : undefined };
+      // Unknown or empty attribution is dropped (defu ignores undefined in the context, so clear the body itself too).
+      if (!acquisition && ctx.body && typeof ctx.body === 'object') delete (ctx.body as Record<string, unknown>).acquisition;
       if (body.displayCurrency !== undefined) {
         const code = typeof body.displayCurrency === 'string' ? body.displayCurrency.trim().toUpperCase() : '';
         next.displayCurrency = code && (await isSelectable(currencies, code)) ? code : 'AED';
@@ -46,7 +55,10 @@ export function createUserHooks(currencies?: CurrencyCheck) {
       return { context: { body: next } };
     }
     if (ctx.path === '/update-user') {
+      // Attribution is recorded once, at sign-up.
+      if (ctx.body && typeof ctx.body === 'object') delete (ctx.body as Record<string, unknown>).acquisition;
       const next: Record<string, unknown> = { ...body };
+      delete next.acquisition;
       if (body.phone !== undefined) {
         next.phone = updatePhone(body.phone);
         // better-auth merges hook context with defu, which ignores null; set the clear on the body itself too.
@@ -81,12 +93,17 @@ function updatePhone(raw: unknown): string | null {
   return e164;
 }
 
-export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: InviteRegistry, currencies?: CurrencyCheck) {
+/** Called after every new account is written (the referral program links it to whoever invited it). Must not throw. */
+export type OnUserCreated = (user: { id: string; acquisition?: unknown }) => Promise<unknown>;
+
+export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: InviteRegistry, currencies?: CurrencyCheck, onUserCreated?: OnUserCreated) {
+  const social = socialAuthOptions(config.socialAuth);
   return betterAuth({
     secret: config.BETTER_AUTH_SECRET,
     baseURL: config.BETTER_AUTH_URL,
     basePath: '/api/auth',
-    trustedOrigins: config.trustedOrigins,
+    // Apple posts its callback from appleid.apple.com, so that origin is trusted only when Sign in with Apple is on.
+    trustedOrigins: [...config.trustedOrigins, ...social.trustedOrigins],
     // The web app (azza.academy) and API (api.azza.academy) are different hosts; the web
     // proxy reads the session cookie, so it must be scoped to the shared parent domain.
     advanced: {
@@ -105,6 +122,7 @@ export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: 
         timezone: { type: 'string', required: false, defaultValue: 'Asia/Dubai' },
         displayCurrency: { type: 'string', required: false, defaultValue: 'AED' },
         phone: { type: 'string', required: false },
+        acquisition: { type: 'string', required: false },
       },
     },
     emailAndPassword: {
@@ -112,17 +130,32 @@ export function createAuth(db: Db, config: AppConfig, mailer: Mailer, invites?: 
       minPasswordLength: 8,
       sendResetPassword: async ({ user, url }) => {
         const role = (user as { role?: string }).role ?? 'STUDENT';
-        const body = invites?.consume(user.email) ? appEmails.invite(user.name, role, url) : authEmails.resetPassword(user.name, url);
+        const body = invites?.consume(user.email) ? emailsIn(localeOf(user)).invite(user.name, role, url) : authEmailsIn(localeOf(user)).resetPassword(user.name, url);
         void mailer.send({ to: user.email, ...body });
       },
     },
     emailVerification: {
       sendOnSignUp: true,
       sendVerificationEmail: async ({ user, url }) => {
-        void mailer.send({ to: user.email, ...authEmails.verifyEmail(user.name, url) });
+        void mailer.send({ to: user.email, ...authEmailsIn(localeOf(user)).verifyEmail(user.name, url) });
       },
     },
+    // Google and Apple, each only when configured (see config.ts). Linking by email keeps better-auth's safe defaults: both the
+    // provider's email and the existing account's email must be verified, and no provider is trusted blindly.
+    socialProviders: social.socialProviders,
+    account: { accountLinking: { enabled: true, allowDifferentEmails: false } },
     hooks: { before: createUserHooks(currencies) },
+    databaseHooks: {
+      user: {
+        create: {
+          // Social sign-ups: role, locale, timezone, currency and first-touch attribution (email sign-ups use the hook above).
+          before: createSocialSignUpHook((code) => isSelectable(currencies, code)),
+          after: async (user) => {
+            if (onUserCreated) await onUserCreated({ id: user.id, acquisition: user.acquisition }).catch(() => undefined);
+          },
+        },
+      },
+    },
     // Mobile (Flutter) sends `Authorization: Bearer <token>`; web uses cookies.
     plugins: [bearer()],
   });

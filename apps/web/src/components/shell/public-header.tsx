@@ -8,25 +8,32 @@ import { CurrencySwitcher, LocaleSwitcher } from '@/components/brand/switchers';
 import { ThemeMenu } from '@/components/brand/theme-switcher';
 import { useAuth } from '@/lib/auth/use-auth';
 import { homeFor } from '@/lib/auth/roles';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
+import { useCategories } from '@/components/brand/category';
+import { cn } from '@/lib/utils';
+import { useSyncExternalStore } from 'react';
+import { openConsentSettings } from '@/lib/consent';
+
+const noSubscribe = () => () => {};
 
 export function PublicHeader() {
   const { t } = useI18n();
+  const href = useLocaleHref();
   const { user, role } = useAuth();
   return (
     <header className="mx-auto flex w-full max-w-[1360px] flex-wrap items-center gap-x-8 gap-y-3 px-4 py-5 sm:px-6 lg:px-10">
       <Logo />
       <nav aria-label={t.nav.primary} className="hidden items-center gap-6 text-[15px] font-medium text-muted-foreground md:flex">
-        <Link href="/#catalog" className="hover:text-foreground">
+        <Link href={href('/#catalog')} className="hover:text-foreground">
           {t.nav.public.courses}
         </Link>
-        <Link href="/#starting" className="hover:text-foreground">
+        <Link href={href('/#starting')} className="hover:text-foreground">
           {t.nav.public.startingSoon}
         </Link>
-        <Link href="/teachers" className="hover:text-foreground">
+        <Link href={href('/teachers')} className="hover:text-foreground">
           {t.nav.public.teachers}
         </Link>
-        <Link href="/#how" className="hover:text-foreground">
+        <Link href={href('/#how')} className="hover:text-foreground">
           {t.nav.public.howItWorks}
         </Link>
       </nav>
@@ -54,8 +61,14 @@ export function PublicHeader() {
 }
 
 export function PublicFooter() {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
+  const href = useLocaleHref();
   const { user, role } = useAuth();
+  // Subjects with published courses: a link to every category page from every public page. Shown after
+  // hydration, since the server may or may not have the category list when it renders the footer.
+  const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
+  const categories = useCategories().data;
+  const subjects = mounted ? (categories ?? []).filter((c) => c.courseCount > 0).slice(0, 8) : [];
   const cols: Array<{ title: string; links: Array<{ href: string; label: string; external?: boolean }> }> = [
     {
       title: t.landing.footerLearn,
@@ -66,6 +79,9 @@ export function PublicFooter() {
         { href: '/#pricing', label: t.landing.footerPricing },
       ],
     },
+    ...(subjects.length
+      ? [{ title: t.categoryPage.footerTitle, links: subjects.map((c) => ({ href: `/categories/${encodeURIComponent(c.slug)}`, label: pick(c.nameEn, c.nameAr).text })) }]
+      : []),
     {
       title: t.landing.footerAccount,
       links: user
@@ -87,7 +103,7 @@ export function PublicFooter() {
   ];
   return (
     <footer className="mt-24 border-t border-border">
-      <div className="mx-auto grid w-full max-w-[1360px] gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:px-10">
+      <div className={cn('mx-auto grid w-full max-w-[1360px] gap-10 px-4 py-12 sm:px-6 lg:px-10', subjects.length ? 'sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]' : 'lg:grid-cols-[1.4fr_repeat(3,1fr)]')}>
         <div className="flex flex-col gap-4">
           <LogoMark className="h-[clamp(64px,9vw,120px)] self-start text-foreground light:text-ink" />
           <span className="sr-only">عازة Azza</span>
@@ -103,7 +119,7 @@ export function PublicFooter() {
                   {l.label}
                 </a>
               ) : (
-                <Link key={l.href} href={l.href} className="flex min-h-11 items-center text-[15px] text-soft-foreground no-underline hover:text-foreground">
+                <Link key={l.href} href={href(l.href)} className="flex min-h-11 items-center text-[15px] text-soft-foreground no-underline hover:text-foreground">
                   {l.label}
                 </Link>
               ),
@@ -123,6 +139,13 @@ export function PublicFooter() {
           <Link href="/account/delete" className="flex min-h-11 items-center text-muted-foreground no-underline hover:text-foreground">
             {t.legal.footer.deleteAccount}
           </Link>
+          <button
+            type="button"
+            onClick={openConsentSettings}
+            className="flex min-h-11 cursor-pointer items-center text-muted-foreground hover:text-foreground"
+          >
+            {t.legal.footer.cookies}
+          </button>
         </nav>
       </div>
     </footer>

@@ -103,10 +103,18 @@ export class AnnouncementService {
     if (notify) {
       const recipients = (await this.repo.classMemberIds(batchId)).filter((id) => id !== user.id);
       const course = a.batch?.course.titleEn;
+      const courseAr = a.batch ? (a.batch.course.titleAr ?? a.batch.course.titleEn) : undefined;
       if (recipients.length) {
+        // The teacher writes the announcement in one language; only the course name is localized.
         await this.notifier.notify(
           recipients,
-          { type: 'ANNOUNCEMENT', title: course ? `${course}: ${a.title}` : a.title, body: preview(a.body), data: { announcementId: a.id, batchId } },
+          {
+            type: 'ANNOUNCEMENT',
+            title: course ? `${course}: ${a.title}` : a.title,
+            body: preview(a.body),
+            ar: { title: courseAr ? `${courseAr}: ${a.title}` : a.title, body: preview(a.body) },
+            data: { announcementId: a.id, batchId },
+          },
           { channels: ['in-app', 'realtime', 'push'] },
         );
       }
@@ -128,8 +136,10 @@ export class AnnouncementService {
             type: 'ANNOUNCEMENT',
             title: a.title,
             body: preview(a.body),
+            // Written once by the admin, in whichever language suits the audience.
+            ar: { title: a.title, body: preview(a.body) },
             data: { announcementId: a.id },
-            email: () => communicationEmails.announcement(a.title, a.body, url),
+            email: (r) => communicationEmails.announcement(a.title, a.body, url, r.locale),
           },
           { channels: ['in-app', 'realtime', 'push', 'email'] },
         );

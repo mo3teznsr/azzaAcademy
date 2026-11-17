@@ -1,9 +1,10 @@
-import type { LessonInput, ReorderLessonsInput, Role, UpdateLessonInput, VideoPositionInput } from '@azza/shared';
+import { parseCourseVideoUrl, type LessonInput, type ReorderLessonsInput, type Role, type UpdateLessonInput, type VideoPositionInput } from '@azza/shared';
 import { BusinessRuleError, ForbiddenError, NotFoundError, PlanRequiredError } from '../../core/errors';
 import type { Clock } from '../../core/ports';
 import { assertCanEditCourse } from '../courses/course.service';
 import { effectivePreviewLessonId } from '../courses/preview-lesson';
-import { canAccessRecorded } from '../subscriptions/access-policy';
+import { canAccessRecorded, canReadRecordedCourse } from '../subscriptions/access-policy';
+import { mayComplete, watchedShare, WATCH_TO_AUTOCOMPLETE, WATCH_TO_COMPLETE } from './watch-policy';
 import type { LessonCourse, LessonRepository } from './lesson.repository';
 
 type Actor = { id: string; role: Role };
@@ -23,7 +24,33 @@ export class LessonService {
     private readonly clock: Clock = { now: () => new Date() },
     /** Told after a lesson is completed (the certificate check). Failures are logged, never thrown. */
     private readonly onCourseProgress?: (userId: string, courseId: string) => Promise<unknown>,
+    /** Told after a lesson's `videoUrl` is set or changed (adaptive streaming starts over). Failures are logged, never thrown. */
+    private readonly onVideoChanged?: (lessonId: string, videoUrl: string | null) => Promise<unknown>,
   ) {}
+
+  /**
+   * The read rule of `GET /lessons/:id`, for streaming and downloads: throws the same 403 / `PLAN_REQUIRED` / 404, else
+   * returns when the viewer's access ends (`accessUntil`, the recorded plan's period end; null = no known end: staff, live
+   * courses, or a plan without an end date).
+   */
+  async readAccess(lessonId: string, viewer: Actor): Promise<{ lessonId: string; courseId: string; videoUrl: string | null; accessUntil: Date | null }> {
+    const { lesson, course } = await this.lessonOf(lessonId);
+    await this.assertCanRead(course, viewer);
+    let accessUntil: Date | null = null;
+    if (course.type === 'RECORDED' && viewer.role !== 'ADMIN' && course.createdById !== viewer.id) {
+      accessUntil = (await this.repo.recordedSubscription(course.id, viewer.id))?.currentPeriodEnd ?? null;
+    }
+    return { lessonId, courseId: course.id, videoUrl: lesson.videoUrl, accessUntil };
+  }
+
+  private async videoChanged(lessonId: string, videoUrl: string | null) {
+    if (!this.onVideoChanged) return;
+    try {
+      await this.onVideoChanged(lessonId, videoUrl);
+    } catch (err) {
+      console.error('[streaming] video change hook failed', err);
+    }
+  }
 
   async list(courseIdOrSlug: string, viewer: Actor) {
     const course = await this.course(courseIdOrSlug);
@@ -57,6 +84,23 @@ export class LessonService {
     return { ...lesson, courseId: course.id, completed: done.length > 0, videoPositionSec: position ?? 0 };
   }
 
+  /** The lesson and its course when the viewer may read it (the rules above); throws otherwise. Used by lesson Q&A. */
+  async readable(lessonId: string, viewer: Actor) {
+    const { lesson, course } = await this.lessonOf(lessonId);
+    await this.assertCanRead(course, viewer);
+    return { lesson, course };
+  }
+
+  /** The course and its lessons in curriculum order (module order, then lesson order). No access check: callers apply their own. */
+  async courseLessons(courseIdOrSlug: string) {
+    const course = await this.repo.findCourse(courseIdOrSlug);
+    if (!course) return null;
+    const lessons = await this.repo.lessonsOfModules(course.modules.map((m) => m.id));
+    const moduleOrder = new Map(course.modules.map((m, i) => [m.id, i]));
+    lessons.sort((a, b) => (moduleOrder.get(a.moduleId) ?? 0) - (moduleOrder.get(b.moduleId) ?? 0) || a.order - b.order);
+    return { course, lessons };
+  }
+
   /** `GET /lessons/:id/preview` — public: only the preview lesson (the teacher's choice, else the first lesson) of a PUBLISHED recorded course. */
   async preview(lessonId: string) {
     const lesson = await this.repo.find(lessonId);
@@ -70,10 +114,21 @@ export class LessonService {
 
   /** `PUT /lessons/:id/video-position` — under the same read rule as the lesson. */
   async saveVideoPosition(lessonId: string, input: VideoPositionInput, viewer: Actor) {
-    const { course } = await this.lessonOf(lessonId);
+    const { lesson, course } = await this.lessonOf(lessonId);
     await this.assertCanRead(course, viewer);
-    await this.repo.setVideoPosition(viewer.id, lessonId, input.positionSec);
-    return { lessonId, positionSec: input.positionSec };
+    // Learners' watch time on recorded courses splits all-access teacher pay (staff previews never count).
+    const counts = course.type === 'RECORDED' && viewer.role !== 'ADMIN' && course.createdById !== viewer.id;
+    await this.repo.setVideoPosition(viewer.id, lessonId, input.positionSec, { durationSec: input.durationSec, ended: input.ended, ...(counts && { recordedCourseId: course.id }) });
+    // Watching nearly all of an uploaded video completes the lesson on its own (once).
+    let completed = false;
+    if (parseCourseVideoUrl(lesson.videoUrl)?.kind === 'file') {
+      const share = watchedShare(await this.repo.watchProgress(viewer.id, lessonId));
+      if (share !== null && share >= WATCH_TO_AUTOCOMPLETE && !(await this.repo.completedLessonIds(viewer.id, [lessonId])).length) {
+        await this.markDone(viewer.id, lessonId, course.id);
+        completed = true;
+      }
+    }
+    return { lessonId, positionSec: input.positionSec, ...(completed && { completed: true }) };
   }
 
   /** `PUT|DELETE /lessons/:id/complete` — the reader marks a lesson done (or undone). */
@@ -81,15 +136,28 @@ export class LessonService {
     const courseId = await this.repo.courseOfLesson(lessonId);
     if (!courseId) throw new NotFoundError('Lesson', lessonId);
     await this.assertCanRead(await this.course(courseId), viewer);
-    await this.repo.setCompleted(viewer.id, lessonId, completed);
-    if (completed && this.onCourseProgress) {
-      try {
-        await this.onCourseProgress(viewer.id, courseId);
-      } catch (err) {
-        console.error('[certificates] issue after lesson completion failed', err);
-      }
+    if (!completed) {
+      await this.repo.setCompleted(viewer.id, lessonId, false);
+      return { lessonId, completed };
     }
+    // An uploaded video must be mostly watched first, so a certificate can't be earned by clicking through.
+    const lesson = await this.repo.find(lessonId);
+    const verdict = mayComplete(lesson?.videoUrl ?? null, await this.repo.watchProgress(viewer.id, lessonId));
+    if (!verdict.ok) {
+      throw new BusinessRuleError('Watch most of the video before marking this lesson complete', 'WATCH_MORE', { watchedPercent: verdict.watchedPercent, requiredPercent: WATCH_TO_COMPLETE * 100 });
+    }
+    await this.markDone(viewer.id, lessonId, courseId);
     return { lessonId, completed };
+  }
+
+  private async markDone(userId: string, lessonId: string, courseId: string) {
+    await this.repo.setCompleted(userId, lessonId, true);
+    if (!this.onCourseProgress) return;
+    try {
+      await this.onCourseProgress(userId, courseId);
+    } catch (err) {
+      console.error('[certificates] issue after lesson completion failed', err);
+    }
   }
 
   /**
@@ -99,6 +167,9 @@ export class LessonService {
   async myProgress(viewer: Actor) {
     const items = [];
     const now = this.clock.now();
+    // A live all-access plan opens every published recorded course (asked once for the whole list).
+    let allAccess: boolean | undefined;
+    const hasAllAccess = async () => (allAccess ??= canAccessRecorded((await this.repo.allAccessSubscription?.(viewer.id)) ?? null, now));
     for (const courseId of await this.repo.activeCourseIds(viewer.id)) {
       const course = await this.repo.findCourse(courseId);
       if (!course) continue;
@@ -112,11 +183,15 @@ export class LessonService {
       const sub = await this.repo.learnerSubscription(course.id, viewer.id);
       // Staff read their own course without a plan (as on the lesson routes).
       const staff = viewer.role === 'ADMIN' || course.createdById === viewer.id;
+      const ownPlan = !!sub && canAccessRecorded(sub, now);
+      // `viaAllAccess`: the course is open through the all-access plan rather than (or after) its own plan.
+      const viaAllAccess = !staff && !ownPlan && course.status === 'PUBLISHED' && (await hasAllAccess());
       items.push({
         ...base,
         subscription: sub
-          ? { status: sub.status, currentPeriodEnd: sub.currentPeriodEnd, cancelAtPeriodEnd: sub.cancelAtPeriodEnd, hasAccess: staff || canAccessRecorded(sub, now) }
+          ? { status: sub.status, currentPeriodEnd: sub.currentPeriodEnd, cancelAtPeriodEnd: sub.cancelAtPeriodEnd, hasAccess: staff || ownPlan || viaAllAccess }
           : null,
+        ...(viaAllAccess && { viaAllAccess: true }),
       });
     }
     return { items };
@@ -140,6 +215,7 @@ export class LessonService {
     const siblings = await this.repo.lessonsOfModules([moduleId]);
     const { order, videoUrl, ...data } = input;
     const lesson = await this.repo.create(moduleId, { ...data, videoUrl: videoUrl ?? null, order: order ?? siblings.length });
+    if (lesson.videoUrl) await this.videoChanged(lesson.id, lesson.videoUrl);
     if (order !== undefined && order < siblings.length) {
       const ids = siblings.map((l) => l.id);
       ids.splice(order, 0, lesson.id);
@@ -151,9 +227,11 @@ export class LessonService {
 
   async update(courseId: string, moduleId: string, lessonId: string, input: UpdateLessonInput, actor: Actor) {
     await this.editableModule(courseId, moduleId, actor);
-    await this.lessonIn(moduleId, lessonId);
+    const before = await this.lessonIn(moduleId, lessonId);
     const { order: _order, ...data } = input; // position changes go through `reorder`
-    return this.repo.update(lessonId, data);
+    const updated = await this.repo.update(lessonId, data);
+    if (data.videoUrl !== undefined && (data.videoUrl ?? null) !== before.videoUrl) await this.videoChanged(lessonId, data.videoUrl ?? null);
+    return updated;
   }
 
   async remove(courseId: string, moduleId: string, lessonId: string, actor: Actor) {
@@ -196,7 +274,7 @@ export class LessonService {
   private async denial(course: LessonCourse, viewer: Actor) {
     if (viewer.role === 'ADMIN' || course.createdById === viewer.id) return null;
     if (course.type === 'RECORDED') {
-      if (canAccessRecorded(await this.repo.recordedSubscription(course.id, viewer.id), this.clock.now())) return null;
+      if (await canReadRecordedCourse(this.repo, course, viewer.id, this.clock.now())) return null;
       return new PlanRequiredError(course.slug, await this.repo.hadSubscription(course.id, viewer.id));
     }
     if (viewer.role === 'TEACHER' && (await this.repo.teachesCourse(course.id, viewer.id))) return null;

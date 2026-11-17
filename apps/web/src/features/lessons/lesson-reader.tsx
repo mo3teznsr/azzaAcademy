@@ -15,6 +15,7 @@ import { ApiError, learningApi, subscriptionsApi, type CourseLessons, type Lesso
 import { qk } from '@/lib/query-keys';
 import { LockedLessonPanel } from '../subscriptions/locked-panel';
 import { PlanBanner } from '../subscriptions/plan-banner';
+import { LessonQaPanel } from './lesson-qa';
 import { useI18n } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 
@@ -57,7 +58,7 @@ function withCompletion(data: CourseLessons, lessonId: string, completed: boolea
 
 /** Toggles a lesson's completion with an optimistic update; rolls back on error and refreshes progress everywhere once settled. */
 function useLessonCompletion(courseKey: string) {
-  const { t } = useI18n();
+  const { t, f, fill } = useI18n();
   const qc = useQueryClient();
   const queryKey = qk.lessons(courseKey);
   const mutationKey = ['lesson-complete', courseKey];
@@ -70,8 +71,13 @@ function useLessonCompletion(courseKey: string) {
       if (previous) qc.setQueryData<CourseLessons>(queryKey, withCompletion(previous, lessonId, completed));
       return { previous };
     },
-    onError: (_e, _vars, ctx) => {
+    onError: (e, _vars, ctx) => {
       if (ctx?.previous) qc.setQueryData(queryKey, ctx.previous);
+      if (e instanceof ApiError && e.code === 'WATCH_MORE') {
+        const watched = (e.details as { watchedPercent?: number } | undefined)?.watchedPercent ?? 0;
+        toast.error(fill(t.learning.lessons.watchMore, { p: f.number(watched) }));
+        return;
+      }
       toast.error(t.learning.lessons.completeError);
     },
     onSettled: () => {
@@ -236,6 +242,7 @@ function LessonView({
   onToggle: (completed: boolean) => void;
 }) {
   const { t, f, fill, pick, locale } = useI18n();
+  const qc = useQueryClient();
   const completed = !!lesson.completed;
   // Recorded lessons remember where the viewer stopped (the list payload may not carry it, so ask for the lesson).
   const saved = useQuery({ queryKey: ['lesson', lesson.id], queryFn: () => learningApi.lesson(lesson.id), enabled: recorded && !!lesson.videoUrl, staleTime: 0, gcTime: 0, retry: false });
@@ -247,11 +254,18 @@ function LessonView({
       recorded
         ? {
             startSec,
-            onSave: (sec) => void learningApi.saveVideoPosition(lesson.id, sec).catch(() => undefined),
-            onExit: (sec) => learningApi.saveVideoPositionOnExit(lesson.id, sec),
+            onSave: (sec, watch) =>
+              void learningApi
+                .saveVideoPosition(lesson.id, sec, watch)
+                .then((r) => {
+                  // Watching most of the video completed the lesson: show it ticked and the progress moved.
+                  if (r.completed) void qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === 'course' && q.queryKey[2] === 'lessons' });
+                })
+                .catch(() => undefined),
+            onExit: (sec, watch) => learningApi.saveVideoPositionOnExit(lesson.id, sec, watch),
           }
         : undefined,
-    [recorded, startSec, lesson.id],
+    [recorded, startSec, lesson.id, qc],
   );
   const [announce, setAnnounce] = useState('');
   const toggle = () => {
@@ -268,7 +282,7 @@ function LessonView({
         <span className="label-mono text-muted-foreground">{fill(t.learning.lessons.lessonOf, { a: f.number(position), b: f.number(total) })}</span>
         <h1 className="font-display text-4xl font-extrabold leading-tight">{title}</h1>
       </header>
-      {positionReady ? <CourseIntroVideo url={lesson.videoUrl} title={title} resume={resume} /> : <div className="aspect-video w-full animate-pulse rounded-2xl bg-muted" aria-hidden />}
+      {positionReady ? <CourseIntroVideo url={lesson.videoUrl} title={title} resume={resume} stream={lesson.stream} /> : <div className="aspect-video w-full animate-pulse rounded-2xl bg-muted" aria-hidden />}
       {body.text.trim() ? (
         <Markdown source={body.text} dir={bodyDir} className="max-w-[70ch]" />
       ) : (
@@ -303,6 +317,7 @@ function LessonView({
         </span>
         {completed && <NextStep courseId={courseId} lesson={lesson} upNext={upNext} lastInModule={lastInModule} progress={progress} onGo={onGo} />}
       </section>
+      {recorded && <LessonQaPanel lessonId={lesson.id} />}
       <footer className="flex flex-wrap justify-between gap-3 border-t border-border pt-5">
         {prev ? (
           <Button variant="outline" onClick={() => onGo(prev.id)}>

@@ -1,10 +1,10 @@
 import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { randomUUID } from 'node:crypto';
-import { filsToAed, formatMoney, YEARLY_REMINDER_DAYS, type Role, type SubscribeInput, type SubscriptionProvider, type SubscriptionPlan, type SubscriptionStatus } from '@azza/shared';
+import { filsToAed, formatMoney, YEARLY_REMINDER_DAYS, type Role, type SubscribeInput, type SubscriptionPaymentStatus, type SubscriptionProvider, type SubscriptionPlan, type SubscriptionStatus } from '@azza/shared';
 import { AppError, BusinessRuleError, ForbiddenError, NotFoundError } from '../../core/errors';
 import { addHours, formatInZone } from '../../core/time';
 import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction, Clock, PaymentGateway, PaymentWebhookEvent, WebhookInvoice, WebhookSubscription } from '../../core/ports';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notice, Notifier } from '../notifications/notification.types';
 import { appleCommissionFils } from '../payments/apple/apple-iap-policy';
 import { resolveBankAccount } from '../payments/checkout/bank-transfer-checkout';
@@ -272,20 +272,19 @@ export class SubscriptionService {
       expiresAt,
     });
 
-    const ar = user.locale === 'ar';
-    const name = (ar ? course.titleAr : null) ?? course.titleEn;
-    const label = PLAN_LABEL[plan][ar ? 1 : 0];
     const amount = formatMoney(filsToAed(total), 'AED');
     const zone = user.timezone ?? 'Asia/Dubai';
-    const when = formatInZone(expiresAt, zone, user.locale);
+    const nameAr = course.titleAr ?? course.titleEn;
     await this.notifier.notify([userId], {
       type: 'TRANSFER_INSTRUCTIONS',
-      title: ar ? `ادفع بتحويل بنكي · ${name} · ${label}` : `Pay by bank transfer · ${name} · ${label}`,
-      body: ar
-        ? `حوّل ${amount} بالمرجع ${payment.reference} قبل ${when}. يبدأ وصولك بعد تأكيدنا للتحويل، عادةً خلال يوم عمل واحد.`
-        : `Transfer ${amount} with reference ${payment.reference} before ${when}. Your access starts once we confirm it, usually within 1 working day.`,
+      title: `Pay by bank transfer · ${course.titleEn} · ${PLAN_LABEL[plan][0]}`,
+      body: `Transfer ${amount} with reference ${payment.reference} before ${formatInZone(expiresAt, zone, 'en')}. Your access starts once we confirm it, usually within 1 working day.`,
+      ar: {
+        title: `ادفع بتحويل بنكي · ${nameAr} · ${PLAN_LABEL[plan][1]}`,
+        body: `حوّل ${amount} بالمرجع ${payment.reference} قبل ${formatInZone(expiresAt, zone, 'ar')}. يبدأ وصولك بعد تأكيدنا للتحويل، عادةً خلال يوم عمل واحد.`,
+      },
       data: { paymentId: payment.id, subscriptionId: row.id, reference: payment.reference },
-      email: (r) => appEmails.transferInstructions(r.name, amount, payment.reference, account.bankName, account.iban, formatInZone(expiresAt, r.timezone, r.locale)),
+      email: (r) => emailsIn(r.locale).transferInstructions(r.name, amount, payment.reference, account.bankName, account.iban, formatInZone(expiresAt, r.timezone, r.locale)),
     });
     return { plan, bankAccount: account, reference: payment.reference, amountFils: total, expiresAt, paymentId: payment.id };
   }
@@ -342,6 +341,7 @@ export class SubscriptionService {
         type: 'TRANSFER_TO_VERIFY',
         title: `Transfer to verify · ${payment.reference}`,
         body: `${(payment.totalFils / 100).toFixed(2)} AED receipt uploaded`,
+        ar: { title: `تحويل بانتظار التحقق · ${payment.reference}`, body: `رُفع إيصال بمبلغ ${(payment.totalFils / 100).toFixed(2)} AED` },
         data: { paymentId: payment.id, reference: payment.reference },
       },
       { channels: ['in-app', 'realtime'] },
@@ -359,11 +359,17 @@ export class SubscriptionService {
    * Reject: the learner is told why; a first transfer or a lapsed plan ends so they can start again.
    * `newReceipt`: back to AWAITING_RECEIPT with a fresh hold.
    */
-  async reviewTransfer(paymentId: string, input: TransferReviewInput, adminId: string) {
+  /**
+   * `fromBankStatement`: the money was seen on the bank statement, which is proof on its own, so a payment still waiting
+   * for its receipt can be approved (only approved).
+   */
+  async reviewTransfer(paymentId: string, input: TransferReviewInput, adminId: string, opts: { fromBankStatement?: boolean } = {}) {
     const T = this.T;
     const payment = await T.repo.transferPayment(paymentId);
     if (!payment) throw new NotFoundError('Payment', paymentId);
-    if (payment.status !== 'AWAITING_REVIEW') throw new BusinessRuleError(`Payment is ${payment.status}, nothing to review`, 'PAYMENT_NOT_REVIEWABLE');
+    const fromStatuses: SubscriptionPaymentStatus[] =
+      opts.fromBankStatement && input.approve ? ['AWAITING_REVIEW', 'AWAITING_RECEIPT'] : ['AWAITING_REVIEW'];
+    if (!fromStatuses.includes(payment.status)) throw new BusinessRuleError(`Payment is ${payment.status}, nothing to review`, 'PAYMENT_NOT_REVIEWABLE');
     const sub = await this.repo.findById(payment.subscriptionId);
     if (!sub) throw new NotFoundError('Subscription', payment.subscriptionId);
     const now = this.clock.now();
@@ -395,6 +401,7 @@ export class SubscriptionService {
               ...(payment.plan !== sub.plan || payment.subtotalFils !== sub.priceFils ? { plan: payment.plan, priceFils: payment.subtotalFils } : {}),
             },
           },
+          fromStatuses,
         );
       } catch (e) {
         if (!isUniqueViolation(e)) throw e;
@@ -424,8 +431,9 @@ export class SubscriptionService {
         type: 'TRANSFER_NEW_RECEIPT',
         title: `New receipt needed · ${payment.reference}`,
         body: note,
+        ar: { title: `نحتاج إيصالًا جديدًا · ${payment.reference}`, body: note },
         data: { paymentId: payment.id },
-        email: (r) => appEmails.newReceiptRequested(r.name, payment.reference, note, formatInZone(expiresAt, r.timezone, r.locale)),
+        email: (r) => emailsIn(r.locale).newReceiptRequested(r.name, payment.reference, note, formatInZone(expiresAt, r.timezone, r.locale)),
       });
       return this.transferView(reopened);
     }
@@ -438,13 +446,14 @@ export class SubscriptionService {
       lapsed ? { id: sub.id, patch: { status: FINAL } } : undefined,
     );
     if (!rejected) throw await this.notReviewable(payment.id);
-    if (lapsed && sub.status !== 'INCOMPLETE') await this.notifyEnded(sub, course, user?.locale);
+    if (lapsed && sub.status !== 'INCOMPLETE') await this.notifyEnded(sub, course);
     await this.notifier.notify([payment.userId], {
       type: 'TRANSFER_REJECTED',
       title: `Transfer not verified · ${payment.reference}`,
       body: note,
+      ar: { title: `لم نتمكن من تأكيد التحويل · ${payment.reference}`, body: note },
       data: { paymentId: payment.id },
-      email: (r) => appEmails.transferRejected(r.name, payment.reference, note),
+      email: (r) => emailsIn(r.locale).transferRejected(r.name, payment.reference, note),
     });
     return this.transferView(rejected);
   }
@@ -455,12 +464,12 @@ export class SubscriptionService {
     return new BusinessRuleError(`Payment is ${status}, nothing to review`, 'PAYMENT_NOT_REVIEWABLE');
   }
 
-  private async notifyEnded(sub: SubscriptionRow, course: SubscribableCourse | null, locale?: string) {
-    const ar = locale === 'ar';
+  private async notifyEnded(sub: SubscriptionRow, course: SubscribableCourse | null) {
     await this.notifier.notify([sub.userId], {
       type: 'SUBSCRIPTION_ENDED',
-      title: ar ? `انتهى اشتراكك · ${(course?.titleAr ?? course?.titleEn) ?? ''}` : `Your plan has ended · ${course?.titleEn ?? ''}`,
-      body: ar ? 'انتهى اشتراكك، وتقدّمك محفوظ.' : 'Your plan has ended. Your progress is saved.',
+      title: `Your plan has ended · ${course?.titleEn ?? ''}`,
+      body: 'Your plan has ended. Your progress is saved.',
+      ar: { title: `انتهى اشتراكك · ${(course?.titleAr ?? course?.titleEn) ?? ''}`, body: 'انتهى اشتراكك، وتقدّمك محفوظ.' },
       data: { subscriptionId: sub.id, ...(course && { courseSlug: course.slug }) },
     });
   }
@@ -479,6 +488,7 @@ export class SubscriptionService {
         type: 'TRANSFER_EXPIRED',
         title: `Transfer window closed · ${p.reference}`,
         body: 'We did not receive a receipt in time. You can start again whenever you like.',
+        ar: { title: `انتهت مهلة التحويل · ${p.reference}`, body: 'لم يصلنا الإيصال في الوقت المحدد. يمكنك البدء من جديد متى شئت.' },
         data: { paymentId: p.id },
       });
     }
@@ -502,7 +512,7 @@ export class SubscriptionService {
       await this.closeOpenTransferPayments(sub.id);
       expiredSubscriptions++;
       const [user, course] = await Promise.all([this.repo.findUser(sub.userId), this.repo.courseOf(sub.courseId)]);
-      await this.notifyEnded(sub, course, user?.locale);
+      await this.notifyEnded(sub, course);
     }
     return { expiredPayments, expiredSubscriptions };
   }
@@ -638,7 +648,7 @@ export class SubscriptionService {
       if (last) await this.recordRefund(last, last.totalFils);
     }
     const [user, course] = await Promise.all([this.repo.findUser(sub.userId), this.repo.courseOf(sub.courseId)]);
-    await this.notifyEnded(sub, course, user?.locale);
+    await this.notifyEnded(sub, course);
     return { ...this.summary(ended), closedPayments };
   }
 
@@ -654,6 +664,8 @@ export class SubscriptionService {
     const sub = await this.repo.findById(id);
     if (!sub) throw new NotFoundError('Subscription', id);
     if (sub.provider === 'APPLE') throw MANAGED_BY_APPLE();
+    // A seat from an organization's pack: revoked from the pack's page, never cancelled or refunded here.
+    if (sub.provider === 'ORGANIZATION') throw new BusinessRuleError('This plan is a seat from an organization pack', 'MANAGED_BY_ORGANIZATION');
     if (sub.provider === 'BANK_TRANSFER') return { ...(await this.adminCancelTransfer(id, input, adminId)), refundedFils: 0, cancelPending: false };
     if (sub.status === FINAL) throw new BusinessRuleError('This plan has already ended', 'NOT_ACTIVE');
     // An unfinished checkout: close its Session first, so the learner cannot pay on it after the row has ended.
@@ -691,7 +703,7 @@ export class SubscriptionService {
     const ended = await this.repo.update(sub.id, { status: FINAL, cancelAtPeriodEnd: false });
     if (sub.status !== 'INCOMPLETE') {
       const [user, course] = await Promise.all([this.repo.findUser(sub.userId), this.repo.courseOf(sub.courseId)]);
-      await this.notifyEnded(sub, course, user?.locale);
+      await this.notifyEnded(sub, course);
     }
     return { ...this.summary(ended), closedPayments: [], refundedFils: refundable ? remaining : 0, cancelPending };
   }
@@ -735,6 +747,7 @@ export class SubscriptionService {
           type: 'PAYMENT_DISPUTED',
           title: 'Plan payment disputed',
           body: `${(amountFils / 100).toFixed(2)} AED disputed with the card issuer. Respond in the Stripe dashboard before the deadline.`,
+          ar: { title: 'اعتراض على دفعة اشتراك', body: `اعترض حامل البطاقة على ${(amountFils / 100).toFixed(2)} AED لدى البنك المُصدر. ردّ من لوحة Stripe قبل الموعد النهائي.` },
           data: { paymentId: payment.id, subscriptionId: payment.subscriptionId },
         },
         { channels: ['in-app', 'realtime', 'email'] },
@@ -787,6 +800,7 @@ export class SubscriptionService {
     const soonTo = now + YEARLY_REMINDER_DAYS * DAY;
     let reminders = 0;
     for (const c of await this.admin.endingBetween(new Date(now - DAY), new Date(soonTo))) {
+      if (c.provider === 'ORGANIZATION') continue; // organization seats: nothing for the learner to renew
       const end = c.currentPeriodEnd.getTime();
       const transfer = c.provider === 'BANK_TRANSFER';
       const kinds: Array<'SOON' | 'END_DAY'> = [];
@@ -817,26 +831,32 @@ export class SubscriptionService {
 
   private async sendRenewalReminder(c: ReminderCandidate, kind: 'SOON' | 'END_DAY') {
     const [user, course] = await Promise.all([this.repo.findUser(c.userId), this.repo.courseOf(c.courseId)]);
-    const ar = user?.locale === 'ar';
-    const name = (ar ? course?.titleAr : null) ?? course?.titleEn ?? '';
-    const date = new Intl.DateTimeFormat(ar ? 'ar-AE-u-nu-latn' : 'en-GB', { timeZone: user?.timezone ?? 'Asia/Dubai', day: 'numeric', month: 'long', year: 'numeric' }).format(c.currentPeriodEnd);
     const transfer = c.provider === 'BANK_TRANSFER';
-    const copy = transfer
-      ? kind === 'END_DAY'
-        ? ar
-          ? { title: `آخر يوم في اشتراكك · ${name}`, body: `ينتهي اشتراكك اليوم، ${date}. جدّد بتحويل بنكي لتواصل التعلّم.`, label: 'جدّد بتحويل بنكي' }
-          : { title: `Last day of your plan · ${name}`, body: `Your plan ends today, ${date}. Renew by transfer to keep learning.`, label: 'Renew by transfer' }
+    // Both languages: in-app and push follow the reader's locale; the email is built for this user.
+    const copyIn = (ar: boolean) => {
+      const name = (ar ? course?.titleAr : null) ?? course?.titleEn ?? '';
+      const date = new Intl.DateTimeFormat(ar ? 'ar-AE-u-nu-latn' : 'en-GB', { timeZone: user?.timezone ?? 'Asia/Dubai', day: 'numeric', month: 'long', year: 'numeric' }).format(c.currentPeriodEnd);
+      return transfer
+        ? kind === 'END_DAY'
+          ? ar
+            ? { title: `آخر يوم في اشتراكك · ${name}`, body: `ينتهي اشتراكك اليوم، ${date}. جدّد بتحويل بنكي لتواصل التعلّم.`, label: 'جدّد بتحويل بنكي' }
+            : { title: `Last day of your plan · ${name}`, body: `Your plan ends today, ${date}. Renew by transfer to keep learning.`, label: 'Renew by transfer' }
+          : ar
+            ? { title: `اشتراكك على وشك الانتهاء · ${name}`, body: `ينتهي اشتراكك في ${date}. جدّد بتحويل بنكي لتواصل التعلّم.`, label: 'جدّد بتحويل بنكي' }
+            : { title: `Your plan ends soon · ${name}`, body: `Your plan ends on ${date}. Renew by transfer to keep learning.`, label: 'Renew by transfer' }
         : ar
-          ? { title: `اشتراكك على وشك الانتهاء · ${name}`, body: `ينتهي اشتراكك في ${date}. جدّد بتحويل بنكي لتواصل التعلّم.`, label: 'جدّد بتحويل بنكي' }
-          : { title: `Your plan ends soon · ${name}`, body: `Your plan ends on ${date}. Renew by transfer to keep learning.`, label: 'Renew by transfer' }
-      : ar
-        ? { title: `يتجدّد اشتراكك قريبًا · ${name}`, body: `يتجدّد اشتراكك السنوي في ${date}. يمكنك إدارته في أي وقت.`, label: 'إدارة اشتراكي' }
-        : { title: `Your plan renews soon · ${name}`, body: `Your yearly plan renews on ${date}. You can manage it any time.`, label: 'Manage my plan' };
-    const email = appEmails.subscriptionRenewsSoon(user?.name ?? '', copy.title, copy.body, `${this.webUrl}/plans`, copy.label);
+          ? { title: `يتجدّد اشتراكك قريبًا · ${name}`, body: `يتجدّد اشتراكك السنوي في ${date}. يمكنك إدارته في أي وقت.`, label: 'إدارة اشتراكي' }
+          : { title: `Your plan renews soon · ${name}`, body: `Your yearly plan renews on ${date}. You can manage it any time.`, label: 'Manage my plan' };
+    };
+    const en = copyIn(false);
+    const arCopy = copyIn(true);
+    const copy = user?.locale === 'ar' ? arCopy : en;
+    const email = emailsIn(user?.locale).subscriptionRenewsSoon(user?.name ?? '', copy.title, copy.body, `${this.webUrl}/plans`, copy.label);
     await this.notifier.notify([c.userId], {
       type: 'SUBSCRIPTION_RENEWS_SOON',
-      title: copy.title,
-      body: copy.body,
+      title: en.title,
+      body: en.body,
+      ar: { title: arCopy.title, body: arCopy.body },
       data: { subscriptionId: c.id, ...(course && { courseSlug: course.slug }) },
       email: () => email,
     });
@@ -1395,13 +1415,13 @@ export class SubscriptionService {
     if (await this.repo.failureNoticeSent(row.userId, inv.id)) return { handled: true, duplicate: true };
     const user = await this.repo.findUser(row.userId);
     const course = await this.repo.courseOf(row.courseId);
-    const ar = user?.locale === 'ar';
     const learnUrl = `${this.webUrl}/plans`;
-    const email = appEmails.subscriptionPaymentFailed(user?.name ?? '', course?.titleEn ?? '', learnUrl);
+    const email = emailsIn(user?.locale).subscriptionPaymentFailed(user?.name ?? '', (user?.locale === 'ar' ? course?.titleAr : null) ?? course?.titleEn ?? '', learnUrl);
     await this.notifier.notify([row.userId], {
       type: 'SUBSCRIPTION_PAYMENT_FAILED',
-      title: ar ? 'تعذّرت عملية الدفع' : "Your payment didn't go through",
-      body: ar ? 'لم تتم آخر عملية دفع. حدّث بطاقتك لتواصل التعلّم.' : "Your last payment didn't go through. Update your card to keep learning.",
+      title: "Your payment didn't go through",
+      body: "Your last payment didn't go through. Update your card to keep learning.",
+      ar: { title: 'تعذّرت عملية الدفع', body: 'لم تتم آخر عملية دفع. حدّث بطاقتك لتواصل التعلّم.' },
       data: { subscriptionId: row.id, invoiceId: inv.id, ...(course && { courseSlug: course.slug }) },
       email: () => email,
     });
@@ -1437,12 +1457,13 @@ export class SubscriptionService {
   private async announceIfActivated(before: SubscriptionRow, after: SubscriptionRow) {
     if (before.status !== 'INCOMPLETE' || after.status === 'INCOMPLETE' || after.status === FINAL) return;
     const [user, course] = await Promise.all([this.repo.findUser(after.userId), this.repo.courseOf(after.courseId)]);
-    const ar = user?.locale === 'ar';
-    const title = course ? (ar ? (course.titleAr ?? course.titleEn) : course.titleEn) : '';
+    const titleEn = course?.titleEn ?? '';
+    const titleAr = course ? (course.titleAr ?? course.titleEn) : '';
     await this.notifier.notify([after.userId], {
       type: 'SUBSCRIPTION_ACTIVE',
-      title: ar ? `أهلًا بك في ${title}` : `You're in · ${title}`,
-      body: ar ? 'ابدأ متى شئت، وتعلّم على راحتك.' : 'Start any time. Learn at your pace.',
+      title: `You're in · ${titleEn}`,
+      body: 'Start any time. Learn at your pace.',
+      ar: { title: `أهلًا بك في ${titleAr}`, body: 'ابدأ متى شئت، وتعلّم على راحتك.' },
       data: { subscriptionId: after.id, ...(course && { courseSlug: course.slug }) },
     });
   }
@@ -1451,13 +1472,12 @@ export class SubscriptionService {
     const user = await this.repo.findUser(row.userId);
     const amount = formatMoney(filsToAed(amountFils), 'AED');
     const until = periodEnd.toISOString().slice(0, 10);
-    const email = appEmails.subscriptionReceipt(user?.name ?? '', course?.titleEn ?? '', amount, until, `${this.webUrl}/plans`);
-    const ar = user?.locale === 'ar';
-    const name = (ar ? course?.titleAr : null) ?? course?.titleEn;
+    const email = emailsIn(user?.locale).subscriptionReceipt(user?.name ?? '', (user?.locale === 'ar' ? course?.titleAr : null) ?? course?.titleEn ?? '', amount, until, `${this.webUrl}/plans`);
     const notice: Notice = {
       type: 'SUBSCRIPTION_RECEIPT',
-      title: ar ? `إيصال · ${name ?? 'اشتراكك'}` : `Receipt · ${name ?? 'Your plan'}`,
-      body: ar ? `استلمنا ${amount}. وصولك مضمون حتى ${until}.` : `${amount} received. You're covered until ${until}.`,
+      title: `Receipt · ${course?.titleEn ?? 'Your plan'}`,
+      body: `${amount} received. You're covered until ${until}.`,
+      ar: { title: `إيصال · ${course?.titleAr ?? course?.titleEn ?? 'اشتراكك'}`, body: `استلمنا ${amount}. وصولك مضمون حتى ${until}.` },
       data: { subscriptionId: row.id, invoiceId: paymentRef },
       email: () => email,
     };

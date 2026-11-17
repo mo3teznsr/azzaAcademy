@@ -210,10 +210,15 @@ export class StripePaymentGateway implements PaymentGateway {
         subscription_data: { metadata, ...(args.trialEnd && { trial_end: Math.floor(args.trialEnd.getTime() / 1000) }) },
         success_url: args.successUrl,
         cancel_url: args.cancelUrl,
+        // Plan campaigns (Ramadan, National Day, White Friday): promotion codes made in the Stripe dashboard are accepted
+        // on the Checkout page. The invoice records what was really paid, so earnings and receipts follow the discount.
+        allow_promotion_codes: true,
         // Stripe's minimum is 30 minutes; the default leaves a margin for latency.
         expires_at: Math.floor((args.expiresAt?.getTime() ?? Date.now() + 31 * 60_000) / 1000),
       },
-      { idempotencyKey: `sub-checkout-${args.reference}-${args.priceId}${args.trialEnd ? `-t${args.trialEnd.getTime()}-e${args.expiresAt?.getTime() ?? 0}` : ''}` },
+      // `promo` keeps these keys apart from Sessions created before promotion codes were allowed (Stripe refuses a reused
+      // key with different parameters).
+      { idempotencyKey: `sub-checkout-promo-${args.reference}-${args.priceId}${args.trialEnd ? `-t${args.trialEnd.getTime()}-e${args.expiresAt?.getTime() ?? 0}` : ''}` },
     );
     if (!session.url) throw new AppError('Stripe did not return a checkout URL', 500, 'STRIPE');
     return { id: session.id, url: session.url };

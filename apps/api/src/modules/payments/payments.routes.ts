@@ -12,6 +12,7 @@ import {
   transferListQuery,
   updateBankAccountInput,
   updateCouponInput,
+  tabbyEligibilityQuery,
   uploadReceiptInput,
   type OrderStatus,
 } from '@azza/shared';
@@ -29,6 +30,7 @@ import { receiptFromBody } from './receipt-file';
 import type { ReceiptUploadService } from './receipt-upload.service';
 import type { SubscriptionService } from '../subscriptions/subscription.service';
 import type { SubscriptionTransferQueries } from '../subscriptions/transfer-queries';
+import type { TabbyPaymentService } from './tabby/tabby-payment.service';
 import type { WaitlistQueries } from './waitlist.queries';
 
 export interface PaymentServices {
@@ -43,6 +45,7 @@ export interface PaymentServices {
   appleIap: AppleIapService;
   subscriptions: SubscriptionService;
   subscriptionTransfers: SubscriptionTransferQueries;
+  tabby: TabbyPaymentService;
 }
 
 /** Mounted at /api/v1 */
@@ -60,6 +63,14 @@ export function paymentRoutes(s: PaymentServices) {
     .post('/payments/apple/verify', requireAuth, validate('json', appleVerifyInput), async (c) =>
       c.json(await s.appleIap.verifyPurchase(currentUser(c).id, c.req.valid('json'))),
     )
+    .get('/payments/tabby/eligibility', requireAuth, validate('query', tabbyEligibilityQuery), async (c) =>
+      c.json(await s.tabby.eligibility(currentUser(c).id, c.req.valid('query'))),
+    )
+    // The Tabby return page asks for a server-to-server check of the payment (never trusting the redirect itself).
+    .post('/payments/tabby/orders/:id/confirm', requireAuth, async (c) => {
+      const { order, outcome } = await s.tabby.confirmForUser(currentUser(c).id, c.req.param('id'));
+      return c.json({ order, outcome });
+    })
     .post('/batches/:id/waitlist', requireAuth, async (c) => c.json(await s.checkout.joinWaitlist(currentUser(c).id, c.req.param('id')), 201))
     .delete('/batches/:id/waitlist', requireAuth, async (c) => c.json(await s.checkout.leaveWaitlist(currentUser(c).id, c.req.param('id'))))
     .get('/orders/by-reference/:ref', requireAuth, async (c) => c.json(await s.orders.byReference(c.req.param('ref'), currentUser(c))))

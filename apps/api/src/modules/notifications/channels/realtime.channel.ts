@@ -1,6 +1,6 @@
 import { SOCKET_EVENTS, type NotificationEvent } from '@azza/shared';
 import type { RealtimeBroadcaster } from '../../../core/ports';
-import type { Delivery, NotificationChannel } from '../notification.types';
+import { localizedText, type Delivery, type NotificationChannel } from '../notification.types';
 
 /** Pushes `notification:new` to every open socket of the recipient. */
 export class RealtimeChannel implements NotificationChannel {
@@ -12,8 +12,7 @@ export class RealtimeChannel implements NotificationChannel {
       const event: NotificationEvent = {
         id: d.id,
         type: d.notice.type,
-        title: d.notice.title,
-        body: d.notice.body,
+        ...localizedText(d.notice, d.recipient),
         data: d.notice.data,
         createdAt: d.createdAt.toISOString(),
       };

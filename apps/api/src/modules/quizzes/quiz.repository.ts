@@ -1,7 +1,7 @@
 import type { CourseType, QuizStatus } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
 import type { AccessSubscription } from '../subscriptions/access-policy';
-import { everSubscribed, newestLiveSubscription } from '../subscriptions/recorded-subscription';
+import { allAccessSubscription, everSubscribed, newestLiveSubscription } from '../subscriptions/recorded-subscription';
 import type { Answers, QuestionResult, StoredQuestion } from './quiz-grader';
 
 /** A quiz belongs to a batch (LIVE course) or to a course (RECORDED): exactly one of `batchId` and `courseId` is set. */
@@ -83,6 +83,8 @@ export interface QuizRepository {
   recordedSubscription(courseId: string, userId: string): Promise<AccessSubscription | null>;
   /** The user once had a paid period on the course (even one that has expired); an abandoned checkout does not count. */
   hadSubscription(courseId: string, userId: string): Promise<boolean>;
+  /** The learner's live all-access plan; absent (older fakes) means none. */
+  allAccessSubscription?(userId: string): Promise<AccessSubscription | null>;
   moduleInCourse(moduleId: string, courseId: string): Promise<boolean>;
   listByBatch(batchId: string, publishedOnly: boolean): Promise<QuizRecord[]>;
   listByCourse(courseId: string, publishedOnly: boolean): Promise<QuizRecord[]>;
@@ -129,6 +131,10 @@ export class PrismaQuizRepository implements QuizRepository {
 
   hadSubscription(courseId: string, userId: string) {
     return everSubscribed(this.db, courseId, userId);
+  }
+
+  allAccessSubscription(userId: string) {
+    return allAccessSubscription(this.db, userId);
   }
 
   async moduleInCourse(moduleId: string, courseId: string) {

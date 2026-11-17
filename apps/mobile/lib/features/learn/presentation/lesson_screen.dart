@@ -18,6 +18,8 @@ import '../data/lessons_repository.dart';
 import '../data/quizzes_repository.dart';
 import '../domain/quiz_models.dart';
 import '../domain/lesson_models.dart';
+import 'lesson_qa_section.dart';
+import 'downloads_screen.dart' show LessonDownloadButton;
 import 'lesson_video_tracker.dart';
 
 /// One lesson: its video, the markdown text and the attachments, with previous / next.
@@ -92,7 +94,14 @@ class LessonScreen extends ConsumerWidget {
                     Kicker([if (module != null) module.title(locale), l.lessonNofM('${i + 1}', '${all.length}')].join(' · ')),
                     const SizedBox(height: 4),
                     DisplayText(lesson.title(locale), size: 28),
-                    if (video != null) ...[const SizedBox(height: 16), LessonVideo(lessonId: lesson.id, url: video)],
+                    if (video != null) ...[
+                      const SizedBox(height: 16),
+                      LessonVideo(lessonId: lesson.id, url: video),
+                      if (ref.watch(lessonPlayerBuilderProvider) != null) ...[
+                        const SizedBox(height: 8),
+                        LessonDownloadButton(lessonId: lesson.id, courseId: courseId, titleEn: lesson.titleEn, titleAr: lesson.titleAr),
+                      ],
+                    ],
                     if (body.trim().isNotEmpty) ...[
                       const SizedBox(height: 16),
                       MarkdownBody(
@@ -138,6 +147,7 @@ class LessonScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
+                    if (c.isRecorded) LessonQaSection(key: ValueKey('qa-${lesson.id}'), lessonId: lesson.id),
                   ],
                 ),
               ),

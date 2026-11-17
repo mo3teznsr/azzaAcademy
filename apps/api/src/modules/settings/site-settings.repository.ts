@@ -13,6 +13,10 @@ export interface RuleOverrides {
 
 export interface SiteSettingsRow extends RuleOverrides, ContactSettings {
   socials: SocialLinks;
+  legalName: string | null;
+  legalAddress: string | null;
+  taxRegistrationNumber: string | null;
+  invoicingFrom: Date | null;
 }
 
 export const EMPTY_SITE_SETTINGS: SiteSettingsRow = {
@@ -27,6 +31,10 @@ export const EMPTY_SITE_SETTINGS: SiteSettingsRow = {
   addressEn: null,
   addressAr: null,
   socials: {},
+  legalName: null,
+  legalAddress: null,
+  taxRegistrationNumber: null,
+  invoicingFrom: null,
 };
 
 export interface SiteSettingsRepository {
@@ -48,6 +56,10 @@ const select = {
   addressEn: true,
   addressAr: true,
   socials: true,
+  legalName: true,
+  legalAddress: true,
+  taxRegistrationNumber: true,
+  invoicingFrom: true,
 } as const;
 
 const toRow = (r: Omit<SiteSettingsRow, 'socials'> & { socials: unknown }): SiteSettingsRow => ({

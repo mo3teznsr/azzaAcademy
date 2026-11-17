@@ -13,7 +13,7 @@ import type { sessionFeedbackInput, updateAgendaInput } from '@azza/shared';
 import { BusinessRuleError, ConflictError, ForbiddenError, NotFoundError } from '../../core/errors';
 import type { Clock, RealtimeBroadcaster, VideoProvider, VideoWebhookEvent } from '../../core/ports';
 import { addMinutes, formatInZone } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { ClassroomState } from './classroom-state';
 import { DemoReviewers, demoRoomName } from './demo-reviewers';
@@ -34,6 +34,8 @@ export interface RescheduleRequestLog {
 /** Called when a session is delivered (ENDED). Implemented by the payouts module (DIP). */
 export interface EarningsAccrual {
   accrueForSession(sessionId: string): Promise<unknown>;
+  /** When the batch completes: the teacher's final share from the batch's final net. */
+  trueUpBatch?(batchId: string): Promise<unknown>;
 }
 
 export class SessionService {
@@ -172,6 +174,10 @@ export class SessionService {
         type: 'SESSION_RESCHEDULE_REQUEST',
         title: `Reschedule request · ${s.batch.code} S${String(s.number).padStart(2, '0')}`,
         body: `${user.name} asked to move "${s.title}" to ${formatInZone(startsAt, s.batch.timezone)}${input.reason ? ` — ${input.reason}` : ''}`,
+        ar: {
+          title: `طلب تغيير موعد · ${s.batch.code} S${String(s.number).padStart(2, '0')}`,
+          body: `طلب ${user.name} نقل «${s.title}» إلى ${formatInZone(startsAt, s.batch.timezone, 'ar')}${input.reason ? ` — ${input.reason}` : ''}`,
+        },
         data: { sessionId: id, requestId: request.id, startsAt: startsAt.toISOString(), durationMin: String(duration), requestedBy: user.id },
       });
       return { requested: true as const, session: s, request };
@@ -199,8 +205,9 @@ export class SessionService {
         type: 'SESSION_RESCHEDULED',
         title: `Session moved · ${s.title}`,
         body: `${course} ${s.batch.code}: now ${formatInZone(startsAt, s.batch.timezone)}`,
+        ar: { title: `تغيّر موعد الحصة · ${s.title}`, body: `${s.batch.course.titleAr ?? s.batch.course.titleEn} ${s.batch.code}: الموعد الجديد ${formatInZone(startsAt, s.batch.timezone, 'ar')}` },
         data: { sessionId: id, startsAt: startsAt.toISOString() },
-        email: (r) => appEmails.sessionRescheduled(course, s.title, formatInZone(startsAt, r.timezone, r.locale), input.reason),
+        email: (r) => emailsIn(r.locale).sessionRescheduled(course, s.title, formatInZone(startsAt, r.timezone, r.locale), input.reason),
       });
     }
     return { requested: false as const, session: updated };
@@ -217,8 +224,9 @@ export class SessionService {
         type: 'SESSION_CANCELLED',
         title: `Session cancelled · ${s.title}`,
         body: `${course} ${s.batch.code} on ${formatInZone(s.startsAt, s.batch.timezone)}`,
+        ar: { title: `أُلغيت الحصة · ${s.title}`, body: `${s.batch.course.titleAr ?? s.batch.course.titleEn} ${s.batch.code} بتاريخ ${formatInZone(s.startsAt, s.batch.timezone, 'ar')}` },
         data: { sessionId: id },
-        email: (r) => appEmails.sessionCancelled(course, s.title, formatInZone(s.startsAt, r.timezone, r.locale), input.reason),
+        email: (r) => emailsIn(r.locale).sessionCancelled(course, s.title, formatInZone(s.startsAt, r.timezone, r.locale), input.reason),
       });
     }
     return updated;
@@ -296,6 +304,7 @@ export class SessionService {
           type: 'RECORDING_NOT_STARTED',
           title: 'This session is not being recorded',
           body: `${s.batch.course.titleEn} ${s.batch.code}: recording could not start. Students won't get a replay unless you share one.`,
+          ar: { title: 'هذه الحصة لا تُسجَّل', body: `${s.batch.course.titleAr ?? s.batch.course.titleEn} ${s.batch.code}: تعذّر بدء التسجيل. لن يحصل الطلاب على إعادة إلا إذا شاركت واحدة.` },
           data: { sessionId: s.id },
         })
         .catch(() => undefined);
@@ -308,6 +317,7 @@ export class SessionService {
       type: 'SESSION_LIVE',
       title: `${s.batch.course.titleEn} is live`,
       body: `${s.title} has started — join now`,
+      ar: { title: `بدأ البث المباشر · ${s.batch.course.titleAr ?? s.batch.course.titleEn}`, body: `بدأت ${s.title}، انضم الآن` },
       data: { sessionId: id },
     }, { channels: ['realtime', 'push'] });
     return updated;
@@ -333,6 +343,7 @@ export class SessionService {
     await this.earnings.accrueForSession(s.id);
     if ((await this.repo.remainingSessions(s.batchId)) === 0 && s.batch.status === 'RUNNING') {
       await this.repo.setBatchStatus(s.batchId, 'COMPLETED');
+      await this.earnings.trueUpBatch?.(s.batchId);
     }
     return updated;
   }
@@ -474,6 +485,7 @@ export class SessionService {
           type: 'RECORDING_READY',
           title: `Recording ready · ${s.title}`,
           body: `${s.batch.course.titleEn} ${s.batch.code} S${String(s.number).padStart(2, '0')}`,
+          ar: { title: `التسجيل جاهز · ${s.title}`, body: `${s.batch.course.titleAr ?? s.batch.course.titleEn} ${s.batch.code} S${String(s.number).padStart(2, '0')}` },
           data: { sessionId: s.id },
         }, { channels: ['in-app', 'realtime'] });
         // The teacher gets their own alert: it opens the studio recordings, not the student library.
@@ -482,6 +494,7 @@ export class SessionService {
           type: 'RECORDING_READY_TEACHER',
           title: `Recording ready · ${s.title}`,
           body: `${s.batch.course.titleEn} ${s.batch.code} S${String(s.number).padStart(2, '0')} — watch or download it in your studio`,
+          ar: { title: `التسجيل جاهز · ${s.title}`, body: `${s.batch.course.titleAr ?? s.batch.course.titleEn} ${s.batch.code} S${String(s.number).padStart(2, '0')} — شاهده أو نزّله من الاستوديو` },
           data: { sessionId: s.id, batchId: s.batchId },
         });
         return { handled: true };

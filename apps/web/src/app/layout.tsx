@@ -5,6 +5,7 @@ import { dirOf } from '@/lib/i18n/config';
 import en from '@/lib/i18n/dictionaries/en';
 import ar from '@/lib/i18n/dictionaries/ar';
 import { THEME_SCRIPT } from '@/lib/theme/config';
+import { SITE_URL } from '@/lib/site';
 import { Providers } from './providers';
 import './globals.css';
 
@@ -15,7 +16,13 @@ const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrai
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = locale === 'ar' ? ar : en;
-  return { title: { default: t.meta.title, template: '%s · Azza' }, description: t.meta.description };
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: t.meta.title, template: locale === 'ar' ? '%s · عازة' : '%s · Azza' },
+    description: t.meta.description,
+    openGraph: { type: 'website', siteName: locale === 'ar' ? 'عازة' : 'Azza', locale: locale === 'ar' ? 'ar_AE' : 'en_AE', title: t.meta.title, description: t.meta.description, url: SITE_URL },
+    twitter: { card: 'summary_large_image', title: t.meta.title, description: t.meta.description },
+  };
 }
 
 export const viewport: Viewport = {

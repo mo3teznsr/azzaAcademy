@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/network/app_exception.dart';
+import '../../../core/prefs/app_prefs.dart';
 import '../../../core/providers.dart';
 import '../../../core/storage/token_store.dart';
 import '../domain/app_user.dart';
@@ -27,8 +28,11 @@ abstract class AuthRepository {
 }
 
 class DioAuthRepository extends DioRepository implements AuthRepository {
-  DioAuthRepository(super.dio, this._tokens);
+  DioAuthRepository(super.dio, this._tokens, {this.locale});
   final TokenStore _tokens;
+
+  /// The app's language when the account is created, so emails and notices arrive in it.
+  final String Function()? locale;
 
   Future<AppUser> _authenticate(String path, Map<String, dynamic> body) => guard(() async {
         final res = await dio.post<dynamic>(path, data: body);
@@ -51,7 +55,13 @@ class DioAuthRepository extends DioRepository implements AuthRepository {
 
   @override
   Future<AppUser> signUp({required String name, required String email, required String password, required String phone}) =>
-      _authenticate('/api/auth/sign-up/email', {'name': name.trim(), 'email': email.trim(), 'password': password, 'phone': phone});
+      _authenticate('/api/auth/sign-up/email', {
+        'name': name.trim(),
+        'email': email.trim(),
+        'password': password,
+        'phone': phone,
+        'locale': ?locale?.call(),
+      });
 
   @override
   Future<AppUser?> restore() async {
@@ -102,5 +112,5 @@ class DioAuthRepository extends DioRepository implements AuthRepository {
 }
 
 final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => DioAuthRepository(ref.watch(dioProvider), ref.watch(tokenStoreProvider)),
+  (ref) => DioAuthRepository(ref.watch(dioProvider), ref.watch(tokenStoreProvider), locale: () => ref.read(localeProvider).wire),
 );

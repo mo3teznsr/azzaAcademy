@@ -1,7 +1,8 @@
 import { SOCKET_EVENTS, type EnrollmentStatus, type OrderUpdatedEvent } from '@azza/shared';
 import type { Clock, RealtimeBroadcaster } from '../../core/ports';
+import { BusinessRuleError } from '../../core/errors';
 import { formatInZone } from '../../core/time';
-import { appEmails } from '../notifications/email-templates';
+import { emailsIn } from '../notifications/email-templates';
 import type { Notifier } from '../notifications/notification.types';
 import type { EnrollmentStateMachine } from './enrollment-state';
 import type { EnrollmentRecord, OrderRecord, PaymentsRepository } from './payments.repository';
@@ -30,6 +31,27 @@ export class EnrollmentLifecycle {
     const enrollment = await this.repo.findEnrollmentById(enrollmentId);
     if (!enrollment) return null;
     const active = await this.move(enrollment, 'ACTIVE');
+    await this.welcome(active);
+    return active;
+  }
+
+  /**
+   * A seat given without checkout (an organization's seat pack): creates the enrollment, or takes one that holds no
+   * seat, straight to ACTIVE with no order, then the same fullness sync and "you're enrolled" message as a paid seat.
+   * Capacity is the caller's: a pack's seats are already held in the batch.
+   */
+  async grant(userId: string, batchId: string): Promise<EnrollmentRecord> {
+    const existing = await this.repo.findEnrollment(userId, batchId);
+    if (!this.machine.canGrant(existing?.status ?? null)) {
+      throw new BusinessRuleError('This learner already has a seat in this class', 'ALREADY_ENROLLED', { status: existing?.status });
+    }
+    const active = await this.repo.saveEnrollment(userId, batchId, 'ACTIVE');
+    await this.welcome(active);
+    return active;
+  }
+
+  private async welcome(enrollment: EnrollmentRecord) {
+    const enrollmentId = enrollment.id;
     const batch = await this.repo.findBatchForSale(enrollment.batchId);
     if (batch) {
       await this.syncFullness(batch.id);
@@ -37,18 +59,21 @@ export class EnrollmentLifecycle {
         type: 'ENROLLED',
         title: `You’re enrolled · ${batch.courseTitle} ${batch.code}`,
         body: batch.firstSessionAt ? `First session ${formatInZone(batch.firstSessionAt, batch.timezone)}` : 'See your schedule',
+        ar: {
+          title: `تم تسجيلك · ${batch.courseTitleAr ?? batch.courseTitle} ${batch.code}`,
+          body: batch.firstSessionAt ? `الحصة الأولى ${formatInZone(batch.firstSessionAt, batch.timezone, 'ar')}` : 'اطّلع على جدولك',
+        },
         data: { batchId: batch.id, enrollmentId },
         email: (r) =>
-          appEmails.enrolled(
+          emailsIn(r.locale).enrolled(
             r.name,
             batch.courseTitle,
             batch.code,
-            batch.firstSessionAt ? formatInZone(batch.firstSessionAt, r.timezone, r.locale) : 'to be announced',
+            batch.firstSessionAt ? formatInZone(batch.firstSessionAt, r.timezone, r.locale) : (r.locale.startsWith('ar') ? 'يُعلن لاحقًا' : 'to be announced'),
             `${this.webUrl}/schedule`,
           ),
       });
     }
-    return active;
   }
 
   /** A seat may have been freed: update FULL/ENROLLING and offer seats to the waitlist. */
@@ -69,8 +94,9 @@ export class EnrollmentLifecycle {
         type: 'WAITLIST_SEAT_OPEN',
         title: `A seat opened · ${batch.courseTitle} ${batch.code}`,
         body: 'Complete checkout within 24 hours to keep it',
+        ar: { title: `توفّر مقعد · ${batch.courseTitleAr ?? batch.courseTitle} ${batch.code}`, body: 'أكمل الدفع خلال 24 ساعة لتحتفظ به' },
         data: { batchId },
-        email: (r) => appEmails.seatAvailable(r.name, batch.courseTitle, batch.code, `${this.webUrl}/checkout/${batchId}`),
+        email: (r) => emailsIn(r.locale).seatAvailable(r.name, batch.courseTitle, batch.code, `${this.webUrl}/checkout/${batchId}`),
       });
     }
     return promoted;

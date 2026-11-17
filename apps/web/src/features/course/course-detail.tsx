@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Check, ChevronRight, Lock, PlayCircle, Share2 } from 'lucide-react';
@@ -23,7 +23,7 @@ import { ApiError, batchesApi, coursesApi, meApi, learningApi, subscriptionsApi,
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { Price } from '@/components/brand/price';
 import { useAuth } from '@/lib/auth/use-auth';
 import { gmtOffset, sessionCode } from '@/lib/i18n/format';
@@ -33,11 +33,15 @@ import { CourseRail } from '../catalog/course-card';
 import { usePublicBatches } from '../catalog/use-catalog';
 import { SaveToggle } from '../saved/use-saved';
 import { PlanPicker } from '../subscriptions/plan-picker';
+import { AllAccessIncluded, AllAccessTeaser, findAllAccess } from '../subscriptions/all-access';
 import { PlanBanner } from '../subscriptions/plan-banner';
 import { PendingTransfer } from '../subscriptions/manage-plan';
 import { CourseReviews } from './reviews';
+import { track } from '@/lib/analytics';
 
 const ZONES = ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Africa/Cairo', 'Europe/London'];
+const noSubscribe = () => () => {};
+const browserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export function CourseDetail({ slug }: { slug: string }) {
   const { t } = useI18n();
@@ -88,11 +92,16 @@ function CourseView({ course }: { course: Course }) {
   const desc = pick(course.descriptionEn, course.descriptionAr);
   const p = { courseId: course.id, pageSize: 50 };
   const recorded = course.type === 'RECORDED';
+  useEffect(() => {
+    track('view_item', { item_id: course.slug, item_name: course.titleEn });
+  }, [course.slug, course.titleEn]);
   // Recorded courses have no classes; they sell a plan instead.
   const batches = useQuery({ queryKey: qk.batches(p), queryFn: () => batchesApi.list(p), enabled: !recorded });
   const subs = useQuery({ queryKey: qk.mySubscriptions, queryFn: subscriptionsApi.mine, enabled: recorded && !!user && role === 'STUDENT', retry: false });
   const subscription = subs.data?.find((s) => s.course.id === course.id && s.status !== 'INCOMPLETE') ?? null;
-  const hasPlan = !!subscription?.hasAccess;
+  // A live all-access plan opens every published recorded course (the course's own plan, when live, wins).
+  const viaAllAccess = !subscription?.hasAccess && !!findAllAccess(subs.data);
+  const hasPlan = !!subscription?.hasAccess || viaAllAccess;
   // A first bank transfer is an INCOMPLETE row with a pending payment: show where it stands instead of an empty picker.
   const pendingRow = subs.data?.find((s) => s.course.id === course.id && s.status === 'INCOMPLETE' && s.provider === 'BANK_TRANSFER' && !!s.pendingPayment) ?? null;
   const [startOver, setStartOver] = useState(false);
@@ -102,19 +111,22 @@ function CourseView({ course }: { course: Course }) {
   const list = useMemo(() => [...(batches.data?.items ?? [])].sort((a, b) => a.startsOn.localeCompare(b.startsOn)), [batches.data]);
   const [picked, setPicked] = useState<string | null>(params.get('batch'));
   const selectedId = picked ?? list.find((b) => b.status === 'ENROLLING')?.id ?? list[0]?.id ?? null;
-  const localTz = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'Asia/Dubai';
-  const [tz, setTz] = useState(localTz);
+  // The server renders Dubai time; the browser switches to its own zone after hydration (no mismatch).
+  const localTz = useSyncExternalStore(noSubscribe, browserTimeZone, () => 'Asia/Dubai');
+  const [tzChoice, setTz] = useState<string | null>(null);
+  const tz = tzChoice ?? localTz;
+  const href = useLocaleHref();
   const zones = useMemo(() => Array.from(new Set([localTz, ...ZONES])), [localTz]);
   const teacher = list[0]?.teacher;
   // Teachers of this course (its proposer, or anyone running one of its batches) reply to reviews; admins moderate.
   const canModerate = role === 'ADMIN';
   const canReply = canModerate || (role === 'TEACHER' && !!user && (course.createdById === user.id || list.some((b) => b.teacherId === user.id)));
-  const categoryHref = `/?category=${encodeURIComponent(course.category)}#catalog`;
+  const categoryHref = href(`/categories/${encodeURIComponent(course.category)}`);
 
   return (
     <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-14 px-4 sm:px-6 lg:px-10">
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/#catalog" className="hover:text-foreground">
+        <Link href={href('/#catalog')} className="hover:text-foreground">
           {t.nav.public.courses}
         </Link>
         <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
@@ -130,9 +142,11 @@ function CourseView({ course }: { course: Course }) {
       <section className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap gap-2">
-            <Chip tone="ivory">
-              {categoryLabel(course)} · {t.status.level[course.level]}
-            </Chip>
+            <Link href={categoryHref} className="no-underline transition-opacity hover:opacity-80">
+              <Chip tone="ivory">
+                {categoryLabel(course)} · {t.status.level[course.level]}
+              </Chip>
+            </Link>
             {recorded ? (
               <Chip tone="sun">{t.catalog.recordedMarker}</Chip>
             ) : (
@@ -164,7 +178,7 @@ function CourseView({ course }: { course: Course }) {
             <div className="flex items-center gap-3">
               <InitialsAvatar name={teacher.name} src={teacher.image} size={48} />
               <div>
-                <Link href={`/teachers/${teacher.id}`} className="block font-bold text-foreground underline-offset-4 hover:underline">
+                <Link href={href(`/teachers/${teacher.id}`)} className="block font-bold text-foreground underline-offset-4 hover:underline">
                   <bdi>{teacher.name}</bdi>
                 </Link>
                 <span className="text-sm text-muted-foreground">{t.course.leadTeacher}</span>
@@ -256,10 +270,15 @@ function CourseView({ course }: { course: Course }) {
             )}
           </div>
           )}
-          {pendingRow && !startOver ? (
+          {viaAllAccess ? (
+            <AllAccessIncluded courseId={course.id} />
+          ) : pendingRow && !startOver ? (
             <PendingPanel subscription={pendingRow} onRestart={() => setStartOver(true)} />
           ) : (
-            <PlanPicker course={course} subscription={subscription} />
+            <div className="flex flex-col gap-5">
+              <PlanPicker course={course} subscription={subscription} />
+              {!hasPlan && <AllAccessTeaser />}
+            </div>
           )}
         </section>
       ) : (
@@ -319,7 +338,7 @@ function CourseView({ course }: { course: Course }) {
           <h2 id="course-faq" className="font-display text-[44px] font-extrabold leading-none">
             {t.course.faqTitle}
           </h2>
-          <Accordion className="border-t-0" items={course.faq.map((q) => ({ q: pick(q.qEn, q.qAr).text, a: pick(q.aEn, q.aAr).text }))} />
+          <Accordion className="border-t-0" mountAll items={course.faq.map((q) => ({ q: pick(q.qEn, q.qAr).text, a: pick(q.aEn, q.aAr).text }))} />
         </Panel>
       )}
 

@@ -11,7 +11,7 @@ import { useCategoryLabel } from '@/components/brand/category';
 import { instructorsApi, type DirectoryTeacher } from '@/lib/api';
 import { useAuth } from '@/lib/auth/use-auth';
 import { qk } from '@/lib/query-keys';
-import { useI18n } from '@/lib/i18n/provider';
+import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 
 /** `/teachers`: the public instructors directory. */
@@ -71,10 +71,11 @@ function InstructorCard({ teacher }: { teacher: DirectoryTeacher }) {
   const { t, f, fill, pick } = useI18n();
   const c = t.instructors.directory;
   const categoryLabel = useCategoryLabel();
+  const href = useLocaleHref();
   const subject = teacher.headline || teacher.courses.map((co) => pick(co.titleEn, co.titleAr).text).join(' · ');
   return (
     <Link
-      href={`/teachers/${teacher.id}`}
+      href={href(`/teachers/${teacher.id}`)}
       aria-label={fill(c.profileOf, { name: teacher.name })}
       className="group flex h-full flex-col gap-5 rounded-[18px] border border-border bg-card p-5 text-foreground no-underline shadow-card transition-[translate,border-color] duration-200 hover:-translate-y-0.5 hover:border-green-deep focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
     >

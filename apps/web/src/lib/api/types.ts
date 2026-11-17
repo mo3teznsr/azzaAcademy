@@ -1,3 +1,4 @@
+import type { StatementLineStatus, StatementMapping, StatementMatchKind } from '@azza/shared';
 import type {
   BatchStatus,
   CourseLevel,
@@ -8,6 +9,7 @@ import type {
   EnrollmentStatus,
   HandQueueEvent,
   Locale,
+  MarketingChannel,
   OrderStatus,
   PaymentMethod,
   PayoutRunStatus,
@@ -567,7 +569,7 @@ export interface EnrollmentRecord {
 }
 
 export type CheckoutResult =
-  /** STRIPE: redirect to Stripe Checkout; the order turns PAID only via the webhook. */
+  /** STRIPE / TABBY: redirect to the hosted page; the order turns PAID only once the API confirmed the payment. */
   | { waitlisted: false; order: CreatedOrder; enrollment: EnrollmentRecord; quote: Quote; checkoutUrl: string }
   | { waitlisted: false; order: CreatedOrder; enrollment: EnrollmentRecord; quote: Quote; bankAccount: BankAccount; reference: string; expiresAt: ISODate }
   | { waitlisted: true; enrollment: EnrollmentRecord };
@@ -634,7 +636,7 @@ export interface EarningsBatch {
 
 export interface LedgerEntry {
   id: string;
-  kind: 'SESSION' | 'REFUND_ADJUSTMENT' | 'BONUS' | 'DEDUCTION' | string;
+  kind: 'SESSION' | 'REFUND_ADJUSTMENT' | 'TRUE_UP' | 'BONUS' | 'DEDUCTION' | string;
   amountFils: number;
   status: EarningStatus;
   availableAt: ISODate;
@@ -725,6 +727,8 @@ export interface PayoutRun extends PayoutRunBase {
 /** GET /admin/payout-runs/:id */
 export interface PayoutRunDetail extends PayoutRunBase {
   payouts: RunPayout[];
+  /** Who created, adjusted, approved, exported and paid the run, oldest first. */
+  audit?: Array<{ id: string; action: string; actorId: string | null; actorName: string | null; createdAt: ISODate; data: Record<string, unknown> }>;
   totals: { totalFils: number; readyFils: number; [k: string]: number };
 }
 
@@ -749,7 +753,7 @@ export interface AdminDashboard {
   sessionsToday: { count: number; items: DashboardSession[] };
   activeBatches: number;
   seats: { held: number; capacity: number; filledPercent: number };
-  revenueMonth: { grossFils: number; refundedFils: number; vatFils: number; netFils: number; orders: number };
+  revenueMonth: { grossFils: number; refundedFils: number; vatFils: number; appleVatFils?: number; netFils: number; orders: number };
   alerts: Array<{ type: DashboardAlertType; severity: 'info' | 'warning'; count: number }>;
 }
 
@@ -943,7 +947,86 @@ export interface RecordedRevenue {
   refundsFils: number;
   feesFils: number;
   vatFils: number;
+  /** The part of `vatFils` Apple collects and pays on App Store sales. */
+  appleVatFils?: number;
   netFils: number;
+}
+
+/** GET /admin/growth?days */
+export interface AdminGrowth {
+  range: { from: ISODate; to: ISODate; days: number };
+  plans: { mrrFils: number; arrFils: number; live: number; churn: { atStart: number; ended: number; rate: number | null } };
+  customers: {
+    total: number;
+    repeat90: { eligible: number; repeated: number; rate: number | null };
+    cohorts: Array<{ month: string; customers: number; returned: number; rate: number | null }>;
+  };
+  teachers: { totalFils: number; topFiveShare: number | null; teachers: Array<{ teacherId: string; name: string; amountFils: number; share: number }> };
+  signups: { total: number; sources: Array<{ source: string; signups: number }> };
+}
+
+/** Where a paying customer came from (first touch): a paid channel, `referral`, `organic` or `direct`. */
+export type CustomerChannel = MarketingChannel | 'referral' | 'organic' | 'direct';
+
+/** GET /admin/investors?months — months are `YYYY-MM` (UTC); money is fils of AED. */
+export interface AdminInvestors {
+  range: { from: string; to: string; months: number };
+  monthly: Array<{
+    month: string;
+    partial: boolean;
+    grossFils: number;
+    vatFils: number;
+    refundsFils: number;
+    netRevenueFils: number;
+    feesFils: number;
+    teacherFils: number;
+    grossMarginFils: number;
+    grossMarginRate: number | null;
+    activeCustomers: number;
+    newCustomers: number;
+    newByChannel: Partial<Record<CustomerChannel, number>>;
+    spendFils: number;
+    blendedCacFils: number | null;
+  }>;
+  nrr: {
+    cohorts: Array<{ month: string; customers: number; baseFils: number; m3: number | null; m6: number | null; m12: number | null }>;
+    overall: { m3: number | null; m6: number | null; m12: number | null };
+  };
+  unitEconomics: {
+    customers: number;
+    historicalLtvFils: number | null;
+    monthlyMarginPerActiveFils: number | null;
+    monthlyChurn: number | null;
+    expectedLifetimeMonths: number | null;
+    projectedLtvFils: number | null;
+    newCustomers: number;
+    spendFils: number;
+    blendedCacFils: number | null;
+    paidCacFils: number | null;
+    ltvCac: number | null;
+    paybackMonths: number | null;
+  };
+  channels: Array<{
+    channel: CustomerChannel;
+    paid: boolean;
+    newCustomers: number;
+    share: number;
+    spendFils: number;
+    cacFils: number | null;
+    historicalLtvFils: number | null;
+    ltvCac: number | null;
+    paybackMonths: number | null;
+  }>;
+}
+
+/** GET /admin/marketing-spend */
+export interface MarketingSpend {
+  id: string;
+  month: string;
+  channel: MarketingChannel;
+  amountFils: number;
+  note: string | null;
+  updatedAt: ISODate;
 }
 
 /** GET /admin/reports?from&to */
@@ -1061,4 +1144,51 @@ export interface AdminSubscriptionParams {
   provider?: 'STRIPE' | 'APPLE' | 'BANK_TRANSFER';
   page?: number;
   pageSize?: number;
+}
+
+/** A bank transfer as shown next to a statement line. */
+export interface StatementTransfer {
+  kind: 'SEAT' | 'PLAN';
+  id: string;
+  reference: string;
+  totalFils: number;
+  status: string;
+  userName: string;
+  createdAt: string;
+}
+
+export interface StatementImport {
+  id: string;
+  bankAccountId: string;
+  bankName: string;
+  fileName: string;
+  creditCount: number;
+  newCount: number;
+  duplicateCount: number;
+  skippedCount: number;
+  openCount: number;
+  createdAt: string;
+}
+
+export interface StatementLine {
+  id: string;
+  row: number;
+  postedOn: string;
+  amountFils: number;
+  description: string;
+  status: StatementLineStatus;
+  outcome: string | null;
+  decidedAt: string | null;
+  match: StatementMatchKind | null;
+  transfer: StatementTransfer | null;
+  suggestions: (StatementTransfer & { score: number })[];
+}
+
+export type StatementImportDetail = StatementImport & { lines: StatementLine[] };
+
+export interface StatementPreview {
+  headers: string[];
+  mapping: StatementMapping | null;
+  savedMappingFits: boolean;
+  sample: string[][];
 }

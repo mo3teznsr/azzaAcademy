@@ -117,10 +117,35 @@ export class PrismaPayoutRepository {
   /** What the teacher still holds from the batch's sessions: SESSION earnings plus earlier (negative) refund adjustments, reversed rows excluded. */
   async netAccruedForBatch(batchId: string, teacherId: string) {
     const r = await this.db.earning.aggregate({
-      where: { batchId, teacherId, kind: { in: ['SESSION', 'REFUND_ADJUSTMENT'] }, status: { not: 'REVERSED' } },
+      where: { batchId, teacherId, kind: { in: ['SESSION', 'REFUND_ADJUSTMENT', 'TRUE_UP'] }, status: { not: 'REVERSED' } },
       _sum: { amountFils: true },
     });
     return r._sum.amountFils ?? 0;
+  }
+
+  /** Everything accrued for the batch's sessions by any teacher (a substitute host earns under their own id). */
+  async batchAccrued(batchId: string) {
+    const r = await this.db.earning.aggregate({
+      where: { batchId, kind: { in: ['SESSION', 'REFUND_ADJUSTMENT', 'TRUE_UP'] }, status: { not: 'REVERSED' } },
+      _sum: { amountFils: true },
+    });
+    return r._sum.amountFils ?? 0;
+  }
+
+  batchForTrueUp(batchId: string) {
+    return this.db.batch.findUnique({
+      where: { id: batchId },
+      select: {
+        id: true,
+        code: true,
+        status: true,
+        teacherId: true,
+        course: { select: { type: true, teacherCutPercent: true } },
+        schedule: { select: { sessionCount: true } },
+        _count: { select: { sessions: { where: { status: { not: 'CANCELLED' } } } } },
+        sessions: { where: { status: 'ENDED' }, select: { id: true } },
+      },
+    });
   }
 
   batchForRefund(batchId: string) {
@@ -239,9 +264,10 @@ export class PrismaPayoutRepository {
     periodStart: Date,
     periodEnd: Date,
     payouts: Array<{ teacherId: string; amountFils: number; status: PayoutStatus; holdReason: string | null; earningIds: string[] }>,
+    createdById: string | null = null,
   ) {
     return this.db.$transaction(async (tx) => {
-      const run = await tx.payoutRun.create({ data: { periodStart, periodEnd } });
+      const run = await tx.payoutRun.create({ data: { periodStart, periodEnd, createdById } });
       for (const p of payouts) {
         const payout = await tx.payout.create({
           data: { runId: run.id, teacherId: p.teacherId, amountFils: p.amountFils, status: p.status, holdReason: p.holdReason },
@@ -298,12 +324,15 @@ export class PrismaPayoutRepository {
     return this.db.payout.update({ where: { id }, data });
   }
 
-  async settleRun(runId: string, transferReference: string, at: Date) {
+  /** `references` gives a payout its own bank transfer reference; the others get `transferReference`. */
+  async settleRun(runId: string, transferReference: string, at: Date, references: Record<string, string> = {}) {
     return this.db.$transaction(async (tx) => {
       const payouts = await tx.payout.findMany({ where: { runId } });
       const ready = payouts.filter((p) => p.status === 'READY').map((p) => p.id);
       const notReady = payouts.filter((p) => p.status !== 'READY').map((p) => p.id);
-      await tx.payout.updateMany({ where: { id: { in: ready } }, data: { status: 'PAID', transferReference, paidAt: at } });
+      const own = ready.filter((id) => references[id]);
+      await tx.payout.updateMany({ where: { id: { in: ready.filter((id) => !references[id]) } }, data: { status: 'PAID', transferReference, paidAt: at } });
+      for (const id of own) await tx.payout.update({ where: { id }, data: { status: 'PAID', transferReference: references[id], paidAt: at } });
       await tx.earning.updateMany({ where: { payoutId: { in: ready } }, data: { status: 'PAID' } });
       // held / carried-over money rolls into the next run
       await tx.earning.updateMany({ where: { payoutId: { in: notReady } }, data: { payoutId: null } });
@@ -313,6 +342,10 @@ export class PrismaPayoutRepository {
         include: { teacher: { select: { id: true, name: true } } },
       });
     });
+  }
+
+  activeAdminCount() {
+    return this.db.user.count({ where: { role: 'ADMIN', banned: false } });
   }
 
   draftPayoutsOf(teacherId: string) {

@@ -72,6 +72,11 @@ export function OrderPage({ id }: { id: string }) {
         <Button asChild>
           <Link href="/learn">{t.checkout.goToLearning}</Link>
         </Button>
+        {(o.status === 'PAID' || o.status === 'REFUNDED') && o.method !== 'APPLE_IAP' && (
+          <Button asChild variant="outline">
+            <Link href="/invoices">{t.invoices.title}</Link>
+          </Button>
+        )}
         {(o.status === 'FAILED' || o.status === 'REJECTED' || o.status === 'EXPIRED') && o.enrollment?.batch && (
           <Button asChild variant="outline">
             <Link href={`/checkout/${o.enrollment.batch.id}`}>{t.checkout.tryAgain}</Link>

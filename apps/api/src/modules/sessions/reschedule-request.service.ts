@@ -50,6 +50,10 @@ export class RescheduleRequestService {
       type: 'SESSION_RESCHEDULE_APPROVED',
       title: `Reschedule approved · ${request.session.batch.code} S${String(request.session.number).padStart(2, '0')}`,
       body: `"${request.session.title}" now starts ${formatInZone(request.startsAt, request.session.batch.timezone)}`,
+      ar: {
+        title: `تمت الموافقة على تغيير الموعد · ${request.session.batch.code} S${String(request.session.number).padStart(2, '0')}`,
+        body: `«${request.session.title}» تبدأ الآن ${formatInZone(request.startsAt, request.session.batch.timezone, 'ar')}`,
+      },
       data: { sessionId: request.sessionId, requestId: id },
     });
     return { request: decided, session };
@@ -62,6 +66,10 @@ export class RescheduleRequestService {
       type: 'SESSION_RESCHEDULE_DECLINED',
       title: `Reschedule declined · ${request.session.batch.code} S${String(request.session.number).padStart(2, '0')}`,
       body: input.reason ? `"${request.session.title}" stays as planned — ${input.reason}` : `"${request.session.title}" stays as planned`,
+      ar: {
+        title: `رُفض طلب تغيير الموعد · ${request.session.batch.code} S${String(request.session.number).padStart(2, '0')}`,
+        body: input.reason ? `«${request.session.title}» تبقى في موعدها — ${input.reason}` : `«${request.session.title}» تبقى في موعدها`,
+      },
       data: { sessionId: request.sessionId, requestId: id },
     });
     return { request: decided };

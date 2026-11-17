@@ -8,6 +8,7 @@ import type { LessonRepository } from '../src/modules/lessons/lesson.repository'
 import { LessonService } from '../src/modules/lessons/lesson.service';
 import type { QuizRecord, QuizRepository } from '../src/modules/quizzes/quiz.repository';
 import { QuizService } from '../src/modules/quizzes/quiz.service';
+import { localizedText } from '../src/modules/notifications/notification.types';
 import { RecordingNotifier } from './fakes/in-memory';
 
 describe('recordedEligible', () => {
@@ -44,9 +45,30 @@ function fakeRepo() {
     },
     listForUser: async (userId: string) =>
       state.certs.filter((c) => c.userId === userId).map((c) => ({ ...c, batch: null, course, user: { id: userId, name: 'Sam' } })),
+    findByCode: async (code: string) => {
+      const c = state.certs.find((x) => x.code === code);
+      return c ? { ...c, batch: null, course, user: { id: c.userId, name: 'Sam' } } : null;
+    },
   };
   return { state, repo: repo as unknown as CertificateRepository, service: new CertificateService(repo as unknown as CertificateRepository, new CertificateCodeGenerator()) };
 }
+
+describe('certificate issued notice', () => {
+  test('the learner is told once, in Arabic when they read Arabic, with the verify link', async () => {
+    const { state, repo } = fakeRepo();
+    const notifier = new RecordingNotifier();
+    const service = new CertificateService(repo, new CertificateCodeGenerator(), () => {}, notifier, 'https://azza.test');
+    state.completed = new Set(['l1', 'l2']);
+    state.quizzes[0]!.bestPercent = 90;
+    expect(await service.issueRecordedIfEligible('sam', 'rc')).toBe(true);
+    expect(await service.issueRecordedIfEligible('sam', 'rc')).toBe(false);
+    expect(notifier.sent).toHaveLength(1);
+    const { notice } = notifier.sent[0]!;
+    const code = state.certs[0]!.code;
+    expect(notice).toMatchObject({ type: 'CERTIFICATE_ISSUED', title: 'Your certificate is ready: Logo Design', data: { certificateCode: code, verifyUrl: `https://azza.test/verify/${code}` } });
+    expect(localizedText(notice, { locale: 'ar' }).title).toBe('شهادتك جاهزة: Logo Design');
+  });
+});
 
 describe('recorded course certificates', () => {
   test('issued only after the last lesson and a passing quiz', async () => {
@@ -107,8 +129,7 @@ describe('recorded course certificates', () => {
     const out = await service.mine('sam');
     expect(out.items).toHaveLength(1);
     expect(out.items[0]).toMatchObject({ kind: 'RECORDED', attended: 0, total: 0, teacherName: 'Lina' });
-    const v = await service.verify(out.items[0]!.code).catch((e) => e);
-    expect(v).toBeInstanceOf(Error); // fake has no findByCode: verify path is covered by the DTO shape above
+    expect(await service.verify(out.items[0]!.code)).toMatchObject({ valid: true, holderName: 'Sam', kind: 'RECORDED' });
   });
 
   test('one recorded course that fails to check is logged and skipped; GET /me/certificates still answers', async () => {
@@ -138,6 +159,9 @@ describe('triggers', () => {
       courseOfLesson: async () => 'rc',
       findCourse: async () => ({ id: 'rc', slug: 'logo', titleEn: 'L', titleAr: null, status: 'PUBLISHED', createdById: null, type: 'RECORDED', modules: [] }),
       setCompleted: async () => {},
+      // A lesson without an uploaded video: completing it needs no watch check.
+      find: async () => ({ id: 'l1', videoUrl: null }),
+      watchProgress: async () => null,
     } as unknown as LessonRepository;
     const ok = new LessonService(repo, { now: () => new Date() }, async (u, c) => void calls.push([u, c]));
     await ok.setCompleted('l1', true, { id: 'sam', role: 'ADMIN' });

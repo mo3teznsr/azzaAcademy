@@ -14,3 +14,8 @@ export { instructorsApi, type InstructorApplication, type InstructorApplicationS
 export * from './comms';
 export { subscriptionsApi, isCardResult, isAppleProvider, type SubscribeResult, type SubscribeCard, type SubscribeTransfer, type SubscriptionByReference } from './subscriptions';
 export { siteApi } from './site';
+export * from './tax-documents';
+export * from './referrals';
+export * from './lesson-qa';
+export * from './organizations';
+export * from './all-access';

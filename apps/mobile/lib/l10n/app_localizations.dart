@@ -11113,6 +11113,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Playback speed'**
   String get lessonVideoSpeed;
+
+  /// No description provided for @lessonVideoDataSaver.
+  ///
+  /// In en, this message translates to:
+  /// **'Data saver'**
+  String get lessonVideoDataSaver;
+
+  /// No description provided for @lessonVideoDataSaverHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson videos play in the lowest quality to use less data. Remembered on this phone.'**
+  String get lessonVideoDataSaverHint;
+
+  /// No description provided for @downloadsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloadsTitle;
+
+  /// No description provided for @downloadLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Download for offline'**
+  String get downloadLesson;
+
+  /// No description provided for @downloadingLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading…'**
+  String get downloadingLesson;
+
+  /// No description provided for @downloadCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get downloadCancel;
+
+  /// No description provided for @downloadedLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved for offline'**
+  String get downloadedLesson;
+
+  /// No description provided for @downloadDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete download'**
+  String get downloadDelete;
+
+  /// No description provided for @downloadNeedsWifi.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Wi-Fi to download, or allow mobile data in Downloads.'**
+  String get downloadNeedsWifi;
+
+  /// No description provided for @downloadOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Connect to download.'**
+  String get downloadOffline;
+
+  /// No description provided for @downloadStorageFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough space for downloads. Delete some first.'**
+  String get downloadStorageFull;
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The download didn\'t finish. Try again.'**
+  String get downloadFailed;
+
+  /// No description provided for @downloadsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloads yet'**
+  String get downloadsEmpty;
+
+  /// No description provided for @downloadsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save lesson videos to watch them without a connection.'**
+  String get downloadsEmptyBody;
+
+  /// No description provided for @downloadsWifiOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Download on Wi-Fi only'**
+  String get downloadsWifiOnly;
+
+  /// No description provided for @downloadsWifiOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves your mobile data.'**
+  String get downloadsWifiOnlyHint;
+
+  /// No description provided for @downloadsStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'{used} of {total} used'**
+  String downloadsStorage(String used, String total);
+
+  /// No description provided for @downloadPlaysUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays offline until {date}'**
+  String downloadPlaysUntil(String date);
+
+  /// No description provided for @downloadExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to the internet to keep watching'**
+  String get downloadExpired;
+
+  /// No description provided for @downloadsRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Some downloads were removed because your access ended.'**
+  String get downloadsRemoved;
+
+  /// No description provided for @errWatchMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch most of the video before marking this lesson complete.'**
+  String get errWatchMore;
+
+  /// No description provided for @inviteFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite friends'**
+  String get inviteFriends;
+
+  /// No description provided for @inviteFriendsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You both get a reward after their first payment'**
+  String get inviteFriendsHint;
+
+  /// No description provided for @inviteShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Join me on Azza'**
+  String get inviteShareSubject;
+
+  /// No description provided for @qaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get qaTitle;
+
+  /// No description provided for @qaIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Stuck on something in this lesson? Ask here and the teacher answers for everyone taking the course.'**
+  String get qaIntro;
+
+  /// No description provided for @qaAskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your question'**
+  String get qaAskLabel;
+
+  /// No description provided for @qaAskHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to ask about this lesson?'**
+  String get qaAskHint;
+
+  /// No description provided for @qaAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get qaAsk;
+
+  /// No description provided for @qaAsked.
+  ///
+  /// In en, this message translates to:
+  /// **'Question posted. Your teacher has been told.'**
+  String get qaAsked;
+
+  /// No description provided for @qaLeftToday.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} questions left today'**
+  String qaLeftToday(int n);
+
+  /// No description provided for @qaLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ve reached today’s limit. You can ask again tomorrow.'**
+  String get qaLimitReached;
+
+  /// No description provided for @qaEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet. Be the first to ask about this lesson.'**
+  String get qaEmpty;
+
+  /// No description provided for @qaEmptyStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions on this lesson yet.'**
+  String get qaEmptyStaff;
+
+  /// No description provided for @qaAnswerOnWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer and moderate questions from the studio on the web.'**
+  String get qaAnswerOnWeb;
+
+  /// No description provided for @qaWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the teacher’s answer'**
+  String get qaWaiting;
+
+  /// No description provided for @qaInstructor.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor'**
+  String get qaInstructor;
+
+  /// No description provided for @qaHelped.
+  ///
+  /// In en, this message translates to:
+  /// **'Helped'**
+  String get qaHelped;
+
+  /// No description provided for @qaMarkHelped.
+  ///
+  /// In en, this message translates to:
+  /// **'This helped'**
+  String get qaMarkHelped;
+
+  /// No description provided for @qaUnmarkHelped.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmark'**
+  String get qaUnmarkHelped;
+
+  /// No description provided for @qaYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get qaYou;
+
+  /// No description provided for @qaHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get qaHidden;
+
+  /// No description provided for @qaDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get qaDelete;
+
+  /// No description provided for @qaDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this question?'**
+  String get qaDeleteTitle;
+
+  /// No description provided for @qaDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It disappears for everyone. This can’t be undone.'**
+  String get qaDeleteBody;
+
+  /// No description provided for @qaDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Question deleted'**
+  String get qaDeleted;
+
+  /// No description provided for @errQaDailyLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ve asked the most questions allowed today. You can ask again tomorrow.'**
+  String get errQaDailyLimit;
+
+  /// No description provided for @errQaHasAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'This question has answers, so it can no longer be deleted.'**
+  String get errQaHasAnswers;
 }
 
 class _AppLocalizationsDelegate

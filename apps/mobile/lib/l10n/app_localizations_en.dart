@@ -6630,4 +6630,168 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lessonVideoSpeed => 'Playback speed';
+
+  @override
+  String get lessonVideoDataSaver => 'Data saver';
+
+  @override
+  String get lessonVideoDataSaverHint =>
+      'Lesson videos play in the lowest quality to use less data. Remembered on this phone.';
+
+  @override
+  String get downloadsTitle => 'Downloads';
+
+  @override
+  String get downloadLesson => 'Download for offline';
+
+  @override
+  String get downloadingLesson => 'Downloading…';
+
+  @override
+  String get downloadCancel => 'Cancel download';
+
+  @override
+  String get downloadedLesson => 'Saved for offline';
+
+  @override
+  String get downloadDelete => 'Delete download';
+
+  @override
+  String get downloadNeedsWifi =>
+      'Connect to Wi-Fi to download, or allow mobile data in Downloads.';
+
+  @override
+  String get downloadOffline => 'You\'re offline. Connect to download.';
+
+  @override
+  String get downloadStorageFull =>
+      'Not enough space for downloads. Delete some first.';
+
+  @override
+  String get downloadFailed => 'The download didn\'t finish. Try again.';
+
+  @override
+  String get downloadsEmpty => 'No downloads yet';
+
+  @override
+  String get downloadsEmptyBody =>
+      'Save lesson videos to watch them without a connection.';
+
+  @override
+  String get downloadsWifiOnly => 'Download on Wi-Fi only';
+
+  @override
+  String get downloadsWifiOnlyHint => 'Saves your mobile data.';
+
+  @override
+  String downloadsStorage(String used, String total) {
+    return '$used of $total used';
+  }
+
+  @override
+  String downloadPlaysUntil(String date) {
+    return 'Plays offline until $date';
+  }
+
+  @override
+  String get downloadExpired => 'Connect to the internet to keep watching';
+
+  @override
+  String get downloadsRemoved =>
+      'Some downloads were removed because your access ended.';
+
+  @override
+  String get errWatchMore =>
+      'Watch most of the video before marking this lesson complete.';
+
+  @override
+  String get inviteFriends => 'Invite friends';
+
+  @override
+  String get inviteFriendsHint =>
+      'You both get a reward after their first payment';
+
+  @override
+  String get inviteShareSubject => 'Join me on Azza';
+
+  @override
+  String get qaTitle => 'Questions';
+
+  @override
+  String get qaIntro =>
+      'Stuck on something in this lesson? Ask here and the teacher answers for everyone taking the course.';
+
+  @override
+  String get qaAskLabel => 'Your question';
+
+  @override
+  String get qaAskHint => 'What would you like to ask about this lesson?';
+
+  @override
+  String get qaAsk => 'Ask';
+
+  @override
+  String get qaAsked => 'Question posted. Your teacher has been told.';
+
+  @override
+  String qaLeftToday(int n) {
+    return '$n questions left today';
+  }
+
+  @override
+  String get qaLimitReached =>
+      'You’ve reached today’s limit. You can ask again tomorrow.';
+
+  @override
+  String get qaEmpty =>
+      'No questions yet. Be the first to ask about this lesson.';
+
+  @override
+  String get qaEmptyStaff => 'No questions on this lesson yet.';
+
+  @override
+  String get qaAnswerOnWeb =>
+      'Answer and moderate questions from the studio on the web.';
+
+  @override
+  String get qaWaiting => 'Waiting for the teacher’s answer';
+
+  @override
+  String get qaInstructor => 'Instructor';
+
+  @override
+  String get qaHelped => 'Helped';
+
+  @override
+  String get qaMarkHelped => 'This helped';
+
+  @override
+  String get qaUnmarkHelped => 'Unmark';
+
+  @override
+  String get qaYou => 'You';
+
+  @override
+  String get qaHidden => 'Hidden';
+
+  @override
+  String get qaDelete => 'Delete';
+
+  @override
+  String get qaDeleteTitle => 'Delete this question?';
+
+  @override
+  String get qaDeleteBody =>
+      'It disappears for everyone. This can’t be undone.';
+
+  @override
+  String get qaDeleted => 'Question deleted';
+
+  @override
+  String get errQaDailyLimit =>
+      'You’ve asked the most questions allowed today. You can ask again tomorrow.';
+
+  @override
+  String get errQaHasAnswers =>
+      'This question has answers, so it can no longer be deleted.';
 }

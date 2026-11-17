@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Check, Copy, Printer } from 'lucide-react';
+import { Check, Copy, Printer, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CourseCover } from '@/components/brand/course-cover';
 import { Chip } from '@/components/brand/status-chip';
@@ -16,7 +16,7 @@ import { qk } from '@/lib/query-keys';
 import { useAuth } from '@/lib/auth/use-auth';
 import { useI18n } from '@/lib/i18n/provider';
 import { useEnrollments } from '../learn/hooks';
-import { CertificateSheet, verifyUrl } from './certificate-sheet';
+import { CertificateSheet, linkedInAddUrl, verifyUrl } from './certificate-sheet';
 
 /** The certificate endpoints omit `coverStyle`; borrow it from my enrollments so typographic covers keep their colour. */
 function useCoverStyles() {
@@ -103,6 +103,20 @@ function CertificateCard({ cert, coverStyle, onPrint }: { cert: Certificate; cov
       toast.error(fill(t.certificates.copyFailed, { url }));
     }
   };
+  // The system share sheet (phones, Safari, Edge); hidden where the browser has none. Checked after mount so the
+  // server render and the first client render match.
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- a browser capability, known only on the client
+    setCanShare(typeof navigator.share === 'function');
+  }, []);
+  const share = async () => {
+    try {
+      await navigator.share({ title: course, text: fill(t.certificates.shareText, { course }), url: verifyUrl(cert.code) });
+    } catch {
+      // Dismissed by the learner: nothing to do.
+    }
+  };
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
       <CourseCover course={cover(cert.course, coverStyle)} showMeta={false} className="h-36 rounded-none" />
@@ -147,6 +161,16 @@ function CertificateCard({ cert, coverStyle, onPrint }: { cert: Certificate; cov
           <Button onClick={onPrint}>
             <Printer aria-hidden /> {t.certificates.download}
           </Button>
+          <Button asChild variant="outline">
+            <a href={linkedInAddUrl(cert, course)} target="_blank" rel="noopener noreferrer">
+              <LinkedInIcon /> {t.certificates.addToLinkedIn}
+            </a>
+          </Button>
+          {canShare && (
+            <Button variant="ghost" onClick={() => void share()}>
+              <Share2 aria-hidden /> {t.certificates.share}
+            </Button>
+          )}
         </div>
       </div>
     </article>
@@ -197,5 +221,14 @@ function ProgressCard({ p, coverStyle }: { p: CertificateProgress; coverStyle?: 
         </div>
       </div>
     </article>
+  );
+}
+
+/** The LinkedIn mark (lucide has no brand icons). */
+function LinkedInIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="size-4">
+      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z" />
+    </svg>
   );
 }

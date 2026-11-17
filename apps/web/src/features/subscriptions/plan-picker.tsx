@@ -19,6 +19,8 @@ import { useMoney } from '@/lib/money';
 import { useAuth } from '@/lib/auth/use-auth';
 import { cn } from '@/lib/utils';
 import { BankTransferDetails } from '../checkout/bank-details';
+import { track } from '@/lib/analytics';
+import { PhoneGate } from '../auth/phone-gate';
 
 type Method = 'CARD' | 'BANK';
 
@@ -52,14 +54,32 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PlanForm({ course, subscription, renewing }: { course: CourseDetail; subscription: MySubscription | null; renewing: boolean }) {
+/** What a plan form sells: a recorded course, or the all-access plan (`ALL_ACCESS_ID` as id and slug). */
+export type PlanOffer = Pick<CourseDetail, 'id' | 'slug' | 'titleEn' | 'monthlyPriceFils' | 'yearlyPriceFils'>;
+
+export function PlanForm({
+  course,
+  subscription,
+  renewing,
+  gets,
+  signInNext,
+}: {
+  course: PlanOffer;
+  subscription: MySubscription | null;
+  renewing: boolean;
+  /** "What you get" lines (default: the course's). */
+  gets?: string[];
+  /** Where sign-in returns to (default: the course page's plan card). */
+  signInNext?: string;
+}) {
   const { t, f, fill } = useI18n();
   const money = useMoney();
   const qc = useQueryClient();
   const { isSignedIn, isPending: authPending } = useAuth();
   const monthly = course.monthlyPriceFils;
   const yearly = course.yearlyPriceFils;
-  const [plan, setPlan] = useState<SubscriptionPlan>('MONTHLY');
+  // Yearly first when the course has a yearly price: it saves the learner money and is paid up front.
+  const [plan, setPlan] = useState<SubscriptionPlan>(yearly != null ? 'YEARLY' : 'MONTHLY');
   const [method, setMethod] = useState<Method>(renewing ? 'BANK' : 'CARD');
   const [transfer, setTransfer] = useState<SubscribeTransfer | null>(null);
   const [uploaded, setUploaded] = useState(false);
@@ -68,6 +88,7 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
   const start = useMutation({
     mutationFn: () => subscriptionsApi.subscribe(course.id, { plan, method: method === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE', displayCurrency: money.currency }),
     onSuccess: (r) => {
+      track('subscribe', { item_id: course.slug, item_name: course.titleEn, method: plan, ...(chosen != null && { value: chosen / 100, currency: 'AED' as const }) });
       if (isCardResult(r)) {
         // Stripe's hosted page takes over; the webhook activates the plan and /learn/recorded/return waits for it.
         setRedirecting(true);
@@ -98,7 +119,7 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
       sub: `${fill(t.recorded.yearlyPerMonth, { amount: money.display(Math.round(yearly / 12)) })}`,
     },
   ];
-  const href = `/sign-in?next=${encodeURIComponent(`/courses/${course.slug}#plan`)}`;
+  const href = `/sign-in?next=${encodeURIComponent(signInNext ?? `/courses/${course.slug}#plan`)}`;
 
   if (transfer) {
     return (
@@ -178,7 +199,7 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
           {t.recorded.youGet}
         </h3>
         <ul className="flex flex-col gap-2 text-[15px]">
-          {[t.recorded.getLessons, t.recorded.getCertificate, t.recorded.getCancel].map((line) => (
+          {(gets ?? [t.recorded.getLessons, t.recorded.getCertificate, t.recorded.getCancel]).map((line) => (
             <li key={line} className="flex gap-2.5">
               <Check className="mt-0.5 size-4 shrink-0 text-green-deep" aria-hidden />
               {line}
@@ -233,14 +254,20 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
           <Link href={href}>{t.recorded.signInToStart}</Link>
         </Button>
       ) : (
-        <Button variant="ink" size="lg" className="w-full" disabled={start.isPending || redirecting} onClick={() => start.mutate()}>
-          {redirecting ? t.recorded.redirecting : start.isPending ? t.recorded.working : method === 'BANK' ? t.recorded.getBankDetails : t.recorded.start}
-        </Button>
+        // Google/Apple accounts start without a phone: asked once here, before the first purchase.
+        <PhoneGate compact>
+          <Button variant="ink" size="lg" className="w-full" disabled={start.isPending || redirecting} onClick={() => start.mutate()}>
+            {redirecting ? t.recorded.redirecting : start.isPending ? t.recorded.working : method === 'BANK' ? t.recorded.getBankDetails : t.recorded.start}
+          </Button>
+        </PhoneGate>
       )}
       {method === 'CARD' && (
-        <p className="flex items-center gap-1.5 text-[13px] text-stone-2">
-          <ShieldCheck className="size-4 shrink-0" aria-hidden /> {t.checkout.secured}
-        </p>
+        <>
+          <p className="flex items-center gap-1.5 text-[13px] text-stone-2">
+            <ShieldCheck className="size-4 shrink-0" aria-hidden /> {t.checkout.secured}
+          </p>
+          <p className="text-[13px] text-stone-2">{t.recorded.promoHint}</p>
+        </>
       )}
     </Shell>
   );

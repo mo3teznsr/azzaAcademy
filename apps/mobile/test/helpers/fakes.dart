@@ -752,7 +752,7 @@ class FakeLessonProgressRepository implements LessonProgressRepository {
   Future<int> videoPosition(String lessonId) async => positions[lessonId] ?? 0;
 
   @override
-  Future<void> saveVideoPosition(String lessonId, int positionSec) async {
+  Future<void> saveVideoPosition(String lessonId, int positionSec, {int? durationSec, bool ended = false}) async {
     savedPositions.add((lessonId, positionSec));
     positions[lessonId] = positionSec;
   }

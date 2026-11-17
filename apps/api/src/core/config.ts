@@ -22,6 +22,32 @@ const envSchema = z.object({
   COOKIE_DOMAIN: z.string().optional(),
   CLIENT_IP_HEADER: z.string().optional(),
 
+  /**
+   * Sign in with Google (optional; off unless both are set). From Google Cloud Console → APIs & Services → Credentials →
+   * "OAuth client ID" of type *Web application*. Its "Authorized redirect URI" must be `${BETTER_AUTH_URL}/api/auth/callback/google`
+   * (e.g. https://api.azza.academy/api/auth/callback/google) and its "Authorized JavaScript origin" the web app (WEB_URL).
+   */
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  /** Extra Google OAuth client ids (comma-separated) whose ID tokens are accepted, for native sign-in from the iOS and Android apps. */
+  GOOGLE_NATIVE_CLIENT_IDS: z.string().default(''),
+
+  /**
+   * Sign in with Apple (optional; off unless the Services ID, team, key id and key are all set). From Apple Developer →
+   * Certificates, Identifiers & Profiles:
+   * - APPLE_SIGNIN_CLIENT_ID: a *Services ID* (e.g. `academy.azza.signin`) with Sign in with Apple enabled, its domain set to the
+   *   API host and its Return URL to `${BETTER_AUTH_URL}/api/auth/callback/apple`.
+   * - APPLE_TEAM_ID: the 10-character Team ID (top right of the developer account).
+   * - APPLE_SIGNIN_KEY_ID + the key: a *Key* with "Sign in with Apple" enabled, downloaded once as a .p8. Give it by path
+   *   (preferred) or inline with literal `\n` for newlines. The client secret is signed from it at runtime (no expiry to manage).
+   * ID tokens from the iOS app (audience = APPLE_BUNDLE_ID) are accepted too.
+   */
+  APPLE_SIGNIN_CLIENT_ID: z.string().optional(),
+  APPLE_TEAM_ID: z.string().optional(),
+  APPLE_SIGNIN_KEY_ID: z.string().optional(),
+  APPLE_SIGNIN_PRIVATE_KEY_PATH: z.string().optional(),
+  APPLE_SIGNIN_PRIVATE_KEY: z.string().optional(),
+
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USER: z.string().optional(),
@@ -36,8 +62,36 @@ const envSchema = z.object({
   LIVEKIT_API_KEY: z.string().optional(),
   LIVEKIT_API_SECRET: z.string().optional(),
 
+  /**
+   * Adaptive streaming of lesson videos through Bunny Stream (optional; off unless the library id, API key and CDN host are
+   * set — lessons then play their uploaded MP4). See `BunnyStreamTranscoder` for the setup. The webhook is verified with the
+   * read-only API key; the token key signs playback URLs when the library's pull zone has token authentication on.
+   */
+  BUNNY_STREAM_LIBRARY_ID: z.string().optional(),
+  BUNNY_STREAM_API_KEY: z.string().optional(),
+  BUNNY_STREAM_READONLY_API_KEY: z.string().optional(),
+  BUNNY_STREAM_CDN_HOST: z.string().optional(),
+  BUNNY_STREAM_TOKEN_KEY: z.string().optional(),
+  /** Send a lesson's video to the transcoder as soon as it is saved (else only via the admin action / backfill). */
+  VIDEO_TRANSCODE_ON_UPLOAD: z.enum(['true', 'false']).default('true'),
+  /** Hourly job that sends lessons uploaded before streaming was set up, a few at a time (the admin backfill does it on demand). */
+  VIDEO_TRANSCODE_BACKFILL: z.enum(['true', 'false']).default('false'),
+  /** Offline lesson downloads play at most this many days without the app re-checking access online. */
+  OFFLINE_DOWNLOAD_MAX_DAYS: z.coerce.number().int().min(1).max(90).default(30),
+
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+
+  /** Tabby "pay in 4" (UAE). The method is offered only when the secret key and merchant code are set.
+   * `sk_test_…` keys hit Tabby's test environment on the same base URL. The public key is not used by the
+   * API (no Tabby JS on the web) but is kept with the others. Webhooks are registered with
+   * `header: { title: TABBY_WEBHOOK_HEADER, value: TABBY_WEBHOOK_SECRET }` and verified by that header. */
+  TABBY_SECRET_KEY: z.string().optional(),
+  TABBY_PUBLIC_KEY: z.string().optional(),
+  TABBY_MERCHANT_CODE: z.string().optional(),
+  TABBY_WEBHOOK_SECRET: z.string().optional(),
+  TABBY_WEBHOOK_HEADER: z.string().min(1).default('X-Tabby-Webhook-Secret'),
+  TABBY_API_URL: z.url().default('https://api.tabby.ai'),
 
   /** Apple In-App Purchase (iOS seats). Environments whose signed transactions are accepted, comma-separated:
    * `Production`, `Sandbox` (TestFlight, App Review and sandbox testers). Production needs APPLE_APP_APPLE_ID. */
@@ -75,11 +129,69 @@ export interface AppStoreConnectConfig {
   appAppleId: string;
 }
 
+/** Social sign-in providers that are fully configured; `null` = that button is hidden and the provider is off. */
+export interface SocialAuthConfig {
+  google: { clientIds: string[]; clientSecret: string } | null;
+  apple: { clientId: string; teamId: string; keyId: string; privateKey: string; audience: string[] } | null;
+}
+
 export type AppConfig = z.infer<typeof envSchema> & {
   trustedOrigins: string[];
   appleEnvironments: AppleEnvironment[];
   appStoreConnect: AppStoreConnectConfig | null;
+  socialAuth: SocialAuthConfig;
 };
+
+const csv = (v: string | undefined) => (v ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+
+/** Never throws: a provider with missing pieces (or an unreadable Apple key) is simply off. Keys are never logged. */
+export function resolveSocialAuth(
+  env: Pick<
+    z.infer<typeof envSchema>,
+    | 'GOOGLE_CLIENT_ID'
+    | 'GOOGLE_CLIENT_SECRET'
+    | 'GOOGLE_NATIVE_CLIENT_IDS'
+    | 'APPLE_SIGNIN_CLIENT_ID'
+    | 'APPLE_TEAM_ID'
+    | 'APPLE_SIGNIN_KEY_ID'
+    | 'APPLE_SIGNIN_PRIVATE_KEY_PATH'
+    | 'APPLE_SIGNIN_PRIVATE_KEY'
+    | 'APPLE_BUNDLE_ID'
+  >,
+  readFile: (path: string) => string = (p) => readFileSync(p, 'utf8'),
+): SocialAuthConfig {
+  const googleId = env.GOOGLE_CLIENT_ID?.trim();
+  const googleSecret = env.GOOGLE_CLIENT_SECRET?.trim();
+  // The web client id comes first: better-auth uses the first one for the redirect flow, all of them as ID-token audiences.
+  const google = googleId && googleSecret ? { clientIds: [...new Set([googleId, ...csv(env.GOOGLE_NATIVE_CLIENT_IDS)])], clientSecret: googleSecret } : null;
+
+  const clientId = env.APPLE_SIGNIN_CLIENT_ID?.trim();
+  const teamId = env.APPLE_TEAM_ID?.trim();
+  const keyId = env.APPLE_SIGNIN_KEY_ID?.trim();
+  let privateKey: string | undefined;
+  if (clientId && teamId && keyId) {
+    if (env.APPLE_SIGNIN_PRIVATE_KEY_PATH?.trim()) {
+      try {
+        privateKey = readFile(env.APPLE_SIGNIN_PRIVATE_KEY_PATH.trim());
+      } catch {
+        console.warn('[auth] APPLE_SIGNIN_PRIVATE_KEY_PATH could not be read; Sign in with Apple is off');
+      }
+    }
+    if (!privateKey && env.APPLE_SIGNIN_PRIVATE_KEY?.trim()) privateKey = env.APPLE_SIGNIN_PRIVATE_KEY.replace(/\\n/g, '\n');
+  }
+  const apple =
+    clientId && teamId && keyId && privateKey?.includes('PRIVATE KEY')
+      ? { clientId, teamId, keyId, privateKey, audience: [...new Set([clientId, env.APPLE_BUNDLE_ID])] }
+      : null;
+  return { google, apple };
+}
+
+/** Bunny Stream transcoding is on only with a library id, an API key and the CDN host. */
+export const bunnyStreamConfigured = (c: Pick<AppConfig, 'BUNNY_STREAM_LIBRARY_ID' | 'BUNNY_STREAM_API_KEY' | 'BUNNY_STREAM_CDN_HOST'>) =>
+  !!(c.BUNNY_STREAM_LIBRARY_ID?.trim() && c.BUNNY_STREAM_API_KEY?.trim() && c.BUNNY_STREAM_CDN_HOST?.trim());
+
+/** Tabby is offered only with a secret key and a merchant code. */
+export const tabbyConfigured = (c: Pick<AppConfig, 'TABBY_SECRET_KEY' | 'TABBY_MERCHANT_CODE'>) => !!(c.TABBY_SECRET_KEY?.trim() && c.TABBY_MERCHANT_CODE?.trim());
 
 /** Never throws: a missing or unreadable key just leaves the sync disabled. The key is never logged. */
 export function resolveAppStoreConnect(
@@ -117,6 +229,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   const appleEnvironments = parsed.data.APPLE_IAP_ENVIRONMENT.split(',').map((e) => e.trim()).filter(Boolean);
   const unknown = appleEnvironments.filter((e) => !(APPLE_ENVIRONMENTS as readonly string[]).includes(e));
   if (unknown.length) throw new Error(`Invalid environment:\n  APPLE_IAP_ENVIRONMENT: unknown ${unknown.join(', ')} (use Production and/or Sandbox)`);
+  if (parsed.data.TABBY_SECRET_KEY && parsed.data.TABBY_MERCHANT_CODE && !parsed.data.TABBY_WEBHOOK_SECRET && parsed.data.NODE_ENV === 'production') {
+    throw new Error('Invalid environment:\n  TABBY_WEBHOOK_SECRET is required when Tabby is configured');
+  }
+  if (bunnyStreamConfigured(parsed.data) && !parsed.data.BUNNY_STREAM_READONLY_API_KEY && parsed.data.NODE_ENV === 'production') {
+    throw new Error('Invalid environment:\n  BUNNY_STREAM_READONLY_API_KEY is required when Bunny Stream is configured (it verifies webhooks)');
+  }
   if (appleEnvironments.includes('Production') && !parsed.data.APPLE_APP_APPLE_ID) {
     throw new Error('Invalid environment:\n  APPLE_APP_APPLE_ID is required when APPLE_IAP_ENVIRONMENT includes Production');
   }
@@ -124,6 +242,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     ...parsed.data,
     appleEnvironments: appleEnvironments as AppleEnvironment[],
     appStoreConnect: resolveAppStoreConnect(parsed.data),
+    socialAuth: resolveSocialAuth(parsed.data),
     trustedOrigins: parsed.data.TRUSTED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean),
   };
 }

@@ -190,6 +190,10 @@ export class ConversationService {
             type: 'CHAT_MESSAGE',
             title: conv.type === 'DIRECT' ? message.sender.name : `${message.sender.name} · ${batch.courseTitle}`,
             body: body.length > 140 ? `${body.slice(0, 139)}…` : body,
+            ar: {
+              title: conv.type === 'DIRECT' ? message.sender.name : `${message.sender.name} · ${batch.courseTitleAr ?? batch.courseTitle}`,
+              body: body.length > 140 ? `${body.slice(0, 139)}…` : body,
+            },
             data: { conversationId: conv.id },
           },
           { channels: ['in-app', 'realtime', 'push'] },

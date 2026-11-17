@@ -21,6 +21,13 @@ describe('couponRefusal', () => {
     expect(couponRefusal(rules, ctx)).toBeNull();
   });
 
+  test('a personal coupon works only for its owner', () => {
+    const mine = { ...rules, ownerId: 'sara' };
+    expect(couponRefusal(mine, { ...ctx, userId: 'sara' })).toBeNull();
+    expect(couponRefusal(mine, { ...ctx, userId: 'omar' })).toBe('NOT_YOURS');
+    expect(couponRefusal(mine, { ...ctx, userId: null })).toBe('NOT_YOURS');
+  });
+
   test('paused', () => {
     expect(couponRefusal({ ...rules, active: false }, ctx)).toBe('PAUSED');
   });

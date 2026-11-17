@@ -287,6 +287,39 @@ describe('enrollment lifecycle', () => {
     expect(await finance.handleStripeRefund({ type: 'payment.succeeded', paymentIntentId: 'pi_x' })).toEqual({ handled: false });
   });
 
+  test('a bank transfer gets one reminder 6 hours before its hold ends', async () => {
+    const res = await checkout.checkout('sara', { batchId: 'b08', method: 'BANK_TRANSFER', displayCurrency: 'AED' });
+    if (res.waitlisted) throw new Error();
+    const expiresAt = res.order.expiresAt!;
+    expect(await checkout.remindExpiringTransfers()).toEqual({ reminded: 0 }); // 48 h away
+    clock.set(new Date(expiresAt.getTime() - 5 * 3_600_000));
+    expect(await checkout.remindExpiringTransfers()).toEqual({ reminded: 1 });
+    expect(await checkout.remindExpiringTransfers()).toEqual({ reminded: 0 });
+    const notice = notifier.sent.at(-1)!.notice;
+    expect(notice).toMatchObject({ type: 'TRANSFER_HOLD_ENDING', data: { orderId: res.order.id } });
+    const email = notice.email?.({ id: 'sara', name: 'سارة', email: 's@x', locale: 'ar', timezone: 'Asia/Dubai' });
+    expect(email?.subject).toContain('مقعدك محجوز حتى');
+    expect(email?.html).toContain(res.order.reference);
+  });
+
+  test('a lapsed card checkout on an open class emails a link back to checkout', async () => {
+    const res = await checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED' });
+    if (res.waitlisted) throw new Error();
+    clock.set(new Date(res.order.expiresAt!.getTime() + 60_000));
+    await checkout.expireStaleOrders();
+    const notice = notifier.sent.find((s) => s.notice.type === 'ORDER_EXPIRED')!.notice;
+    expect(notice.data).toMatchObject({ orderId: res.order.id, batchId: 'b08' });
+    const email = notice.email?.({ id: 'sara', name: 'Sara', email: 's@x', locale: 'en', timezone: 'Asia/Dubai' });
+    expect(email?.subject).toBe('Your checkout didn’t finish · Product Design Foundations B08');
+    expect(email?.html).toContain('/checkout/b08');
+  });
+
+  test('the order keeps where the buyer came from, known tags only', async () => {
+    const res = await checkout.checkout('sara', { batchId: 'b08', method: 'STRIPE', displayCurrency: 'AED', attribution: { utm_source: 'snapchat', utm_campaign: 'nd55', junk: 'x' } });
+    if (res.waitlisted) throw new Error();
+    expect((repo.orders.find((o) => o.id === res.order.id) as unknown as { attribution: unknown }).attribution).toEqual({ utm_source: 'snapchat', utm_campaign: 'nd55' });
+  });
+
   test('state machine rejects illegal moves', () => {
     const m = new EnrollmentStateMachine();
     expect(m.canMove(null, 'AWAITING_TRANSFER')).toBe(true);
