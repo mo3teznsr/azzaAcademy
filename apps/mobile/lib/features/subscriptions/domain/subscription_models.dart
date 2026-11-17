@@ -230,3 +230,41 @@ class MySubscription {
   /// Ending on [currentPeriodEnd]: cancelled, or a prepaid transfer that doesn't renew.
   bool get ends => status == SubscriptionStatus.cancelling || cancelAtPeriodEnd || provider == SubscriptionProvider.bankTransfer;
 }
+
+/// The all-access plan's id wherever a course id or slug goes (`@azza/shared` `ALL_ACCESS_ID`): plan rows, notices,
+/// `POST /courses/_all-access/subscribe`. Never a real course slug (slugs are `[a-z0-9-]`).
+const allAccessId = '_all-access';
+
+bool isAllAccess(String? courseIdOrSlug) => courseIdOrSlug == allAccessId;
+
+/// `GET /all-access`: one plan that opens every published recorded course. Prices before VAT, like recorded courses.
+@immutable
+class AllAccessPlan {
+  const AllAccessPlan({required this.enabled, this.monthlyPriceFils, this.yearlyPriceFils, this.courseCount = 0, this.appleMonthly, this.appleYearly});
+
+  factory AllAccessPlan.fromJson(Json j) {
+    final apple = objOrNull(j, 'appleProducts');
+    return AllAccessPlan(
+      enabled: boolean(j, 'enabled'),
+      monthlyPriceFils: intOrNull(j, 'monthlyPriceFils'),
+      yearlyPriceFils: intOrNull(j, 'yearlyPriceFils'),
+      courseCount: intOrNull(j, 'courseCount') ?? 0,
+      appleMonthly: apple == null ? null : strOrNull(apple, 'monthly'),
+      appleYearly: apple == null ? null : strOrNull(apple, 'yearly'),
+    );
+  }
+
+  final bool enabled;
+  final int? monthlyPriceFils;
+  final int? yearlyPriceFils;
+
+  /// Published recorded courses the plan opens today.
+  final int courseCount;
+
+  /// App Store products (iOS); null when that plan is not sold in the iPhone app.
+  final String? appleMonthly;
+  final String? appleYearly;
+
+  /// On sale: switched on with both prices.
+  bool get onSale => enabled && monthlyPriceFils != null && yearlyPriceFils != null;
+}
