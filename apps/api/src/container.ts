@@ -372,7 +372,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     undefined,
     adapters.apple,
     undefined,
-    { repo: subscriptionRepo, bankAccounts: paymentsRepo, holdHours },
+    { repo: subscriptionRepo, bankAccounts: paymentsRepo, holdHours, coupons: paymentsRepo },
     subscriptionRepo,
     appleCommission,
   );

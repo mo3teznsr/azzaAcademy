@@ -685,3 +685,98 @@ describe('fix round 1', () => {
     });
   });
 });
+
+describe('admin coupons on a first transfer', () => {
+  type C = { id: string; code: string; percentOff: number | null; amountOffFils: number | null; active: boolean; startsOn: Date | null; expiresOn: Date | null; maxRedemptions: number | null; redemptions: number; perUserLimit: number | null; minOrderFils: number | null; courseId: string | null; batchId: string | null; ownerId: string | null };
+  const coupon = (over: Partial<C> = {}): C => ({
+    id: 'cp1', code: 'RAMADAN', percentOff: 20, amountOffFils: null, active: true, startsOn: null, expiresOn: null, maxRedemptions: null,
+    redemptions: 0, perUserLimit: null, minOrderFils: null, courseId: null, batchId: null, ownerId: null, ...over,
+  });
+  function withCoupons(c: C = coupon()) {
+    let at = now;
+    const notifier = new RecordingNotifier();
+    const repo = new MemRepo(() => at);
+    const accrued: string[] = [];
+    const redeemed: Array<{ id: string; couponCode: string | null; discountFils: number }> = [];
+    const coupons = {
+      findCoupon: async (code: string) => (code.toUpperCase() === c.code ? c : null),
+      couponUsesBy: async (_id: string, code: string, userId: string) =>
+        redeemed.length + repo.tpay.filter((p) => p.userId === userId && p.couponCode === code && (p.status === 'AWAITING_RECEIPT' || p.status === 'AWAITING_REVIEW')).length,
+      redeemPlanCoupon: async (p: { id: string; couponCode: string | null; discountFils: number }) => { redeemed.push(p); },
+    };
+    const bankAccounts = { findBankAccount: async (id: string) => (id === BANK.id ? BANK : null), firstActiveBankAccount: async () => BANK };
+    const service = new SubscriptionService(
+      repo, new FakePaymentGateway(new PriceCalculator(5)), notifier, { accrueForSubscriptionPayment: async (id: string) => { accrued.push(id); return null; } },
+      { now: () => at }, new ReferenceGenerator(), new PriceCalculator(5), 'https://azza.test', () => {}, null, undefined,
+      { repo, bankAccounts, holdHours: 48, coupons },
+    );
+    return { repo, service, redeemed, accrued, setNow: (d: Date) => { at = d; } };
+  }
+  const sub = (svc: SubscriptionService, couponCode?: string, plan: 'MONTHLY' | 'YEARLY' = 'MONTHLY') =>
+    svc.subscribe('sam', 'logo-design', { plan, method: 'BANK_TRANSFER', couponCode });
+
+  test('20% off: the payment, its VAT and the amount to transfer use the discounted price', async () => {
+    const { service, repo } = withCoupons();
+    const res = await sub(service, 'ramadan');
+    expect(res.amountFils).toBe(8_400); // (10,000 - 2,000) + 5% VAT
+    expect(repo.tpay[0]).toMatchObject({ subtotalFils: 8_000, vatFils: 400, totalFils: 8_400, discountFils: 2_000, couponCode: 'RAMADAN' });
+  });
+
+  test('approval records the redemption, keeps the list price on the plan and accrues on the paid amount', async () => {
+    const { service, repo, redeemed, accrued } = withCoupons();
+    const res = await sub(service, 'RAMADAN');
+    await service.uploadTransferReceipt(res.paymentId, 'sam', 'https://files.test/r.pdf');
+    await service.reviewTransfer(res.paymentId, { approve: true }, 'admin1');
+    expect(redeemed).toEqual([expect.objectContaining({ id: res.paymentId, couponCode: 'RAMADAN', discountFils: 2_000 })]);
+    expect(repo.subs[0]).toMatchObject({ status: 'ACTIVE', priceFils: 10_000 });
+    expect(accrued).toEqual([res.paymentId]);
+  });
+
+  test.each([
+    ['unknown', coupon(), 'NOPE', 'NOT_FOUND'],
+    ['another course', coupon({ courseId: 'other' }), 'RAMADAN', 'WRONG_COURSE'],
+    ['a batch coupon', coupon({ batchId: 'b1' }), 'RAMADAN', 'WRONG_BATCH'],
+    ['expired', coupon({ expiresOn: new Date('2026-11-01T00:00:00Z') }), 'RAMADAN', 'EXPIRED'],
+    ['used up', coupon({ maxRedemptions: 5, redemptions: 5 }), 'RAMADAN', 'EXHAUSTED'],
+    ['someone else’s', coupon({ ownerId: 'alex' }), 'RAMADAN', 'NOT_YOURS'],
+    ['below its minimum', coupon({ minOrderFils: 50_000 }), 'RAMADAN', 'BELOW_MINIMUM'],
+  ])('%s coupon is refused with its reason', async (_n, c, code, reason) => {
+    const { service, repo } = withCoupons(c);
+    const e = await errorOf(sub(service, code));
+    expect(e?.code).toBe('COUPON_INVALID');
+    expect((e as unknown as { details: { reason: string } }).details.reason).toBe(reason);
+    expect(repo.tpay).toHaveLength(0);
+  });
+
+  test('the per-user limit counts open transfers too, but not the payment being replaced', async () => {
+    const { service, repo } = withCoupons(coupon({ perUserLimit: 1 }));
+    await sub(service, 'RAMADAN');
+    // same code, same plan: the open payment is handed back
+    expect((await sub(service, 'RAMADAN')).paymentId).toBe('tp1');
+    // same code, another plan: the open one is replaced (its own use does not count against the limit)
+    const yearly = await sub(service, 'RAMADAN', 'YEARLY');
+    expect(yearly.paymentId).toBe('tp2');
+    expect(repo.tpay[0]!.status).toBe('EXPIRED');
+  });
+
+  test('dropping the coupon replaces the open payment with a full-price one', async () => {
+    const { service, repo } = withCoupons();
+    await sub(service, 'RAMADAN');
+    const res = await sub(service);
+    expect(res.amountFils).toBe(10_500);
+    expect(repo.tpay[0]!.status).toBe('EXPIRED');
+  });
+
+  test('a renewal takes no coupon', async () => {
+    const { service } = withCoupons();
+    const res = await sub(service);
+    await service.uploadTransferReceipt(res.paymentId, 'sam', 'https://files.test/r.pdf');
+    await service.reviewTransfer(res.paymentId, { approve: true }, 'admin1');
+    expect(await codeOf(sub(service, 'RAMADAN'))).toBe('COUPON_FIRST_PAYMENT_ONLY');
+  });
+
+  test('without coupon support a code is refused', async () => {
+    const { service } = setup();
+    expect(await codeOf(service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'BANK_TRANSFER', couponCode: 'X' }))).toBe('COUPON_INVALID');
+  });
+});

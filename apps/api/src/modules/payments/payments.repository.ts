@@ -397,7 +397,23 @@ export class PrismaPaymentsRepository implements PaymentsRepository {
       this.db.couponRedemption.count({ where: { couponId, userId } }),
       this.db.order.count({ where: { userId, couponCode: code.toUpperCase(), status: { in: OPEN_ORDER_STATUSES } } }),
     ]);
-    return paid + open;
+    // Plan transfers still being paid or reviewed hold a use too.
+    const openPlans = await this.db.subscriptionPayment.count({
+      where: { userId, couponCode: code.toUpperCase(), status: { in: ['AWAITING_RECEIPT', 'AWAITING_REVIEW'] } },
+    });
+    return paid + open + openPlans;
+  }
+
+  /** Records the redemption of a PAID plan payment by bank transfer (idempotent per payment). */
+  async redeemPlanCoupon(payment: { id: string; userId: string; couponCode: string | null; discountFils: number }) {
+    if (!payment.couponCode) return;
+    const coupon = await this.db.coupon.findUnique({ where: { code: payment.couponCode.toUpperCase() }, select: { id: true } });
+    if (!coupon) return;
+    if (await this.db.couponRedemption.findUnique({ where: { subscriptionPaymentId: payment.id }, select: { id: true } })) return;
+    await this.db.$transaction([
+      this.db.couponRedemption.create({ data: { couponId: coupon.id, userId: payment.userId, subscriptionPaymentId: payment.id, discountFils: payment.discountFils } }),
+      this.db.coupon.update({ where: { id: coupon.id }, data: { redemptions: { increment: 1 } } }),
+    ]);
   }
 
   async redeemCoupon(order: Pick<OrderRecord, 'id' | 'userId' | 'couponCode' | 'discountFils'>) {

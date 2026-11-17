@@ -524,10 +524,14 @@ function UsageSheet({ coupon, onClose }: { coupon: Coupon | null; onClose: () =>
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="font-mono text-xs" dir="ltr">
-                          {r.batch.code}
-                        </span>
-                        <span className="block text-xs text-muted-foreground">{pick(r.batch.courseTitleEn, r.batch.courseTitleAr).text}</span>
+                        {r.batch ? (
+                          <span className="font-mono text-xs" dir="ltr">
+                            {r.batch.code}
+                          </span>
+                        ) : (
+                          <span className="text-xs">{r.plan === 'YEARLY' ? t.recorded.yearly : t.recorded.monthly}</span>
+                        )}
+                        {r.course && <span className="block text-xs text-muted-foreground">{pick(r.course.titleEn, r.course.titleAr).text}</span>}
                       </TableCell>
                       <TableCell>{f.dayMonth(r.createdAt)}</TableCell>
                       <TableCell className="text-end tabular-nums">− {money.aed(r.discountFils)}</TableCell>

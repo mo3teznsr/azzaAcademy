@@ -678,8 +678,11 @@ model CouponRedemption {
   coupon       Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderId      String   @unique
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// A seat order, or (exactly one of the two) a plan payment by bank transfer.
+  orderId      String?  @unique
+  order        Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  subscriptionPaymentId String?              @unique
+  subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Cascade)
   discountFils Int
   createdAt    DateTime @default(now())
 
@@ -1240,6 +1243,10 @@ model SubscriptionPayment {
   updatedAt         DateTime                  @updatedAt
 
   earnings Earning[]
+  /// Bank transfer, first payment only: the admin coupon applied. `subtotalFils` is already net of `discountFils`.
+  couponCode        String?
+  discountFils      Int                       @default(0)
+  couponRedemption  CouponRedemption?
   /// All-access plans only: when the period's teacher shares were worked out (once, after `periodEnd`).
   allAccessAccruedAt DateTime?
   allAccessShares    AllAccessShare[]

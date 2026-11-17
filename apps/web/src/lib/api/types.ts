@@ -607,8 +607,12 @@ export interface CouponUsage {
     createdAt: ISODate;
     discountFils: number;
     student: { id: string; name: string; email: string };
+    /** The seat order, or the plan payment by bank transfer. */
     order: { id: string; reference: string; totalFils: number };
-    batch: { id: string; code: string; courseTitleEn: string; courseTitleAr: string | null };
+    /** Set for a plan payment (no batch). */
+    plan: 'MONTHLY' | 'YEARLY' | null;
+    batch: { id: string; code: string; courseTitleEn: string; courseTitleAr: string | null } | null;
+    course: { titleEn: string; titleAr: string | null } | null;
   }>;
 }
 
