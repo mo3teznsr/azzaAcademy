@@ -23,6 +23,11 @@ export function lessonStreamingRoutes(streaming: LessonStreamingService) {
         const { url } = await streaming.redeemDownload(c.req.param('token'));
         return c.redirect(url, 302);
       })
+      // HLS playlists rewritten with CloudFront-signed segment URLs (token-signed, so players need no session or cookie).
+      .get('/lesson-streams/:token/:name', async (c) => {
+        const body = await streaming.playlist(c.req.param('token'), c.req.param('name'));
+        return c.body(body, 200, { 'Content-Type': 'application/vnd.apple.mpegurl', 'Cache-Control': 'private, max-age=30' });
+      })
       .get('/admin/lessons/:lessonId/stream', requireRole('ADMIN'), async (c) => c.json(await streaming.status(c.req.param('lessonId'))))
       // "Prepare for streaming": (re)send the lesson's uploaded video to the transcoder.
       .post('/admin/lessons/:lessonId/stream', requireRole('ADMIN'), async (c) => c.json(await streaming.prepare(c.req.param('lessonId')), 202))

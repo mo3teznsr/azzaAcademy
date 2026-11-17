@@ -4,10 +4,11 @@
 import { createAuth, type OnUserCreated } from './auth/auth';
 import { BetterAuthUserProvisioner, InviteRegistry } from './auth/user-provisioner';
 import { msUntilUtcHour, type Job } from './jobs/scheduler';
-import { bunnyStreamConfigured, tabbyConfigured, type AppConfig } from './core/config';
+import { mediaConvertConfigured, resolveCloudFrontSigning, tabbyConfigured, type AppConfig } from './core/config';
 import { fileURLToPath } from 'node:url';
-import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, TabbyGateway, VideoProvider, VideoTranscoder } from './core/ports';
-import { BunnyStreamTranscoder, DisabledVideoTranscoder } from './infrastructure/video/bunny-stream-transcoder';
+import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, MediaUrlSigner, PaymentGateway, PushNotifier, TabbyGateway, VideoProvider, VideoTranscoder } from './core/ports';
+import { CloudFrontUrlSigner, UnsignedUrls } from './infrastructure/cdn/cloudfront-url-signer';
+import { DisabledVideoTranscoder, MediaConvertTranscoder } from './infrastructure/video/mediaconvert-transcoder';
 import { DownloadLinkSigner } from './modules/lessons/download-link';
 import { PrismaLessonStreamRepository } from './modules/lessons/lesson-stream.repository';
 import { LessonStreamingService } from './modules/lessons/lesson-streaming.service';
@@ -148,6 +149,8 @@ export interface Adapters {
   tabby?: TabbyGateway | null;
   /** HLS transcoding of lesson videos; absent = disabled (lessons play their uploaded MP4). */
   transcoder?: VideoTranscoder;
+  /** CloudFront signed URLs for lesson videos and streams; absent = URLs are served as stored. */
+  urlSigner?: MediaUrlSigner;
 }
 
 /** `apps/api/uploads/` regardless of the process cwd. */
@@ -194,15 +197,22 @@ export function createAdapters(config: AppConfig, vat: VatHolder = { current: ()
           baseUrl: config.TABBY_API_URL,
         })
       : null,
-    transcoder: bunnyStreamConfigured(config)
-      ? new BunnyStreamTranscoder({
-          libraryId: config.BUNNY_STREAM_LIBRARY_ID!.trim(),
-          apiKey: config.BUNNY_STREAM_API_KEY!.trim(),
-          readOnlyApiKey: config.BUNNY_STREAM_READONLY_API_KEY?.trim() || undefined,
-          cdnHost: config.BUNNY_STREAM_CDN_HOST!.trim(),
-          tokenKey: config.BUNNY_STREAM_TOKEN_KEY?.trim() || undefined,
+    transcoder: mediaConvertConfigured(config)
+      ? new MediaConvertTranscoder({
+          region: config.MEDIACONVERT_REGION?.trim() || config.AWS_REGION,
+          roleArn: config.MEDIACONVERT_ROLE_ARN!.trim(),
+          bucket: config.S3_BUCKET!.trim(),
+          cdnBaseUrl: config.CLOUDFRONT_URL!,
+          streamsPrefix: config.STREAMS_PREFIX,
+          endpoint: config.MEDIACONVERT_ENDPOINT || undefined,
+          queueArn: config.MEDIACONVERT_QUEUE_ARN?.trim() || undefined,
+          snsTopicArn: config.MEDIACONVERT_SNS_TOPIC_ARN?.trim() || undefined,
         })
       : new DisabledVideoTranscoder(),
+    urlSigner: (() => {
+      const signing = resolveCloudFrontSigning(config);
+      return signing ? new CloudFrontUrlSigner(signing) : new UnsignedUrls();
+    })(),
     apple: new AppStoreSignedDataVerifier({
       bundleId: config.APPLE_BUNDLE_ID,
       environments: config.appleEnvironments,
@@ -413,6 +423,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     new DownloadLinkSigner(config.BETTER_AUTH_SECRET),
     clock,
     { transcodeOnUpload: config.VIDEO_TRANSCODE_ON_UPLOAD === 'true', offlineMaxDays: config.OFFLINE_DOWNLOAD_MAX_DAYS, apiUrl: config.API_URL },
+    adapters.urlSigner ? { signer: adapters.urlSigner, playlistLinks: new DownloadLinkSigner(config.BETTER_AUTH_SECRET, 'azza:lesson-streams:v1') } : undefined,
   );
 
   const organizations = new OrganizationService(
@@ -517,7 +528,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     { name: 'referral-rewards', everyMs: 60 * 60_000, run: () => referrals.run() },
     // All-access teacher shares, once per paid period after it ends (split by minutes watched). Idempotent.
     { name: 'settle-all-access-periods', everyMs: 60 * 60_000, run: () => allAccessEarnings.run() },
-    // Lesson videos still encoding at the video service (webhooks can be lost). A no-op without Bunny Stream.
+    // Lesson videos still encoding at the video service (webhooks can be lost). A no-op without MediaConvert.
     { name: 'sync-lesson-streams', everyMs: 2 * 60_000, run: () => lessonStreaming.syncProcessing() },
     ...(config.VIDEO_TRANSCODE_BACKFILL === 'true' && adapters.transcoder?.enabled
       ? [{ name: 'backfill-lesson-streams', everyMs: 60 * 60_000, runAtBoot: false, run: () => lessonStreaming.backfill(5) }]

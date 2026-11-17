@@ -18,9 +18,12 @@ const fromB64url = (s: string) => Buffer.from(s.replace(/-/g, '+').replace(/_/g,
 export class DownloadLinkSigner {
   private readonly key: Buffer;
 
-  /** `secret` is the app secret; a purpose-bound key is derived from it so tokens can't be replayed elsewhere. */
-  constructor(secret: string) {
-    this.key = createHmac('sha256', secret).update('azza:lesson-downloads:v1').digest();
+  /**
+   * `secret` is the app secret; a purpose-bound key is derived from it so tokens can't be replayed elsewhere (download links
+   * and HLS playlist links use different purposes).
+   */
+  constructor(secret: string, purpose = 'azza:lesson-downloads:v1') {
+    this.key = createHmac('sha256', secret).update(purpose).digest();
   }
 
   sign(claims: DownloadClaims): string {
