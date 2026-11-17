@@ -1,6 +1,6 @@
 import { resolveRule, type RuleValue } from '../../core/rule-value';
 import { randomUUID } from 'node:crypto';
-import { filsToAed, formatMoney, YEARLY_REMINDER_DAYS, type Role, type SubscribeInput, type SubscriptionPaymentStatus, type SubscriptionProvider, type SubscriptionPlan, type SubscriptionStatus } from '@azza/shared';
+import { ALL_ACCESS_ID, filsToAed, isAllAccess, formatMoney, YEARLY_REMINDER_DAYS, type Role, type SubscribeInput, type SubscriptionPaymentStatus, type SubscriptionProvider, type SubscriptionPlan, type SubscriptionStatus } from '@azza/shared';
 import { AppError, BusinessRuleError, ForbiddenError, NotFoundError } from '../../core/errors';
 import { addHours, formatInZone } from '../../core/time';
 import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction, Clock, PaymentGateway, PaymentWebhookEvent, WebhookInvoice, WebhookSubscription } from '../../core/ports';
@@ -149,11 +149,12 @@ export class SubscriptionService {
   // ───────── learner actions ─────────
 
   /** `POST /courses/:id/subscribe`: card → an INCOMPLETE row and the hosted Checkout page; iOS → a row and its StoreKit token. */
-  subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'STRIPE' }): Promise<{ checkoutUrl: string; reference: string }>;
-  subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'APPLE_IAP' }): Promise<{ productId: string; appAccountToken: string; reference: string }>;
-  subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'BANK_TRANSFER'; bankAccountId?: string; couponCode?: string }): Promise<TransferSubscribeResult>;
-  subscribe(userId: string, courseIdOrSlug: string, input: Pick<SubscribeInput, 'plan' | 'method'> & { bankAccountId?: string; couponCode?: string }): Promise<{ checkoutUrl: string; reference: string } | { productId: string; appAccountToken: string; reference: string } | TransferSubscribeResult>;
-  async subscribe(userId: string, courseIdOrSlug: string, input: Pick<SubscribeInput, 'plan' | 'method'> & { bankAccountId?: string; couponCode?: string }) {
+  subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'STRIPE'; confirmAllAccess?: boolean }): Promise<{ checkoutUrl: string; reference: string }>;
+  subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'APPLE_IAP'; confirmAllAccess?: boolean }): Promise<{ productId: string; appAccountToken: string; reference: string }>;
+  subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'BANK_TRANSFER'; bankAccountId?: string; couponCode?: string; confirmAllAccess?: boolean }): Promise<TransferSubscribeResult>;
+  subscribe(userId: string, courseIdOrSlug: string, input: Pick<SubscribeInput, 'plan' | 'method' | 'confirmAllAccess'> & { bankAccountId?: string; couponCode?: string }): Promise<{ checkoutUrl: string; reference: string } | { productId: string; appAccountToken: string; reference: string } | TransferSubscribeResult>;
+  async subscribe(userId: string, courseIdOrSlug: string, input: Pick<SubscribeInput, 'plan' | 'method' | 'confirmAllAccess'> & { bankAccountId?: string; couponCode?: string }) {
+    if (!isAllAccess(courseIdOrSlug) && !input.confirmAllAccess) await this.assertNoLiveAllAccess(userId);
     if (input.method === 'APPLE_IAP') return this.subscribeApple(userId, courseIdOrSlug, input.plan);
     if (input.method === 'BANK_TRANSFER') return this.subscribeTransfer(userId, courseIdOrSlug, input.plan, input.bankAccountId, input.couponCode);
     if (input.method !== 'STRIPE') throw new BusinessRuleError('This payment method is not available for plans yet', 'METHOD_UNAVAILABLE');
@@ -922,6 +923,20 @@ export class SubscriptionService {
       ar: { title: arCopy.title, body: arCopy.body },
       data: { subscriptionId: c.id, ...(course && { courseSlug: course.slug }) },
       email: () => email,
+    });
+  }
+
+  /**
+   * A live all-access plan already opens every published recorded course, so a course plan on top is usually a mistake:
+   * refused (409 `ALL_ACCESS_ACTIVE`, with the plan's end) until the learner confirms (`confirmAllAccess`). Clients show the
+   * warning and resend. Same access rule as the lessons (`canAccessRecorded`), so a lapsed or unfinished plan never blocks.
+   */
+  private async assertNoLiveAllAccess(userId: string) {
+    const row = pickSubscription(await this.repo.forUserCourse(userId, ALL_ACCESS_ID));
+    if (!row || !canAccessRecorded(row, this.clock.now())) return;
+    throw new AppError('Your all-access plan already opens this course', 409, 'ALL_ACCESS_ACTIVE', {
+      currentPeriodEnd: row.currentPeriodEnd?.toISOString() ?? null,
+      cancelAtPeriodEnd: row.cancelAtPeriodEnd,
     });
   }
 

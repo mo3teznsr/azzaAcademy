@@ -99,6 +99,7 @@ void main() {
     final learning = tester.getTopLeft(find.text('Continue learning')).dy;
     expect(hero < learning, isTrue);
     // The live session isn't repeated in "This week".
+    await tester.scrollUntilVisible(find.byKey(const Key('week-s6')), 200);
     expect(find.byKey(const Key('week-s5'), skipOffstage: false), findsNothing);
     expect(find.byKey(const Key('week-s6'), skipOffstage: false), findsOneWidget);
   });

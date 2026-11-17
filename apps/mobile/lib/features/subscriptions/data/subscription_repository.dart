@@ -11,7 +11,11 @@ import '../domain/subscription_models.dart';
 /// Plans on recorded courses (`/api/v1/courses/:id/subscribe`, `/subscriptions*`, `/me/subscriptions`).
 abstract class SubscriptionRepository {
   /// Starts a plan: Stripe → a checkout URL, Apple → the product and `appAccountToken`, transfer → the bank details.
-  Future<SubscribeStart> subscribe(String courseId, SubscriptionPlan plan, SubscribeMethod method);
+  /// A course plan while an all-access plan is live throws `ALL_ACCESS_ACTIVE` unless [confirmAllAccess] (the learner saw the warning).
+  Future<SubscribeStart> subscribe(String courseId, SubscriptionPlan plan, SubscribeMethod method, {bool confirmAllAccess = false});
+
+  /// `GET /all-access` (public): the all-access plan's prices, App Store products and how many courses it opens.
+  Future<AllAccessPlan> allAccessPlan();
 
   /// Where a just-started plan stands. Polled by the return screen until it is ACTIVE.
   Future<SubscriptionLookup> byReference(String reference);
@@ -39,10 +43,17 @@ class DioSubscriptionRepository extends DioRepository implements SubscriptionRep
   DioSubscriptionRepository(super.dio);
 
   @override
-  Future<SubscribeStart> subscribe(String courseId, SubscriptionPlan plan, SubscribeMethod method) async {
-    final res = await postJson('/api/v1/courses/${Uri.encodeComponent(courseId)}/subscribe', {'plan': plan.wire, 'method': method.wire});
+  Future<SubscribeStart> subscribe(String courseId, SubscriptionPlan plan, SubscribeMethod method, {bool confirmAllAccess = false}) async {
+    final res = await postJson('/api/v1/courses/${Uri.encodeComponent(courseId)}/subscribe', {
+      'plan': plan.wire,
+      'method': method.wire,
+      if (confirmAllAccess) 'confirmAllAccess': true,
+    });
     return SubscribeStart.parse(method, res);
   }
+
+  @override
+  Future<AllAccessPlan> allAccessPlan() async => AllAccessPlan.fromJson(await getJson('/api/v1/all-access'));
 
   @override
   Future<SubscriptionLookup> byReference(String reference) async =>
@@ -90,6 +101,9 @@ final mySubscriptionsProvider = FutureProvider.autoDispose<List<MySubscription>>
   if (ref.watch(currentUserProvider) == null) return const [];
   return ref.watch(subscriptionRepositoryProvider).mine();
 });
+
+/// The all-access plan's public offer (cached for the session's screens).
+final allAccessPlanProvider = FutureProvider.autoDispose<AllAccessPlan>((ref) => ref.watch(subscriptionRepositoryProvider).allAccessPlan());
 
 /// The learner's newest plan on [courseId] (access-granting first), or null.
 MySubscription? subscriptionFor(List<MySubscription> all, String courseId) {

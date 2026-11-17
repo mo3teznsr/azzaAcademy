@@ -35,4 +35,6 @@ export interface AllAccessPlanView {
   yearlyPriceFils: number | null;
   /** Published recorded courses the plan opens today. */
   courseCount: number;
+  /** App Store products (iOS); null when the plan is not sold in the iPhone app. */
+  appleProducts: { monthly: string | null; yearly: string | null } | null;
 }

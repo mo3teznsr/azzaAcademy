@@ -76,7 +76,15 @@ abstract final class Routes {
   static const adminSettings = '/admin/manage/settings';
 
   // shared
-  static String course(String idOrSlug) => '/courses/$idOrSlug';
+  /// A course page; the all-access plan's id (plan rows, notices) opens its own screen instead.
+  static String course(String idOrSlug) => idOrSlug == _allAccessId ? allAccess : '/courses/$idOrSlug';
+
+  /// "All courses": the all-access plan (price, what's included, the learner's status, buy).
+  static const allAccess = '/all-access';
+  static const _allAccessId = '_all-access';
+
+  /// `/courses/_all-access` (and anything under it, also inside a tab) is never a course: it goes to [allAccess].
+  static bool isAllAccessCoursePath(String path) => RegExp(r'(^|/)courses/_all-access(/|$)').hasMatch(path);
   static String batchPicker(String courseId) => '/courses/$courseId/batches';
   static String batchSchedule(String batchId) => '/batches/$batchId/schedule';
   static String roster(String batchId) => '/batches/$batchId/roster';
@@ -170,6 +178,7 @@ abstract final class Routes {
 
   static final _guestPatterns = [
     RegExp(r'^/courses/[^/]+$'),
+    RegExp(r'^/all-access$'),
     RegExp(r'^/batches/[^/]+/schedule$'),
     RegExp(r'^/teachers/[^/]+$'),
     RegExp(r'^/lessons/[^/]+/preview$'),

@@ -735,6 +735,11 @@ export const subscribeInput = z.object({
   displayCurrency: currencyCode.optional(),
   /** Admin coupon, bank transfer only and on the first payment (card plans take Stripe promotion codes on the payment page). */
   couponCode: z.string().trim().min(1).max(40).optional(),
+  /**
+   * A course plan bought while the learner holds a live all-access plan (which already opens the course) is refused with
+   * `ALL_ACCESS_ACTIVE` unless this is true: the learner saw the warning and still wants it.
+   */
+  confirmAllAccess: z.boolean().optional(),
 });
 export type SubscribeInput = z.infer<typeof subscribeInput>;
 

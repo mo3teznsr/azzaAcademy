@@ -75,6 +75,8 @@ void main() {
     await tester.scrollUntilVisible(find.byKey(const Key('badge-STREAK_30')), 200);
     expect(find.text('First lesson'), findsOneWidget);
     expect(find.text('Not yet'), findsNWidgets(7));
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -600));
+    await tester.pumpAndSettle();
     expect(find.text('Badges are personal. Nobody else sees them.'), findsOneWidget);
   });
 }

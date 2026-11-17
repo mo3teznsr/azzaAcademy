@@ -90,6 +90,8 @@ class _SubscribeReturnScreenState extends ConsumerState<SubscribeReturnScreen>
     ref.invalidate(mySubscriptionsProvider);
     final slug = found.courseSlug;
     if (slug == null) return context.go(Routes.studentHome);
+    // An all-access plan has no lessons of its own: its screen shows the plan as active and leads to the courses.
+    if (isAllAccess(slug)) return context.pushReplacement(Routes.allAccess);
     ref.invalidate(courseLessonsProvider(slug));
     final next = found.nextLessonId;
     context.pushReplacement(

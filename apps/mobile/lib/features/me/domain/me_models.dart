@@ -124,6 +124,8 @@ String? notificationRoute(String type, Map<String, dynamic> data) {
     return '/courses/${data['courseId']}/lessons/${data['lessonId']}';
   }
   // Learning nudges and win-backs open the course (its lessons or its plan).
+  // An all-access plan's notices (`courseSlug: _all-access`) open the plan's own screen, never a course page.
+  if ((type == 'LEARNING_NUDGE' || type == 'PLAN_WINBACK') && _present(data['courseSlug']) == '_all-access') return '/all-access';
   if ((type == 'LEARNING_NUDGE' || type == 'PLAN_WINBACK') && _present(data['courseSlug']) != null) return '/courses/${data['courseSlug']}';
   if (data['sessionId'] != null) {
     return type.contains('LIVE') || type.contains('LOBBY') ? '/sessions/${data['sessionId']}/lobby' : null;

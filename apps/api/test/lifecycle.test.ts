@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { ALL_ACCESS_ID } from '@azza/shared';
 import { LifecycleService, type EndedPlan, type InactiveLearner, type LifecycleRepository } from '../src/modules/lifecycle/lifecycle.service';
 import { localizedText } from '../src/modules/notifications/notification.types';
 import { RecordingNotifier } from './fakes/in-memory';
@@ -66,5 +67,31 @@ describe('lifecycle messages', () => {
     expect((await service.run()).winback).toBe(0);
     expect(notifier.sent.map((s) => s.userIds[0])).toEqual(['u-a', 'u-b']);
     expect(notifier.sent[0]!.notice.email?.(reader('en'))?.subject).toBe('Come back to Logo Design');
+  });
+
+  test('an inactive all-access subscriber gets the plan\'s own nudge, in both languages, linking to their dashboard', async () => {
+    const { repo, notifier, service } = build();
+    repo.inactive.push({ subscriptionId: 'all1', userId: 'sam', courseSlug: ALL_ACCESS_ID, courseEn: 'All recorded courses', courseAr: 'كل الدورات المسجّلة', lastActivityAt: new Date(NOW.getTime() - 9 * DAY) });
+    expect((await service.run()).inactive).toBe(1);
+    expect((await service.run()).inactive).toBe(0);
+    const n = notifier.sent[0]!.notice;
+    expect(n).toMatchObject({ type: 'LEARNING_NUDGE', title: 'Your all-access plan is waiting', data: { courseSlug: ALL_ACCESS_ID, subscriptionId: 'all1' } });
+    expect(localizedText(n, { locale: 'ar' }).title).toBe('اشتراكك الشامل بانتظارك');
+    const en = n.email?.(reader('en'));
+    expect(en?.subject).toBe('Your all-access plan is waiting');
+    expect(en?.html).toContain('https://azza.test/learn');
+    expect(en?.html).not.toContain('/learn/courses/');
+    expect(n.email?.(reader('ar'))?.subject).toBe('اشتراكك الشامل بانتظارك');
+  });
+
+  test('an ended all-access plan gets a win-back that links to /all-access', async () => {
+    const { repo, notifier, service } = build();
+    repo.ended.push({ subscriptionId: 'all1', userId: 'sam', courseSlug: ALL_ACCESS_ID, courseEn: 'All recorded courses', courseAr: 'كل الدورات المسجّلة', endedAt: new Date(NOW.getTime() - 7.5 * DAY), daysAgo: 7.5 });
+    expect((await service.run()).winback).toBe(1);
+    const n = notifier.sent[0]!.notice;
+    expect(n).toMatchObject({ type: 'PLAN_WINBACK', title: 'Come back to every recorded course', data: { courseSlug: ALL_ACCESS_ID } });
+    expect(localizedText(n, { locale: 'ar' }).title).toBe('عُد إلى كل الدورات المسجّلة');
+    expect(n.email?.(reader('en'))?.html).toContain('https://azza.test/all-access');
+    expect(n.email?.(reader('ar'))?.subject).toBe('عُد إلى كل الدورات المسجّلة');
   });
 });

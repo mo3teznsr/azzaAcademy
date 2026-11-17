@@ -7170,4 +7170,87 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get badgeStreak30Body => 'حافظت على التتابع 30 يومًا.';
+
+  @override
+  String get allAccessTitle => 'كل الدورات';
+
+  @override
+  String get allAccessKicker => 'اشتراك شامل';
+
+  @override
+  String get allAccessHeadline => 'كل الدورات المسجّلة باشتراك واحد.';
+
+  @override
+  String get allAccessBody =>
+      'اشتراك شهري أو سنوي واحد يفتح لك كل الدورات المسجّلة في عازة، ومعها كل دورة جديدة تُضاف. الحصص المباشرة تُشترى على حدة.';
+
+  @override
+  String allAccessCourseCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count دورة مسجّلة مشمولة',
+      many: '$count دورة مسجّلة مشمولة',
+      few: '$count دورات مسجّلة مشمولة',
+      two: 'دورتان مسجّلتان مشمولتان',
+      one: 'دورة مسجّلة واحدة مشمولة',
+      zero: 'لا دورات مسجّلة بعد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get allAccessGetLessons =>
+      'كل الدروس والاختبارات في كل الدورات المسجّلة';
+
+  @override
+  String get allAccessGetCertificate => 'شهادة لكل دورة تُنهيها';
+
+  @override
+  String get allAccessGetCancel => 'ألغِ متى شئت، وتقدّمك محفوظ';
+
+  @override
+  String get allAccessUnavailable => 'الاشتراك الشامل غير متاح حاليًا.';
+
+  @override
+  String get allAccessYours => 'اشتراكك الشامل فعّال';
+
+  @override
+  String get allAccessYoursBody =>
+      'كل الدورات المسجّلة مفتوحة لك. اختر دورة وابدأ التعلّم.';
+
+  @override
+  String get allAccessBrowse => 'تصفّح الدورات المسجّلة';
+
+  @override
+  String get allAccessManage => 'أدِره من اشتراكاتي';
+
+  @override
+  String get allAccessEntry => 'كل الدورات باشتراك واحد';
+
+  @override
+  String allAccessEntryFrom(String amount) {
+    return 'ابتداءً من $amount شهريًا: كل الدورات المسجّلة';
+  }
+
+  @override
+  String get allAccessIncluded => 'مشمولة في اشتراكك الشامل';
+
+  @override
+  String get allAccessCoveredTitle => 'اشتراكك الشامل يفتح هذه الدورة بالفعل';
+
+  @override
+  String get allAccessCoveredBody =>
+      'تستطيع مشاهدة كل دروس هذه الدورة باشتراكك الشامل. الاشتراك المنفصل سيحاسبك مرة أخرى على الدروس نفسها.';
+
+  @override
+  String allAccessCoveredBodyUntil(String date) {
+    return 'تستطيع مشاهدة كل دروس هذه الدورة باشتراكك الشامل المدفوع حتى $date. الاشتراك المنفصل سيحاسبك مرة أخرى على الدروس نفسها.';
+  }
+
+  @override
+  String get allAccessCoveredKeep => 'أكتفي باشتراكي الشامل';
+
+  @override
+  String get allAccessCoveredBuy => 'اشترِ هذا الاشتراك على أي حال';
 }

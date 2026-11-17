@@ -11773,6 +11773,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Kept a streak for 30 days.'**
   String get badgeStreak30Body;
+
+  /// No description provided for @allAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All courses'**
+  String get allAccessTitle;
+
+  /// No description provided for @allAccessKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'All-access plan'**
+  String get allAccessKicker;
+
+  /// No description provided for @allAccessHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Every recorded course. One plan.'**
+  String get allAccessHeadline;
+
+  /// No description provided for @allAccessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'One monthly or yearly plan opens every recorded course on Azza, including new ones as they launch. Live classes are sold separately.'**
+  String get allAccessBody;
+
+  /// No description provided for @allAccessCourseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} recorded course included} other{{count} recorded courses included}}'**
+  String allAccessCourseCount(int count);
+
+  /// No description provided for @allAccessGetLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Every lesson and quiz in every recorded course'**
+  String get allAccessGetLessons;
+
+  /// No description provided for @allAccessGetCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'A certificate for each course you finish'**
+  String get allAccessGetCertificate;
+
+  /// No description provided for @allAccessGetCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel any time, keep your progress'**
+  String get allAccessGetCancel;
+
+  /// No description provided for @allAccessUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The all-access plan is not available right now.'**
+  String get allAccessUnavailable;
+
+  /// No description provided for @allAccessYours.
+  ///
+  /// In en, this message translates to:
+  /// **'Your all-access plan is active'**
+  String get allAccessYours;
+
+  /// No description provided for @allAccessYoursBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every recorded course is open to you. Pick one and start learning.'**
+  String get allAccessYoursBody;
+
+  /// No description provided for @allAccessBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse recorded courses'**
+  String get allAccessBrowse;
+
+  /// No description provided for @allAccessManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage in Your plans'**
+  String get allAccessManage;
+
+  /// No description provided for @allAccessEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'All courses in one plan'**
+  String get allAccessEntry;
+
+  /// No description provided for @allAccessEntryFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} a month: every recorded course'**
+  String allAccessEntryFrom(String amount);
+
+  /// No description provided for @allAccessIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Included in your all-access plan'**
+  String get allAccessIncluded;
+
+  /// No description provided for @allAccessCoveredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your all-access plan already opens this course'**
+  String get allAccessCoveredTitle;
+
+  /// No description provided for @allAccessCoveredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can watch every lesson of this course with your all-access plan. A separate plan would charge you again for the same lessons.'**
+  String get allAccessCoveredBody;
+
+  /// No description provided for @allAccessCoveredBodyUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'You can watch every lesson of this course with your all-access plan, paid until {date}. A separate plan would charge you again for the same lessons.'**
+  String allAccessCoveredBodyUntil(String date);
+
+  /// No description provided for @allAccessCoveredKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my all-access plan'**
+  String get allAccessCoveredKeep;
+
+  /// No description provided for @allAccessCoveredBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy this plan anyway'**
+  String get allAccessCoveredBuy;
 }
 
 class _AppLocalizationsDelegate
