@@ -103,6 +103,10 @@ export class QuizService {
           type: 'QUIZ_PUBLISHED',
           title: `New quiz · ${quiz.title}`,
           body: [batch ? `${batch.course.titleEn} ${batch.code}` : null, quiz.dueAt ? `due ${quiz.dueAt.toISOString().slice(0, 10)}` : null].filter(Boolean).join(' · '),
+          ar: {
+            title: `اختبار جديد · ${quiz.title}`,
+            body: [batch ? `${batch.course.titleAr ?? batch.course.titleEn} ${batch.code}` : null, quiz.dueAt ? `آخر موعد ${quiz.dueAt.toISOString().slice(0, 10)}` : null].filter(Boolean).join(' · '),
+          },
           data: { quizId: quiz.id, batchId },
         },
         { channels: ['in-app', 'realtime', 'push'] },

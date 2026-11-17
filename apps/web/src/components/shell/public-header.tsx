@@ -12,6 +12,7 @@ import { useI18n, useLocaleHref } from '@/lib/i18n/provider';
 import { useCategories } from '@/components/brand/category';
 import { cn } from '@/lib/utils';
 import { useSyncExternalStore } from 'react';
+import { openConsentSettings } from '@/lib/consent';
 
 const noSubscribe = () => () => {};
 
@@ -138,6 +139,13 @@ export function PublicFooter() {
           <Link href="/account/delete" className="flex min-h-11 items-center text-muted-foreground no-underline hover:text-foreground">
             {t.legal.footer.deleteAccount}
           </Link>
+          <button
+            type="button"
+            onClick={openConsentSettings}
+            className="flex min-h-11 cursor-pointer items-center text-muted-foreground hover:text-foreground"
+          >
+            {t.legal.footer.cookies}
+          </button>
         </nav>
       </div>
     </footer>

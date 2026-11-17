@@ -274,6 +274,7 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
         type: 'TEACHER_BANK_DETAILS_CHANGED',
         title: 'Teacher bank details need verification',
         body: `${input.accountHolder} · ${input.bankName} ${maskIban(input.iban)}`,
+        ar: { title: 'بيانات بنكية لمدرّس تحتاج إلى تحقق', body: `${input.accountHolder} · ${input.bankName} ${maskIban(input.iban)}` },
         data: { teacherId: userId },
       },
       { channels: ['in-app', 'realtime'] },

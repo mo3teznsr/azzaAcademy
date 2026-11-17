@@ -174,6 +174,7 @@ export class BatchService {
           type: 'SESSION_ADDED',
           title: `New session · ${batch.course.titleEn} ${batch.code}`,
           body: `S${String(session.number).padStart(2, '0')} ${input.title}`,
+          ar: { title: `حصة جديدة · ${batch.course.titleAr ?? batch.course.titleEn} ${batch.code}`, body: `S${String(session.number).padStart(2, '0')} ${input.title}` },
           data: { batchId: id, sessionId: session.id },
         });
       }
@@ -192,6 +193,7 @@ export class BatchService {
       type: 'BATCH_SUBMITTED',
       title: 'Batch waiting for review',
       body: `${batch.course.titleEn} ${batch.code} was proposed by ${batch.teacher.name}`,
+      ar: { title: 'دفعة بانتظار المراجعة', body: `اقترح ${batch.teacher.name} الدفعة ${batch.course.titleAr ?? batch.course.titleEn} ${batch.code}` },
       data: { batchId: id },
     });
     return updated;
@@ -215,6 +217,9 @@ export class BatchService {
       type: decision.approve ? 'BATCH_APPROVED' : 'BATCH_CHANGES_REQUESTED',
       title: decision.approve ? 'Your batch is open for enrollment' : 'Your batch needs changes',
       body: decision.approve ? `${batch.course.titleEn} ${batch.code}` : `${batch.course.titleEn} ${batch.code}: ${decision.note}`,
+      ar: decision.approve
+        ? { title: 'دفعتك مفتوحة للتسجيل', body: `${batch.course.titleAr ?? batch.course.titleEn} ${batch.code}` }
+        : { title: 'دفعتك تحتاج إلى تعديلات', body: `${batch.course.titleAr ?? batch.course.titleEn} ${batch.code}: ${decision.note}` },
       data: { batchId: id },
     });
     return updated;
@@ -292,6 +297,10 @@ export class BatchService {
       type: 'BATCH_SHIFTED',
       title: `Schedule changed · ${course} ${batch.code}`,
       body: `${moves.length} session(s) from S${String(input.fromSessionNumber).padStart(2, '0')} moved by ${input.days} day(s)`,
+      ar: {
+        title: `تغيّر الجدول · ${batch.course.titleAr ?? batch.course.titleEn} ${batch.code}`,
+        body: `نُقلت ${moves.length} من الحصص بدءًا من S${String(input.fromSessionNumber).padStart(2, '0')}، بفارق ${input.days} يوم`,
+      },
       data: { batchId: id },
     });
     return updated;

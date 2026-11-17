@@ -171,6 +171,7 @@ export class ContentService {
       type: 'SUBMISSION_GRADED',
       title: `Graded · ${sub.assignment.title}`,
       body: `${input.score}/${sub.assignment.maxScore}`,
+      ar: { title: `تم التقييم · ${sub.assignment.title}`, body: `${input.score}/${sub.assignment.maxScore}` },
       data: { submissionId, assignmentId: sub.assignmentId },
     }, { channels: ['in-app', 'realtime', 'push'] });
     return graded;
