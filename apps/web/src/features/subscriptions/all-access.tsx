@@ -101,7 +101,7 @@ export function AllAccessPage() {
           <Button asChild variant="outline" className="self-start">
             <Link href="/#catalog">{t.allAccess.browse}</Link>
           </Button>
-          <p className="text-[13px] text-muted-foreground">{t.allAccess.appNote}</p>
+          {!plan.data?.appleProducts && <p className="text-[13px] text-muted-foreground">{t.allAccess.appNote}</p>}
         </div>
         {plan.isPending ? (
           <LoadingBlock rows={1} height={420} />
