@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -27,6 +28,13 @@ void reportLessonVideoProgress(
   }
 }
 
+/// A controller for a saved copy (`file://`), an HLS playlist (adaptive: the platform player picks the rendition) or a file.
+VideoPlayerController lessonVideoController(String url) {
+  final uri = Uri.parse(url);
+  if (uri.scheme == 'file') return VideoPlayerController.file(File.fromUri(uri));
+  return VideoPlayerController.networkUrl(uri, formatHint: uri.path.endsWith('.m3u8') ? VideoFormat.hls : null);
+}
+
 /// The in-app player for uploaded lesson videos: opens at the saved position, saves progress as it plays,
 /// and offers play/pause, scrubbing and playback speed. If the file can't be played here, it falls back to
 /// the card that opens the video outside the app.
@@ -45,9 +53,7 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(
-      Uri.parse(widget.request.url),
-    )..addListener(_onTick);
+    _controller = lessonVideoController(widget.request.url)..addListener(_onTick);
     unawaited(_open());
   }
 
@@ -83,7 +89,11 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    if (_failed) return LessonVideoCard(url: widget.request.url);
+    if (_failed) {
+      // A saved copy has no outside player to fall back to.
+      if (widget.request.url.startsWith('file:')) return const SizedBox.shrink();
+      return LessonVideoCard(url: widget.request.url);
+    }
     final value = _controller.value;
     if (!value.isInitialized) {
       return const AspectRatio(
@@ -109,7 +119,7 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
                 child: VideoPlayer(_controller),
               ),
             ),
-            _Controls(controller: _controller, onToggle: _toggle),
+            _Controls(controller: _controller, onToggle: _toggle, dataSaver: widget.request.dataSaver, onDataSaver: widget.request.onDataSaver),
           ],
         ),
       ),
@@ -131,9 +141,11 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
 }
 
 class _Controls extends StatelessWidget {
-  const _Controls({required this.controller, required this.onToggle});
+  const _Controls({required this.controller, required this.onToggle, this.dataSaver = false, this.onDataSaver});
   final VideoPlayerController controller;
   final VoidCallback onToggle;
+  final bool dataSaver;
+  final ValueChanged<bool>? onDataSaver;
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +201,14 @@ class _Controls extends StatelessWidget {
                   fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),
+              if (onDataSaver != null)
+                IconButton(
+                  key: const Key('lesson-video-data-saver'),
+                  tooltip: l.lessonVideoDataSaver,
+                  isSelected: dataSaver,
+                  onPressed: () => onDataSaver!(!dataSaver),
+                  icon: Icon(dataSaver ? Icons.data_saver_on_rounded : Icons.data_saver_off_rounded, color: dataSaver ? p.accent : Colors.white),
+                ),
               PopupMenuButton<double>(
                 key: const Key('lesson-video-speed'),
                 tooltip: l.lessonVideoSpeed,

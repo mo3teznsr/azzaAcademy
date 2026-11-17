@@ -45,6 +45,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       appBar: AppBar(
         title: Text(l.libraryTitle),
         actions: [
+          IconButton(
+            key: const Key('library-downloads'),
+            tooltip: l.downloadsTitle,
+            onPressed: () => context.push(Routes.downloads),
+            icon: const Icon(Icons.download_for_offline_outlined),
+          ),
           TextButton.icon(
             onPressed: () => context.push(Uri(path: Routes.assignments, queryParameters: {'batchId': ?_batchId}).toString()),
             icon: const Icon(Icons.assignment_outlined),

@@ -3849,6 +3849,43 @@
   "lessonVideoPlay": "Play",
   "lessonVideoPause": "Pause",
   "lessonVideoSpeed": "Playback speed",
+  "lessonVideoDataSaver": "Data saver",
+  "lessonVideoDataSaverHint": "Lesson videos play in the lowest quality to use less data. Remembered on this phone.",
+  "downloadsTitle": "Downloads",
+  "downloadLesson": "Download for offline",
+  "downloadingLesson": "Downloading…",
+  "downloadCancel": "Cancel download",
+  "downloadedLesson": "Saved for offline",
+  "downloadDelete": "Delete download",
+  "downloadNeedsWifi": "Connect to Wi-Fi to download, or allow mobile data in Downloads.",
+  "downloadOffline": "You're offline. Connect to download.",
+  "downloadStorageFull": "Not enough space for downloads. Delete some first.",
+  "downloadFailed": "The download didn't finish. Try again.",
+  "downloadsEmpty": "No downloads yet",
+  "downloadsEmptyBody": "Save lesson videos to watch them without a connection.",
+  "downloadsWifiOnly": "Download on Wi-Fi only",
+  "downloadsWifiOnlyHint": "Saves your mobile data.",
+  "downloadsStorage": "{used} of {total} used",
+  "@downloadsStorage": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadPlaysUntil": "Plays offline until {date}",
+  "@downloadPlaysUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadExpired": "Connect to the internet to keep watching",
+  "downloadsRemoved": "Some downloads were removed because your access ended.",
   "errWatchMore": "Watch most of the video before marking this lesson complete.",
   "inviteFriends": "Invite friends",
   "inviteFriendsHint": "You both get a reward after their first payment",

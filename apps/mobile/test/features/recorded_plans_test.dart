@@ -20,7 +20,9 @@ import 'package:azza/features/support/data/support_repository.dart';
 import 'package:azza/features/waitlist/data/waitlist_repository.dart';
 import 'package:azza/features/home/presentation/student_home_screen.dart';
 import 'package:azza/features/learn/data/learn_repository.dart';
+import 'package:azza/features/learn/data/lesson_media_repository.dart';
 import 'package:azza/features/learn/data/lesson_progress_repository.dart';
+import 'package:azza/features/learn/domain/lesson_media_models.dart';
 import 'package:azza/features/learn/data/lessons_repository.dart';
 import 'package:azza/features/learn/data/quizzes_repository.dart';
 import 'package:azza/features/learn/domain/lesson_models.dart';
@@ -384,6 +386,7 @@ void main() {
         const Scaffold(body: LessonVideo(lessonId: 'l1', url: 'https://cdn.test/videos/lesson.mp4')),
         overrides: [
           lessonProgressRepositoryProvider.overrideWithValue(repo),
+          lessonMediaRepositoryProvider.overrideWithValue(_FakeMedia(const LessonPlayback(positionSec: 42))),
           lessonPlayerBuilderProvider.overrideWithValue((context, r) {
             request = r;
             return const Text('player');
@@ -582,4 +585,15 @@ void main() {
       expect(admin.reviews, [('sp1', TransferDecision.approve)]);
     });
   });
+}
+
+class _FakeMedia implements LessonMediaRepository {
+  _FakeMedia(this.result);
+  final LessonPlayback result;
+  @override
+  Future<LessonPlayback> playback(String lessonId) async => result;
+  @override
+  Future<DownloadTicket> requestDownload(String lessonId) => throw UnimplementedError();
+  @override
+  Future<List<DownloadStatusItem>> downloadStatus(List<String> lessonIds) async => const [];
 }

@@ -11,6 +11,7 @@ import 'core/push/push_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/tokens.dart';
 import 'features/auth/presentation/auth_controller.dart';
+import 'features/learn/data/download_manager.dart';
 import 'features/me/domain/me_models.dart';
 import 'router/app_router.dart';
 
@@ -59,7 +60,9 @@ class _AzzaAppState extends ConsumerState<AzzaApp> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(currentUserProvider, (_, user) {
+    ref.listen(currentUserProvider, (before, user) {
+      // Signed in (launch or sign-in): saved lessons whose access ended are deleted, the rest renewed.
+      if (user != null && before?.id != user.id) unawaited(ref.read(downloadManagerProvider.notifier).syncOnLaunch());
       final tap = _pendingTap;
       if (user != null && tap != null) {
         _pendingTap = null;
