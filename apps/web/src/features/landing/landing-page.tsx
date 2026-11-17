@@ -16,6 +16,8 @@ import { Teach } from './teach';
 import { Teachers } from './teachers';
 import { Week } from './week';
 import { Words } from './words';
+import { TestimonialsStrip } from '../testimonials/testimonials-strip';
+import { Wrap } from './wrap';
 import './landing.css';
 
 /**
@@ -38,6 +40,9 @@ export function LandingPage() {
         <CatalogMoment />
         <Starting />
         <Teachers />
+        <Wrap>
+          <TestimonialsStrip className="py-[clamp(3rem,8vw,6rem)]" />
+        </Wrap>
         <Certificate />
         <Teach />
         <Finale />

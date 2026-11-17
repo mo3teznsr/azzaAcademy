@@ -41,6 +41,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     filtered ? null : prefetchGet(queryClient, qk.courses(grid), '/api/v1/courses', grid),
     prefetchGet(queryClient, qk.batches({ pageSize: 100 }), '/api/v1/batches', { pageSize: 100 }),
     seedCategories(queryClient),
+    // Same key and limit as `TestimonialsStrip` (6).
+    prefetchGet(queryClient, qk.testimonials(), '/api/v1/testimonials', { limit: 6 }),
   ]);
   return (
     <>
