@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { meApi } from '@/lib/api';
+import { isAllAccessSlug, meApi, planHref } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useSocketEvent } from '@/lib/realtime/socket';
@@ -120,11 +120,12 @@ function notificationHref(type: string, data: unknown, role: Role | null): strin
       return sessionId ? `/library/${sessionId}` : '/library';
     case 'LEARNING_NUDGE': {
       const slug = field('courseSlug');
-      return slug ? `/learn/courses/${slug}` : '/learn';
+      // An all-access nudge is about every recorded course: the dashboard.
+      return slug && !isAllAccessSlug(slug) ? `/learn/courses/${slug}` : '/learn';
     }
     case 'PLAN_WINBACK': {
       const slug = field('courseSlug');
-      return slug ? `/courses/${slug}` : null;
+      return slug ? planHref(slug).replace('#plan', '') : null;
     }
     case 'WELCOME':
       return '/';

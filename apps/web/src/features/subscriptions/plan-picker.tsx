@@ -6,6 +6,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Check, CircleCheck, CreditCard, Landmark, ShieldCheck } from 'lucide-react';
 import { yearlySavingMonths, type SubscriptionPlan } from '@azza/shared';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -84,9 +94,12 @@ export function PlanForm({
   const [transfer, setTransfer] = useState<SubscribeTransfer | null>(null);
   const [uploaded, setUploaded] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  /** Set when the API refused because a live all-access plan already opens this course (ALL_ACCESS_ACTIVE). */
+  const [allAccessWarning, setAllAccessWarning] = useState<{ currentPeriodEnd: string | null } | null>(null);
 
   const start = useMutation({
-    mutationFn: () => subscriptionsApi.subscribe(course.id, { plan, method: method === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE', displayCurrency: money.currency }),
+    mutationFn: (confirmAllAccess: boolean = false) =>
+      subscriptionsApi.subscribe(course.id, { plan, method: method === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE', displayCurrency: money.currency, ...(confirmAllAccess && { confirmAllAccess }) }),
     onSuccess: (r) => {
       track('subscribe', { item_id: course.slug, item_name: course.titleEn, method: plan, ...(chosen != null && { value: chosen / 100, currency: 'AED' as const }) });
       if (isCardResult(r)) {
@@ -98,6 +111,11 @@ export function PlanForm({
       setTransfer(r);
     },
     onError: (e: Error) => {
+      if (e instanceof ApiError && e.code === 'ALL_ACCESS_ACTIVE') {
+        const end = (e.details as { currentPeriodEnd?: string | null } | undefined)?.currentPeriodEnd ?? null;
+        setAllAccessWarning({ currentPeriodEnd: end });
+        return;
+      }
       if (e instanceof ApiError && e.code === 'ALREADY_SUBSCRIBED') {
         toast.error(t.recorded.alreadySubscribed);
         void qc.invalidateQueries({ queryKey: qk.mySubscriptions });
@@ -248,7 +266,29 @@ export function PlanForm({
         <p className="text-[13px] text-stone-2">{t.recorded.cancelLine}</p>
       </div>
 
-      {start.isError && !(start.error instanceof ApiError && start.error.code === 'ALREADY_SUBSCRIBED') && <ErrorState compact error={start.error} />}
+      {start.isError && !(start.error instanceof ApiError && (start.error.code === 'ALREADY_SUBSCRIBED' || start.error.code === 'ALL_ACCESS_ACTIVE')) && <ErrorState compact error={start.error} />}
+      <AlertDialog open={allAccessWarning != null} onOpenChange={(open) => !open && setAllAccessWarning(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-2xl">{t.allAccess.coveredTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {allAccessWarning?.currentPeriodEnd ? fill(t.allAccess.coveredBodyUntil, { date: f.dayMonth(new Date(allAccessWarning.currentPeriodEnd)) }) : t.allAccess.coveredBody}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.allAccess.coveredKeep}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="outline"
+              onClick={() => {
+                setAllAccessWarning(null);
+                start.mutate(true);
+              }}
+            >
+              {t.allAccess.coveredBuyAnyway}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {!isSignedIn && !authPending ? (
         <Button asChild variant="ink" size="lg" className="w-full">
           <Link href={href}>{t.recorded.signInToStart}</Link>
@@ -256,7 +296,7 @@ export function PlanForm({
       ) : (
         // Google/Apple accounts start without a phone: asked once here, before the first purchase.
         <PhoneGate compact>
-          <Button variant="ink" size="lg" className="w-full" disabled={start.isPending || redirecting} onClick={() => start.mutate()}>
+          <Button variant="ink" size="lg" className="w-full" disabled={start.isPending || redirecting} onClick={() => start.mutate(false)}>
             {redirecting ? t.recorded.redirecting : start.isPending ? t.recorded.working : method === 'BANK' ? t.recorded.getBankDetails : t.recorded.start}
           </Button>
         </PhoneGate>
