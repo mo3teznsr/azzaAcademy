@@ -120,6 +120,8 @@ import { PrismaLessonQaRepository } from './modules/lesson-qa/qa.repository';
 import { LessonQaService } from './modules/lesson-qa/qa.service';
 import { PrismaCourseAnalyticsRepository } from './modules/course-analytics/analytics.repository';
 import { CourseAnalyticsService } from './modules/course-analytics/analytics.service';
+import { OrganizationService } from './modules/organizations/organization.service';
+import { PrismaOrganizationRepository } from './modules/organizations/organization.repository';
 
 export interface Adapters {
   db: Db;
@@ -364,6 +366,16 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
   resyncRecordedPrices = () => courses.resyncRecordedStripePrices();
   const taxDocuments = new TaxDocumentService(db, clock);
   const lessons = new LessonService(new PrismaLessonRepository(db), clock, (userId, courseId) => certificates.issueRecordedIfEligible(userId, courseId));
+  const organizations = new OrganizationService(
+    new PrismaOrganizationRepository(db),
+    paymentsRepo,
+    lifecycle,
+    new BetterAuthUserProvisioner(auth, invites, config.WEB_URL),
+    new PrismaAuditLog(db),
+    notifications,
+    clock,
+    vatPercentNow,
+  );
   const services = {
     settings,
     siteSettings,
@@ -402,6 +414,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     growth: new GrowthService(new PrismaGrowthRepository(db), clock),
     investors: new InvestorService(new PrismaInvestorRepository(db), clock, new PrismaAuditLog(db)),
     taxDocuments,
+    organizations,
     referrals,
     reconciliation: new ReconciliationService(new PrismaReconciliationRepository(db), finance, subscriptions, new PrismaAuditLog(db), clock),
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
@@ -442,6 +455,8 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     },
     // UAE tax invoices for new payments and credit notes for refunds (nothing until a TRN is set).
     { name: 'issue-tax-documents', everyMs: 10 * 60_000, run: () => taxDocuments.issuePending() },
+    // Recorded-course seats from organization packs whose access has ended.
+    { name: 'expire-organization-seats', everyMs: 60 * 60_000, run: () => organizations.expireSeats() },
     // Welcome, inactivity nudges and win-back messages (each sent once per user and key).
     { name: 'lifecycle-messages', everyMs: 60 * 60_000, run: () => lifecycleMessages.run() },
     // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.

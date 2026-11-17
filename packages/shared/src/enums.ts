@@ -91,7 +91,7 @@ export type CourseType = (typeof COURSE_TYPES)[number];
 export const SUBSCRIPTION_PLANS = ['MONTHLY', 'YEARLY'] as const;
 export type SubscriptionPlan = (typeof SUBSCRIPTION_PLANS)[number];
 
-export const SUBSCRIPTION_PROVIDERS = ['STRIPE', 'APPLE', 'BANK_TRANSFER'] as const;
+export const SUBSCRIPTION_PROVIDERS = ['STRIPE', 'APPLE', 'BANK_TRANSFER', 'ORGANIZATION'] as const;
 export type SubscriptionProvider = (typeof SUBSCRIPTION_PROVIDERS)[number];
 
 export const SUBSCRIPTION_STATUSES = ['INCOMPLETE', 'ACTIVE', 'PAST_DUE', 'CANCELLING', 'EXPIRED'] as const;

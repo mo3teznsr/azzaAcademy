@@ -30,6 +30,7 @@ import {
   LifeBuoy,
   Megaphone,
   Gift,
+  Building2,
   type LucideIcon, Clapperboard, Repeat } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/dictionaries/en';
 
@@ -105,6 +106,7 @@ export const adminNav = (t: Dictionary): NavGroup[] => [
       { href: '/admin/coupons', label: t.nav.admin.coupons, icon: Tags },
       { href: '/admin/referrals', label: t.nav.admin.referrals, icon: Gift },
       { href: '/admin/payouts', label: t.nav.admin.payouts, icon: BadgeDollarSign },
+      { href: '/admin/organizations', label: t.nav.admin.organizations, icon: Building2 },
     ],
   },
   {

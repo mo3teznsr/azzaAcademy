@@ -13,3 +13,4 @@ export * from './tabby';
 export * from './lesson-qa';
 export * from './bank-statements';
 export * from './marketing';
+export * from './organizations';
