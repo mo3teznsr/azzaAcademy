@@ -33,6 +33,7 @@ import { CourseRail } from '../catalog/course-card';
 import { usePublicBatches } from '../catalog/use-catalog';
 import { SaveToggle } from '../saved/use-saved';
 import { PlanPicker } from '../subscriptions/plan-picker';
+import { AllAccessIncluded, AllAccessTeaser, findAllAccess } from '../subscriptions/all-access';
 import { PlanBanner } from '../subscriptions/plan-banner';
 import { PendingTransfer } from '../subscriptions/manage-plan';
 import { CourseReviews } from './reviews';
@@ -98,7 +99,9 @@ function CourseView({ course }: { course: Course }) {
   const batches = useQuery({ queryKey: qk.batches(p), queryFn: () => batchesApi.list(p), enabled: !recorded });
   const subs = useQuery({ queryKey: qk.mySubscriptions, queryFn: subscriptionsApi.mine, enabled: recorded && !!user && role === 'STUDENT', retry: false });
   const subscription = subs.data?.find((s) => s.course.id === course.id && s.status !== 'INCOMPLETE') ?? null;
-  const hasPlan = !!subscription?.hasAccess;
+  // A live all-access plan opens every published recorded course (the course's own plan, when live, wins).
+  const viaAllAccess = !subscription?.hasAccess && !!findAllAccess(subs.data);
+  const hasPlan = !!subscription?.hasAccess || viaAllAccess;
   // A first bank transfer is an INCOMPLETE row with a pending payment: show where it stands instead of an empty picker.
   const pendingRow = subs.data?.find((s) => s.course.id === course.id && s.status === 'INCOMPLETE' && s.provider === 'BANK_TRANSFER' && !!s.pendingPayment) ?? null;
   const [startOver, setStartOver] = useState(false);
@@ -267,10 +270,15 @@ function CourseView({ course }: { course: Course }) {
             )}
           </div>
           )}
-          {pendingRow && !startOver ? (
+          {viaAllAccess ? (
+            <AllAccessIncluded courseId={course.id} />
+          ) : pendingRow && !startOver ? (
             <PendingPanel subscription={pendingRow} onRestart={() => setStartOver(true)} />
           ) : (
-            <PlanPicker course={course} subscription={subscription} />
+            <div className="flex flex-col gap-5">
+              <PlanPicker course={course} subscription={subscription} />
+              {!hasPlan && <AllAccessTeaser />}
+            </div>
           )}
         </section>
       ) : (

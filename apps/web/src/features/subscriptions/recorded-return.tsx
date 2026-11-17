@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { SignalMark } from '@/components/brand/signal-mark';
 import { ErrorState } from '@/components/brand/states';
-import { subscriptionsApi } from '@/lib/api';
+import { isAllAccessSlug, subscriptionsApi } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
@@ -58,7 +58,8 @@ function ReturnView({ reference }: { reference: string }) {
     if (!active || !slug) return;
     void qc.invalidateQueries({ queryKey: qk.mySubscriptions });
     void qc.invalidateQueries({ queryKey: qk.learningProgress });
-    router.replace(next ? `/learn/courses/${slug}?lesson=${next}` : `/learn/courses/${slug}`);
+    // The all-access plan has no lessons of its own: land on My learning.
+    router.replace(isAllAccessSlug(slug) ? '/learn' : next ? `/learn/courses/${slug}?lesson=${next}` : `/learn/courses/${slug}`);
   }, [active, slug, next, qc, router]);
 
   const slow = timedOut && !active;
