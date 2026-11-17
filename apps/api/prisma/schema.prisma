@@ -852,12 +852,14 @@ model Earning {
   payoutId              String?
   payout                Payout?              @relation(fields: [payoutId], references: [id])
   note                  String?
+  /// Yearly plans accrue the teacher share in 12 monthly slices (0–11), each with its own `availableAt`. 0 for everything else.
+  sliceIndex            Int                  @default(0)
   createdAt             DateTime             @default(now())
   referral              Referral?            @relation("ReferralBonus")
   allAccessShare        AllAccessShare?
 
   @@unique([sessionId, teacherId, kind])
-  @@unique([subscriptionPaymentId, kind])
+  @@unique([subscriptionPaymentId, kind, sliceIndex])
   @@index([teacherId, status])
 }
 

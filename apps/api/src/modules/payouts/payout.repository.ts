@@ -66,22 +66,31 @@ export class PrismaPayoutRepository {
         feeFils: true,
         refundedFils: true,
         paidAt: true,
+        plan: true,
+        periodStart: true,
         subscription: { select: { course: { select: { id: true, type: true, teacherCutPercent: true, createdById: true } } } },
       },
     });
   }
 
-  /** Idempotent through the unique (subscriptionPaymentId, kind) key: an existing row is returned untouched. */
-  upsertSubscriptionEarning(data: { teacherId: string; courseId: string; subscriptionPaymentId: string; amountFils: number; availableAt: Date; status: EarningStatus }) {
+  /** Idempotent through the unique (subscriptionPaymentId, kind, sliceIndex) key: an existing row is returned untouched. */
+  upsertSubscriptionEarning(data: { teacherId: string; courseId: string; subscriptionPaymentId: string; amountFils: number; availableAt: Date; status: EarningStatus; sliceIndex?: number }) {
+    const sliceIndex = data.sliceIndex ?? 0;
     return this.db.earning.upsert({
-      where: { subscriptionPaymentId_kind: { subscriptionPaymentId: data.subscriptionPaymentId, kind: 'SUBSCRIPTION' } },
-      create: { ...data, kind: 'SUBSCRIPTION' },
+      where: { subscriptionPaymentId_kind_sliceIndex: { subscriptionPaymentId: data.subscriptionPaymentId, kind: 'SUBSCRIPTION', sliceIndex } },
+      create: { ...data, sliceIndex, kind: 'SUBSCRIPTION' },
       update: {},
     });
   }
 
+  /** The first (or only) SUBSCRIPTION earning of a payment. */
   subscriptionEarningFor(paymentId: string) {
-    return this.db.earning.findUnique({ where: { subscriptionPaymentId_kind: { subscriptionPaymentId: paymentId, kind: 'SUBSCRIPTION' } } });
+    return this.db.earning.findUnique({ where: { subscriptionPaymentId_kind_sliceIndex: { subscriptionPaymentId: paymentId, kind: 'SUBSCRIPTION', sliceIndex: 0 } } });
+  }
+
+  /** Every SUBSCRIPTION earning of a payment: 12 monthly slices for a yearly plan accrued after the change, otherwise one. */
+  subscriptionEarningsFor(paymentId: string) {
+    return this.db.earning.findMany({ where: { subscriptionPaymentId: paymentId, kind: 'SUBSCRIPTION' }, orderBy: { sliceIndex: 'asc' } });
   }
 
   /** Negative adjustments of one payment: the keyed row plus any later ones (marked in the note, as the key allows one). */

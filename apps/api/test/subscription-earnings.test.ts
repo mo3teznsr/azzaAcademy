@@ -13,6 +13,8 @@ type Pay = {
   feeFils: number;
   refundedFils: number;
   paidAt: Date | null;
+  plan?: 'MONTHLY' | 'YEARLY';
+  periodStart?: Date;
   subscription: { course: { id: string; type: 'RECORDED'; teacherCutPercent: number | null; createdById: string | null } };
 };
 type Earn = {
@@ -26,6 +28,7 @@ type Earn = {
   availableAt: Date;
   payoutId: string | null;
   note?: string;
+  sliceIndex: number;
 };
 
 const PAID_AT = new Date('2026-11-01T00:00:00Z');
@@ -48,18 +51,21 @@ function harness(pay: Pay = payment()) {
   let seq = 0;
   const repo = {
     subscriptionPaymentForAccrual: async (id: string) => payments.get(id) ?? null,
-    upsertSubscriptionEarning: async (d: Omit<Earn, 'id' | 'payoutId' | 'kind'>) => {
-      const found = earnings.find((e) => e.subscriptionPaymentId === d.subscriptionPaymentId && e.kind === 'SUBSCRIPTION');
+    upsertSubscriptionEarning: async (d: Omit<Earn, 'id' | 'payoutId' | 'kind' | 'sliceIndex'> & { sliceIndex?: number }) => {
+      const sliceIndex = d.sliceIndex ?? 0;
+      const found = earnings.find((e) => e.subscriptionPaymentId === d.subscriptionPaymentId && e.kind === 'SUBSCRIPTION' && e.sliceIndex === sliceIndex);
       if (found) return found;
-      const e: Earn = { ...d, id: `e${++seq}`, kind: 'SUBSCRIPTION', payoutId: null };
+      const e: Earn = { ...d, sliceIndex, id: `e${++seq}`, kind: 'SUBSCRIPTION', payoutId: null };
       earnings.push(e);
       return e;
     },
-    subscriptionEarningFor: async (id: string) => earnings.find((e) => e.subscriptionPaymentId === id && e.kind === 'SUBSCRIPTION') ?? null,
+    subscriptionEarningFor: async (id: string) => earnings.find((e) => e.subscriptionPaymentId === id && e.kind === 'SUBSCRIPTION' && e.sliceIndex === 0) ?? null,
+    subscriptionEarningsFor: async (id: string) =>
+      earnings.filter((e) => e.subscriptionPaymentId === id && e.kind === 'SUBSCRIPTION').sort((a, b) => a.sliceIndex - b.sliceIndex),
     adjustmentsForPayment: async (id: string) =>
       earnings.filter((e) => e.kind === 'REFUND_ADJUSTMENT' && (e.subscriptionPaymentId === id || e.note === `Subscription refund ${id}`)),
     createEarning: async (d: Partial<Earn> & { teacherId: string; kind: string; amountFils: number }) => {
-      const e = { courseId: null, subscriptionPaymentId: null, payoutId: null, status: 'AVAILABLE', availableAt: new Date(), ...d, id: `e${++seq}` } as Earn;
+      const e = { courseId: null, subscriptionPaymentId: null, payoutId: null, status: 'AVAILABLE', availableAt: new Date(), sliceIndex: 0, ...d, id: `e${++seq}` } as Earn;
       earnings.push(e);
       return e;
     },
@@ -219,5 +225,81 @@ describe('finance report', () => {
     const r = await svc.report({ from: '2026-11-01', to: '2026-11-08' } as never);
     expect(r.recorded.vatFils).toBe(1_000);
     expect(r.recorded.appleVatFils).toBe(500);
+  });
+});
+
+describe('yearly plans: teacher share in 12 monthly slices', () => {
+  // 49,000 fils incl. VAT; net = 49000 - 2333 - 2000 = 44667; 60% = 26800 → 12 slices of 2233 (+4 fils on the first four)
+  const yearly = () => payment({ plan: 'YEARLY', totalFils: 49_000, vatFils: 2_333, feeFils: 2_000, periodStart: PAID_AT });
+  const live = (earnings: Earn[]) => earnings.filter((e) => e.status !== 'REVERSED').reduce((s, e) => s + e.amountFils, 0);
+
+  test('accrues 12 slices that add up to the share, each maturing a month later', async () => {
+    const { svc, earnings } = harness(yearly());
+    await svc.accrueForSubscriptionPayment('p1');
+    await svc.accrueForSubscriptionPayment('p1'); // idempotent
+    const slices = earnings.filter((e) => e.kind === 'SUBSCRIPTION');
+    expect(slices).toHaveLength(12);
+    expect(slices.reduce((s, e) => s + e.amountFils, 0)).toBe(26_800);
+    expect(slices.map((e) => e.amountFils).slice(0, 5)).toEqual([2234, 2234, 2234, 2234, 2233]);
+    expect(slices[0]!.availableAt.toISOString()).toBe('2026-11-15T00:00:00.000Z');
+    expect(slices[1]!.availableAt.toISOString()).toBe('2026-12-15T00:00:00.000Z');
+    expect(slices[11]!.availableAt.toISOString()).toBe('2027-10-15T00:00:00.000Z');
+  });
+
+  test('a monthly plan still accrues one row', async () => {
+    const { svc, earnings } = harness(payment({ plan: 'MONTHLY' }));
+    await svc.accrueForSubscriptionPayment('p1');
+    expect(earnings).toHaveLength(1);
+  });
+
+  test('a yearly earning accrued in full before slices existed is left as it is', async () => {
+    const { svc, earnings } = harness(yearly());
+    earnings.push({ id: 'old', teacherId: 't1', courseId: 'c1', subscriptionPaymentId: 'p1', kind: 'SUBSCRIPTION', amountFils: 26_800, status: 'PENDING', availableAt: PAID_AT, payoutId: null, sliceIndex: 0 });
+    await svc.accrueForSubscriptionPayment('p1');
+    expect(earnings).toHaveLength(1);
+  });
+
+  test('a full refund before anything was paid withdraws every slice', async () => {
+    const { svc, earnings } = harness(yearly());
+    await svc.accrueForSubscriptionPayment('p1');
+    await svc.reverseSubscriptionPayment('p1', 49_000);
+    expect(live(earnings)).toBe(0);
+    expect(earnings.filter((e) => e.kind === 'REFUND_ADJUSTMENT')).toHaveLength(0);
+  });
+
+  test('a refund after three months were paid out only claws back unpaid slices plus the proportional remainder', async () => {
+    const { svc, earnings } = harness(yearly());
+    await svc.accrueForSubscriptionPayment('p1');
+    const slices = earnings.filter((e) => e.kind === 'SUBSCRIPTION');
+    for (const s of slices.slice(0, 3)) Object.assign(s, { status: 'PAID', payoutId: 'po1' });
+    // full refund: the 9 future slices are withdrawn, the 3 paid ones are clawed back by one adjustment
+    await svc.reverseSubscriptionPayment('p1', 49_000);
+    await svc.reverseSubscriptionPayment('p1', 49_000);
+    expect(slices.slice(3).every((s) => s.status === 'REVERSED')).toBe(true);
+    expect(slices.slice(0, 3).every((s) => s.status === 'PAID')).toBe(true);
+    const adj = earnings.filter((e) => e.kind === 'REFUND_ADJUSTMENT');
+    expect(adj).toHaveLength(1);
+    expect(adj[0]!.amountFils).toBe(-(2234 * 3));
+    expect(adj[0]!.status).toBe('AVAILABLE');
+    expect(live(earnings)).toBe(0);
+  });
+
+  test('a partial refund withdraws whole future slices and rides the rest with the next unpaid slice', async () => {
+    const { svc, earnings } = harness(yearly());
+    await svc.accrueForSubscriptionPayment('p1');
+    // a quarter refunded: target round(26800 / 4) = 6700 → slices 11, 10 and 9 (2233 each) = 6699, 1 fils left
+    await svc.reverseSubscriptionPayment('p1', 12_250);
+    await svc.reverseSubscriptionPayment('p1', 12_250);
+    const reversed = earnings.filter((e) => e.status === 'REVERSED').map((e) => e.sliceIndex);
+    expect(reversed.sort()).toEqual([10, 11, 9].sort());
+    const adj = earnings.filter((e) => e.kind === 'REFUND_ADJUSTMENT');
+    expect(adj).toHaveLength(1);
+    expect(adj[0]!.amountFils).toBe(-1);
+    expect(adj[0]!.status).toBe('PENDING');
+    expect(adj[0]!.availableAt.toISOString()).toBe('2026-11-15T00:00:00.000Z');
+    expect(live(earnings)).toBe(26_800 - 6_700);
+    // then refunded in full: everything nets to zero
+    await svc.reverseSubscriptionPayment('p1', 49_000);
+    expect(live(earnings)).toBe(0);
   });
 });
