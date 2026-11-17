@@ -4,6 +4,8 @@ import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { captureAttribution, trackPageView } from '@/lib/analytics';
+import { useConsent } from '@/lib/consent';
+import { ConsentBanner } from './consent-banner';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
@@ -14,12 +16,16 @@ const SNAP_PIXEL_ID = process.env.NEXT_PUBLIC_SNAP_PIXEL_ID;
 const safe = (id: string | undefined) => (id && /^[A-Za-z0-9_-]+$/.test(id) ? id : undefined);
 
 /**
- * Loads GA4 and the Meta, TikTok and Snap pixels, each only when its id is set, remembers where the visitor came from
- * (UTM tags, click ids, referrer) and reports page views on client-side navigation.
+ * Loads GA4 and the Meta, TikTok and Snap pixels, each only when its id is set and only after the visitor chose
+ * "Accept analytics" in the consent banner; reports page views on client-side navigation.
+ *
+ * Where the visitor came from (UTM tags, click ids, referrer) is captured for everyone: it is a first-party cookie
+ * needed to credit sign-ups and orders, holds no third-party identifier, and is not shared with the pixels.
  */
 export function Analytics() {
   const pathname = usePathname();
   const first = useRef(true);
+  const allowed = useConsent() === 'analytics';
 
   useEffect(() => {
     captureAttribution();
@@ -34,13 +40,14 @@ export function Analytics() {
     trackPageView(pathname);
   }, [pathname]);
 
-  const ga = safe(GA_ID);
-  const meta = safe(META_PIXEL_ID);
-  const tiktok = safe(TIKTOK_PIXEL_ID);
-  const snap = safe(SNAP_PIXEL_ID);
+  const ga = allowed ? safe(GA_ID) : undefined;
+  const meta = allowed ? safe(META_PIXEL_ID) : undefined;
+  const tiktok = allowed ? safe(TIKTOK_PIXEL_ID) : undefined;
+  const snap = allowed ? safe(SNAP_PIXEL_ID) : undefined;
 
   return (
     <>
+      <ConsentBanner />
       {ga && (
         <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga}`} strategy="afterInteractive" />

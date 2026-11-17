@@ -2545,6 +2545,13 @@ const en = {
       noAnswers: 'No answers yet',
     },
   },
+  consent: {
+    title: 'Cookies on Azza',
+    body: 'We use necessary cookies to run the site. With your OK we also use analytics and ad cookies (Google, Meta, TikTok, Snap) to measure our ads and improve Azza.',
+    accept: 'Accept analytics',
+    reject: 'Only necessary',
+    more: 'Privacy policy',
+  },
   legal: {
     updatedLabel: 'Last updated',
     updated: '3 November 2026',
@@ -2601,6 +2608,13 @@ const en = {
             'The teacher and other students in your batch, who see your name and photo, your audio and video when you turn them on, your chat messages and the session recordings.',
             'Anyone you give a certificate code to: the verification page shows the holder’s name, course, batch and dates.',
             'Authorities, when the law requires it.',
+          ],
+        },
+        {
+          heading: 'Cookies',
+          paragraphs: [
+            'Necessary cookies keep you signed in, remember your language and theme, and record which link or campaign brought you to Azza (UTM tags, click ids and the referring site) so we can credit it when you sign up or buy. They stay on our own domain and hold no third-party identifier.',
+            'Analytics and advertising cookies (Google Analytics and the Meta, TikTok and Snap pixels) load only if you choose “Accept analytics” in the cookie banner. They help us measure our ads and improve the site. You can change your choice at any time from “Cookie settings” at the bottom of every page; we remember it for 12 months.',
           ],
         },
         {
@@ -2782,7 +2796,7 @@ const en = {
         generic: 'We couldn’t delete your account. Try again, or email privacy@azza.academy.',
       },
     },
-    footer: { terms: 'Terms', privacy: 'Privacy', deleteAccount: 'Delete account' },
+    footer: { terms: 'Terms', privacy: 'Privacy', deleteAccount: 'Delete account', cookies: 'Cookie settings' },
     agreePrefix: 'By creating an account you agree to the',
     agreeTerms: 'Terms of Service',
     agreeAnd: 'and',
