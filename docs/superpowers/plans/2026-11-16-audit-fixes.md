@@ -69,7 +69,7 @@ Status: done in PR #11. Notes:
 
 Status: done in PR #11. Notes:
 - The all-access plan is sold by card and bank transfer, not in the iPhone app (needs an App Store product), and has no mobile purchase screen.
-- Streaming uses Bunny Stream and is off until its keys are set; offline copies are the low MP4 rendition.
+- Streaming uses AWS Elemental MediaConvert with CloudFront signed URLs and is off until its AWS settings are in place; offline copies are the low MP4 rendition.
 
 1. **All-access subscription** for recorded courses, with teacher shares split by minutes watched.
 2. **Companies and schools.** `Organization`, seat packs, invoices by bank transfer, completion reports per organization, manual enrolment by admins.
