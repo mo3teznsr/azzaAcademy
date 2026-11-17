@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/network/app_exception.dart';
 import '../../../core/network/error_text.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/formatters.dart';
@@ -71,9 +72,15 @@ String planName(AppLocalizations l, SubscriptionPlan plan) => plan == Subscripti
 /// A recorded course's plan section: Monthly or Yearly, what you get, how you pay, and what happens next.
 /// A learner who already has the plan sees its status instead. The Start button lives in [PlanStartBar].
 class PlanPicker extends ConsumerWidget {
-  const PlanPicker({super.key, required this.course, this.subscription});
+  const PlanPicker({super.key, required this.course, this.subscription, this.allAccess, this.perks});
   final Course course;
   final MySubscription? subscription;
+
+  /// The learner's all-access plan: while it gives access, this course is shown as included instead of on sale.
+  final MySubscription? allAccess;
+
+  /// "What you get" lines (default: a course plan's).
+  final List<String>? perks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,6 +94,7 @@ class PlanPicker extends ConsumerWidget {
     final sub = subscription;
 
     if (sub != null && sub.hasAccess) return _PlanStatus(course: course, subscription: sub);
+    if (allAccess?.hasAccess ?? false) return const _IncludedInAllAccess();
 
     final monthly = course.monthlyPriceFils ?? course.priceFils;
     final yearly = course.yearlyPriceFils;
@@ -159,7 +167,7 @@ class PlanPicker extends ConsumerWidget {
         const SizedBox(height: 6),
         Kicker(l.planYouGet),
         const SizedBox(height: 8),
-        for (final line in [l.planGetLessons, l.planGetCertificate, l.planGetCancel])
+        for (final line in perks ?? [l.planGetLessons, l.planGetCertificate, l.planGetCancel])
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -249,7 +257,7 @@ class _PlanStatus extends ConsumerWidget {
     };
     return SectionCard(
       key: const Key('plan-status'),
-      title: l.planYourPlan,
+      title: isAllAccess(course.id) ? l.allAccessYours : l.planYourPlan,
       margin: const EdgeInsets.only(top: 14),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(planName(l, s.plan), style: t.titleSmall),
@@ -259,11 +267,49 @@ class _PlanStatus extends ConsumerWidget {
   }
 }
 
+/// A course the learner's all-access plan already opens: no plan to buy here.
+class _IncludedInAllAccess extends StatelessWidget {
+  const _IncludedInAllAccess();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final t = Theme.of(context).textTheme;
+    return SectionCard(
+      key: const Key('plan-included'),
+      title: l.allAccessIncluded,
+      margin: const EdgeInsets.only(top: 14),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text(l.allAccessYoursBody, style: t.bodyMedium),
+        const SizedBox(height: 10),
+        OutlinedButton(
+          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+          onPressed: () => context.push(Routes.allAccess),
+          child: Text(l.allAccessTitle),
+        ),
+      ]),
+    );
+  }
+}
+
+/// The text of the warning before buying a course plan the all-access plan already covers (`ALL_ACCESS_ACTIVE`).
+String allAccessCoveredBody(AppLocalizations l, Fmt f, Object? details) {
+  final raw = details is Map ? details['currentPeriodEnd'] : null;
+  final end = raw is String ? DateTime.tryParse(raw)?.toLocal() : null;
+  return end == null ? l.allAccessCoveredBody : l.allAccessCoveredBodyUntil(f.mediumDate(end));
+}
+
 /// The recorded course's bottom bar: the chosen plan's price and Start learning (or Continue for a learner who has a plan).
 class PlanStartBar extends ConsumerStatefulWidget {
-  const PlanStartBar({super.key, required this.course, this.subscription});
+  const PlanStartBar({super.key, required this.course, this.subscription, this.allAccess, this.onContinue});
   final Course course;
   final MySubscription? subscription;
+
+  /// The learner's all-access plan: while it gives access, the bar continues to the lessons instead of selling a plan.
+  final MySubscription? allAccess;
+
+  /// Where Continue goes for a learner with access (default: the course's lessons).
+  final VoidCallback? onContinue;
 
   @override
   ConsumerState<PlanStartBar> createState() => _PlanStartBarState();
@@ -320,7 +366,26 @@ class _PlanStartBarState extends ConsumerState<PlanStartBar> {
     }
   }
 
-  Future<void> _start() async {
+  /// Asks before a course plan the learner's all-access plan already covers. True = buy anyway.
+  Future<bool> _confirmCovered(Object? details) async {
+    final l = context.l10n;
+    final body = allAccessCoveredBody(l, ref.read(fmtProvider), details);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        key: const Key('all-access-covered'),
+        title: Text(l.allAccessCoveredTitle),
+        content: Text(body),
+        actions: [
+          TextButton(key: const Key('all-access-covered-buy'), onPressed: () => Navigator.of(c).pop(true), child: Text(l.allAccessCoveredBuy)),
+          FilledButton(key: const Key('all-access-covered-keep'), onPressed: () => Navigator.of(c).pop(false), child: Text(l.allAccessCoveredKeep)),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
+  Future<void> _start({bool confirmAllAccess = false}) async {
     // A plan needs an account: a guest signs in (or up) and comes back to this course.
     if (!requireAccount(context, ref)) return;
     final course = widget.course;
@@ -329,14 +394,14 @@ class _PlanStartBarState extends ConsumerState<PlanStartBar> {
     setState(() => _busy = true);
     try {
       if (usesAppStorePayments) {
-        final start = await repo.subscribe(course.id, choice.plan, SubscribeMethod.appleIap) as AppleStart;
+        final start = await repo.subscribe(course.id, choice.plan, SubscribeMethod.appleIap, confirmAllAccess: confirmAllAccess) as AppleStart;
         _pending[start.productId] = start.reference;
         await ref.read(appleIapCoordinatorProvider).buySubscription(productId: start.productId, appAccountToken: start.appAccountToken);
       } else if (choice.method == SubscribeMethod.bankTransfer) {
-        final start = await repo.subscribe(course.id, choice.plan, SubscribeMethod.bankTransfer) as TransferStart;
+        final start = await repo.subscribe(course.id, choice.plan, SubscribeMethod.bankTransfer, confirmAllAccess: confirmAllAccess) as TransferStart;
         if (mounted) unawaited(context.push(Routes.planTransfer(start.paymentId), extra: start));
       } else {
-        final start = await repo.subscribe(course.id, choice.plan, SubscribeMethod.stripe) as StripeStart;
+        final start = await repo.subscribe(course.id, choice.plan, SubscribeMethod.stripe, confirmAllAccess: confirmAllAccess) as StripeStart;
         final opened = await ref.read(checkoutPageOpenerProvider)(start.checkoutUrl);
         if (!mounted) return;
         if (!opened) {
@@ -346,6 +411,14 @@ class _PlanStartBarState extends ConsumerState<PlanStartBar> {
           unawaited(context.push(Routes.recordedReturn(start.reference)));
         }
       }
+    } on AppException catch (e) {
+      if (!mounted) return;
+      if (e.code == 'ALL_ACCESS_ACTIVE' && !confirmAllAccess) {
+        setState(() => _busy = false);
+        if (await _confirmCovered(e.details) && mounted) await _start(confirmAllAccess: true);
+        return;
+      }
+      showToast(context, errorText(context, e));
     } catch (e) {
       if (mounted) showToast(context, errorText(context, e));
     } finally {
@@ -361,11 +434,11 @@ class _PlanStartBarState extends ConsumerState<PlanStartBar> {
     final sub = widget.subscription;
     final p = AzzaPalette.of(context);
 
-    if (sub != null && sub.hasAccess) {
+    if ((sub != null && sub.hasAccess) || (widget.allAccess?.hasAccess ?? false)) {
       return BottomActionBar(children: [
         FilledButton(
           key: const Key('plan-continue'),
-          onPressed: () => context.push(Routes.courseLessons(course.id)),
+          onPressed: widget.onContinue ?? () => context.push(Routes.courseLessons(course.id)),
           child: Text(l.continueLabel),
         ),
       ]);
