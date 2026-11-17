@@ -733,6 +733,8 @@ export const subscribeInput = z.object({
   method: z.enum(['STRIPE', 'APPLE_IAP', 'BANK_TRANSFER']),
   bankAccountId: id.optional(),
   displayCurrency: currencyCode.optional(),
+  /** Admin coupon, bank transfer only and on the first payment (card plans take Stripe promotion codes on the payment page). */
+  couponCode: z.string().trim().min(1).max(40).optional(),
 });
 export type SubscribeInput = z.infer<typeof subscribeInput>;
 

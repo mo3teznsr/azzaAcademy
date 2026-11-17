@@ -137,6 +137,8 @@ enum PayoutStatus {
   HELD
   PAID
   CARRIED_OVER
+  /// Sent through the payout provider; PAID once the provider confirms, back to READY when it fails.
+  PROCESSING
 }
 
 enum AttendanceMarkKind {
@@ -682,8 +684,11 @@ model CouponRedemption {
   coupon       Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderId      String   @unique
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// A seat order, or (exactly one of the two) a plan payment by bank transfer.
+  orderId      String?  @unique
+  order        Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  subscriptionPaymentId String?              @unique
+  subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Cascade)
   discountFils Int
   createdAt    DateTime @default(now())
 
@@ -856,12 +861,14 @@ model Earning {
   payoutId              String?
   payout                Payout?              @relation(fields: [payoutId], references: [id])
   note                  String?
+  /// Yearly plans accrue the teacher share in 12 monthly slices (0–11), each with its own `availableAt`. 0 for everything else.
+  sliceIndex            Int                  @default(0)
   createdAt             DateTime             @default(now())
   referral              Referral?            @relation("ReferralBonus")
   allAccessShare        AllAccessShare?
 
   @@unique([sessionId, teacherId, kind])
-  @@unique([subscriptionPaymentId, kind])
+  @@unique([subscriptionPaymentId, kind, sliceIndex])
   @@index([teacherId, status])
 }
 
@@ -895,10 +902,21 @@ model Payout {
   transferReference String?
   paidAt            DateTime?
   createdAt         DateTime     @default(now())
+  /// Payout provider (e.g. "stripe_connect"): set on the first send.
+  provider              String?
+  /// The provider's id for the latest attempt (Stripe: "<connected account>/<payout id>").
+  providerTransferId    String?      @unique
+  /// PENDING | IN_TRANSIT | PAID | FAILED (the provider's view of the latest attempt).
+  providerStatus        String?
+  providerFailureReason String?
+  /// Each send is one attempt; the attempt number is part of the idempotency key.
+  providerAttempts      Int          @default(0)
+  providerSentAt        DateTime?
 
   earnings Earning[]
 
   @@unique([runId, teacherId])
+  @@index([status, provider])
 }
 
 model TeacherBankDetails {
@@ -911,6 +929,8 @@ model TeacherBankDetails {
   swift         String
   verified      Boolean   @default(false)
   verifiedAt    DateTime?
+  /// Stripe Connect connected account (acct_...) that receives provider payouts; set by an admin after onboarding.
+  stripeAccountId String?
   updatedAt     DateTime  @updatedAt
 }
 
@@ -1248,6 +1268,10 @@ model SubscriptionPayment {
   updatedAt         DateTime                  @updatedAt
 
   earnings Earning[]
+  /// Bank transfer, first payment only: the admin coupon applied. `subtotalFils` is already net of `discountFils`.
+  couponCode        String?
+  discountFils      Int                       @default(0)
+  couponRedemption  CouponRedemption?
   /// All-access plans only: when the period's teacher shares were worked out (once, after `periodEnd`).
   allAccessAccruedAt DateTime?
   allAccessShares    AllAccessShare[]

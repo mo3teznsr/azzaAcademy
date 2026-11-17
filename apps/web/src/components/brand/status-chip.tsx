@@ -126,7 +126,7 @@ export function CourseStatusChip({ status }: { status: CourseStatus }) {
   return <Chip tone={COURSE_TONE[status]}>{t.status.course[status]}</Chip>;
 }
 
-const PAYOUT_TONE: Record<PayoutStatus, ChipTone> = { READY: 'sage', HELD: 'peach', PAID: 'outline', CARRIED_OVER: 'dashed' };
+const PAYOUT_TONE: Record<PayoutStatus, ChipTone> = { READY: 'sage', HELD: 'peach', PAID: 'outline', CARRIED_OVER: 'dashed', PROCESSING: 'sky' };
 export function PayoutStatusChip({ status }: { status: PayoutStatus }) {
   const { t } = useI18n();
   return <Chip tone={PAYOUT_TONE[status]}>{t.status.payout[status]}</Chip>;

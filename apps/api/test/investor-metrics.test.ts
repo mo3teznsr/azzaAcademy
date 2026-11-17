@@ -162,6 +162,7 @@ describe('InvestorService', () => {
     const audit: AuditEntry[] = [];
     const repo: InvestorRepository = {
       payments: async () => [pay('a', '2026-10')],
+      planPayments: async () => [{ plan: 'YEARLY', paidAt: new Date('2026-10-01T00:00:00Z'), periodStart: new Date('2026-10-01T00:00:00Z'), totalFils: 12_600, vatFils: 600, refundedFils: 0 }],
       teacherByMonth: async () => new Map([['2026-10', 4_000]]),
       attribution: async (ids) => new Map(ids.map((id) => [id, { utm_source: 'instagram' }])),
       spend: async (from) => rows.filter((r) => !from || r.month >= from),

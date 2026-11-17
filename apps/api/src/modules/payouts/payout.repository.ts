@@ -66,22 +66,31 @@ export class PrismaPayoutRepository {
         feeFils: true,
         refundedFils: true,
         paidAt: true,
+        plan: true,
+        periodStart: true,
         subscription: { select: { course: { select: { id: true, type: true, teacherCutPercent: true, createdById: true } } } },
       },
     });
   }
 
-  /** Idempotent through the unique (subscriptionPaymentId, kind) key: an existing row is returned untouched. */
-  upsertSubscriptionEarning(data: { teacherId: string; courseId: string; subscriptionPaymentId: string; amountFils: number; availableAt: Date; status: EarningStatus }) {
+  /** Idempotent through the unique (subscriptionPaymentId, kind, sliceIndex) key: an existing row is returned untouched. */
+  upsertSubscriptionEarning(data: { teacherId: string; courseId: string; subscriptionPaymentId: string; amountFils: number; availableAt: Date; status: EarningStatus; sliceIndex?: number }) {
+    const sliceIndex = data.sliceIndex ?? 0;
     return this.db.earning.upsert({
-      where: { subscriptionPaymentId_kind: { subscriptionPaymentId: data.subscriptionPaymentId, kind: 'SUBSCRIPTION' } },
-      create: { ...data, kind: 'SUBSCRIPTION' },
+      where: { subscriptionPaymentId_kind_sliceIndex: { subscriptionPaymentId: data.subscriptionPaymentId, kind: 'SUBSCRIPTION', sliceIndex } },
+      create: { ...data, sliceIndex, kind: 'SUBSCRIPTION' },
       update: {},
     });
   }
 
+  /** The first (or only) SUBSCRIPTION earning of a payment. */
   subscriptionEarningFor(paymentId: string) {
-    return this.db.earning.findUnique({ where: { subscriptionPaymentId_kind: { subscriptionPaymentId: paymentId, kind: 'SUBSCRIPTION' } } });
+    return this.db.earning.findUnique({ where: { subscriptionPaymentId_kind_sliceIndex: { subscriptionPaymentId: paymentId, kind: 'SUBSCRIPTION', sliceIndex: 0 } } });
+  }
+
+  /** Every SUBSCRIPTION earning of a payment: 12 monthly slices for a yearly plan accrued after the change, otherwise one. */
+  subscriptionEarningsFor(paymentId: string) {
+    return this.db.earning.findMany({ where: { subscriptionPaymentId: paymentId, kind: 'SUBSCRIPTION' }, orderBy: { sliceIndex: 'asc' } });
   }
 
   /** Negative adjustments of one payment: the keyed row plus any later ones (marked in the note, as the key allows one). */
@@ -329,7 +338,8 @@ export class PrismaPayoutRepository {
     return this.db.$transaction(async (tx) => {
       const payouts = await tx.payout.findMany({ where: { runId } });
       const ready = payouts.filter((p) => p.status === 'READY').map((p) => p.id);
-      const notReady = payouts.filter((p) => p.status !== 'READY').map((p) => p.id);
+      // Payouts already PAID through the provider keep their earnings; only held / carried-over money rolls on.
+      const notReady = payouts.filter((p) => p.status === 'HELD' || p.status === 'CARRIED_OVER').map((p) => p.id);
       const own = ready.filter((id) => references[id]);
       await tx.payout.updateMany({ where: { id: { in: ready.filter((id) => !references[id]) } }, data: { status: 'PAID', transferReference, paidAt: at } });
       for (const id of own) await tx.payout.update({ where: { id }, data: { status: 'PAID', transferReference: references[id], paidAt: at } });
@@ -342,6 +352,56 @@ export class PrismaPayoutRepository {
         include: { teacher: { select: { id: true, name: true } } },
       });
     });
+  }
+
+  // ── payouts through a provider ──
+
+  /** READY → PROCESSING for one attempt; false when the payout moved on (another send got there first). */
+  async claimForProvider(id: string, data: { provider: string; attempt: number; at: Date }) {
+    const r = await this.db.payout.updateMany({
+      where: { id, status: 'READY' },
+      data: { status: 'PROCESSING', provider: data.provider, providerAttempts: data.attempt, providerSentAt: data.at, providerStatus: 'PENDING', providerFailureReason: null, providerTransferId: null },
+    });
+    return r.count === 1;
+  }
+
+  updateProviderState(id: string, data: { status?: PayoutStatus; providerTransferId?: string | null; providerStatus?: string | null; providerFailureReason?: string | null }) {
+    return this.db.payout.update({ where: { id }, data });
+  }
+
+  payoutByProviderTransferId(providerTransferId: string) {
+    return this.db.payout.findUnique({ where: { providerTransferId }, include: { run: { select: { id: true, status: true } } } });
+  }
+
+  processingPayouts(provider: string) {
+    return this.db.payout.findMany({ where: { status: 'PROCESSING', provider, providerTransferId: { not: null } }, select: { id: true, providerTransferId: true } });
+  }
+
+  /** PROCESSING → PAID with its earnings; false when it was not PROCESSING (already settled). */
+  async settleProviderPayout(id: string, at: Date, reference: string) {
+    return this.db.$transaction(async (tx) => {
+      const r = await tx.payout.updateMany({ where: { id, status: 'PROCESSING' }, data: { status: 'PAID', paidAt: at, transferReference: reference, providerStatus: 'PAID' } });
+      if (r.count !== 1) return false;
+      await tx.earning.updateMany({ where: { payoutId: id }, data: { status: 'PAID' } });
+      return true;
+    });
+  }
+
+  /** Closes an APPROVED run once nothing is READY or PROCESSING: held money rolls on, the run is PAID. */
+  async finalizeRunIfDone(runId: string, at: Date) {
+    return this.db.$transaction(async (tx) => {
+      const run = await tx.payoutRun.findUnique({ where: { id: runId }, include: { payouts: { select: { id: true, status: true } } } });
+      if (!run || run.status !== 'APPROVED') return false;
+      if (run.payouts.some((p) => p.status === 'READY' || p.status === 'PROCESSING')) return false;
+      const rolling = run.payouts.filter((p) => p.status === 'HELD' || p.status === 'CARRIED_OVER').map((p) => p.id);
+      await tx.earning.updateMany({ where: { payoutId: { in: rolling } }, data: { payoutId: null } });
+      await tx.payoutRun.update({ where: { id: runId }, data: { status: 'PAID', paidAt: at } });
+      return true;
+    });
+  }
+
+  setStripeAccount(userId: string, stripeAccountId: string | null) {
+    return this.db.teacherBankDetails.update({ where: { userId }, data: { stripeAccountId } });
   }
 
   activeAdminCount() {

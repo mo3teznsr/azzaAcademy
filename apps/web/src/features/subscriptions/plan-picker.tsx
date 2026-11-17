@@ -9,6 +9,8 @@ import { yearlySavingMonths, type SubscriptionPlan } from '@azza/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Price } from '@/components/brand/price';
 import { ErrorState } from '@/components/brand/states';
@@ -23,6 +25,17 @@ import { track } from '@/lib/analytics';
 import { PhoneGate } from '../auth/phone-gate';
 
 type Method = 'CARD' | 'BANK';
+
+/** A refused plan coupon with a localised message (null for any other error). */
+function planCouponError(error: unknown, messages: Record<string, string>, firstOnly: string, withAmount: (template: string, fils: number) => string): ApiError | null {
+  if (!(error instanceof ApiError)) return null;
+  if (error.code === 'COUPON_FIRST_PAYMENT_ONLY') return new ApiError(error.status, error.code, firstOnly, error.details);
+  if (error.code !== 'COUPON_INVALID') return null;
+  const details = (error.details ?? {}) as { reason?: string; minOrderFils?: number };
+  const template = details.reason ? messages[details.reason] : undefined;
+  if (!template) return null;
+  return new ApiError(error.status, error.code, details.minOrderFils != null ? withAmount(template, details.minOrderFils) : template, error.details);
+}
 
 /** Today plus one billing period (a month or a year). */
 function afterPeriod(plan: SubscriptionPlan): Date {
@@ -84,9 +97,13 @@ export function PlanForm({
   const [transfer, setTransfer] = useState<SubscribeTransfer | null>(null);
   const [uploaded, setUploaded] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  // Admin coupon: bank transfer, first payment only (card plans take Stripe promotion codes on the payment page).
+  const [couponCode, setCouponCode] = useState('');
+  const coupon = method === 'BANK' && !renewing ? couponCode.trim() : '';
 
   const start = useMutation({
-    mutationFn: () => subscriptionsApi.subscribe(course.id, { plan, method: method === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE', displayCurrency: money.currency }),
+    mutationFn: () =>
+      subscriptionsApi.subscribe(course.id, { plan, method: method === 'BANK' ? 'BANK_TRANSFER' : 'STRIPE', displayCurrency: money.currency, ...(coupon && { couponCode: coupon }) }),
     onSuccess: (r) => {
       track('subscribe', { item_id: course.slug, item_name: course.titleEn, method: plan, ...(chosen != null && { value: chosen / 100, currency: 'AED' as const }) });
       if (isCardResult(r)) {
@@ -238,6 +255,22 @@ export function PlanForm({
             {t.recorded.transferNote}
           </p>
         )}
+        {method === 'BANK' && !renewing && (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="plan-coupon">{t.recorded.couponLabel}</Label>
+            <Input
+              id="plan-coupon"
+              dir="ltr"
+              autoComplete="off"
+              autoCapitalize="characters"
+              maxLength={40}
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+              className="h-11 font-mono uppercase"
+            />
+            <p className="text-[13px] text-stone-2">{t.recorded.couponHint}</p>
+          </div>
+        )}
       </fieldset>
 
       <div className="flex flex-col gap-1.5 border-t border-cream-line pt-5 text-sm">
@@ -248,7 +281,9 @@ export function PlanForm({
         <p className="text-[13px] text-stone-2">{t.recorded.cancelLine}</p>
       </div>
 
-      {start.isError && !(start.error instanceof ApiError && start.error.code === 'ALREADY_SUBSCRIBED') && <ErrorState compact error={start.error} />}
+      {start.isError && !(start.error instanceof ApiError && start.error.code === 'ALREADY_SUBSCRIBED') && (
+        <ErrorState compact error={planCouponError(start.error, t.checkout.couponErrors, t.recorded.couponFirstOnly, (tpl, fils) => fill(tpl, { amount: money.aed(fils) })) ?? start.error} />
+      )}
       {!isSignedIn && !authPending ? (
         <Button asChild variant="ink" size="lg" className="w-full">
           <Link href={href}>{t.recorded.signInToStart}</Link>

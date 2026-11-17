@@ -113,19 +113,30 @@ export class CouponService {
     return {
       coupon: { id: coupon.id, code: coupon.code, redemptions: coupon.redemptions, maxRedemptions: coupon.maxRedemptions },
       totalDiscountFils: rows.reduce((sum, r) => sum + r.discountFils, 0),
-      items: rows.map((r) => ({
-        id: r.id,
-        createdAt: r.createdAt,
-        discountFils: r.discountFils,
-        student: r.user,
-        order: { id: r.order.id, reference: r.order.reference, totalFils: r.order.totalFils },
-        batch: {
-          id: r.order.enrollment.batch.id,
-          code: r.order.enrollment.batch.code,
-          courseTitleEn: r.order.enrollment.batch.course.titleEn,
-          courseTitleAr: r.order.enrollment.batch.course.titleAr,
-        },
-      })),
+      // A redemption is a seat order, or a plan paid by bank transfer (`plan` set, no batch).
+      items: rows.map((r) => {
+        const p = r.subscriptionPayment;
+        const course = r.order?.enrollment.batch.course ?? p?.subscription.course ?? null;
+        return {
+          id: r.id,
+          createdAt: r.createdAt,
+          discountFils: r.discountFils,
+          student: r.user,
+          order: r.order
+            ? { id: r.order.id, reference: r.order.reference, totalFils: r.order.totalFils }
+            : { id: p?.id ?? '', reference: p?.reference ?? '', totalFils: p?.totalFils ?? 0 },
+          plan: p?.plan ?? null,
+          batch: r.order
+            ? {
+                id: r.order.enrollment.batch.id,
+                code: r.order.enrollment.batch.code,
+                courseTitleEn: r.order.enrollment.batch.course.titleEn,
+                courseTitleAr: r.order.enrollment.batch.course.titleAr,
+              }
+            : null,
+          course: course ? { titleEn: course.titleEn, titleAr: course.titleAr } : null,
+        };
+      }),
     };
   }
 }

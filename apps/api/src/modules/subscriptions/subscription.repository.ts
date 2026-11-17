@@ -187,6 +187,9 @@ export interface TransferPaymentRow {
   createdAt: Date;
   /** While a payment is AWAITING_REVIEW this is when its receipt was uploaded. */
   updatedAt: Date;
+  /** The admin coupon on a first transfer; `subtotalFils` is already net of `discountFils`. */
+  couponCode?: string | null;
+  discountFils?: number;
 }
 
 export interface NewTransferPayment {
@@ -202,6 +205,8 @@ export interface NewTransferPayment {
   totalFils: number;
   bankAccountId: string;
   expiresAt: Date;
+  couponCode?: string | null;
+  discountFils?: number;
 }
 
 export type TransferPaymentPatch = Partial<
@@ -283,7 +288,7 @@ const allAccessSummary = (): CourseSummary => ({ id: courseKey(null), slug: cour
 const transferSelect = {
   id: true, subscriptionId: true, userId: true, reference: true, plan: true, status: true, periodStart: true, periodEnd: true,
   subtotalFils: true, vatFils: true, totalFils: true, refundedFils: true, paidAt: true, bankAccountId: true, receiptUrl: true,
-  expiresAt: true, reviewNote: true, reviewedById: true, createdAt: true, updatedAt: true,
+  expiresAt: true, reviewNote: true, reviewedById: true, createdAt: true, updatedAt: true, couponCode: true, discountFils: true,
 } as const;
 
 export class PrismaSubscriptionRepository implements SubscriptionRepository, SubscriptionTransferRepository, SubscriptionAdminRepository {

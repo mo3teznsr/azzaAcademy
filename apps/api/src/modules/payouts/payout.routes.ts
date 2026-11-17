@@ -5,6 +5,10 @@ import { paged } from '../../http/pagination';
 import type { AppEnv } from '../../http/types';
 import { validate } from '../../http/validate';
 import type { PayoutService } from './payout.service';
+import type { PayoutDispatchService } from './payout-dispatch.service';
+import { z } from 'zod';
+
+const payoutAccountInput = z.object({ stripeAccountId: z.string().trim().max(64).nullable() });
 
 /** Mounted at /api/v1/teacher */
 export function teacherPayoutRoutes(service: PayoutService) {
@@ -19,9 +23,19 @@ export function teacherPayoutRoutes(service: PayoutService) {
 }
 
 /** Mounted at /api/v1/admin */
-export function adminPayoutRoutes(service: PayoutService) {
+export function adminPayoutRoutes(service: PayoutService, dispatch?: PayoutDispatchService) {
   return new Hono<AppEnv>()
     .use('*', requireRole('ADMIN'))
+    .get('/payout-provider', (c) => c.json(dispatch?.info() ?? { enabled: false, name: null, label: null }))
+    .post('/payout-runs/:id/send', async (c) => {
+      if (!dispatch) return c.json({ code: 'PAYOUT_PROVIDER_DISABLED', message: 'No payout provider is configured' }, 400);
+      await dispatch.sendRun(c.req.param('id'), currentUser(c).id);
+      return c.json(await service.getRun(c.req.param('id')));
+    })
+    .put('/teachers/:id/payout-account', validate('json', payoutAccountInput), async (c) => {
+      if (!dispatch) return c.json({ code: 'PAYOUT_PROVIDER_DISABLED', message: 'No payout provider is configured' }, 400);
+      return c.json(await dispatch.setStripeAccount(c.req.param('id'), c.req.valid('json').stripeAccountId || null, currentUser(c).id));
+    })
     .get('/payout-runs', validate('query', paginationQuery), async (c) => {
       const { page, pageSize } = c.req.valid('query');
       return c.json(paged(await service.listRuns(page, pageSize), page, pageSize));

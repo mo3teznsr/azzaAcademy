@@ -607,8 +607,12 @@ export interface CouponUsage {
     createdAt: ISODate;
     discountFils: number;
     student: { id: string; name: string; email: string };
+    /** The seat order, or the plan payment by bank transfer. */
     order: { id: string; reference: string; totalFils: number };
-    batch: { id: string; code: string; courseTitleEn: string; courseTitleAr: string | null };
+    /** Set for a plan payment (no batch). */
+    plan: 'MONTHLY' | 'YEARLY' | null;
+    batch: { id: string; code: string; courseTitleEn: string; courseTitleAr: string | null } | null;
+    course: { titleEn: string; titleAr: string | null } | null;
   }>;
 }
 
@@ -675,6 +679,8 @@ export interface TeacherBankDetails {
   swift: string;
   verified: boolean;
   verifiedAt: ISODate | null;
+  /** Stripe Connect connected account for provider payouts (admin-set). */
+  stripeAccountId?: string | null;
   updatedAt: ISODate;
 }
 
@@ -691,6 +697,19 @@ export interface Payout {
   transferReference: string | null;
   paidAt: ISODate | null;
   createdAt: ISODate;
+  /** Payout provider (e.g. "stripe_connect") once sent through it. */
+  provider?: string | null;
+  providerTransferId?: string | null;
+  providerStatus?: 'PENDING' | 'IN_TRANSIT' | 'PAID' | 'FAILED' | null;
+  providerFailureReason?: string | null;
+  providerAttempts?: number;
+}
+
+/** GET /admin/payout-provider */
+export interface PayoutProviderInfo {
+  enabled: boolean;
+  name: string | null;
+  label: string | null;
 }
 
 /** GET /teacher/payouts item. */
@@ -1017,6 +1036,14 @@ export interface AdminInvestors {
     ltvCac: number | null;
     paybackMonths: number | null;
   }>;
+  /** Plan revenue spread over the months it covers (yearly plans in 12 slices), net of VAT and refunds. */
+  revenueRecognition: {
+    deferredFils: number;
+    collectedFils: number;
+    recognisedToDateFils: number;
+    months: Array<{ month: string; collectedFils: number; recognisedFils: number }>;
+    upcoming: Array<{ month: string; recognisedFils: number }>;
+  };
 }
 
 /** GET /admin/marketing-spend */

@@ -10,6 +10,7 @@ import { cutFor, type SettingsService } from '../settings/settings.service';
 import type { PayoutRepository } from './payout.repository';
 import { noAuditLog, type AuditLog } from '../audit/audit-log';
 import { approvalBlocked } from './payout-approval';
+import { addMonthsUtc, sliceClawback, sliceCountFor, splitIntoSlices } from './revenue-slices';
 
 export interface PayoutRules {
   earningHoldDays: number;
@@ -67,14 +68,41 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     if (!course?.createdById) return null;
     const net = this.calculator.orderNet({ totalFils: p.totalFils, vatFils: p.vatFils, refundedFils: 0, feeFils: p.feeFils });
     const amountFils = this.calculator.paymentShare(net, cutFor(course, await this.settings.cuts()));
-    return this.repo.upsertSubscriptionEarning({
-      teacherId: course.createdById,
-      courseId: course.id,
-      subscriptionPaymentId: p.id,
-      amountFils,
-      status: 'PENDING',
-      availableAt: new Date(p.paidAt.getTime() + rules.earningHoldDays * DAY_MS),
-    });
+    const hold = rules.earningHoldDays * DAY_MS;
+    const slices = sliceCountFor(p.plan ?? 'MONTHLY');
+    if (slices === 1) {
+      return this.repo.upsertSubscriptionEarning({
+        teacherId: course.createdById,
+        courseId: course.id,
+        subscriptionPaymentId: p.id,
+        amountFils,
+        status: 'PENDING',
+        availableAt: new Date(p.paidAt.getTime() + hold),
+      });
+    }
+    // Yearly: the share is earned month by month over the period the payment covers (deferred revenue), so a refund
+    // later in the year only takes back slices that have not been paid out yet. Slice i matures i months after the
+    // period starts, plus the usual hold. A payment accrued before slices existed keeps its single row (slice 0 exists).
+    const parts = splitIntoSlices(amountFils, slices);
+    const existing = await this.repo.subscriptionEarningsFor(p.id);
+    // One row holding more than a slice is an earning accrued in full before slices existed: it is left untouched.
+    if (existing.length === 1 && existing[0]!.amountFils > parts[0]!) return existing[0]!;
+    const start = p.periodStart && p.periodStart > p.paidAt ? p.periodStart : p.paidAt;
+    const rows = [];
+    for (const [i, part] of parts.entries()) {
+      rows.push(
+        await this.repo.upsertSubscriptionEarning({
+          teacherId: course.createdById,
+          courseId: course.id,
+          subscriptionPaymentId: p.id,
+          sliceIndex: i,
+          amountFils: part,
+          status: 'PENDING',
+          availableAt: new Date(addMonthsUtc(start, i).getTime() + hold),
+        }),
+      );
+    }
+    return rows[0]!;
   }
 
   /**
@@ -84,6 +112,8 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
    * Idempotent: the same cumulative amount changes nothing.
    */
   async reverseSubscriptionPayment(paymentId: string, refundedFils: number) {
+    const slices = await this.repo.subscriptionEarningsFor(paymentId);
+    if (slices.length > 1) return this.reverseSlicedPayment(paymentId, refundedFils, slices);
     const earning = await this.repo.subscriptionEarningFor(paymentId);
     const p = earning ? await this.repo.subscriptionPaymentForAccrual(paymentId) : null;
     if (!earning || !p || earning.status === 'REVERSED' || earning.amountFils <= 0 || p.totalFils <= 0 || refundedFils <= 0) return null;
@@ -114,6 +144,57 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
       availableAt: unpaid ? earning.availableAt : this.clock.now(),
       note: `Subscription refund ${paymentId}`,
     });
+  }
+
+  /**
+   * A yearly plan accrued in monthly slices: the cumulative refund claws back round(share × refunded ÷ total).
+   * Unpaid slices are withdrawn first (latest month first); what is left (part of a slice, or money already paid out)
+   * becomes one negative REFUND_ADJUSTMENT that rides with the earliest slice still to come, or is due now when none is.
+   * Paid slices are never touched. Idempotent: the same cumulative amount changes nothing.
+   */
+  private async reverseSlicedPayment(
+    paymentId: string,
+    refundedFils: number,
+    slices: Awaited<ReturnType<PayoutRepository['subscriptionEarningsFor']>>,
+  ) {
+    const p = await this.repo.subscriptionPaymentForAccrual(paymentId);
+    if (!p || p.totalFils <= 0 || refundedFils <= 0) return null;
+    const share = slices.reduce((s, e) => s + e.amountFils, 0);
+    if (share <= 0) return null;
+    const target = refundedFils >= p.totalFils ? share : Math.min(share, Math.round((share * refundedFils) / p.totalFils));
+    const adjustments = (await this.repo.adjustmentsForPayment(paymentId)).filter((a) => a.status !== 'REVERSED');
+    const state = slices.map((e) => ({
+      id: e.id,
+      sliceIndex: e.sliceIndex,
+      amountFils: e.amountFils,
+      unpaid: e.payoutId === null && e.status !== 'PAID',
+      reversed: e.status === 'REVERSED',
+      availableAt: e.availableAt,
+      status: e.status,
+    }));
+    const clawed = state.filter((s) => s.reversed).reduce((s, e) => s + e.amountFils, 0) - adjustments.reduce((s, a) => s + a.amountFils, 0);
+    const plan = sliceClawback(state, target, clawed);
+    for (const id of plan.reverse) await this.repo.updateEarning(id, { status: 'REVERSED' });
+    if (plan.adjustmentFils <= 0) return plan.reverse.length ? { reversed: plan.reverse.length, adjustmentFils: 0 } : null;
+
+    const first = slices[0]!;
+    const next = state.filter((s) => s.unpaid && !s.reversed && !plan.reverse.includes(s.id)).sort((a, b) => a.sliceIndex - b.sliceIndex)[0];
+    const open = adjustments.find((a) => a.payoutId === null && a.status !== 'PAID');
+    if (open) {
+      await this.repo.updateEarning(open.id, { amountFils: open.amountFils - plan.adjustmentFils });
+    } else {
+      await this.repo.createEarning({
+        teacherId: first.teacherId,
+        courseId: first.courseId ?? undefined,
+        ...(adjustments.length === 0 ? { subscriptionPaymentId: paymentId } : {}),
+        kind: 'REFUND_ADJUSTMENT',
+        amountFils: -plan.adjustmentFils,
+        status: next ? next.status : 'AVAILABLE',
+        availableAt: next ? next.availableAt : this.clock.now(),
+        note: `Subscription refund ${paymentId}`,
+      });
+    }
+    return { reversed: plan.reverse.length, adjustmentFils: -plan.adjustmentFils };
   }
 
   /** Idempotent thanks to the unique (sessionId, teacherId, kind) key. */
@@ -451,6 +532,10 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
   async markPaid(id: string, transferReference: string, actorId: string | null = null, references: Record<string, string> = {}) {
     const run = await this.getRun(id);
     if (run.status !== 'APPROVED') throw new BusinessRuleError('Approve the run before marking it paid', 'RUN_NOT_APPROVED');
+    // A payout sent through the provider is settled by the provider, never by hand.
+    if (run.payouts.some((p) => p.status === 'PROCESSING')) {
+      throw new BusinessRuleError('Some payouts are still being sent through the payout provider', 'PAYOUTS_PROCESSING');
+    }
     const inRun = new Set(run.payouts.map((p) => p.id));
     const foreign = Object.keys(references).filter((k) => !inRun.has(k));
     if (foreign.length) throw new BusinessRuleError('A transfer reference names a payout outside this run', 'UNKNOWN_PAYOUT', { payoutIds: foreign });

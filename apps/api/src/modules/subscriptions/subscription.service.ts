@@ -7,8 +7,9 @@ import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction, Cloc
 import { emailsIn } from '../notifications/email-templates';
 import type { Notice, Notifier } from '../notifications/notification.types';
 import { appleCommissionFils } from '../payments/apple/apple-iap-policy';
+import { COUPON_REFUSAL_MESSAGES, couponRefusal } from '../payments/coupon-eligibility';
 import { resolveBankAccount } from '../payments/checkout/bank-transfer-checkout';
-import type { BankAccountRecord, PaymentsRepository } from '../payments/payments.repository';
+import type { BankAccountRecord, CouponRecord, PaymentsRepository } from '../payments/payments.repository';
 import type { PriceCalculator } from '../payments/price-calculator';
 import type { ReferenceGenerator } from '../payments/reference-generator';
 import { canAccessRecorded, hasPendingRenewalReceipt } from './access-policy';
@@ -23,12 +24,23 @@ export interface SubscriptionEarningsAccrual {
 }
 
 
+/** Admin coupons on a first plan transfer: the same coupons and rules as seat checkout. */
+export interface TransferCoupons {
+  findCoupon: PaymentsRepository['findCoupon'];
+  /** Paid redemptions plus open orders and open plan transfers carrying the code. */
+  couponUsesBy: PaymentsRepository['couponUsesBy'];
+  /** Records the redemption once the payment is PAID (idempotent per payment). */
+  redeemPlanCoupon(payment: { id: string; userId: string; couponCode: string | null; discountFils: number }): Promise<void>;
+}
+
 /** What plans paid by bank transfer need: their storage, the bank accounts, and how long a transfer is held. */
 export interface TransferOptions {
   repo: SubscriptionTransferRepository;
   bankAccounts: Pick<PaymentsRepository, 'findBankAccount' | 'firstActiveBankAccount'>;
   /** Fixed, or read per use (the admin-editable rule). */
   holdHours: RuleValue<number>;
+  /** Without it a coupon code on a transfer is refused (COUPON_INVALID). */
+  coupons?: TransferCoupons;
 }
 
 export interface TransferReviewInput {
@@ -139,11 +151,11 @@ export class SubscriptionService {
   /** `POST /courses/:id/subscribe`: card → an INCOMPLETE row and the hosted Checkout page; iOS → a row and its StoreKit token. */
   subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'STRIPE' }): Promise<{ checkoutUrl: string; reference: string }>;
   subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'APPLE_IAP' }): Promise<{ productId: string; appAccountToken: string; reference: string }>;
-  subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'BANK_TRANSFER'; bankAccountId?: string }): Promise<TransferSubscribeResult>;
-  subscribe(userId: string, courseIdOrSlug: string, input: Pick<SubscribeInput, 'plan' | 'method'> & { bankAccountId?: string }): Promise<{ checkoutUrl: string; reference: string } | { productId: string; appAccountToken: string; reference: string } | TransferSubscribeResult>;
-  async subscribe(userId: string, courseIdOrSlug: string, input: Pick<SubscribeInput, 'plan' | 'method'> & { bankAccountId?: string }) {
+  subscribe(userId: string, courseIdOrSlug: string, input: { plan: SubscriptionPlan; method: 'BANK_TRANSFER'; bankAccountId?: string; couponCode?: string }): Promise<TransferSubscribeResult>;
+  subscribe(userId: string, courseIdOrSlug: string, input: Pick<SubscribeInput, 'plan' | 'method'> & { bankAccountId?: string; couponCode?: string }): Promise<{ checkoutUrl: string; reference: string } | { productId: string; appAccountToken: string; reference: string } | TransferSubscribeResult>;
+  async subscribe(userId: string, courseIdOrSlug: string, input: Pick<SubscribeInput, 'plan' | 'method'> & { bankAccountId?: string; couponCode?: string }) {
     if (input.method === 'APPLE_IAP') return this.subscribeApple(userId, courseIdOrSlug, input.plan);
-    if (input.method === 'BANK_TRANSFER') return this.subscribeTransfer(userId, courseIdOrSlug, input.plan, input.bankAccountId);
+    if (input.method === 'BANK_TRANSFER') return this.subscribeTransfer(userId, courseIdOrSlug, input.plan, input.bankAccountId, input.couponCode);
     if (input.method !== 'STRIPE') throw new BusinessRuleError('This payment method is not available for plans yet', 'METHOD_UNAVAILABLE');
     const course = await this.repo.findCourse(courseIdOrSlug);
     // Drafts and other unpublished courses look like they don't exist, whatever their type.
@@ -216,7 +228,7 @@ export class SubscriptionService {
    * `POST /courses/:id/subscribe` (method BANK_TRANSFER): a prepaid month or year, no auto-renew. The first transfer opens an
    * INCOMPLETE row; a renewal reuses the ACTIVE transfer row. An open payment is handed back instead of making a second one.
    */
-  private async subscribeTransfer(userId: string, courseIdOrSlug: string, plan: SubscriptionPlan, bankAccountId?: string): Promise<TransferSubscribeResult> {
+  private async subscribeTransfer(userId: string, courseIdOrSlug: string, plan: SubscriptionPlan, bankAccountId?: string, couponCode?: string): Promise<TransferSubscribeResult> {
     const T = this.T;
     const course = await this.repo.findCourse(courseIdOrSlug);
     if (!course || course.status !== 'PUBLISHED') throw new NotFoundError('Course', courseIdOrSlug);
@@ -226,13 +238,25 @@ export class SubscriptionService {
     const user = await this.repo.findUser(userId);
     if (!user) throw new NotFoundError('User', userId);
     const now = this.clock.now();
+    const code = couponCode?.trim() ? couponCode.trim().toUpperCase() : null;
+    let coupon: CouponRecord | null = null;
+    const checkCoupon = async (heldByReplaced = 0) => (code ? this.transferCoupon(code, { userId, courseId: course.id, priceFils, now }, heldByReplaced) : null);
 
     let row = pickSubscription(await this.repo.forUserCourse(userId, course.id));
     if (row && row.provider === 'BANK_TRANSFER') {
       // A renewal (ACTIVE) or a first transfer still being paid (INCOMPLETE); anything else is not ours to extend.
       if (row.status !== 'ACTIVE' && row.status !== 'INCOMPLETE') throw alreadySubscribed();
-      const open = (await T.repo.transferPaymentsOf([row.id])).find((p) => p.status === 'AWAITING_RECEIPT' || p.status === 'AWAITING_REVIEW');
-      if (open && open.status === 'AWAITING_RECEIPT' && open.expiresAt && open.expiresAt < now) {
+      const payments = await T.repo.transferPaymentsOf([row.id]);
+      // Coupons are for the first payment only: a renewal (or a plan that was ever paid) takes none.
+      if (code && payments.some((p) => p.status === 'PAID' || p.status === 'REFUNDED')) {
+        throw new BusinessRuleError('Coupons apply to the first payment of a plan only', 'COUPON_FIRST_PAYMENT_ONLY');
+      }
+      const open = payments.find((p) => p.status === 'AWAITING_RECEIPT' || p.status === 'AWAITING_REVIEW');
+      // A payment still waiting for its receipt is replaced when the learner now asks for another plan or coupon.
+      const changed = !!open && open.status === 'AWAITING_RECEIPT' && (open.plan !== plan || (open.couponCode ?? null) !== code);
+      if (open && open.status === 'AWAITING_RECEIPT' && ((open.expiresAt && open.expiresAt < now) || changed)) {
+        // Checked before the old payment is closed, so a refused code leaves it as it was; its own use of the code does not count.
+        coupon = await checkCoupon(open.couponCode === code ? 1 : 0);
         await T.repo.updateTransferPayment(open.id, { status: 'EXPIRED' });
       } else if (open) {
         return this.transferResult(open);
@@ -241,12 +265,14 @@ export class SubscriptionService {
       // Only an unfinished checkout can be taken over; any other live plan is a real one.
       if (row.status !== 'INCOMPLETE' || row.providerSubscriptionId) throw alreadySubscribed();
       if (row.provider === 'APPLE' && now.getTime() < row.updatedAt.getTime() + APPLE_PENDING_MS) throw alreadySubscribed();
+      coupon = await checkCoupon();
       const sessionId = storedSessionId(row.stripeCheckoutSessionId);
       const outcome = sessionId ? await this.gateway.expireCheckoutSession(sessionId) : 'expired';
       if (outcome === 'completed') throw alreadySubscribed();
       await this.repo.update(row.id, { status: FINAL });
       row = null;
     }
+    if (code && !coupon) coupon = await checkCoupon();
 
     const account = await resolveBankAccount(T.bankAccounts, bankAccountId);
     if (!row) {
@@ -257,7 +283,8 @@ export class SubscriptionService {
         throw e;
       }
     }
-    const total = this.prices.inclusive(priceFils);
+    const quote = this.prices.quote({ priceFils, coupon });
+    const total = quote.totalFils;
     const expiresAt = addHours(now, await resolveRule(T.holdHours));
     const payment = await T.repo.createTransferPayment({
       subscriptionId: row.id,
@@ -266,10 +293,13 @@ export class SubscriptionService {
       plan,
       periodStart: now,
       periodEnd: now,
-      ...this.prices.splitInclusive(total),
+      // The taxable amount: teacher earnings and the tax invoice both follow the discounted price.
+      subtotalFils: quote.subtotalFils - quote.discountFils,
+      vatFils: quote.vatFils,
       totalFils: total,
       bankAccountId: account.id,
       expiresAt,
+      ...(coupon ? { couponCode: coupon.code, discountFils: quote.discountFils } : {}),
     });
 
     const amount = formatMoney(filsToAed(total), 'AED');
@@ -287,6 +317,30 @@ export class SubscriptionService {
       email: (r) => emailsIn(r.locale).transferInstructions(r.name, amount, payment.reference, account.bankName, account.iban, formatInZone(expiresAt, r.timezone, r.locale)),
     });
     return { plan, bankAccount: account, reference: payment.reference, amountFils: total, expiresAt, paymentId: payment.id };
+  }
+
+  /** The admin coupon for a first plan transfer, checked with seat checkout's rules; refused with `COUPON_INVALID` + `details.reason`. */
+  private async transferCoupon(code: string, ctx: { userId: string; courseId: string; priceFils: number; now: Date }, heldByReplaced = 0) {
+    const coupons = this.T.coupons;
+    const coupon = coupons ? await coupons.findCoupon(code) : null;
+    if (!coupons || !coupon) throw new BusinessRuleError(COUPON_REFUSAL_MESSAGES.NOT_FOUND, 'COUPON_INVALID', { reason: 'NOT_FOUND' });
+    const reason = couponRefusal(coupon, {
+      now: ctx.now,
+      courseId: ctx.courseId,
+      batchId: '', // a plan has no batch: batch-scoped coupons are refused as WRONG_BATCH
+      subtotalFils: ctx.priceFils,
+      userUses: Math.max(0, (await coupons.couponUsesBy(coupon.id, coupon.code, ctx.userId)) - heldByReplaced),
+      userId: ctx.userId,
+    });
+    if (reason) {
+      throw new BusinessRuleError(COUPON_REFUSAL_MESSAGES[reason], 'COUPON_INVALID', {
+        reason,
+        ...(reason === 'BELOW_MINIMUM' ? { minOrderFils: coupon.minOrderFils, subtotalFils: ctx.priceFils } : {}),
+        ...(reason === 'PER_USER_LIMIT' ? { perUserLimit: coupon.perUserLimit } : {}),
+        ...(reason === 'NOT_STARTED' ? { startsOn: coupon.startsOn } : {}),
+      });
+    }
+    return coupon;
   }
 
   private async transferResult(p: TransferPaymentRow): Promise<TransferSubscribeResult> {
@@ -385,6 +439,7 @@ export class SubscriptionService {
       }
       const periodStart = new Date(Math.max(now.getTime(), sub.currentPeriodEnd?.getTime() ?? 0));
       const periodEnd = addPeriod(periodStart, payment.plan);
+      const listPrice = payment.subtotalFils + (payment.discountFils ?? 0);
       // The claim and the plan update are one step: a second approval finds the payment already PAID and changes nothing.
       // A plan that had ended (EXPIRED) comes back as ACTIVE on purpose: the learner paid for this period.
       let claimed: TransferPaymentRow | null;
@@ -398,7 +453,8 @@ export class SubscriptionService {
               status: 'ACTIVE',
               currentPeriodEnd: periodEnd,
               cancelAtPeriodEnd: false,
-              ...(payment.plan !== sub.plan || payment.subtotalFils !== sub.priceFils ? { plan: payment.plan, priceFils: payment.subtotalFils } : {}),
+              // The plan keeps its list price: a first-payment coupon must not discount renewals.
+              ...(payment.plan !== sub.plan || listPrice !== sub.priceFils ? { plan: payment.plan, priceFils: listPrice } : {}),
             },
           },
           fromStatuses,
@@ -410,6 +466,13 @@ export class SubscriptionService {
       if (!claimed) throw await this.notReviewable(payment.id);
       const updated = (await this.repo.findById(sub.id))!;
       await this.announceIfActivated(sub, updated);
+      if (claimed.couponCode) {
+        try {
+          await T.coupons?.redeemPlanCoupon({ id: claimed.id, userId: claimed.userId, couponCode: claimed.couponCode, discountFils: claimed.discountFils ?? 0 });
+        } catch (e) {
+          this.log(`redeemPlanCoupon(${claimed.id}) failed`, e);
+        }
+      }
       try {
         await this.payouts.accrueForSubscriptionPayment(payment.id);
       } catch (e) {

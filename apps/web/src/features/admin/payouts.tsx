@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPayoutRunInput, markPayoutPaidInput, payoutAdjustmentInput } from '@azza/shared';
 import type { z } from 'zod';
-import { Download } from 'lucide-react';
+import { Download, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,7 +80,7 @@ export function Payouts() {
 }
 
 function RunDetail({ id }: { id: string }) {
-  const { t, f, pick } = useI18n();
+  const { t, f, pick, fill } = useI18n();
   const money = useMoney();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: qk.admin.payoutRun(id), queryFn: () => adminApi.payoutRun(id) });
@@ -94,6 +94,7 @@ function RunDetail({ id }: { id: string }) {
     onError: (e: Error) => toast.error(e instanceof ApiError && e.code === 'SECOND_ADMIN_REQUIRED' ? t.admin.payouts.secondAdmin : e.message),
   });
   const verify = useMutation({ mutationFn: (teacherId: string) => adminApi.verifyTeacherBank(teacherId), onSuccess: () => (toast.success(t.common.saved), refresh()), onError: (e: Error) => toast.error(e.message) });
+  const provider = useQuery({ queryKey: qk.admin.payoutProvider, queryFn: () => adminApi.payoutProvider(), staleTime: 5 * 60_000 });
   const exportCsv = useMutation({
     mutationFn: () => adminApi.exportRun(id),
     onSuccess: async (res) => {
@@ -133,6 +134,9 @@ function RunDetail({ id }: { id: string }) {
           <Button variant="outline" onClick={() => exportCsv.mutate()} disabled={exportCsv.isPending}>
             <Download /> {t.admin.payouts.export}
           </Button>
+        )}
+        {run.status === 'APPROVED' && provider.data?.enabled && payouts.some((p) => p.status === 'READY') && (
+          <SendViaProvider runId={id} label={provider.data.label ?? ''} onDone={refresh} />
         )}
         {(run.status === 'APPROVED' || run.status === 'PROCESSING') && <MarkPaid runId={id} onDone={refresh} />}
       </div>
@@ -183,9 +187,18 @@ function RunDetail({ id }: { id: string }) {
                   ) : (
                     <Chip tone="peach">—</Chip>
                   )}
+                  {provider.data?.enabled && p.teacher.bankDetails && <PayoutAccount teacherId={p.teacher.id} current={p.teacher.bankDetails.stripeAccountId ?? null} onDone={refresh} />}
                 </TableCell>
                 <TableCell>
                   <PayoutStatusChip status={p.status} />
+                  {p.providerStatus && p.status !== 'READY' && (
+                    <span className="block text-xs text-muted-foreground">{t.admin.payouts.provider.status[p.providerStatus]}</span>
+                  )}
+                  {p.providerFailureReason && p.status === 'READY' && (
+                    <span role="status" className="block max-w-[22ch] text-xs text-destructive">
+                      {fill(t.admin.payouts.provider.failedReason, { reason: p.providerFailureReason })}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="text-end">{run.status === 'DRAFT' && <Adjust payout={p} onDone={refresh} />}</TableCell>
               </TableRow>
@@ -257,6 +270,79 @@ function NewRun() {
         <DialogFooter>
           <Button type="submit" form="run-form" variant="ink" disabled={m.isPending}>
             {t.admin.payouts.createRun}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Sends the run's READY payouts through the payout provider (confirmed first: money leaves the platform). */
+function SendViaProvider({ runId, label, onDone }: { runId: string; label: string; onDone: () => void }) {
+  const { t, fill } = useI18n();
+  const [open, setOpen] = useState(false);
+  const p = t.admin.payouts.provider;
+  const send = useMutation({
+    mutationFn: () => adminApi.sendRunViaProvider(runId),
+    onSuccess: (run) => {
+      setOpen(false);
+      toast.success(fill(p.sent, { n: run.payouts.filter((x) => x.status === 'PROCESSING' || x.status === 'PAID').length }));
+      onDone();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ink">
+          <Send aria-hidden /> {fill(p.send, { provider: label })}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{fill(p.sendTitle, { provider: label })}</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">{fill(p.sendBody, { provider: label })}</p>
+        <DialogFooter>
+          <Button variant="ink" onClick={() => send.mutate()} disabled={send.isPending}>
+            {p.sendConfirm}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** The teacher's Stripe connected account (acct_…), set by an admin after Connect onboarding. */
+function PayoutAccount({ teacherId, current, onDone }: { teacherId: string; current: string | null; onDone: () => void }) {
+  const { t } = useI18n();
+  const p = t.admin.payouts.provider;
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(current ?? '');
+  const save = useMutation({
+    mutationFn: () => adminApi.setPayoutAccount(teacherId, value.trim() || null),
+    onSuccess: () => (setOpen(false), toast.success(t.common.saved), onDone()),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="xs" variant="ghost" className="mt-1 block">
+          {current ? <bdi dir="ltr" className="font-mono text-xs">{current}</bdi> : p.account}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{p.accountTitle}</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor={`acct-${teacherId}`}>{p.account}</Label>
+          <Input id={`acct-${teacherId}`} dir="ltr" placeholder="acct_…" value={value} onChange={(e) => setValue(e.target.value)} className="font-mono" />
+          <p className="text-xs text-muted-foreground">{p.accountHint}</p>
+        </div>
+        <DialogFooter>
+          <Button variant="ink" onClick={() => save.mutate()} disabled={save.isPending}>
+            {t.common.save}
           </Button>
         </DialogFooter>
       </DialogContent>

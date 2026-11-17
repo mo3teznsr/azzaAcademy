@@ -77,6 +77,9 @@ export class PrismaCouponRepository {
             enrollment: { select: { batch: { select: { id: true, code: true, course: { select: { titleEn: true, titleAr: true } } } } } },
           },
         },
+        subscriptionPayment: {
+          select: { id: true, reference: true, totalFils: true, plan: true, subscription: { select: { course: { select: { titleEn: true, titleAr: true } } } } },
+        },
       },
     });
   }
