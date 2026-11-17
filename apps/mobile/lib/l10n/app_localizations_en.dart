@@ -6794,4 +6794,224 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errQaHasAnswers =>
       'This question has answers, so it can no longer be deleted.';
+
+  @override
+  String get progressTitle => 'My progress';
+
+  @override
+  String get progressIntro =>
+      'Small, steady sessions add up. This page is just for you.';
+
+  @override
+  String get progressCardTitle => 'Your week';
+
+  @override
+  String get progressStreak => 'Streak';
+
+  @override
+  String progressStreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '$count day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressBest(String days) {
+    return 'Best: $days';
+  }
+
+  @override
+  String get progressTodayDone => 'Today counts.';
+
+  @override
+  String get progressTodayPending =>
+      'A lesson, a quiz, a live class or 5 minutes of video today keeps it going.';
+
+  @override
+  String get progressFreezeAvailable =>
+      'One missed day this week won’t break it.';
+
+  @override
+  String get progressFreezeUsed => 'This week’s missed day is covered.';
+
+  @override
+  String get progressStartStreak => 'Learn today to start a streak.';
+
+  @override
+  String get progressWeek => 'This week';
+
+  @override
+  String progressDayLearned(String day) {
+    return '$day: learning day';
+  }
+
+  @override
+  String progressDayFrozen(String day) {
+    return '$day: covered by this week’s freeze';
+  }
+
+  @override
+  String progressDayMissed(String day) {
+    return '$day: no learning';
+  }
+
+  @override
+  String progressDayAhead(String day) {
+    return '$day: still ahead';
+  }
+
+  @override
+  String get progressGoal => 'Weekly goal';
+
+  @override
+  String progressGoalDays(String done, String target) {
+    return '$done of $target learning days';
+  }
+
+  @override
+  String progressGoalLessons(String done, String target) {
+    return '$done of $target lessons';
+  }
+
+  @override
+  String get progressGoalMet => 'Goal reached this week. Nicely done.';
+
+  @override
+  String get progressNoGoal => 'Pick a weekly goal to keep a steady pace.';
+
+  @override
+  String get progressSetGoal => 'Set a goal';
+
+  @override
+  String get progressEditGoal => 'Change goal';
+
+  @override
+  String get progressGoalSheetTitle => 'Your weekly goal';
+
+  @override
+  String get progressGoalSheetBody =>
+      'Choose what fits your week. You can change it any time; it resets every Monday.';
+
+  @override
+  String get progressUnitLabel => 'Count';
+
+  @override
+  String get progressUnitDays => 'Learning days';
+
+  @override
+  String get progressUnitLessons => 'Lessons';
+
+  @override
+  String get progressTargetLabel => 'Per week';
+
+  @override
+  String get progressReminders => 'Remind me late in the week if I’m behind';
+
+  @override
+  String get progressRemindersHint =>
+      'At most one reminder a week, on Friday evening.';
+
+  @override
+  String get progressSave => 'Save goal';
+
+  @override
+  String get progressRemoveGoal => 'Remove goal';
+
+  @override
+  String get progressSaved => 'Goal saved';
+
+  @override
+  String get progressRemoved => 'Goal removed';
+
+  @override
+  String get progressBadges => 'Badges';
+
+  @override
+  String progressBadgesCount(String earned, String total) {
+    return '$earned of $total earned';
+  }
+
+  @override
+  String get progressLatestBadges => 'Latest badges';
+
+  @override
+  String get progressNoBadges =>
+      'Your first badge comes with your first lesson.';
+
+  @override
+  String progressEarnedOn(String date) {
+    return 'Earned $date';
+  }
+
+  @override
+  String get progressLocked => 'Not yet';
+
+  @override
+  String get progressPrivate => 'Badges are personal. Nobody else sees them.';
+
+  @override
+  String get progressRulesTitle => 'How it works';
+
+  @override
+  String get progressRule1 =>
+      'A learning day is a day with a completed lesson, at least 5 minutes of video, a quiz or a live class, in your time zone.';
+
+  @override
+  String get progressRule2 =>
+      'Miss one day in a week and your streak carries on. Two missed days in a row, or a second one in the same week, start it again.';
+
+  @override
+  String get progressRule3 => 'Weeks run Monday to Sunday.';
+
+  @override
+  String get badgeFirstLessonTitle => 'First lesson';
+
+  @override
+  String get badgeFirstLessonBody => 'Completed your first lesson.';
+
+  @override
+  String get badgeFirstLiveClassTitle => 'First live class';
+
+  @override
+  String get badgeFirstLiveClassBody => 'Joined your first live class.';
+
+  @override
+  String get badgeLessons10Title => '10 lessons';
+
+  @override
+  String get badgeLessons10Body => 'Completed 10 lessons.';
+
+  @override
+  String get badgePerfectQuizTitle => 'Full marks';
+
+  @override
+  String get badgePerfectQuizBody => 'Scored 100% on a quiz.';
+
+  @override
+  String get badgeStreak7Title => '7-day streak';
+
+  @override
+  String get badgeStreak7Body => 'Kept a streak for 7 days.';
+
+  @override
+  String get badgeFirstCertificateTitle => 'First certificate';
+
+  @override
+  String get badgeFirstCertificateBody => 'Earned your first certificate.';
+
+  @override
+  String get badgeLessons50Title => '50 lessons';
+
+  @override
+  String get badgeLessons50Body => 'Completed 50 lessons.';
+
+  @override
+  String get badgeStreak30Title => '30-day streak';
+
+  @override
+  String get badgeStreak30Body => 'Kept a streak for 30 days.';
 }

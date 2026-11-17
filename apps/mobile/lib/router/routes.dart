@@ -90,6 +90,8 @@ abstract final class Routes {
   static const myPlans = '/me/plans';
   static const savedCourses = '/me/saved';
   static const certificates = '/me/certificates';
+  /// Streak, weekly goal and badges.
+  static const myProgress = '/me/progress';
   static String certificate(String code) => '/me/certificates/${Uri.encodeComponent(code)}';
   static String teacher(String id) => '/teachers/$id';
   static const instructors = '/instructors';
@@ -223,7 +225,7 @@ abstract final class Routes {
       (RegExp(r'^/messages(/[^/]+)?$'), studentHome),
       (RegExp(r'^/(announcements|notifications)$'), studentHome),
       (RegExp(r'^/support(/[^/]+)?$'), studentMe),
-      (RegExp(r'^/me/(orders|saved|plans|certificates(/[^/]+)?)$'), studentMe),
+      (RegExp(r'^/me/(orders|saved|plans|progress|certificates(/[^/]+)?)$'), studentMe),
       (RegExp(r'^/settings/(language|profile)$'), studentMe),
     ],
     Role.teacher: [
