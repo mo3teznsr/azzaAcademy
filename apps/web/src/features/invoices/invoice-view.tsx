@@ -67,7 +67,13 @@ export function InvoiceView({ id }: { id: string }) {
           <div>
             <h2 className="label-mono text-muted-foreground">{c.buyer}</h2>
             <p className="mt-1 font-semibold"><bdi>{d.buyer.name}</bdi></p>
+            {d.buyer.address && <p className="text-sm">{d.buyer.address}</p>}
             <p className="text-sm" dir="ltr">{d.buyer.email}</p>
+            {d.buyer.trn && (
+              <p className="text-sm">
+                {c.trn}: <bdi dir="ltr" className="font-mono">{d.buyer.trn}</bdi>
+              </p>
+            )}
           </div>
         </section>
         <section className="py-6">

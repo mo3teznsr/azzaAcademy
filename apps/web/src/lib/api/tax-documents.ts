@@ -10,10 +10,11 @@ export interface TaxDocumentSummary {
   vatPercent: number;
   vatFils: number;
   totalFils: number;
-  buyer: { name?: string; email?: string };
+  buyer: { name?: string; email?: string; trn?: string; address?: string };
   issuedAt: string;
   orderId: string | null;
   subscriptionPaymentId: string | null;
+  seatPackId?: string | null;
   invoice: { id: string; number: string } | null;
 }
 
