@@ -18,11 +18,13 @@ import 'package:azza/features/learn/domain/quiz_models.dart';
 import 'package:azza/features/me/data/me_repository.dart';
 import 'package:azza/features/waitlist/data/waitlist_repository.dart';
 import 'package:azza/features/me/domain/me_models.dart';
+import 'package:azza/features/progress/data/progress_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/fakes.dart';
 import '../helpers/harness.dart';
+import '../helpers/progress_fakes.dart';
 
 void main() {
   final now = DateTime.now();
@@ -77,6 +79,7 @@ void main() {
           chatRepositoryProvider.overrideWithValue(FakeChatRepository()),
           announcementsRepositoryProvider.overrideWithValue(FakeAnnouncementsRepository()),
           supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
+          progressRepositoryProvider.overrideWithValue(FakeProgressRepository()),
         ],
       );
 
@@ -96,6 +99,7 @@ void main() {
     final learning = tester.getTopLeft(find.text('Continue learning')).dy;
     expect(hero < learning, isTrue);
     // The live session isn't repeated in "This week".
+    await tester.scrollUntilVisible(find.byKey(const Key('week-s6')), 200);
     expect(find.byKey(const Key('week-s5'), skipOffstage: false), findsNothing);
     expect(find.byKey(const Key('week-s6'), skipOffstage: false), findsOneWidget);
   });

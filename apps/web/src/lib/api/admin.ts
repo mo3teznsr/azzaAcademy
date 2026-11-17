@@ -1,7 +1,7 @@
 import type { AdminCreateUserInput, AppleProductsInput, BankAccountInput, CouponInput, CutSettingsInput, MarketingSpendInput, RecordedPricingInput, ReviewTransferInput, Role, StatementImportInput, UpdateCouponInput } from '@azza/shared';
 import { API_URL, http, items, request } from './client';
 import { uploadCourseMediaAsAdmin, type CourseMediaKind } from './courses';
-import type {
+import type { PayoutProviderInfo,
   AdminGrowth,
   AdminInvestors,
   MarketingSpend,
@@ -101,6 +101,9 @@ export const adminApi = {
   payoutRun: (id: string) => http.get<PayoutRunDetail>(`/api/v1/admin/payout-runs/${id}`),
   createPayoutRun: (input: { periodStart: string; periodEnd: string }) => http.post<PayoutRunDetail>('/api/v1/admin/payout-runs', input),
   approveRun: (id: string) => http.post<PayoutRunDetail>(`/api/v1/admin/payout-runs/${id}/approve`),
+  payoutProvider: () => http.get<PayoutProviderInfo>('/api/v1/admin/payout-provider'),
+  sendRunViaProvider: (id: string) => http.post<PayoutRunDetail>(`/api/v1/admin/payout-runs/${id}/send`),
+  setPayoutAccount: (teacherId: string, stripeAccountId: string | null) => http.put<unknown>(`/api/v1/admin/teachers/${teacherId}/payout-account`, { stripeAccountId }),
   markRunPaid: (id: string, input: { transferReference: string }) => http.post<PayoutRunDetail>(`/api/v1/admin/payout-runs/${id}/mark-paid`, input),
   exportRunUrl: (id: string) => `${API_URL}/api/v1/admin/payout-runs/${id}/export`,
   exportRun: (id: string) => request<Response>(`/api/v1/admin/payout-runs/${id}/export`, { method: 'POST', raw: true, body: {} }),

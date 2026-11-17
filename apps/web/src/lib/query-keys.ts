@@ -27,6 +27,13 @@ export const qk = {
   /** Paged reviews of a course; invalidate the prefix `['reviews', courseKey]`. */
   reviews: (idOrSlug: string) => ['reviews', idOrSlug] as const,
   saved: ['me', 'saved-courses'] as const,
+  blog: (params: object) => ['blog', params] as const,
+  blogPost: (slug: string) => ['blog', 'post', slug] as const,
+  adminBlog: (params: object) => ['admin', 'blog', params] as const,
+  adminBlogPost: (id: string) => ['admin', 'blog', 'post', id] as const,
+  /** Featured testimonials; `course` slug or `all` (landing page). */
+  testimonials: (course = 'all') => ['testimonials', course] as const,
+  adminTestimonials: (params: object) => ['admin', 'testimonials', params] as const,
   batches: (params: object) => ['batches', params] as const,
   batch: (id: string) => ['batch', id] as const,
   roster: (id: string) => ['batch', id, 'roster'] as const,
@@ -38,6 +45,8 @@ export const qk = {
   /** Lesson progress across my courses ("Continue learning"); invalidate after completing a lesson. */
   mySubscriptions: ['me', 'subscriptions'] as const,
   learningProgress: ['me', 'learning-progress'] as const,
+  progress: ['me', 'progress'] as const,
+  badges: ['me', 'badges'] as const,
   /** `scopeKey` is a batch id, or `course:<id>` for a recorded course's quizzes. */
   quizzes: (scopeKey: string) => ['quizzes', scopeKey] as const,
   quiz: (id: string) => ['quiz', id] as const,
@@ -79,6 +88,7 @@ export const qk = {
     payoutRuns: ['admin', 'payout-runs'] as const,
     appStore: ['admin', 'app-store'] as const,
     payoutRun: (id: string) => ['admin', 'payout-runs', id] as const,
+    payoutProvider: ['admin', 'payout-provider'] as const,
     /** Prefix `['admin', 'instructor-applications']` invalidates every tab. */
     instructorApplications: (status?: string) => ['admin', 'instructor-applications', status ?? 'all'] as const,
     admins: ['admin', 'users', 'admins'] as const,

@@ -6948,4 +6948,309 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errQaHasAnswers => 'لهذا السؤال إجابات، لذا لم يعد بالإمكان حذفه.';
+
+  @override
+  String get progressTitle => 'تقدّمي';
+
+  @override
+  String get progressIntro =>
+      'الجلسات القصيرة المنتظمة تتراكم. هذه الصفحة لك وحدك.';
+
+  @override
+  String get progressCardTitle => 'أسبوعك';
+
+  @override
+  String get progressStreak => 'التتابع';
+
+  @override
+  String progressStreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count يوم',
+      many: '$count يومًا',
+      few: '$count أيام',
+      two: 'يومان',
+      one: 'يوم واحد',
+      zero: '$count يوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressBest(String days) {
+    return 'الأفضل: $days';
+  }
+
+  @override
+  String get progressTodayDone => 'اليوم محسوب.';
+
+  @override
+  String get progressTodayPending =>
+      'درس أو اختبار أو صف مباشر أو 5 دقائق من الفيديو اليوم تُبقي التتابع مستمرًا.';
+
+  @override
+  String get progressFreezeAvailable => 'يوم واحد فائت هذا الأسبوع لن يقطعه.';
+
+  @override
+  String get progressFreezeUsed => 'اليوم الفائت هذا الأسبوع مغطّى.';
+
+  @override
+  String get progressStartStreak => 'تعلّم اليوم لتبدأ تتابعًا.';
+
+  @override
+  String get progressWeek => 'هذا الأسبوع';
+
+  @override
+  String progressDayLearned(String day) {
+    return '$day: يوم تعلّم';
+  }
+
+  @override
+  String progressDayFrozen(String day) {
+    return '$day: مغطّى بتجميد هذا الأسبوع';
+  }
+
+  @override
+  String progressDayMissed(String day) {
+    return '$day: بلا تعلّم';
+  }
+
+  @override
+  String progressDayAhead(String day) {
+    return '$day: لم يأتِ بعد';
+  }
+
+  @override
+  String get progressGoal => 'الهدف الأسبوعي';
+
+  @override
+  String progressGoalDays(String done, String target) {
+    return '$done من $target أيام تعلّم';
+  }
+
+  @override
+  String progressGoalLessons(String done, String target) {
+    return '$done من $target دروس';
+  }
+
+  @override
+  String get progressGoalMet => 'حققت هدف هذا الأسبوع. أحسنت.';
+
+  @override
+  String get progressNoGoal => 'اختر هدفًا أسبوعيًا لتحافظ على وتيرة ثابتة.';
+
+  @override
+  String get progressSetGoal => 'حدّد هدفًا';
+
+  @override
+  String get progressEditGoal => 'غيّر الهدف';
+
+  @override
+  String get progressGoalSheetTitle => 'هدفك الأسبوعي';
+
+  @override
+  String get progressGoalSheetBody =>
+      'اختر ما يناسب أسبوعك. يمكنك تغييره في أي وقت، ويبدأ من جديد كل يوم اثنين.';
+
+  @override
+  String get progressUnitLabel => 'احسب';
+
+  @override
+  String get progressUnitDays => 'أيام التعلّم';
+
+  @override
+  String get progressUnitLessons => 'الدروس';
+
+  @override
+  String get progressTargetLabel => 'في الأسبوع';
+
+  @override
+  String get progressReminders => 'ذكّرني في آخر الأسبوع إن كنت متأخرًا';
+
+  @override
+  String get progressRemindersHint =>
+      'تذكير واحد في الأسبوع على الأكثر، مساء الجمعة.';
+
+  @override
+  String get progressSave => 'احفظ الهدف';
+
+  @override
+  String get progressRemoveGoal => 'احذف الهدف';
+
+  @override
+  String get progressSaved => 'حُفظ الهدف';
+
+  @override
+  String get progressRemoved => 'حُذف الهدف';
+
+  @override
+  String get progressBadges => 'الشارات';
+
+  @override
+  String progressBadgesCount(String earned, String total) {
+    return '$earned من $total';
+  }
+
+  @override
+  String get progressLatestBadges => 'أحدث الشارات';
+
+  @override
+  String get progressNoBadges => 'تأتي شارتك الأولى مع درسك الأول.';
+
+  @override
+  String progressEarnedOn(String date) {
+    return 'حصلت عليها في $date';
+  }
+
+  @override
+  String get progressLocked => 'ليس بعد';
+
+  @override
+  String get progressPrivate => 'الشارات شخصية، لا يراها أحد غيرك.';
+
+  @override
+  String get progressRulesTitle => 'كيف يعمل';
+
+  @override
+  String get progressRule1 =>
+      'يوم التعلّم هو يوم فيه درس مكتمل أو 5 دقائق فيديو على الأقل أو اختبار أو صف مباشر، بتوقيتك المحلي.';
+
+  @override
+  String get progressRule2 =>
+      'إن فاتك يوم واحد في الأسبوع يستمر تتابعك. يومان متتاليان، أو يوم ثانٍ في الأسبوع نفسه، يبدآنه من جديد.';
+
+  @override
+  String get progressRule3 => 'الأسبوع من الاثنين إلى الأحد.';
+
+  @override
+  String get badgeFirstLessonTitle => 'الدرس الأول';
+
+  @override
+  String get badgeFirstLessonBody => 'أكملت درسك الأول.';
+
+  @override
+  String get badgeFirstLiveClassTitle => 'أول صف مباشر';
+
+  @override
+  String get badgeFirstLiveClassBody => 'حضرت أول صف مباشر.';
+
+  @override
+  String get badgeLessons10Title => '10 دروس';
+
+  @override
+  String get badgeLessons10Body => 'أكملت 10 دروس.';
+
+  @override
+  String get badgePerfectQuizTitle => 'العلامة الكاملة';
+
+  @override
+  String get badgePerfectQuizBody => 'حصلت على 100% في اختبار.';
+
+  @override
+  String get badgeStreak7Title => 'تتابع 7 أيام';
+
+  @override
+  String get badgeStreak7Body => 'حافظت على التتابع 7 أيام.';
+
+  @override
+  String get badgeFirstCertificateTitle => 'الشهادة الأولى';
+
+  @override
+  String get badgeFirstCertificateBody => 'حصلت على شهادتك الأولى.';
+
+  @override
+  String get badgeLessons50Title => '50 درسًا';
+
+  @override
+  String get badgeLessons50Body => 'أكملت 50 درسًا.';
+
+  @override
+  String get badgeStreak30Title => 'تتابع 30 يومًا';
+
+  @override
+  String get badgeStreak30Body => 'حافظت على التتابع 30 يومًا.';
+
+  @override
+  String get allAccessTitle => 'كل الدورات';
+
+  @override
+  String get allAccessKicker => 'اشتراك شامل';
+
+  @override
+  String get allAccessHeadline => 'كل الدورات المسجّلة باشتراك واحد.';
+
+  @override
+  String get allAccessBody =>
+      'اشتراك شهري أو سنوي واحد يفتح لك كل الدورات المسجّلة في عازة، ومعها كل دورة جديدة تُضاف. الحصص المباشرة تُشترى على حدة.';
+
+  @override
+  String allAccessCourseCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count دورة مسجّلة مشمولة',
+      many: '$count دورة مسجّلة مشمولة',
+      few: '$count دورات مسجّلة مشمولة',
+      two: 'دورتان مسجّلتان مشمولتان',
+      one: 'دورة مسجّلة واحدة مشمولة',
+      zero: 'لا دورات مسجّلة بعد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get allAccessGetLessons =>
+      'كل الدروس والاختبارات في كل الدورات المسجّلة';
+
+  @override
+  String get allAccessGetCertificate => 'شهادة لكل دورة تُنهيها';
+
+  @override
+  String get allAccessGetCancel => 'ألغِ متى شئت، وتقدّمك محفوظ';
+
+  @override
+  String get allAccessUnavailable => 'الاشتراك الشامل غير متاح حاليًا.';
+
+  @override
+  String get allAccessYours => 'اشتراكك الشامل فعّال';
+
+  @override
+  String get allAccessYoursBody =>
+      'كل الدورات المسجّلة مفتوحة لك. اختر دورة وابدأ التعلّم.';
+
+  @override
+  String get allAccessBrowse => 'تصفّح الدورات المسجّلة';
+
+  @override
+  String get allAccessManage => 'أدِره من اشتراكاتي';
+
+  @override
+  String get allAccessEntry => 'كل الدورات باشتراك واحد';
+
+  @override
+  String allAccessEntryFrom(String amount) {
+    return 'ابتداءً من $amount شهريًا: كل الدورات المسجّلة';
+  }
+
+  @override
+  String get allAccessIncluded => 'مشمولة في اشتراكك الشامل';
+
+  @override
+  String get allAccessCoveredTitle => 'اشتراكك الشامل يفتح هذه الدورة بالفعل';
+
+  @override
+  String get allAccessCoveredBody =>
+      'تستطيع مشاهدة كل دروس هذه الدورة باشتراكك الشامل. الاشتراك المنفصل سيحاسبك مرة أخرى على الدروس نفسها.';
+
+  @override
+  String allAccessCoveredBodyUntil(String date) {
+    return 'تستطيع مشاهدة كل دروس هذه الدورة باشتراكك الشامل المدفوع حتى $date. الاشتراك المنفصل سيحاسبك مرة أخرى على الدروس نفسها.';
+  }
+
+  @override
+  String get allAccessCoveredKeep => 'أكتفي باشتراكي الشامل';
+
+  @override
+  String get allAccessCoveredBuy => 'اشترِ هذا الاشتراك على أي حال';
 }

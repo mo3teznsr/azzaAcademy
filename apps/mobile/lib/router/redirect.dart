@@ -26,6 +26,9 @@ String? computeRedirect({
     return path == Routes.splash ? null : Routes.splash;
   }
 
+  // The all-access plan rides on course ids in plan rows, notices and links; it is never opened as a course page.
+  if (Routes.isAllAccessCoursePath(path)) return Routes.allAccess;
+
   final user = auth.value;
   if (path == Routes.verifyEmail) return null;
   final from = Routes.safeFrom(uri.queryParameters['from']);

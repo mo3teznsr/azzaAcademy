@@ -20,8 +20,10 @@ import { quizRoutes } from './modules/quizzes/quiz.routes';
 import { adminCourseRoutes, courseRoutes } from './modules/courses/course.routes';
 import { adminCategoryImageRoutes, categoryRoutes } from './modules/categories/category.routes';
 import { engagementRoutes } from './modules/reviews/review.routes';
+import { adminBlogRoutes, blogRoutes } from './modules/blog/blog.routes';
 import { instructorApplicationRoutes } from './modules/instructors/instructor-application.routes';
 import { meRoutes } from './modules/me/me.routes';
+import { progressRoutes } from './modules/progress/progress.routes';
 import { adminFinanceRoutes, paymentRoutes } from './modules/payments/payments.routes';
 import { adminPayoutRoutes, teacherPayoutRoutes } from './modules/payouts/payout.routes';
 import { sessionRoutes } from './modules/sessions/session.routes';
@@ -84,6 +86,7 @@ export function createApp(container: Container) {
       appleIap: services.appleIap,
       tabby: services.tabby,
       lessonStreaming: services.lessonStreaming,
+      payoutDispatch: services.payoutDispatch,
     }),
   );
   // Public, token-signed ICS feed (calendar apps send no cookies).
@@ -113,11 +116,13 @@ export function createApp(container: Container) {
 
   const api = new Hono<AppEnv>()
     .route('/', engagementRoutes(services.reviews, services.savedCourses))
+    .route('/blog', blogRoutes(services.blog))
     .route('/courses', courseRoutes(services.courses))
     .route('/categories', categoryRoutes(services.categories))
     .route('/instructor-applications', instructorApplicationRoutes(services.instructorApplications))
     .route('/batches', batchRoutes(services.batches))
     .route('/me', meRoutes(services.me, services.notifications, services.calendar))
+    .route('/me', progressRoutes(services.progress))
     .route('/stats', statsRoutes(services.stats))
     .route('/sessions', sessionRoutes(services.sessions))
     .route('/reschedule-requests', rescheduleRequestRoutes(services.rescheduleRequests))
@@ -128,6 +133,7 @@ export function createApp(container: Container) {
     .route('/teachers', teacherRoutes(services.teachers))
     .route('/admin', adminRoutes(services.admin, services.siteSettings))
     .route('/admin', adminMediaRoutes(services.courseMedia))
+    .route('/admin', adminBlogRoutes(services.blog))
     .route('/admin', adminSettingsRoutes(services.settings, services.siteSettings))
     .route('/admin', adminCurrencyRoutes(services.currencies))
     .route('/admin', adminCategoryImageRoutes(services.categories))
@@ -146,7 +152,7 @@ export function createApp(container: Container) {
     // Teachers upload covers and intro videos for the courses they propose.
     .route('/courses', adminMediaRoutes(services.courseMedia, ['TEACHER', 'ADMIN']))
     .route('/admin', adminFinanceRoutes(services))
-    .route('/admin', adminPayoutRoutes(services.payouts))
+    .route('/admin', adminPayoutRoutes(services.payouts, services.payoutDispatch))
     .route('/admin', adminReconciliationRoutes(services.reconciliation))
     .route('/admin', adminReportRoutes(services.reports))
     .route('/', siteSettingsRoutes(services.siteSettings))

@@ -60,3 +60,27 @@ AWS setup:
 5. Set `AWS_REGION`, `S3_BUCKET`, `CLOUDFRONT_URL` (the `https://dxxxx.cloudfront.net` or custom domain) in the API env.
 
 Keys are 128-bit random (`receipts/<hex>.<ext>`), so CloudFront URLs are unguessable but not access-controlled; switch to CloudFront signed URLs if receipts must require auth.
+
+## Lesson video streaming (MediaConvert + CloudFront)
+
+Uploaded lesson videos already live in the bucket (`course-videos/<hex>.mp4`). The `VideoTranscoder` port (`MediaConvertTranscoder`) submits an **AWS Elemental MediaConvert** job that reads the upload in place and writes, under `streams/<lessonId>/<nonce>/`:
+
+- `hls/master.m3u8` + `master_<240|360|720|1080>p.m3u8` + `.ts` segments (H.264 QVBR, AAC, 6 s segments);
+- `mp4/lesson_low.mp4` (360p, progressive) for data saver and offline downloads;
+- `poster/lesson_poster.0000001.jpg` (frame at 5 s; `.0000000` for videos under 6 s).
+
+The job id is the lesson's `streamAssetId`. Completion: EventBridge → SNS → `POST /api/webhooks/mediaconvert` (SNS signature + topic check, then `GetJob`), with the `sync-lesson-streams` polling job as the fallback. Web and mobile see the same `stream` object as before.
+
+**Delivery: a playlist-rewrite endpoint, not signed cookies.** Every HLS segment must carry a CloudFront signature. Signed cookies would need the CDN under the API's cookie domain plus credentialed CORS in hls.js, and the mobile `video_player` cannot share browser cookies (it would have to send `Cookie` headers, which AVPlayer applies inconsistently to segment requests). A signed playlist URL alone fails too: players resolve segment URIs against the playlist URL and drop its query string. So `hlsUrl` is `<API_URL>/api/v1/lesson-streams/<token>/master.m3u8`: the API reads the playlist from S3 and makes every URI absolute — rendition playlists back through the same route, segments on CloudFront with one custom-policy signature (`Resource: <cdn>/streams/<lessonId>/<nonce>/hls/*`, `DateLessThan` = the token's expiry). Plain URLs, no headers or cookies: it works in hls.js, Safari/AVPlayer and ExoPlayer. Playlists are tiny (rewritten per request, cached privately 30 s) while segments stay on CloudFront. The token (HMAC, purpose `azza:lesson-streams:v1`, 6 h) is issued only with a lesson the viewer may read and is never accepted as a download link. Single files (poster, low MP4, original upload, download redirects) are canned-policy signed URLs.
+
+AWS setup:
+
+1. **MediaConvert role** (IAM → Roles, trusted entity `mediaconvert.amazonaws.com`): `s3:GetObject` on `arn:aws:s3:::<bucket>/course-videos/*`, `s3:PutObject` on `arn:aws:s3:::<bucket>/streams/*` (plus `kms:Decrypt`/`kms:GenerateDataKey` with SSE-KMS). Set `MEDIACONVERT_ROLE_ARN`.
+2. **API permissions**: `mediaconvert:CreateJob`, `mediaconvert:GetJob`, `iam:PassRole` on that role, and `s3:GetObject` on `arn:aws:s3:::<bucket>/streams/*` (playlists). `MEDIACONVERT_REGION` if jobs run outside `AWS_REGION` (check MediaConvert is offered there); the SDK uses the regional endpoint, `MEDIACONVERT_ENDPOINT` overrides it. Optional `MEDIACONVERT_QUEUE_ARN`.
+3. **Completion events**: SNS → standard topic (`azza-mediaconvert`) whose access policy lets `events.amazonaws.com` `sns:Publish`. EventBridge → rule on the default bus, pattern `{ "source": ["aws.mediaconvert"], "detail-type": ["MediaConvert Job State Change"], "detail": { "status": ["COMPLETE", "ERROR", "CANCELED"] } }`, target the topic. SNS → **HTTPS** subscription to `https://<api host>/api/webhooks/mediaconvert` (raw message delivery off); the API confirms it automatically. Set `MEDIACONVERT_SNS_TOPIC_ARN` (required in production; other topics are refused).
+4. **CloudFront signing**: `openssl genrsa -out cf.pem 2048 && openssl rsa -pubout -in cf.pem -out cf.pub.pem`; CloudFront → Public keys → add `cf.pub.pem`; Key groups → create one with it. Set `CLOUDFRONT_KEY_PAIR_ID` (the public key id) and `CLOUDFRONT_PRIVATE_KEY_PATH` (or `CLOUDFRONT_PRIVATE_KEY`).
+5. **Cache behaviour `streams/*`** (same S3 origin + OAC): HTTPS only, `CachingOptimized` (query strings out of the cache key), *Restrict viewer access* → **Trusted key groups** → the group above. Deploy the API with the signing key **before** restricting, or streams stop playing.
+6. **CORS for hls.js** (segments are fetched by XHR from the web origin): a response headers policy on `streams/*` allowing origin `https://azza.academy` (plus staging), methods `GET, HEAD`, header `Range`, exposing `Content-Length, Content-Range`. Playlists come from the API, whose CORS already allows `TRUSTED_ORIGINS`.
+7. **Original uploads**: with a signing key the API signs lesson `videoUrl`s and download redirects. `course-videos/*` also holds public course intro videos, so restrict that behaviour only once intro videos are signed too or lesson uploads move to their own folder; until then originals still rely on unguessable keys.
+
+Existing videos: `POST /api/v1/admin/lessons-streaming/backfill` (or `VIDEO_TRANSCODE_BACKFILL=true`) submits jobs for lessons uploaded before streaming was set up.

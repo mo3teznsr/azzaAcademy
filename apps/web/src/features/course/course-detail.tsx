@@ -37,6 +37,7 @@ import { AllAccessIncluded, AllAccessTeaser, findAllAccess } from '../subscripti
 import { PlanBanner } from '../subscriptions/plan-banner';
 import { PendingTransfer } from '../subscriptions/manage-plan';
 import { CourseReviews } from './reviews';
+import { TestimonialsStrip } from '../testimonials/testimonials-strip';
 import { track } from '@/lib/analytics';
 
 const ZONES = ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Africa/Cairo', 'Europe/London'];
@@ -325,6 +326,8 @@ function CourseView({ course }: { course: Course }) {
           {selectedId && <SeatPanel batchId={selectedId} tz={tz} courseTitle={title.text} />}
         </section>
       )}
+
+      <TestimonialsStrip course={course.slug} />
 
       <section id="reviews" aria-labelledby="reviews-title" className="flex scroll-mt-8 flex-col gap-6">
         <h2 id="reviews-title" className="font-display text-[44px] font-extrabold leading-none">

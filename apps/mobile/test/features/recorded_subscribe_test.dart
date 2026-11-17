@@ -70,7 +70,7 @@ class _FakeSubscriptions implements SubscriptionRepository {
   int lookups = 0;
 
   @override
-  Future<SubscribeStart> subscribe(String courseId, SubscriptionPlan plan, SubscribeMethod method) async {
+  Future<SubscribeStart> subscribe(String courseId, SubscriptionPlan plan, SubscribeMethod method, {bool confirmAllAccess = false}) async {
     subscribed.add((courseId, plan, method));
     return start!;
   }
@@ -81,6 +81,8 @@ class _FakeSubscriptions implements SubscriptionRepository {
     return statuses[i < statuses.length ? i : statuses.length - 1];
   }
 
+  @override
+  Future<AllAccessPlan> allAccessPlan() async => const AllAccessPlan(enabled: false);
   @override
   Future<List<MySubscription>> mine() async => mineList;
   @override

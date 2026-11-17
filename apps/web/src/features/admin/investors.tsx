@@ -100,6 +100,7 @@ function Body({ data }: { data: AdminInvestors }) {
         ))}
       </dl>
       <MonthlyTable data={data} />
+      <DeferredPanel data={data} />
       <div className="grid gap-6 lg:grid-cols-2">
         <NrrTable data={data} />
         <ChannelPanel data={data} />
@@ -151,6 +152,78 @@ function MonthlyTable({ data }: { data: AdminInvestors }) {
           ))}
         </TableBody>
       </Table>
+    </Panel>
+  );
+}
+
+/** Deferred plan revenue: collected for months still to come; recognised revenue per month. */
+function DeferredPanel({ data }: { data: AdminInvestors }) {
+  const { t } = useI18n();
+  const d = t.investors.deferred;
+  const fm = useFormats();
+  const r = data.revenueRecognition;
+  const months = [...r.months].reverse();
+  const upcoming = r.upcoming.filter((m) => m.recognisedFils !== 0);
+  const tiles = [
+    { label: d.deferred, value: fm.aed(r.deferredFils), note: d.deferredNote },
+    { label: d.collected, value: fm.aed(r.collectedFils) },
+    { label: d.recognised, value: fm.aed(r.recognisedToDateFils) },
+  ];
+  return (
+    <Panel aria-labelledby="inv-deferred">
+      <SectionHeader title={<span id="inv-deferred">{d.title}</span>} />
+      <p className="max-w-prose text-sm text-muted-foreground">{d.intro}</p>
+      <dl className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
+        {tiles.map((tile) => (
+          <div key={tile.label} className="flex flex-col gap-1 rounded-xl border border-border p-4">
+            <dt className="label-mono text-muted-foreground">{tile.label}</dt>
+            <dd className="font-display text-2xl font-extrabold tabular-nums">{tile.value}</dd>
+            {tile.note && <dd className="text-xs text-muted-foreground">{tile.note}</dd>}
+          </div>
+        ))}
+      </dl>
+      {r.collectedFils === 0 ? (
+        <p className="text-sm text-muted-foreground">{d.none}</p>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t.growth.month}</TableHead>
+                <TableHead className="text-end">{d.colCollected}</TableHead>
+                <TableHead className="text-end">{d.colRecognised}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {months.map((m) => (
+                <TableRow key={m.month}>
+                  <TableCell dir="ltr" className="text-start tabular-nums">{m.month}</TableCell>
+                  <TableCell className="text-end tabular-nums">{fm.aed(m.collectedFils)}</TableCell>
+                  <TableCell className="text-end tabular-nums font-semibold">{fm.aed(m.recognisedFils)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {upcoming.length > 0 && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t.growth.month}</TableHead>
+                  <TableHead className="text-end">{d.upcoming}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {upcoming.map((m) => (
+                  <TableRow key={m.month}>
+                    <TableCell dir="ltr" className="text-start tabular-nums">{m.month}</TableCell>
+                    <TableCell className="text-end tabular-nums">{fm.aed(m.recognisedFils)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      )}
     </Panel>
   );
 }

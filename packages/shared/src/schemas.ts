@@ -171,6 +171,8 @@ export type UpdateCategoryInput = z.infer<typeof updateCategoryInput>;
 export const courseReviewInput = z.object({
   rating: z.number().int().min(1).max(5),
   body: z.string().trim().max(2000).default(''),
+  /** "Azza may quote this review on its website." Left out on an edit = unchanged; a new review starts without consent. */
+  quoteConsent: z.boolean().optional(),
 });
 export type CourseReviewInput = z.infer<typeof courseReviewInput>;
 export const reviewReplyInput = z.object({ reply: z.string().trim().min(2).max(2000) });
@@ -731,6 +733,13 @@ export const subscribeInput = z.object({
   method: z.enum(['STRIPE', 'APPLE_IAP', 'BANK_TRANSFER']),
   bankAccountId: id.optional(),
   displayCurrency: currencyCode.optional(),
+  /** Admin coupon, bank transfer only and on the first payment (card plans take Stripe promotion codes on the payment page). */
+  couponCode: z.string().trim().min(1).max(40).optional(),
+  /**
+   * A course plan bought while the learner holds a live all-access plan (which already opens the course) is refused with
+   * `ALL_ACCESS_ACTIVE` unless this is true: the learner saw the warning and still wants it.
+   */
+  confirmAllAccess: z.boolean().optional(),
 });
 export type SubscribeInput = z.infer<typeof subscribeInput>;
 

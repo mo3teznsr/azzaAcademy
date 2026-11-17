@@ -55,6 +55,8 @@ class _Plans implements SubscriptionRepository {
   final subscribed = <(String, SubscriptionPlan, SubscribeMethod)>[];
 
   @override
+  Future<AllAccessPlan> allAccessPlan() async => const AllAccessPlan(enabled: false);
+  @override
   Future<List<MySubscription>> mine() async => list;
   @override
   Future<void> cancel(String id) async => calls.add('cancel:$id');
@@ -75,7 +77,7 @@ class _Plans implements SubscriptionRepository {
   }
 
   @override
-  Future<SubscribeStart> subscribe(String courseId, SubscriptionPlan plan, SubscribeMethod method) async {
+  Future<SubscribeStart> subscribe(String courseId, SubscriptionPlan plan, SubscribeMethod method, {bool confirmAllAccess = false}) async {
     subscribed.add((courseId, plan, method));
     throw StateError('not needed');
   }

@@ -679,7 +679,7 @@ describe('reads', () => {
 });
 
 describe('the all-access plan through the course plan flow', () => {
-  const plan = { enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, stripeProductId: 'prod_all', stripeMonthlyPriceId: 'price_all_m', stripeYearlyPriceId: 'price_all_y' };
+  const plan = { enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, stripeProductId: 'prod_all', stripeMonthlyPriceId: 'price_all_m', stripeYearlyPriceId: 'price_all_y', appleMonthlyProductId: null, appleYearlyProductId: null };
 
   test('card checkout sells it like a course, with ALL_ACCESS_ID as the course', async () => {
     const ctx = setup();
@@ -703,6 +703,58 @@ describe('the all-access plan through the course plan flow', () => {
   });
 });
 
+describe('a course plan while an all-access plan is live', () => {
+  const plan = { ...EMPTY_ALL_ACCESS_PLAN, enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, stripeMonthlyPriceId: 'price_all_m', stripeYearlyPriceId: 'price_all_y' };
+
+  async function withAllAccess(over: Partial<{ status: 'ACTIVE' | 'CANCELLING' | 'PAST_DUE' | 'EXPIRED' | 'INCOMPLETE'; currentPeriodEnd: Date }> = {}) {
+    const ctx = setup();
+    ctx.repo.courses.push(allAccessCourse(plan));
+    await ctx.service.subscribe('sam', ALL_ACCESS_ID, { plan: 'YEARLY', method: 'STRIPE' });
+    await ctx.repo.update('sub1', { status: 'ACTIVE', providerSubscriptionId: 'sub_all', currentPeriodEnd: periodEnd, ...over });
+    return ctx;
+  }
+
+  test('is refused with ALL_ACCESS_ACTIVE and the plan end, for every method', async () => {
+    const ctx = await withAllAccess();
+    const err = await errorOf(ctx.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'STRIPE' }));
+    expect(err?.code).toBe('ALL_ACCESS_ACTIVE');
+    expect(err?.status).toBe(409);
+    expect(err?.details).toEqual({ currentPeriodEnd: periodEnd.toISOString(), cancelAtPeriodEnd: false });
+    expect(await codeOf(ctx.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'APPLE_IAP' }))).toBe('ALL_ACCESS_ACTIVE');
+    expect(await codeOf(ctx.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'BANK_TRANSFER' }))).toBe('ALL_ACCESS_ACTIVE');
+    expect(ctx.repo.subs).toHaveLength(1);
+  });
+
+  test('goes through once the learner confirms', async () => {
+    const ctx = await withAllAccess();
+    const res = await ctx.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'STRIPE', confirmAllAccess: true });
+    expect(res.reference).toBe('sub2');
+  });
+
+  test('a lapsed, unfinished or other learner\'s all-access plan does not block', async () => {
+    const ended = await withAllAccess({ status: 'EXPIRED' });
+    expect((await ended.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'STRIPE' })).reference).toBe('sub2');
+
+    const past = await withAllAccess({ currentPeriodEnd: new Date(now.getTime() - DAY) });
+    expect((await past.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'STRIPE' })).reference).toBe('sub2');
+
+    const unfinished = setup();
+    unfinished.repo.courses.push(allAccessCourse(plan));
+    await unfinished.service.subscribe('sam', ALL_ACCESS_ID, { plan: 'YEARLY', method: 'STRIPE' });
+    expect((await unfinished.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'STRIPE' })).reference).toBe('sub2');
+
+    const other = await withAllAccess();
+    expect((await other.service.subscribe('mia', 'logo-design', { plan: 'MONTHLY', method: 'STRIPE' })).reference).toBe('sub2');
+  });
+
+  test('a cancelling or past-due plan in grace still warns', async () => {
+    const cancelling = await withAllAccess({ status: 'CANCELLING' });
+    expect(await codeOf(cancelling.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'STRIPE' }))).toBe('ALL_ACCESS_ACTIVE');
+    const pastDue = await withAllAccess({ status: 'PAST_DUE', currentPeriodEnd: new Date(now.getTime() - DAY) });
+    expect(await codeOf(pastDue.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'STRIPE' }))).toBe('ALL_ACCESS_ACTIVE');
+  });
+});
+
 describe('AllAccessPlanService', () => {
   function planSetup() {
     let stored = { ...EMPTY_ALL_ACCESS_PLAN };
@@ -713,7 +765,7 @@ describe('AllAccessPlanService', () => {
   test('setting prices syncs VAT-inclusive Stripe Prices and switches the plan on', async () => {
     const { service, stored } = planSetup();
     const out = await service.update({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000 });
-    expect(out).toEqual({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, courseCount: 12, cardReady: true });
+    expect(out).toEqual({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, courseCount: 12, appleProducts: null, cardReady: true });
     expect(stored()).toMatchObject({ stripeProductId: `prod_fake_${ALL_ACCESS_ID}`, stripeMonthlyPriceId: 'price_fake_m_21000', stripeYearlyPriceId: 'price_fake_y_210000' });
   });
 
@@ -723,6 +775,18 @@ describe('AllAccessPlanService', () => {
     await service.update({ enabled: false, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000 });
     expect(stored()).toMatchObject({ enabled: false, stripeMonthlyPriceId: 'price_fake_m_21000' });
     expect((await service.view()).enabled).toBe(false);
+  });
+
+  test('App Store products: only the all-access ids are accepted, null clears, and the public view shows them', async () => {
+    const { service, stored } = planSetup();
+    expect(await codeOf(service.setAppleProducts({ monthly: 'com.futuretech.azza.rec.logo-design.monthly' }))).toBe('APPLE_PRODUCT_MISMATCH');
+    const out = await service.setAppleProducts({ monthly: 'com.futuretech.azza.rec.all_access.monthly', yearly: 'com.futuretech.azza.rec.all_access.yearly' });
+    expect(out.appleProducts).toEqual({ monthly: 'com.futuretech.azza.rec.all_access.monthly', yearly: 'com.futuretech.azza.rec.all_access.yearly' });
+    await service.setAppleProducts({ yearly: null });
+    expect(stored()).toMatchObject({ appleMonthlyProductId: 'com.futuretech.azza.rec.all_access.monthly', appleYearlyProductId: null });
+    expect((await service.view()).appleProducts).toEqual({ monthly: 'com.futuretech.azza.rec.all_access.monthly', yearly: null });
+    await service.setAppleProducts({ monthly: null });
+    expect((await service.view()).appleProducts).toBeNull();
   });
 
   test('the input refuses switching on without prices, and a yearly price above twelve months', () => {

@@ -11401,6 +11401,504 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This question has answers, so it can no longer be deleted.'**
   String get errQaHasAnswers;
+
+  /// No description provided for @progressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My progress'**
+  String get progressTitle;
+
+  /// No description provided for @progressIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Small, steady sessions add up. This page is just for you.'**
+  String get progressIntro;
+
+  /// No description provided for @progressCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week'**
+  String get progressCardTitle;
+
+  /// No description provided for @progressStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get progressStreak;
+
+  /// No description provided for @progressStreakDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} day} other{{count} days}}'**
+  String progressStreakDays(int count);
+
+  /// No description provided for @progressBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best: {days}'**
+  String progressBest(String days);
+
+  /// No description provided for @progressTodayDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Today counts.'**
+  String get progressTodayDone;
+
+  /// No description provided for @progressTodayPending.
+  ///
+  /// In en, this message translates to:
+  /// **'A lesson, a quiz, a live class or 5 minutes of video today keeps it going.'**
+  String get progressTodayPending;
+
+  /// No description provided for @progressFreezeAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'One missed day this week won’t break it.'**
+  String get progressFreezeAvailable;
+
+  /// No description provided for @progressFreezeUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'This week’s missed day is covered.'**
+  String get progressFreezeUsed;
+
+  /// No description provided for @progressStartStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn today to start a streak.'**
+  String get progressStartStreak;
+
+  /// No description provided for @progressWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get progressWeek;
+
+  /// No description provided for @progressDayLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'{day}: learning day'**
+  String progressDayLearned(String day);
+
+  /// No description provided for @progressDayFrozen.
+  ///
+  /// In en, this message translates to:
+  /// **'{day}: covered by this week’s freeze'**
+  String progressDayFrozen(String day);
+
+  /// No description provided for @progressDayMissed.
+  ///
+  /// In en, this message translates to:
+  /// **'{day}: no learning'**
+  String progressDayMissed(String day);
+
+  /// No description provided for @progressDayAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'{day}: still ahead'**
+  String progressDayAhead(String day);
+
+  /// No description provided for @progressGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly goal'**
+  String get progressGoal;
+
+  /// No description provided for @progressGoalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {target} learning days'**
+  String progressGoalDays(String done, String target);
+
+  /// No description provided for @progressGoalLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {target} lessons'**
+  String progressGoalLessons(String done, String target);
+
+  /// No description provided for @progressGoalMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached this week. Nicely done.'**
+  String get progressGoalMet;
+
+  /// No description provided for @progressNoGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a weekly goal to keep a steady pace.'**
+  String get progressNoGoal;
+
+  /// No description provided for @progressSetGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a goal'**
+  String get progressSetGoal;
+
+  /// No description provided for @progressEditGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Change goal'**
+  String get progressEditGoal;
+
+  /// No description provided for @progressGoalSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weekly goal'**
+  String get progressGoalSheetTitle;
+
+  /// No description provided for @progressGoalSheetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what fits your week. You can change it any time; it resets every Monday.'**
+  String get progressGoalSheetBody;
+
+  /// No description provided for @progressUnitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get progressUnitLabel;
+
+  /// No description provided for @progressUnitDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning days'**
+  String get progressUnitDays;
+
+  /// No description provided for @progressUnitLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons'**
+  String get progressUnitLessons;
+
+  /// No description provided for @progressTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Per week'**
+  String get progressTargetLabel;
+
+  /// No description provided for @progressReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me late in the week if I’m behind'**
+  String get progressReminders;
+
+  /// No description provided for @progressRemindersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'At most one reminder a week, on Friday evening.'**
+  String get progressRemindersHint;
+
+  /// No description provided for @progressSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save goal'**
+  String get progressSave;
+
+  /// No description provided for @progressRemoveGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove goal'**
+  String get progressRemoveGoal;
+
+  /// No description provided for @progressSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal saved'**
+  String get progressSaved;
+
+  /// No description provided for @progressRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal removed'**
+  String get progressRemoved;
+
+  /// No description provided for @progressBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get progressBadges;
+
+  /// No description provided for @progressBadgesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{earned} of {total} earned'**
+  String progressBadgesCount(String earned, String total);
+
+  /// No description provided for @progressLatestBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest badges'**
+  String get progressLatestBadges;
+
+  /// No description provided for @progressNoBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first badge comes with your first lesson.'**
+  String get progressNoBadges;
+
+  /// No description provided for @progressEarnedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned {date}'**
+  String progressEarnedOn(String date);
+
+  /// No description provided for @progressLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet'**
+  String get progressLocked;
+
+  /// No description provided for @progressPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges are personal. Nobody else sees them.'**
+  String get progressPrivate;
+
+  /// No description provided for @progressRulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get progressRulesTitle;
+
+  /// No description provided for @progressRule1.
+  ///
+  /// In en, this message translates to:
+  /// **'A learning day is a day with a completed lesson, at least 5 minutes of video, a quiz or a live class, in your time zone.'**
+  String get progressRule1;
+
+  /// No description provided for @progressRule2.
+  ///
+  /// In en, this message translates to:
+  /// **'Miss one day in a week and your streak carries on. Two missed days in a row, or a second one in the same week, start it again.'**
+  String get progressRule2;
+
+  /// No description provided for @progressRule3.
+  ///
+  /// In en, this message translates to:
+  /// **'Weeks run Monday to Sunday.'**
+  String get progressRule3;
+
+  /// No description provided for @badgeFirstLessonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First lesson'**
+  String get badgeFirstLessonTitle;
+
+  /// No description provided for @badgeFirstLessonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed your first lesson.'**
+  String get badgeFirstLessonBody;
+
+  /// No description provided for @badgeFirstLiveClassTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First live class'**
+  String get badgeFirstLiveClassTitle;
+
+  /// No description provided for @badgeFirstLiveClassBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined your first live class.'**
+  String get badgeFirstLiveClassBody;
+
+  /// No description provided for @badgeLessons10Title.
+  ///
+  /// In en, this message translates to:
+  /// **'10 lessons'**
+  String get badgeLessons10Title;
+
+  /// No description provided for @badgeLessons10Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed 10 lessons.'**
+  String get badgeLessons10Body;
+
+  /// No description provided for @badgePerfectQuizTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Full marks'**
+  String get badgePerfectQuizTitle;
+
+  /// No description provided for @badgePerfectQuizBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Scored 100% on a quiz.'**
+  String get badgePerfectQuizBody;
+
+  /// No description provided for @badgeStreak7Title.
+  ///
+  /// In en, this message translates to:
+  /// **'7-day streak'**
+  String get badgeStreak7Title;
+
+  /// No description provided for @badgeStreak7Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept a streak for 7 days.'**
+  String get badgeStreak7Body;
+
+  /// No description provided for @badgeFirstCertificateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First certificate'**
+  String get badgeFirstCertificateTitle;
+
+  /// No description provided for @badgeFirstCertificateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned your first certificate.'**
+  String get badgeFirstCertificateBody;
+
+  /// No description provided for @badgeLessons50Title.
+  ///
+  /// In en, this message translates to:
+  /// **'50 lessons'**
+  String get badgeLessons50Title;
+
+  /// No description provided for @badgeLessons50Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed 50 lessons.'**
+  String get badgeLessons50Body;
+
+  /// No description provided for @badgeStreak30Title.
+  ///
+  /// In en, this message translates to:
+  /// **'30-day streak'**
+  String get badgeStreak30Title;
+
+  /// No description provided for @badgeStreak30Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept a streak for 30 days.'**
+  String get badgeStreak30Body;
+
+  /// No description provided for @allAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All courses'**
+  String get allAccessTitle;
+
+  /// No description provided for @allAccessKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'All-access plan'**
+  String get allAccessKicker;
+
+  /// No description provided for @allAccessHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Every recorded course. One plan.'**
+  String get allAccessHeadline;
+
+  /// No description provided for @allAccessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'One monthly or yearly plan opens every recorded course on Azza, including new ones as they launch. Live classes are sold separately.'**
+  String get allAccessBody;
+
+  /// No description provided for @allAccessCourseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} recorded course included} other{{count} recorded courses included}}'**
+  String allAccessCourseCount(int count);
+
+  /// No description provided for @allAccessGetLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Every lesson and quiz in every recorded course'**
+  String get allAccessGetLessons;
+
+  /// No description provided for @allAccessGetCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'A certificate for each course you finish'**
+  String get allAccessGetCertificate;
+
+  /// No description provided for @allAccessGetCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel any time, keep your progress'**
+  String get allAccessGetCancel;
+
+  /// No description provided for @allAccessUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The all-access plan is not available right now.'**
+  String get allAccessUnavailable;
+
+  /// No description provided for @allAccessYours.
+  ///
+  /// In en, this message translates to:
+  /// **'Your all-access plan is active'**
+  String get allAccessYours;
+
+  /// No description provided for @allAccessYoursBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every recorded course is open to you. Pick one and start learning.'**
+  String get allAccessYoursBody;
+
+  /// No description provided for @allAccessBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse recorded courses'**
+  String get allAccessBrowse;
+
+  /// No description provided for @allAccessManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage in Your plans'**
+  String get allAccessManage;
+
+  /// No description provided for @allAccessEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'All courses in one plan'**
+  String get allAccessEntry;
+
+  /// No description provided for @allAccessEntryFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} a month: every recorded course'**
+  String allAccessEntryFrom(String amount);
+
+  /// No description provided for @allAccessIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Included in your all-access plan'**
+  String get allAccessIncluded;
+
+  /// No description provided for @allAccessCoveredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your all-access plan already opens this course'**
+  String get allAccessCoveredTitle;
+
+  /// No description provided for @allAccessCoveredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can watch every lesson of this course with your all-access plan. A separate plan would charge you again for the same lessons.'**
+  String get allAccessCoveredBody;
+
+  /// No description provided for @allAccessCoveredBodyUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'You can watch every lesson of this course with your all-access plan, paid until {date}. A separate plan would charge you again for the same lessons.'**
+  String allAccessCoveredBodyUntil(String date);
+
+  /// No description provided for @allAccessCoveredKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my all-access plan'**
+  String get allAccessCoveredKeep;
+
+  /// No description provided for @allAccessCoveredBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy this plan anyway'**
+  String get allAccessCoveredBuy;
 }
 
 class _AppLocalizationsDelegate

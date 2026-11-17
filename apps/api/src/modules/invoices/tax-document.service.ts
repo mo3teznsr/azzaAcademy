@@ -122,7 +122,7 @@ export class TaxDocumentService {
       this.db.subscriptionPayment.findMany({
         where: { status: { in: ['PAID', 'REFUNDED'] }, paidAt: { gte: from }, totalFils: { gt: 0 }, subscription: { provider: { not: 'APPLE' } } },
         select: {
-          id: true, userId: true, subtotalFils: true, vatFils: true, totalFils: true, refundedFils: true, plan: true, periodStart: true, periodEnd: true,
+          id: true, userId: true, subtotalFils: true, discountFils: true, vatFils: true, totalFils: true, refundedFils: true, plan: true, periodStart: true, periodEnd: true,
           user: { select: { name: true, email: true } },
           subscription: { select: { course: { select: { titleEn: true } } } },
         },
@@ -161,8 +161,9 @@ export class TaxDocumentService {
         userId: p.userId,
         buyer: p.user,
         description: `${p.subscription.course?.titleEn ?? ALL_ACCESS_TITLE.en} · ${PLAN_EN[p.plan]} (${day(p.periodStart)} to ${day(p.periodEnd)})`,
-        subtotalFils: p.subtotalFils,
-        discountFils: 0,
+        // A plan payment stores the taxable amount; a coupon (bank transfer, first payment) shows as the discount line.
+        subtotalFils: p.subtotalFils + p.discountFils,
+        discountFils: p.discountFils,
         vatFils: p.vatFils,
         totalFils: p.totalFils,
         refundedFils: p.refundedFils,

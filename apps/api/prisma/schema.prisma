@@ -137,6 +137,8 @@ enum PayoutStatus {
   HELD
   PAID
   CARRIED_OVER
+  /// Sent through the payout provider; PAID once the provider confirms, back to READY when it fails.
+  PROCESSING
 }
 
 enum AttendanceMarkKind {
@@ -188,6 +190,7 @@ model User {
   teaching                     Batch[]                 @relation("BatchTeacher")
   coursesProposed              Course[]                @relation("CourseAuthor")
   courseReviews                CourseReview[]
+  blogPosts                    BlogPost[]
   instructorApplications       InstructorApplication[] @relation("Applicant")
   lessonProgress               LessonProgress[]
   videoPositions               LessonVideoPosition[]
@@ -223,19 +226,21 @@ model User {
   assignedTickets              SupportTicket[]         @relation("SupportTicketAssignee")
   supportMessages              SupportMessage[]
   subscriptionPayments         SubscriptionPayment[]
+  auditEntries                 AuditLog[]              @relation("AuditActor")
+  lifecycleMessages            LifecycleMessage[]
+  taxDocuments                 TaxDocument[]
+  referralsMade                Referral[]              @relation("ReferralReferrer")
+  referredBy                   Referral?               @relation("ReferralReferred")
+  ownCoupons                   Coupon[]                @relation("CouponOwner")
+  lessonQuestions              LessonQuestion[]        @relation("LessonQuestionAuthor")
+  lessonAnswers                LessonAnswer[]          @relation("LessonAnswerAuthor")
+  organizationMemberships      OrganizationMember[]
+  seatAssignments              SeatAssignment[]        @relation("SeatAssignee")
+  seatPacksCreated             SeatPack[]              @relation("SeatPackCreator")
+  learningGoal                 LearningGoal?
+  badges                       LearnerBadge[]
 
   @@map("user")
-  auditEntries    AuditLog[] @relation("AuditActor")
-  lifecycleMessages LifecycleMessage[]
-  taxDocuments    TaxDocument[]
-  referralsMade   Referral[] @relation("ReferralReferrer")
-  referredBy      Referral?  @relation("ReferralReferred")
-  ownCoupons      Coupon[]   @relation("CouponOwner")
-  lessonQuestions LessonQuestion[] @relation("LessonQuestionAuthor")
-  lessonAnswers   LessonAnswer[]   @relation("LessonAnswerAuthor")
-  organizationMemberships OrganizationMember[]
-  seatAssignments         SeatAssignment[] @relation("SeatAssignee")
-  seatPacksCreated        SeatPack[]       @relation("SeatPackCreator")
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -349,18 +354,19 @@ model Course {
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
 
-  modules       CourseModule[]
-  batches       Batch[]
-  coupons       Coupon[]
-  reviews       CourseReview[]
-  savedBy       SavedCourse[]
-  subscriptions Subscription[]
-  seatPacks     SeatPack[]
+  modules         CourseModule[]
+  batches         Batch[]
+  coupons         Coupon[]
+  reviews         CourseReview[]
+  blogPosts       BlogPostCourse[]
+  savedBy         SavedCourse[]
+  subscriptions   Subscription[]
+  seatPacks       SeatPack[]
   watchTimes      LessonWatchTime[]
   allAccessShares AllAccessShare[]
-  quizzes       Quiz[]
-  earnings      Earning[]
-  certificates  Certificate[]
+  quizzes         Quiz[]
+  earnings        Earning[]
+  certificates    Certificate[]
 
   @@index([status, category])
   @@index([createdById])
@@ -438,32 +444,32 @@ model ScheduleRule {
 
 /// A scheduled live class. Each maps 1:1 to a LiveKit room.
 model LiveSession {
-  id           String        @id @default(cuid())
-  batchId      String
-  batch        Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  number       Int
-  title        String
-  agenda       Json?
-  notes        String?
-  startsAt     DateTime
-  endsAt       DateTime
-  status       SessionStatus @default(SCHEDULED)
-  movedFrom    DateTime?
-  moveReason   String?
-  hostId       String?
-  host         User?         @relation("SessionHost", fields: [hostId], references: [id])
-  roomName     String        @unique
-  startedAt    DateTime?
-  endedAt      DateTime?
-  recordingUrl String?
-  egressId     String?
+  id             String        @id @default(cuid())
+  batchId        String
+  batch          Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  number         Int
+  title          String
+  agenda         Json?
+  notes          String?
+  startsAt       DateTime
+  endsAt         DateTime
+  status         SessionStatus @default(SCHEDULED)
+  movedFrom      DateTime?
+  moveReason     String?
+  hostId         String?
+  host           User?         @relation("SessionHost", fields: [hostId], references: [id])
+  roomName       String        @unique
+  startedAt      DateTime?
+  endedAt        DateTime?
+  recordingUrl   String?
+  egressId       String?
   /// When each reminder before the session went out (24 h, 1 h, 10 min), and when absentees were told about the recording.
   reminderDayAt  DateTime?
   reminderHourAt DateTime?
   reminderSoonAt DateTime?
   missedNoticeAt DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   attendance         Attendance[]
   messages           ChatMessage[]
@@ -536,9 +542,9 @@ model Order {
   receiptUploadedAt          DateTime?
   expiresAt                  DateTime?
   /// Where the buyer came from for this purchase (UTM tags, click ids).
-  attribution Json?
+  attribution                Json?
   /// When the "your hold ends soon" reminder went out (bank transfers).
-  receiptReminderAt DateTime?
+  receiptReminderAt          DateTime?
   verifiedById               String?
   verifiedBy                 User?             @relation("OrderVerifier", fields: [verifiedById], references: [id])
   verifiedAt                 DateTime?
@@ -548,9 +554,9 @@ model Order {
   updatedAt                  DateTime          @updatedAt
   couponRedemption           CouponRedemption?
   supportTickets             SupportTicket[]
+  taxDocuments               TaxDocument[]
 
   @@index([status, method])
-  taxDocuments TaxDocument[]
 }
 
 model BankAccount {
@@ -568,7 +574,7 @@ model BankAccount {
   updatedAt    DateTime @updatedAt
 
   /// How this bank's CSV statement maps to date, credit/amount and description columns (see StatementMapping).
-  statementMapping     Json?
+  statementMapping Json?
 
   orders               Order[]
   subscriptionPayments SubscriptionPayment[]
@@ -638,50 +644,53 @@ model Currency {
 }
 
 model Coupon {
-  id             String             @id @default(cuid())
-  code           String             @unique
-  percentOff     Int?
-  amountOffFils  Int?
-  maxRedemptions Int?
-  redemptions    Int                @default(0)
-  expiresOn      DateTime?
+  id                String             @id @default(cuid())
+  code              String             @unique
+  percentOff        Int?
+  amountOffFils     Int?
+  maxRedemptions    Int?
+  redemptions       Int                @default(0)
+  expiresOn         DateTime?
   /// Pause switch — a paused coupon is refused at checkout.
-  active         Boolean            @default(true)
+  active            Boolean            @default(true)
   /// First valid day (inclusive). null = valid immediately.
-  startsOn       DateTime?
+  startsOn          DateTime?
   /// Max paid uses per student. null = unlimited.
-  perUserLimit   Int?
+  perUserLimit      Int?
   /// Minimum order subtotal (before discount). null = no minimum.
-  minOrderFils   Int?
+  minOrderFils      Int?
   /// Stored only — one coupon per order today.
-  stackable      Boolean            @default(false)
+  stackable         Boolean            @default(false)
   /// Scope: at most one of courseId / batchId. Both null = every course.
-  courseId       String?
-  course         Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  batchId        String?
-  batch          Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  courseId          String?
+  course            Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  batchId           String?
+  batch             Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
   /// Personal coupon (referral rewards): only this user can use it. null = anyone.
-  ownerId        String?
-  owner          User?              @relation("CouponOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt      DateTime           @default(now())
-  usages         CouponRedemption[]
-  referralRewardOf  Referral?       @relation("ReferralReferrerCoupon")
-  referralWelcomeOf Referral?       @relation("ReferralReferredCoupon")
+  ownerId           String?
+  owner             User?              @relation("CouponOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt         DateTime           @default(now())
+  usages            CouponRedemption[]
+  referralRewardOf  Referral?          @relation("ReferralReferrerCoupon")
+  referralWelcomeOf Referral?          @relation("ReferralReferredCoupon")
 
   @@index([ownerId])
 }
 
 /// One row per paid order that used a coupon (written when the order is PAID).
 model CouponRedemption {
-  id           String   @id @default(cuid())
-  couponId     String
-  coupon       Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderId      String   @unique
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  discountFils Int
-  createdAt    DateTime @default(now())
+  id                    String               @id @default(cuid())
+  couponId              String
+  coupon                Coupon               @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// A seat order, or (exactly one of the two) a plan payment by bank transfer.
+  orderId               String?              @unique
+  order                 Order?               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  subscriptionPaymentId String?              @unique
+  subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id], onDelete: Cascade)
+  discountFils          Int
+  createdAt             DateTime             @default(now())
 
   @@index([couponId, userId])
 }
@@ -852,12 +861,14 @@ model Earning {
   payoutId              String?
   payout                Payout?              @relation(fields: [payoutId], references: [id])
   note                  String?
+  /// Yearly plans accrue the teacher share in 12 monthly slices (0–11), each with its own `availableAt`. 0 for everything else.
+  sliceIndex            Int                  @default(0)
   createdAt             DateTime             @default(now())
   referral              Referral?            @relation("ReferralBonus")
   allAccessShare        AllAccessShare?
 
   @@unique([sessionId, teacherId, kind])
-  @@unique([subscriptionPaymentId, kind])
+  @@unique([subscriptionPaymentId, kind, sliceIndex])
   @@index([teacherId, status])
 }
 
@@ -879,35 +890,48 @@ model PayoutRun {
 }
 
 model Payout {
-  id                String       @id @default(cuid())
-  runId             String
-  run               PayoutRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
-  teacherId         String
-  teacher           User         @relation(fields: [teacherId], references: [id])
-  amountFils        Int
-  adjustmentsFils   Int          @default(0)
-  status            PayoutStatus @default(READY)
-  holdReason        String?
-  transferReference String?
-  paidAt            DateTime?
-  createdAt         DateTime     @default(now())
+  id                    String       @id @default(cuid())
+  runId                 String
+  run                   PayoutRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  teacherId             String
+  teacher               User         @relation(fields: [teacherId], references: [id])
+  amountFils            Int
+  adjustmentsFils       Int          @default(0)
+  status                PayoutStatus @default(READY)
+  holdReason            String?
+  transferReference     String?
+  paidAt                DateTime?
+  createdAt             DateTime     @default(now())
+  /// Payout provider (e.g. "stripe_connect"): set on the first send.
+  provider              String?
+  /// The provider's id for the latest attempt (Stripe: "<connected account>/<payout id>").
+  providerTransferId    String?      @unique
+  /// PENDING | IN_TRANSIT | PAID | FAILED (the provider's view of the latest attempt).
+  providerStatus        String?
+  providerFailureReason String?
+  /// Each send is one attempt; the attempt number is part of the idempotency key.
+  providerAttempts      Int          @default(0)
+  providerSentAt        DateTime?
 
   earnings Earning[]
 
   @@unique([runId, teacherId])
+  @@index([status, provider])
 }
 
 model TeacherBankDetails {
-  id            String    @id @default(cuid())
-  userId        String    @unique
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bankName      String
-  accountHolder String
-  iban          String
-  swift         String
-  verified      Boolean   @default(false)
-  verifiedAt    DateTime?
-  updatedAt     DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankName        String
+  accountHolder   String
+  iban            String
+  swift           String
+  verified        Boolean   @default(false)
+  verifiedAt      DateTime?
+  /// Stripe Connect connected account (acct_...) that receives provider payouts; set by an admin after onboarding.
+  stripeAccountId String?
+  updatedAt       DateTime  @updatedAt
 }
 
 // ───────────────────────── Notifications ─────────────────────────
@@ -948,7 +972,8 @@ model Category {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  courses Course[]
+  courses   Course[]
+  blogPosts BlogPost[]
 }
 
 /// One review per student per course; only students who attended a session may post.
@@ -964,11 +989,16 @@ model CourseReview {
   repliedAt    DateTime?
   /// Hidden by an admin (moderation); excluded from the average.
   hidden       Boolean   @default(false)
+  /// The learner's own choice: "Azza may quote this review on its website". Withdrawing it unfeatures the review.
+  quoteConsent Boolean   @default(false)
+  /// Picked by an admin as a testimonial (landing page and course page). Needs consent, text, and a visible review.
+  featuredAt   DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   @@unique([courseId, userId])
   @@index([courseId, hidden, createdAt])
+  @@index([featuredAt])
 }
 
 model SavedCourse {
@@ -1040,14 +1070,14 @@ model Lesson {
   questions   LessonQuestion[]
   watchTimes  LessonWatchTime[]
 
-  /// Adaptive streaming (HLS) of an uploaded `videoUrl`, made by the `VideoTranscoder` (Bunny Stream). Null = never prepared.
+  /// Adaptive streaming (HLS) of an uploaded `videoUrl`, made by the `VideoTranscoder` (AWS MediaConvert). Null = never prepared.
   streamStatus    VideoStreamStatus?
-  /// Who made the asset (`bunny`) and its id there.
+  /// Who made the asset (`mediaconvert`) and its id there (the MediaConvert job id).
   streamProvider  String?
   streamAssetId   String?
   /// The `videoUrl` the asset was made from; a new upload resets the stream.
   streamSourceUrl String?
-  /// Unsigned playback URLs; signed per request when CDN token auth is on.
+  /// Unsigned CloudFront URLs; signed per request when CloudFront signing is configured.
   hlsUrl          String?
   posterUrl       String?
   /// Lowest-quality progressive MP4 (data saver and offline downloads); null when the provider has none.
@@ -1135,32 +1165,32 @@ model LessonAnswer {
 
 /// Platform-wide settings: a single row with id 'default'.
 model PlatformSettings {
-  id                 String   @id @default("default")
+  id                     String    @id @default("default")
   /// Default teacher cuts, in percent. A course's own `teacherCutPercent` wins when set.
-  liveCutPercent     Int
-  recordedCutPercent Int
+  liveCutPercent         Int
+  recordedCutPercent     Int
   /// Business rules; null = the env default (VAT_PERCENT, EARNING_HOLD_DAYS, MIN_PAYOUT_AED, BANK_TRANSFER_HOLD_HOURS).
-  vatPercent            Int?
-  earningHoldDays       Int?
-  minPayoutAed          Int?
-  bankTransferHoldHours Int?
+  vatPercent             Int?
+  earningHoldDays        Int?
+  minPayoutAed           Int?
+  bankTransferHoldHours  Int?
   /// Apple's commission on in-app purchases (percent of the price before VAT); null = APPLE_COMMISSION_PERCENT.
   appleCommissionPercent Int?
   /// Public contact details (footer, help, WhatsApp buttons). whatsappNumber: digits with country code, no `+`.
-  contactEmail   String?
-  contactPhone   String?
-  whatsappNumber String?
-  addressEn      String?
-  addressAr      String?
+  contactEmail           String?
+  contactPhone           String?
+  whatsappNumber         String?
+  addressEn              String?
+  addressAr              String?
   /// { instagram?, x?, facebook?, linkedin?, youtube?, tiktok?, snapchat? } — https URLs.
-  socials        Json     @default("{}")
+  socials                Json      @default("{}")
   /// Tax invoices (UAE FTA): the supplier's legal name, address and TRN. Invoices are issued only once a TRN is set,
   /// for payments made from `invoicingFrom` (set when the TRN is first saved).
-  legalName             String?
-  legalAddress          String?
-  taxRegistrationNumber String?
-  invoicingFrom         DateTime?
-  updatedAt          DateTime @updatedAt
+  legalName              String?
+  legalAddress           String?
+  taxRegistrationNumber  String?
+  invoicingFrom          DateTime?
+  updatedAt              DateTime  @updatedAt
 }
 
 /// A learner's plan on a recorded course, or the all-access plan when `courseId` is null (every published recorded course).
@@ -1197,7 +1227,7 @@ model Subscription {
   createdAt                  DateTime             @default(now())
   updatedAt                  DateTime             @updatedAt
 
-  payments SubscriptionPayment[]
+  payments       SubscriptionPayment[]
   seatAssignment SeatAssignment?
 
   @@index([userId, courseId])
@@ -1237,26 +1267,33 @@ model SubscriptionPayment {
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
 
-  earnings Earning[]
+  earnings           Earning[]
+  /// Bank transfer, first payment only: the admin coupon applied. `subtotalFils` is already net of `discountFils`.
+  couponCode         String?
+  discountFils       Int               @default(0)
+  couponRedemption   CouponRedemption?
   /// All-access plans only: when the period's teacher shares were worked out (once, after `periodEnd`).
   allAccessAccruedAt DateTime?
   allAccessShares    AllAccessShare[]
+  taxDocuments       TaxDocument[]
 
   @@index([subscriptionId])
   @@index([status])
-  taxDocuments TaxDocument[]
 }
 
 /// The all-access plan's settings: a single row with id 'default'. Prices before VAT, synced to one Stripe Product.
 model AllAccessPlan {
-  id                   String   @id @default("default")
-  enabled              Boolean  @default(false)
-  monthlyPriceFils     Int?
-  yearlyPriceFils      Int?
-  stripeProductId      String?
-  stripeMonthlyPriceId String?
-  stripeYearlyPriceId  String?
-  updatedAt            DateTime @updatedAt
+  id                    String   @id @default("default")
+  enabled               Boolean  @default(false)
+  monthlyPriceFils      Int?
+  yearlyPriceFils       Int?
+  stripeProductId       String?
+  stripeMonthlyPriceId  String?
+  stripeYearlyPriceId   String?
+  /// App Store products of the plan's own subscription group (`appleAllAccessProductId`); null = not sold on iOS.
+  appleMonthlyProductId String?
+  appleYearlyProductId  String?
+  updatedAt             DateTime @updatedAt
 }
 
 /// Seconds of a lesson's video a learner actually watched on a UTC day (from the player's position reports; recorded
@@ -1540,33 +1577,33 @@ enum TaxDocumentKind {
 /// A UAE tax invoice or credit note. Numbers are sequential with no gaps (TaxDocumentCounter); documents are never
 /// edited or deleted. Supplier and buyer details are snapshots taken at issue.
 model TaxDocument {
-  id                    String          @id @default(cuid())
+  id                    String               @id @default(cuid())
   kind                  TaxDocumentKind
   /// Position in its series (invoices and credit notes are numbered separately).
   seq                   Int
-  number                String          @unique
+  number                String               @unique
   /// A credit note's original invoice.
   invoiceId             String?
-  invoice               TaxDocument?    @relation("CreditNotes", fields: [invoiceId], references: [id])
-  creditNotes           TaxDocument[]   @relation("CreditNotes")
+  invoice               TaxDocument?         @relation("CreditNotes", fields: [invoiceId], references: [id])
+  creditNotes           TaxDocument[]        @relation("CreditNotes")
   orderId               String?
-  order                 Order?          @relation(fields: [orderId], references: [id])
+  order                 Order?               @relation(fields: [orderId], references: [id])
   subscriptionPaymentId String?
   subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id])
   /// The learner who paid; null on an organization's seat-pack invoice (the buyer is the organization).
   userId                String?
-  user                  User?           @relation(fields: [userId], references: [id])
+  user                  User?                @relation(fields: [userId], references: [id])
   seatPackId            String?
-  seatPack              SeatPack?       @relation(fields: [seatPackId], references: [id])
+  seatPack              SeatPack?            @relation(fields: [seatPackId], references: [id])
   description           String
   subtotalFils          Int
-  discountFils          Int             @default(0)
+  discountFils          Int                  @default(0)
   vatPercent            Int
   vatFils               Int
   totalFils             Int
   supplier              Json
   buyer                 Json
-  issuedAt              DateTime        @default(now())
+  issuedAt              DateTime             @default(now())
 
   @@unique([kind, seq])
   @@index([userId, issuedAt])
@@ -1770,4 +1807,80 @@ model SeatAssignment {
 
   @@index([seatPackId, status])
   @@index([userId])
+}
+
+// ───────────────────────── Learning progress (docs/PROGRESS.md) ─────────────────────────
+
+enum LearningGoalUnit {
+  DAYS
+  LESSONS
+}
+
+/// The learner's weekly goal (learning days or lessons per week) and whether they want the late-week reminder.
+model LearningGoal {
+  userId    String           @id
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unit      LearningGoalUnit
+  target    Int
+  reminders Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+/// A personal badge (`BADGE_IDS` in @azza/shared), earned once. Never shown to other learners.
+model LearnerBadge {
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge    String
+  earnedAt DateTime @default(now())
+
+  @@id([userId, badge])
+}
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// An article on the public blog. Arabic is required; the English version is optional.
+model BlogPost {
+  id            String           @id @default(cuid())
+  /// Latin letters, digits and dashes; the same slug serves /ar/blog/<slug> and /en/blog/<slug>.
+  slug          String           @unique
+  titleAr       String
+  titleEn       String?
+  excerptAr     String           @default("")
+  excerptEn     String?
+  /// Markdown.
+  bodyAr        String
+  bodyEn        String?
+  coverImageUrl String?
+  /// A course category the post belongs to (filter on /blog).
+  categorySlug  String?
+  category      Category?        @relation(fields: [categorySlug], references: [slug], onUpdate: Cascade, onDelete: SetNull)
+  tags          String[]         @default([])
+  /// A teacher shown as the author; null = written by Azza.
+  authorId      String?
+  author        User?            @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  status        BlogPostStatus   @default(DRAFT)
+  /// Public once PUBLISHED and this moment has passed (a future date schedules the post).
+  publishedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  courses       BlogPostCourse[]
+
+  @@index([status, publishedAt])
+  @@index([categorySlug])
+}
+
+/// Related courses shown as cards at the end of a post, in order.
+model BlogPostCourse {
+  postId   String
+  post     BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  position Int      @default(0)
+
+  @@id([postId, courseId])
+  @@index([courseId])
 }

@@ -69,9 +69,22 @@ Status: done in PR #11. Notes:
 
 Status: done in PR #11. Notes:
 - The all-access plan is sold by card and bank transfer, not in the iPhone app (needs an App Store product), and has no mobile purchase screen.
-- Streaming uses Bunny Stream and is off until its keys are set; offline copies are the low MP4 rendition.
+- Streaming uses AWS Elemental MediaConvert with CloudFront signed URLs and is off until its AWS settings are in place; offline copies are the low MP4 rendition.
 
 1. **All-access subscription** for recorded courses, with teacher shares split by minutes watched.
 2. **Companies and schools.** `Organization`, seat packs, invoices by bank transfer, completion reports per organization, manual enrolment by admins.
 3. **Adaptive streaming (HLS) and offline downloads** on mobile.
 4. **Investor metrics:** net revenue retention, LTV/CAC, payback, gross margin after platform fees and teacher shares, acquisition by channel.
+
+## Phase 5: Money follow-ups (November 2026)
+
+1. **Deferred revenue for yearly plans.** A yearly plan's teacher share is accrued in 12 monthly slices (`Earning.sliceIndex`, each with its own `availableAt` = period start + i months + hold), so a refund later in the year withdraws only slices not yet paid out (latest first) plus one proportional `REFUND_ADJUSTMENT`. Monthly plans keep one row. Earnings accrued before this change are untouched (a single full-share row is left as it is). The investor tab shows deferred revenue (collected, not yet earned, net of VAT and refunds), recognised plan revenue per month and what is still to recognise (`revenueRecognition()` in `growth/deferred-revenue.ts`; slices recognised at the start of each covered month). Seat orders are still recognised when sold.
+2. **Teacher payouts through Stripe Connect.** Chosen because Connect is available to a UAE platform with UAE connected accounts and pays out in AED to UAE bank accounts (T+5, 20 AED minimum), and Azza already runs on Stripe. Wise Business was not chosen: Wise's own pages conflict on AED and on UAE-registered businesses. A `PayoutProvider` port (`payouts/payout-provider.ts`, with a fake) and an HTTP adapter (`infrastructure/payments/stripe-connect-payouts.ts`): a transfer to the teacher's connected account (reused per `transfer_group`), then a manual payout on that account, both with idempotency keys per attempt. From an approved run an admin clicks "Send through Stripe": READY payouts become PROCESSING and are PAID only on Stripe's confirmation (Connect webhook verified with the endpoint secret and re-read from the API, plus a 15-minute polling job). Failures go back to READY with the reason. Every send, confirmation and failure is in the audit log. Off unless `PAYOUT_PROVIDER=stripe_connect`; the CSV and "mark paid" stay the fallback. Setup: enable Connect, onboard each teacher (Express or Custom) with a manual payout schedule, set their `acct_…` on the run screen, add the Connect webhook endpoint `/api/webhooks/payouts`.
+3. **Coupons on bank-transfer plans.** First payment only, same rules as seat checkout. `SubscriptionPayment.couponCode` and `discountFils`; `subtotalFils` is the taxable (discounted) amount, so teacher earnings and the FTA invoice follow the discount (the invoice shows it as a discount line). The redemption is recorded on approval (`CouponRedemption.subscriptionPaymentId`; `orderId` is now optional, exactly one of the two is set). The plan keeps its list price for renewals. Web only; mobile has no coupon field on transfers yet.
+
+## Phase 5: Other follow-ups (November 2026)
+
+- **Streaming on AWS.** Bunny Stream is replaced by AWS Elemental MediaConvert (HLS, a low MP4 for offline, a poster) with CloudFront signed URLs. Off until its AWS settings are in place.
+- **Learning progress.** Daily streaks, a weekly goal (days or lessons) and personal badges under `/me`, on web and mobile.
+- **All-access on mobile and in the App Store.** Products `com.futuretech.azza.rec.all_access.monthly|yearly` (to be created in App Store Connect), an All courses screen, a warning before buying a course plan on top of a live all-access plan (`ALL_ACCESS_ACTIVE`, confirmed with `confirmAllAccess`), and nudge and win-back messages for the plan.
+- **Arabic blog and real testimonials.** Server-rendered `/ar/blog` and `/en/blog` with drafts, scheduled publishing and related courses; reviews can be quoted only with the learner's consent, and admins choose which are featured.

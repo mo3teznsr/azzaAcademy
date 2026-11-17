@@ -4,10 +4,11 @@
 import { createAuth, type OnUserCreated } from './auth/auth';
 import { BetterAuthUserProvisioner, InviteRegistry } from './auth/user-provisioner';
 import { msUntilUtcHour, type Job } from './jobs/scheduler';
-import { bunnyStreamConfigured, tabbyConfigured, type AppConfig } from './core/config';
+import { mediaConvertConfigured, resolveCloudFrontSigning, tabbyConfigured, type AppConfig } from './core/config';
 import { fileURLToPath } from 'node:url';
-import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, PaymentGateway, PushNotifier, TabbyGateway, VideoProvider, VideoTranscoder } from './core/ports';
-import { BunnyStreamTranscoder, DisabledVideoTranscoder } from './infrastructure/video/bunny-stream-transcoder';
+import type { AppleSignedDataVerifier, Clock, FileStorage, Mailer, MediaUrlSigner, PaymentGateway, PushNotifier, TabbyGateway, VideoProvider, VideoTranscoder } from './core/ports';
+import { CloudFrontUrlSigner, UnsignedUrls } from './infrastructure/cdn/cloudfront-url-signer';
+import { DisabledVideoTranscoder, MediaConvertTranscoder } from './infrastructure/video/mediaconvert-transcoder';
 import { DownloadLinkSigner } from './modules/lessons/download-link';
 import { PrismaLessonStreamRepository } from './modules/lessons/lesson-stream.repository';
 import { LessonStreamingService } from './modules/lessons/lesson-streaming.service';
@@ -35,6 +36,8 @@ import { CategoryService, PrismaCategoryRepository } from './modules/categories/
 import { PrismaReviewRepository } from './modules/reviews/review.repository';
 import { ReviewService } from './modules/reviews/review.service';
 import { SavedCourseService } from './modules/reviews/saved-course.service';
+import { BlogService } from './modules/blog/blog.service';
+import { PrismaBlogRepository } from './modules/blog/blog.repository';
 import { InstructorApplicationService } from './modules/instructors/instructor-application.service';
 import { PrismaApplicationRepository } from './modules/instructors/instructor-application.repository';
 import { PrismaAdminRepository } from './modules/admin/admin.repository';
@@ -94,6 +97,8 @@ import { CurrencyService, PrismaCurrencyRepository } from './modules/currencies/
 import { EarningsCalculator } from './modules/payouts/earnings-calculator';
 import { PrismaPayoutRepository } from './modules/payouts/payout.repository';
 import { PayoutService } from './modules/payouts/payout.service';
+import { PayoutDispatchService } from './modules/payouts/payout-dispatch.service';
+import { StripeConnectPayoutProvider } from './infrastructure/payments/stripe-connect-payouts';
 import { ClassroomState } from './modules/sessions/classroom-state';
 import { JoinPolicy } from './modules/sessions/join-policy';
 import { DemoReviewers } from './modules/sessions/demo-reviewers';
@@ -122,6 +127,8 @@ import { PrismaAuditLog } from './modules/audit/audit-log';
 import { PrismaReconciliationRepository } from './modules/reconciliation/reconciliation.repository';
 import { ReconciliationService } from './modules/reconciliation/reconciliation.service';
 import { LifecycleService, PrismaLifecycleRepository } from './modules/lifecycle/lifecycle.service';
+import { PrismaProgressRepository } from './modules/progress/progress.repository';
+import { ProgressService } from './modules/progress/progress.service';
 import { TaxDocumentService } from './modules/invoices/tax-document.service';
 import { PrismaLessonQaRepository } from './modules/lesson-qa/qa.repository';
 import { LessonQaService } from './modules/lesson-qa/qa.service';
@@ -148,6 +155,8 @@ export interface Adapters {
   tabby?: TabbyGateway | null;
   /** HLS transcoding of lesson videos; absent = disabled (lessons play their uploaded MP4). */
   transcoder?: VideoTranscoder;
+  /** CloudFront signed URLs for lesson videos and streams; absent = URLs are served as stored. */
+  urlSigner?: MediaUrlSigner;
 }
 
 /** `apps/api/uploads/` regardless of the process cwd. */
@@ -194,15 +203,22 @@ export function createAdapters(config: AppConfig, vat: VatHolder = { current: ()
           baseUrl: config.TABBY_API_URL,
         })
       : null,
-    transcoder: bunnyStreamConfigured(config)
-      ? new BunnyStreamTranscoder({
-          libraryId: config.BUNNY_STREAM_LIBRARY_ID!.trim(),
-          apiKey: config.BUNNY_STREAM_API_KEY!.trim(),
-          readOnlyApiKey: config.BUNNY_STREAM_READONLY_API_KEY?.trim() || undefined,
-          cdnHost: config.BUNNY_STREAM_CDN_HOST!.trim(),
-          tokenKey: config.BUNNY_STREAM_TOKEN_KEY?.trim() || undefined,
+    transcoder: mediaConvertConfigured(config)
+      ? new MediaConvertTranscoder({
+          region: config.MEDIACONVERT_REGION?.trim() || config.AWS_REGION,
+          roleArn: config.MEDIACONVERT_ROLE_ARN!.trim(),
+          bucket: config.S3_BUCKET!.trim(),
+          cdnBaseUrl: config.CLOUDFRONT_URL!,
+          streamsPrefix: config.STREAMS_PREFIX,
+          endpoint: config.MEDIACONVERT_ENDPOINT || undefined,
+          queueArn: config.MEDIACONVERT_QUEUE_ARN?.trim() || undefined,
+          snsTopicArn: config.MEDIACONVERT_SNS_TOPIC_ARN?.trim() || undefined,
         })
       : new DisabledVideoTranscoder(),
+    urlSigner: (() => {
+      const signing = resolveCloudFrontSigning(config);
+      return signing ? new CloudFrontUrlSigner(signing) : new UnsignedUrls();
+    })(),
     apple: new AppStoreSignedDataVerifier({
       bundleId: config.APPLE_BUNDLE_ID,
       environments: config.appleEnvironments,
@@ -301,6 +317,16 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     },
     new PrismaAuditLog(db),
   );
+  const payoutKey = (config.STRIPE_PAYOUTS_SECRET_KEY ?? config.STRIPE_SECRET_KEY)?.trim();
+  const payoutDispatch = new PayoutDispatchService(
+    new PrismaPayoutRepository(db),
+    config.PAYOUT_PROVIDER === 'stripe_connect' && payoutKey
+      ? new StripeConnectPayoutProvider({ secretKey: payoutKey, webhookSecret: config.STRIPE_PAYOUTS_WEBHOOK_SECRET?.trim() || undefined })
+      : null,
+    notifications,
+    clock,
+    new PrismaAuditLog(db),
+  );
 
   const rescheduleRequestRepo = new PrismaRescheduleRequestRepository(db);
   const sessions = new SessionService(
@@ -372,7 +398,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     undefined,
     adapters.apple,
     undefined,
-    { repo: subscriptionRepo, bankAccounts: paymentsRepo, holdHours },
+    { repo: subscriptionRepo, bankAccounts: paymentsRepo, holdHours, coupons: paymentsRepo },
     subscriptionRepo,
     appleCommission,
   );
@@ -413,6 +439,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     new DownloadLinkSigner(config.BETTER_AUTH_SECRET),
     clock,
     { transcodeOnUpload: config.VIDEO_TRANSCODE_ON_UPLOAD === 'true', offlineMaxDays: config.OFFLINE_DOWNLOAD_MAX_DAYS, apiUrl: config.API_URL },
+    adapters.urlSigner ? { signer: adapters.urlSigner, playlistLinks: new DownloadLinkSigner(config.BETTER_AUTH_SECRET, 'azza:lesson-streams:v1') } : undefined,
   );
 
   const organizations = new OrganizationService(
@@ -425,6 +452,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     clock,
     vatPercentNow,
   );
+  const progress = new ProgressService(new PrismaProgressRepository(db), notifications, clock, config.WEB_URL);
   const services = {
     settings,
     siteSettings,
@@ -434,6 +462,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     categories,
     reviews: new ReviewService(new PrismaReviewRepository(db), notifications, () => clock.now()),
     savedCourses: new SavedCourseService(db),
+    blog: new BlogService(new PrismaBlogRepository(db), () => clock.now()),
     instructorApplications: new InstructorApplicationService(new PrismaApplicationRepository(db), notifications, () => clock.now()),
     batches: new BatchService(batchRepo, courseRepo, new ScheduleGenerator(), access, notifications, clock, appStoreSync),
     notifications,
@@ -448,6 +477,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     sessions,
     rescheduleRequests: new RescheduleRequestService(rescheduleRequestRepo, sessions, notifications, clock),
     payouts,
+    payoutDispatch,
     checkout,
     subscriptions,
     allAccessPlan,
@@ -471,6 +501,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     teachers: new TeacherService(new PrismaTeacherRepository(db)),
     content: new ContentService(new PrismaContentRepository(db), access, notifications, clock, adapters.storage),
     lessons,
+    progress,
     lessonQa: new LessonQaService(new PrismaLessonQaRepository(db), lessons, notifications, clock, config.WEB_URL),
     courseAnalytics: new CourseAnalyticsService(new PrismaCourseAnalyticsRepository(db), lessons, clock),
     lessonStreaming,
@@ -511,17 +542,21 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     { name: 'expire-organization-seats', everyMs: 60 * 60_000, run: () => organizations.expireSeats() },
     // Welcome, inactivity nudges and win-back messages (each sent once per user and key).
     { name: 'lifecycle-messages', everyMs: 60 * 60_000, run: () => lifecycleMessages.run() },
+    // Badges for recently active learners and the one late-week goal reminder (each once).
+    { name: 'learning-progress', everyMs: 60 * 60_000, run: () => progress.run() },
     // Live class reminders (24 h, 1 h, 10 min before) and the missed-class notice with the recording.
     { name: 'remind-sessions', everyMs: 5 * 60_000, run: () => sessionReminders.run() },
     // Referral rewards once the friend's first payment has passed the earning hold without a refund.
     { name: 'referral-rewards', everyMs: 60 * 60_000, run: () => referrals.run() },
     // All-access teacher shares, once per paid period after it ends (split by minutes watched). Idempotent.
     { name: 'settle-all-access-periods', everyMs: 60 * 60_000, run: () => allAccessEarnings.run() },
-    // Lesson videos still encoding at the video service (webhooks can be lost). A no-op without Bunny Stream.
+    // Lesson videos still encoding at the video service (webhooks can be lost). A no-op without MediaConvert.
     { name: 'sync-lesson-streams', everyMs: 2 * 60_000, run: () => lessonStreaming.syncProcessing() },
     ...(config.VIDEO_TRANSCODE_BACKFILL === 'true' && adapters.transcoder?.enabled
       ? [{ name: 'backfill-lesson-streams', everyMs: 60 * 60_000, runAtBoot: false, run: () => lessonStreaming.backfill(5) }]
       : []),
+    // Provider payouts still in flight (webhooks can be lost). A no-op without a payout provider.
+    { name: 'poll-provider-payouts', everyMs: 15 * 60_000, run: () => payoutDispatch.poll() },
     { name: 'release-matured-earnings', everyMs: 60 * 60_000, run: async () => ({ released: await payouts.releaseMatured() }) },
   ];
 

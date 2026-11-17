@@ -12,6 +12,8 @@ export interface AllAccessPlanRecord {
   stripeProductId: string | null;
   stripeMonthlyPriceId: string | null;
   stripeYearlyPriceId: string | null;
+  appleMonthlyProductId: string | null;
+  appleYearlyProductId: string | null;
 }
 
 export const EMPTY_ALL_ACCESS_PLAN: AllAccessPlanRecord = {
@@ -21,12 +23,14 @@ export const EMPTY_ALL_ACCESS_PLAN: AllAccessPlanRecord = {
   stripeProductId: null,
   stripeMonthlyPriceId: null,
   stripeYearlyPriceId: null,
+  appleMonthlyProductId: null,
+  appleYearlyProductId: null,
 };
 
 /**
  * The all-access plan dressed as a recorded course, so the subscription flows (Stripe Checkout, webhooks, bank transfer,
  * plan switching, receipts, reminders) sell it unchanged. Switched off it reads as a draft: new purchases are refused
- * while existing plans keep renewing and can still be managed. It has no App Store products (iOS is not offered).
+ * while existing plans keep renewing and can still be managed. On iOS it sells the App Store products admins set (its own subscription group).
  */
 export function allAccessCourse(plan: AllAccessPlanRecord | null): SubscribableCourse {
   const p = plan ?? EMPTY_ALL_ACCESS_PLAN;
@@ -42,8 +46,8 @@ export function allAccessCourse(plan: AllAccessPlanRecord | null): SubscribableC
     yearlyPriceFils: p.yearlyPriceFils,
     stripeMonthlyPriceId: p.stripeMonthlyPriceId,
     stripeYearlyPriceId: p.stripeYearlyPriceId,
-    appleMonthlyProductId: null,
-    appleYearlyProductId: null,
+    appleMonthlyProductId: p.appleMonthlyProductId ?? null,
+    appleYearlyProductId: p.appleYearlyProductId ?? null,
   };
 }
 

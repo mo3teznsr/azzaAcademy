@@ -156,6 +156,16 @@ const enApp = {
     html: layout('en', `We saved your place, ${name}`, `<p>Your plan for <b>${course}</b> ended, but your progress is saved. Renew any time and carry on from the same lesson.</p>${button(url, 'Renew my plan')}`),
     text: `Your progress in ${course} is saved. Renew any time: ${url}`,
   }),
+  allAccessNudge: (name: string, url: string) => ({
+    subject: 'Your all-access plan is waiting',
+    html: layout('en', `Ready for the next lesson, ${name}?`, `<p>It's been a week since your last lesson. Every recorded course is open to you, so pick up where you left off or start a new one.</p>${button(url, 'Continue learning')}`),
+    text: `Every recorded course is open to you. Continue learning: ${url}`,
+  }),
+  allAccessWinback: (name: string, url: string) => ({
+    subject: 'Come back to every recorded course',
+    html: layout('en', `We saved your place, ${name}`, `<p>Your all-access plan ended, but your progress in every course is saved. Renew any time and carry on from the same lesson.</p>${button(url, 'Renew my plan')}`),
+    text: `Your progress in every course is saved. Renew your all-access plan any time: ${url}`,
+  }),
   invite: (name: string, role: string, url: string) => ({
     subject: 'You’re invited to Azza',
     html: layout('en', `Welcome, ${name}`, `<p>An administrator created a <b>${role.toLowerCase()}</b> account for you. Choose a password to get started.</p>${button(url, 'Set my password')}`),
@@ -272,6 +282,16 @@ const arApp: typeof enApp = {
     subject: `عُد إلى ${course}`,
     html: layout('ar', `حفظنا مكانك يا ${name}`, `<p>انتهى اشتراكك في <b>${course}</b>، لكن تقدّمك محفوظ. جدّد في أي وقت وأكمل من الدرس نفسه.</p>${button(url, 'جدّد اشتراكي')}`),
     text: `تقدّمك في ${course} محفوظ. جدّد في أي وقت: ${url}`,
+  }),
+  allAccessNudge: (name, url) => ({
+    subject: 'اشتراكك الشامل بانتظارك',
+    html: layout('ar', `جاهز للدرس التالي يا ${name}؟`, `<p>مرّ أسبوع على آخر درس لك. كل الدورات المسجّلة مفتوحة لك، فأكمل من حيث توقفت أو ابدأ دورة جديدة.</p>${button(url, 'تابع التعلّم')}`),
+    text: `كل الدورات المسجّلة مفتوحة لك. تابع التعلّم: ${url}`,
+  }),
+  allAccessWinback: (name, url) => ({
+    subject: 'عُد إلى كل الدورات المسجّلة',
+    html: layout('ar', `حفظنا مكانك يا ${name}`, `<p>انتهى اشتراكك الشامل، لكن تقدّمك في كل دورة محفوظ. جدّد في أي وقت وأكمل من الدرس نفسه.</p>${button(url, 'جدّد اشتراكي')}`),
+    text: `تقدّمك في كل دورة محفوظ. جدّد اشتراكك الشامل في أي وقت: ${url}`,
   }),
   invite: (name, role, url) => ({
     subject: 'دعوة للانضمام إلى عازة',

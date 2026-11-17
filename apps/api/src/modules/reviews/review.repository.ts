@@ -1,8 +1,8 @@
-import type { CourseReviewInput } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
-import type { ReviewRecord, ReviewRepository } from './review.service';
+import type { ReviewPatch, ReviewRecord, ReviewRepository, ReviewWrite, TestimonialRecord } from './review.service';
 
 const include = { user: { select: { id: true, name: true, image: true } } };
+const withCourse = { ...include, course: { select: { id: true, slug: true, titleEn: true, titleAr: true } } };
 
 export class PrismaReviewRepository implements ReviewRepository {
   constructor(private readonly db: Db) {}
@@ -42,10 +42,11 @@ export class PrismaReviewRepository implements ReviewRepository {
     return n > 0;
   }
 
-  upsert(courseId: string, userId: string, input: CourseReviewInput) {
+  upsert(courseId: string, userId: string, input: ReviewWrite) {
+    const { featuredAt: _unfeature, ...create } = input;
     return this.db.courseReview.upsert({
       where: { courseId_userId: { courseId, userId } },
-      create: { courseId, userId, ...input },
+      create: { courseId, userId, ...create },
       update: input,
       include,
     }) as Promise<ReviewRecord>;
@@ -55,8 +56,36 @@ export class PrismaReviewRepository implements ReviewRepository {
     await this.db.courseReview.delete({ where: { id } });
   }
 
-  update(id: string, data: Partial<Pick<ReviewRecord, 'teacherReply' | 'repliedAt' | 'hidden'>>) {
+  update(id: string, data: ReviewPatch) {
     return this.db.courseReview.update({ where: { id }, data, include }) as Promise<ReviewRecord>;
+  }
+
+  featured(o: { courseId?: string; take: number }) {
+    return this.db.courseReview.findMany({
+      where: {
+        featuredAt: { not: null },
+        quoteConsent: true,
+        hidden: false,
+        ...(o.courseId ? { courseId: o.courseId } : {}),
+        course: { status: 'PUBLISHED' },
+      },
+      include: withCourse,
+      orderBy: { featuredAt: 'desc' },
+      take: o.take,
+    }) as Promise<TestimonialRecord[]>;
+  }
+
+  async consented(o: { featured?: boolean; courseId?: string; skip: number; take: number }) {
+    const where = {
+      quoteConsent: true,
+      ...(o.courseId ? { courseId: o.courseId } : {}),
+      ...(o.featured === true ? { featuredAt: { not: null } } : o.featured === false ? { featuredAt: null } : {}),
+    };
+    const [items, total] = await this.db.$transaction([
+      this.db.courseReview.findMany({ where, include: withCourse, orderBy: [{ featuredAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }], skip: o.skip, take: o.take }),
+      this.db.courseReview.count({ where }),
+    ]);
+    return { items: items as TestimonialRecord[], total };
   }
 
   async refreshAggregate(courseId: string) {

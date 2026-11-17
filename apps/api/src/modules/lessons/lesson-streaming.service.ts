@@ -1,8 +1,9 @@
 import { parseCourseVideoUrl, type Role } from '@azza/shared';
 import { randomBytes } from 'node:crypto';
 import { AppError, BusinessRuleError, NotFoundError } from '../../core/errors';
-import type { Clock, VideoTranscoder } from '../../core/ports';
+import type { Clock, MediaUrlSigner, VideoTranscoder } from '../../core/ports';
 import type { DownloadLinkSigner } from './download-link';
+import { playlistName, rewritePlaylist } from './hls-playlist';
 import type { LessonStream, LessonStreamRepository } from './lesson-stream.repository';
 import type { LessonService } from './lesson.service';
 
@@ -17,7 +18,7 @@ export interface StreamingOptions {
   downloadTtlSec: number;
   /** A download plays offline at most this long without the app re-checking access online. */
   offlineMaxDays: number;
-  /** Public API origin, for `/api/v1/lesson-downloads/<token>` links. */
+  /** Public API origin, for `/api/v1/lesson-downloads/<token>` and `/api/v1/lesson-streams/<token>/…` links. */
   apiUrl: string;
 }
 
@@ -34,6 +35,15 @@ export interface LessonPlayback {
   stream: { status: 'PROCESSING' | 'READY' | 'FAILED'; hlsUrl: string | null; posterUrl: string | null; lowMp4Url: string | null; durationSec: number | null } | null;
   /** The lesson has an uploaded video the mobile app may save for offline viewing. */
   downloadable: boolean;
+  /** The uploaded file, signed for this viewer — present only when the CDN signs URLs (it then replaces the lesson's `videoUrl`). */
+  videoUrl?: string;
+}
+
+/** CloudFront signing of playback URLs. Without it (or with a disabled signer) URLs are returned as stored. */
+export interface PlaybackSigning {
+  signer: MediaUrlSigner;
+  /** Tokens of `/lesson-streams/<token>/<playlist>.m3u8` links — a purpose of its own, never accepted as a download link. */
+  playlistLinks: DownloadLinkSigner;
 }
 
 const DAY_MS = 86_400_000;
@@ -48,7 +58,8 @@ type Access = Pick<LessonService, 'readAccess'>;
  * Adaptive streaming and offline downloads of lesson videos.
  * - Uploaded videos (`parseCourseVideoUrl(...).kind === 'file'`) are sent to the `VideoTranscoder`; the lesson keeps
  *   `streamStatus` and, once READY, its HLS / poster / low-MP4 URLs. A webhook or the `sync-lesson-streams` job marks it ready.
- * - Readers get those URLs signed for a few hours (when the CDN has token auth) next to the lesson.
+ * - Readers get those URLs signed for a few hours (CloudFront signed URLs, when a key is configured) next to the lesson; HLS
+ *   goes through `/lesson-streams/<token>/…` so every segment carries a signature (see `playlist`).
  * - Downloads: an access-checked, 15-minute link to the lowest MP4 rendition when the stream is ready, else to the upload.
  *   The app stores `offlineUntil` and asks `POST /me/lesson-downloads/status` on its next online launch.
  */
@@ -62,28 +73,79 @@ export class LessonStreamingService {
     private readonly links: DownloadLinkSigner,
     private readonly clock: Clock = { now: () => new Date() },
     opts: Partial<StreamingOptions> = {},
+    private readonly signing?: PlaybackSigning,
   ) {
     this.opts = { ...DEFAULT_STREAMING_OPTIONS, ...opts };
   }
 
+  private get api() {
+    return this.opts.apiUrl.replace(/\/$/, '');
+  }
+
+  /** Signs a CDN URL until `exp` when signing is on and the URL is ours; anything else is returned unchanged. */
+  private sign(url: string, exp: Date) {
+    const signer = this.signing?.signer;
+    return signer?.enabled && signer.covers(url) ? signer.signUrl(url, exp) : url;
+  }
+
+  /**
+   * HLS for one viewer. Signed delivery: `<api>/api/v1/lesson-streams/<token>/master.m3u8`, whose playlists the API rewrites
+   * with signed segment URLs (see `playlist`). Unsigned: the CDN playlist itself.
+   */
+  private hlsFor(lessonId: string, hlsUrl: string, exp: Date, viewerId: string) {
+    const s = this.signing;
+    if (!s?.signer.enabled || !s.signer.covers(hlsUrl)) return hlsUrl;
+    const name = playlistName(hlsUrl.slice(hlsUrl.lastIndexOf('/') + 1));
+    if (!name) return hlsUrl;
+    const token = s.playlistLinks.sign({ lessonId, userId: viewerId, exp: Math.floor(exp.getTime() / 1000) });
+    return `${this.api}/api/v1/lesson-streams/${token}/${name}`;
+  }
+
   /** Playback fields to merge into a lesson the viewer may already read. */
-  async playback(lessonId: string): Promise<LessonPlayback> {
+  async playback(lessonId: string, viewerId = ''): Promise<LessonPlayback> {
     const s = await this.repo.find(lessonId);
     if (!s) return { stream: null, downloadable: false };
     const downloadable = parseCourseVideoUrl(s.videoUrl)?.kind === 'file';
-    if (!s.streamStatus || !this.current(s)) return { stream: null, downloadable };
     const exp = new Date(this.clock.now().getTime() + this.opts.playbackTtlSec * 1000);
+    // Originals are signed too, so `course-videos/*` can be restricted at the CDN (see docs/ARCHITECTURE.md).
+    const signedFile = downloadable && this.signing?.signer.enabled && this.signing.signer.covers(s.videoUrl!) ? { videoUrl: this.sign(s.videoUrl!, exp) } : {};
+    if (!s.streamStatus || !this.current(s)) return { stream: null, downloadable, ...signedFile };
     const ready = s.streamStatus === 'READY';
     return {
       downloadable,
+      ...signedFile,
       stream: {
         status: s.streamStatus,
-        hlsUrl: ready && s.hlsUrl ? this.transcoder.signUrl(s.hlsUrl, exp, { directory: true }) : null,
-        posterUrl: s.posterUrl ? this.transcoder.signUrl(s.posterUrl, exp) : null,
-        lowMp4Url: ready && s.lowMp4Url ? this.transcoder.signUrl(s.lowMp4Url, exp) : null,
+        hlsUrl: ready && s.hlsUrl ? this.hlsFor(lessonId, s.hlsUrl, exp, viewerId) : null,
+        posterUrl: s.posterUrl ? this.sign(s.posterUrl, exp) : null,
+        lowMp4Url: ready && s.lowMp4Url ? this.sign(s.lowMp4Url, exp) : null,
         durationSec: s.durationSec,
       },
     };
+  }
+
+  /**
+   * `GET /lesson-streams/:token/:name` — a playlist of the lesson's current stream, rewritten for the token's holder: nested
+   * playlists come back through this route, segments point at CloudFront with a custom-policy signature covering the stream
+   * folder until the token expires. The token was issued with the lesson (after its read check) and names no file.
+   */
+  async playlist(token: string, name: string) {
+    const signing = this.signing;
+    const claims = signing?.playlistLinks.verify(token, this.clock.now());
+    if (!signing?.signer.enabled || !claims) throw new AppError('This playback link has expired', 403, 'PLAYBACK_LINK_INVALID');
+    const file = playlistName(name);
+    const s = await this.repo.find(claims.lessonId);
+    if (!file || !s || s.streamStatus !== 'READY' || !this.current(s) || !s.hlsUrl) throw new NotFoundError('Playlist', name);
+    const folder = s.hlsUrl.slice(0, s.hlsUrl.lastIndexOf('/') + 1);
+    const cdnUrl = `${folder}${file}`;
+    const text = await this.transcoder.readPlaylist(cdnUrl);
+    if (text === null) throw new NotFoundError('Playlist', name);
+    const exp = new Date(claims.exp * 1000);
+    return rewritePlaylist(text, {
+      playlistCdnUrl: cdnUrl,
+      segmentQuery: signing.signer.prefixQuery(folder, exp),
+      playlistUrl: (n) => `${this.api}/api/v1/lesson-streams/${token}/${n}`,
+    });
   }
 
   /** The stream was made from the lesson's current video (a re-upload makes an old stream stale). */
@@ -107,7 +169,7 @@ export class LessonStreamingService {
     if (parseCourseVideoUrl(s.videoUrl)?.kind !== 'file') throw new BusinessRuleError('Only uploaded videos can be prepared for streaming', 'NOT_STREAMABLE');
     if (s.streamStatus && s.streamStatus !== 'FAILED' && this.current(s)) return this.view(s);
     const title = `azza-lesson-${lessonId}-${randomBytes(4).toString('hex')}`;
-    const { assetId } = await this.transcoder.createAsset({ sourceUrl: s.videoUrl!, title });
+    const { assetId } = await this.transcoder.createAsset({ sourceUrl: s.videoUrl!, title, lessonId });
     await this.repo.save(lessonId, {
       ...CLEARED,
       streamStatus: 'PROCESSING',
@@ -149,10 +211,10 @@ export class LessonStreamingService {
     return this.view((await this.repo.find(lessonId))!);
   }
 
-  /** `POST /api/webhooks/bunny-stream` — verified by the transcoder; the status is re-read from its API. */
+  /** `POST /api/webhooks/mediaconvert` — verified by the transcoder (SNS signature, our topic); the job is re-read with `GetJob`. */
   async handleWebhook(rawBody: string, header: (name: string) => string | undefined) {
     if (!this.transcoder.enabled) return { handled: false };
-    const event = this.transcoder.parseWebhook(rawBody, header);
+    const event = await this.transcoder.parseWebhook(rawBody, header);
     if (!event) return { handled: false };
     const ids = await this.repo.lessonIdsByAsset(event.assetId);
     for (const id of ids) await this.refresh(id);
@@ -230,8 +292,8 @@ export class LessonStreamingService {
     const s = await this.repo.find(lessonId);
     const low = s && s.streamStatus === 'READY' && this.current(s) && s.lowMp4Url ? s.lowMp4Url : null;
     const url = low
-      ? this.transcoder.signUrl(low, expiresAt)
-      : `${this.opts.apiUrl.replace(/\/$/, '')}/api/v1/lesson-downloads/${this.links.sign({ lessonId, userId: viewer.id, exp: Math.floor(expiresAt.getTime() / 1000) })}`;
+      ? this.sign(low, expiresAt)
+      : `${this.api}/api/v1/lesson-downloads/${this.links.sign({ lessonId, userId: viewer.id, exp: Math.floor(expiresAt.getTime() / 1000) })}`;
     return {
       lessonId,
       url,
@@ -248,7 +310,8 @@ export class LessonStreamingService {
     if (!claims) throw new AppError('This download link has expired', 403, 'DOWNLOAD_LINK_INVALID');
     const s = await this.repo.find(claims.lessonId);
     if (!s || parseCourseVideoUrl(s.videoUrl)?.kind !== 'file') throw new NotFoundError('Lesson', claims.lessonId);
-    return { url: s.videoUrl! };
+    // A short-lived CloudFront URL when the CDN signs (the redirect is followed right away).
+    return { url: this.sign(s.videoUrl!, new Date(this.clock.now().getTime() + this.opts.downloadTtlSec * 1000)) };
   }
 
   /**

@@ -1,4 +1,4 @@
-import { ALL_ACCESS_ID, type AllAccessPlanInput, type AllAccessPlanView } from '@azza/shared';
+import { ALL_ACCESS_ID, type AllAccessPlanInput, type AllAccessPlanView, type AppleProductsInput } from '@azza/shared';
 import { http } from './client';
 
 export type AdminAllAccessPlan = AllAccessPlanView & { cardReady: boolean };
@@ -13,6 +13,8 @@ export const allAccessApi = {
   plan: () => http.get<AllAccessPlanView>('/api/v1/all-access'),
   adminPlan: () => http.get<AdminAllAccessPlan>('/api/v1/admin/all-access'),
   save: (input: AllAccessPlanInput) => http.put<AdminAllAccessPlan>('/api/v1/admin/all-access', input),
+  /** The App Store products (iOS); each must be `appleAllAccessProductId(plan)`, null clears it. */
+  setAppleProducts: (input: AppleProductsInput) => http.put<AdminAllAccessPlan>('/api/v1/admin/all-access/apple-products', input),
 };
 
 /** Plan rows and notices carry `ALL_ACCESS_ID` where a course slug goes. */

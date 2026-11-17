@@ -10,6 +10,14 @@ export function appleRecordedProductId(slug: string, plan: SubscriptionPlan): st
   return `com.futuretech.azza.rec.${slug}.${plan === 'YEARLY' ? 'yearly' : 'monthly'}`;
 }
 
+/**
+ * iOS: the all-access plan's products, in their own subscription group. Under the recorded prefix so App Store notifications
+ * reach the plan flow; `all_access` can never be a course slug (slugs are `[a-z0-9-]`). Mirrored in the mobile app.
+ */
+export function appleAllAccessProductId(plan: SubscriptionPlan): string {
+  return `com.futuretech.azza.rec.all_access.${plan === 'YEARLY' ? 'yearly' : 'monthly'}`;
+}
+
 /** Whole months free on the yearly plan versus twelve monthly payments (rounded down). */
 export function yearlySavingMonths(monthlyFils: number, yearlyFils: number): number {
   if (monthlyFils <= 0) return 0;

@@ -9,7 +9,7 @@ export const LOCALE_HEADER = 'x-azza-locale';
 export const LOCALES: readonly Locale[] = ['ar', 'en'];
 
 /** Public pages that have an Arabic and an English URL (and hreflang links). */
-const LOCALIZED = [/^\/$/, /^\/teachers$/, /^\/teachers\/[^/]+$/, /^\/teach$/, /^\/courses\/[^/]+$/, /^\/categories\/[^/]+$/];
+const LOCALIZED = [/^\/$/, /^\/blog$/, /^\/blog\/[^/]+$/, /^\/teachers$/, /^\/teachers\/[^/]+$/, /^\/teach$/, /^\/courses\/[^/]+$/, /^\/categories\/[^/]+$/];
 
 export const isLocalizedPath = (path: string) => LOCALIZED.some((re) => re.test(path));
 

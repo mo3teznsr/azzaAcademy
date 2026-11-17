@@ -277,7 +277,7 @@ export interface FileStorage {
 
 export type TranscodeStatus = 'PROCESSING' | 'READY' | 'FAILED';
 
-/** A transcoded lesson video at the hosted service. URLs are unsigned; `signUrl` signs them per viewer. */
+/** A transcoded lesson video. URLs are unsigned CDN URLs; the `MediaUrlSigner` signs them per viewer. */
 export interface TranscodeAsset {
   assetId: string;
   status: TranscodeStatus;
@@ -293,22 +293,42 @@ export interface TranscodeAsset {
 }
 
 /**
- * Turns an uploaded lesson video into adaptive HLS at a hosted service (`BunnyStreamTranscoder`), or does nothing
- * (`DisabledVideoTranscoder`) when not configured. The service fetches the source from its public URL.
+ * Turns an uploaded lesson video into adaptive HLS (`MediaConvertTranscoder`: AWS Elemental MediaConvert writing into our
+ * S3 bucket under `streams/`), or does nothing (`DisabledVideoTranscoder`) when not configured. The source is the
+ * uploaded file in our bucket, named by its CloudFront URL.
  */
 export interface VideoTranscoder {
-  /** `bunny`, or `disabled` (then every other method throws). */
+  /** `mediaconvert`, or `disabled` (then every other method throws). */
   readonly provider: string;
   readonly enabled: boolean;
-  createAsset(input: { sourceUrl: string; title: string }): Promise<{ assetId: string }>;
+  /** `lessonId` names the output folder; `title` is unique per attempt (it carries a nonce). */
+  createAsset(input: { sourceUrl: string; title: string; lessonId?: string }): Promise<{ assetId: string }>;
   getAsset(assetId: string): Promise<TranscodeAsset>;
   /**
-   * Verifies a webhook and returns the asset it is about; null when it is about something we don't track. Throws
-   * `AppError` 401 when the signature is wrong. The status is always re-read with `getAsset`, never trusted from the body.
+   * Verifies a webhook and returns the asset it is about; null when it is about something we don't track (or was a
+   * subscription handshake). Throws `AppError` 401 when the signature is wrong. The status is always re-read with
+   * `getAsset`, never trusted from the body.
    */
-  parseWebhook(rawBody: string, header: (name: string) => string | undefined): { assetId: string } | null;
-  /** Short-lived URL for one viewer. `directory` = sign the whole folder (HLS playlists and their segments). */
-  signUrl(url: string, expiresAt: Date, opts?: { directory?: boolean }): string;
+  parseWebhook(rawBody: string, header: (name: string) => string | undefined): Promise<{ assetId: string } | null>;
+  /** Text of an HLS playlist the service wrote (`url` is its unsigned CDN URL); null when missing or not one of ours. */
+  readPlaylist(url: string): Promise<string | null>;
+}
+
+/**
+ * Signs CDN URLs per viewer (`CloudFrontUrlSigner`: CloudFront signed URLs with a trusted key group), or leaves them as
+ * they are (`UnsignedUrls`) when no signing key is configured.
+ */
+export interface MediaUrlSigner {
+  readonly enabled: boolean;
+  /** `url` is on the signed CDN (other origins, e.g. YouTube, are never signed). */
+  covers(url: string): boolean;
+  /** One file, until `expiresAt` (canned policy). Returns `url` unchanged when it is not covered. */
+  signUrl(url: string, expiresAt: Date): string;
+  /**
+   * Query string (no `?`) that opens every URL starting with `prefixUrl` until `expiresAt` (custom policy with a
+   * wildcard resource) — appended to each HLS segment in a rewritten playlist.
+   */
+  prefixQuery(prefixUrl: string, expiresAt: Date): string;
 }
 
 /** A StoreKit 2 transaction whose JWS signature, certificate chain, bundle id and environment were verified. */

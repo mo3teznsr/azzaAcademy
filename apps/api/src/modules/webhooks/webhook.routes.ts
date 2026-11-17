@@ -7,6 +7,7 @@ import type { CheckoutService } from '../payments/checkout.service';
 import type { FinanceAdminService } from '../payments/finance-admin.service';
 import type { TabbyPaymentService } from '../payments/tabby/tabby-payment.service';
 import type { LessonStreamingService } from '../lessons/lesson-streaming.service';
+import type { PayoutDispatchService } from '../payouts/payout-dispatch.service';
 import type { SubscriptionService } from '../subscriptions/subscription.service';
 import type { SessionService } from '../sessions/session.service';
 
@@ -21,6 +22,7 @@ export function webhookRoutes(deps: {
   appleIap: AppleIapService;
   tabby: Pick<TabbyPaymentService, 'handleWebhook'>;
   lessonStreaming?: Pick<LessonStreamingService, 'handleWebhook'>;
+  payoutDispatch?: Pick<PayoutDispatchService, 'handleWebhook'>;
 }) {
   return new Hono<AppEnv>()
     .post('/stripe', async (c) => {
@@ -42,8 +44,9 @@ export function webhookRoutes(deps: {
       const raw = await c.req.text();
       return c.json({ received: true, ...(await deps.tabby.handleWebhook(raw, (name) => c.req.header(name))) });
     })
-    // Bunny Stream encoding events: HMAC-signed with the library's read-only key; the video is re-read from Bunny's API.
-    .post('/bunny-stream', async (c) => {
+    // MediaConvert job state changes: EventBridge → SNS (HTTPS subscription). The SNS signature and topic are verified,
+    // subscription confirmations are answered, and the job is re-read with GetJob.
+    .post('/mediaconvert', async (c) => {
       const raw = await c.req.text();
       if (!deps.lessonStreaming) return c.json({ received: true, handled: false });
       return c.json({ received: true, ...(await deps.lessonStreaming.handleWebhook(raw, (name) => c.req.header(name))) });
@@ -53,6 +56,12 @@ export function webhookRoutes(deps: {
       const body = (await c.req.json().catch(() => null)) as { signedPayload?: unknown } | null;
       if (typeof body?.signedPayload !== 'string') throw new AppError('Missing signedPayload', 400, 'APPLE_PAYLOAD');
       return c.json({ received: true, ...(await deps.appleIap.handleNotification(body.signedPayload)) });
+    })
+    // Teacher payouts (Stripe Connect events on connected accounts): signature verified by the adapter, then re-read from Stripe.
+    .post('/payouts', async (c) => {
+      const raw = await c.req.text();
+      if (!deps.payoutDispatch) return c.json({ received: true, handled: false });
+      return c.json({ received: true, ...(await deps.payoutDispatch.handleWebhook(raw, (name) => c.req.header(name))) });
     })
     .post('/livekit', async (c) => {
       const raw = await c.req.text();

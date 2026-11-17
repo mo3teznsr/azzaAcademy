@@ -42,6 +42,7 @@ import '../features/catalog/presentation/batch_picker_screen.dart';
 import '../features/certificates/presentation/certificate_detail_screen.dart';
 import '../features/certificates/presentation/certificate_verify_screen.dart';
 import '../features/certificates/presentation/certificates_screen.dart';
+import '../features/progress/presentation/progress_screen.dart';
 import '../features/catalog/presentation/batch_schedule_screen.dart';
 import '../features/catalog/presentation/course_detail_screen.dart';
 import '../features/catalog/presentation/explore_screen.dart';
@@ -94,6 +95,7 @@ import '../features/teacher/presentation/teacher_batches_screen.dart';
 import '../features/teacher/presentation/teacher_today_screen.dart';
 import '../features/teachers/presentation/teacher_profile_screen.dart';
 import '../features/subscriptions/domain/subscription_models.dart' show TransferStart;
+import '../features/subscriptions/presentation/all_access_screen.dart';
 import '../features/subscriptions/presentation/my_plans_screen.dart';
 import '../features/subscriptions/presentation/plan_transfer_screen.dart';
 import '../features/subscriptions/presentation/preview_lesson_screen.dart';
@@ -207,6 +209,7 @@ List<RouteBase> _studentInTab() => [
       _route('me/plans', (_) => const MyPlansScreen()),
       _route('me/saved', (_) => const SavedCoursesScreen()),
       _route('me/certificates', (_) => const CertificatesScreen(), routes: [_route(':code', _certificate)]),
+      _route('me/progress', (_) => const ProgressScreen()),
       ..._settingsRoutes(),
     ];
 
@@ -371,8 +374,10 @@ List<RouteBase> buildRoutes() => [
       ]),
       _route(Routes.myOrders, (_) => const MyOrdersScreen()),
       _route(Routes.myPlans, (_) => const MyPlansScreen()),
+      _route(Routes.allAccess, (_) => const AllAccessScreen()),
       _route(Routes.savedCourses, (_) => const SavedCoursesScreen()),
       _route(Routes.certificates, (_) => const CertificatesScreen(), routes: [_route(':code', _certificate)]),
+      _route(Routes.myProgress, (_) => const ProgressScreen()),
       _route(Routes.instructors, (_) => const InstructorsScreen()),
       _route(Routes.teachOnAzza, (_) => const TeachScreen()),
       _route('/teachers/:id', _teacherProfile),

@@ -71,7 +71,7 @@ export type EarningStatus = (typeof EARNING_STATUSES)[number];
 export const PAYOUT_RUN_STATUSES = ['DRAFT', 'APPROVED', 'PROCESSING', 'PAID'] as const;
 export type PayoutRunStatus = (typeof PAYOUT_RUN_STATUSES)[number];
 
-export const PAYOUT_STATUSES = ['READY', 'HELD', 'PAID', 'CARRIED_OVER'] as const;
+export const PAYOUT_STATUSES = ['READY', 'HELD', 'PAID', 'CARRIED_OVER', 'PROCESSING'] as const;
 export type PayoutStatus = (typeof PAYOUT_STATUSES)[number];
 
 export const PLATFORMS = ['ios', 'android', 'web'] as const;
