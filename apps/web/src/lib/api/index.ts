@@ -18,3 +18,4 @@ export * from './tax-documents';
 export * from './referrals';
 export * from './lesson-qa';
 export * from './organizations';
+export * from './all-access';

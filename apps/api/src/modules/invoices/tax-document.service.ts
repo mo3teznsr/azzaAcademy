@@ -1,6 +1,7 @@
 import type { Clock } from '../../core/ports';
 import { ForbiddenError, NotFoundError } from '../../core/errors';
 import type { Db } from '../../infrastructure/db';
+import { ALL_ACCESS_TITLE } from '../all-access/all-access-course';
 import { creditNoteAmounts, organizationBuyer, seatPackDescription, taxDocumentNumber, vatPercentOf, type TaxBuyer, type TaxDocumentKind } from './tax-document-math';
 
 export interface Supplier {
@@ -159,7 +160,7 @@ export class TaxDocumentService {
         subscriptionPaymentId: p.id,
         userId: p.userId,
         buyer: p.user,
-        description: `${p.subscription.course.titleEn} · ${PLAN_EN[p.plan]} (${day(p.periodStart)} to ${day(p.periodEnd)})`,
+        description: `${p.subscription.course?.titleEn ?? ALL_ACCESS_TITLE.en} · ${PLAN_EN[p.plan]} (${day(p.periodStart)} to ${day(p.periodEnd)})`,
         subtotalFils: p.subtotalFils,
         discountFils: 0,
         vatFils: p.vatFils,

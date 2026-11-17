@@ -137,12 +137,14 @@ export class PrismaLifecycleRepository implements LifecycleRepository {
 
   async inactiveLearners(before: Date) {
     const plans = await this.db.subscription.findMany({
-      where: { status: { in: ['ACTIVE', 'CANCELLING'] }, createdAt: { lt: before } },
+      // All-access plans (no course) get no per-course nudge.
+      where: { status: { in: ['ACTIVE', 'CANCELLING'] }, createdAt: { lt: before }, courseId: { not: null } },
       select: { id: true, userId: true, createdAt: true, course: { select: { id: true, slug: true, titleEn: true, titleAr: true } } },
       take: 2000,
     });
     const out: InactiveLearner[] = [];
     for (const p of plans) {
+      if (!p.course) continue;
       const lessonFilter = { lesson: { module: { courseId: p.course.id } } };
       const [done, watched] = await Promise.all([
         this.db.lessonProgress.findFirst({ where: { userId: p.userId, ...lessonFilter }, orderBy: { completedAt: 'desc' }, select: { completedAt: true } }),
@@ -164,12 +166,13 @@ export class PrismaLifecycleRepository implements LifecycleRepository {
 
   async endedPlans(from: Date, to: Date) {
     const rows = await this.db.subscription.findMany({
-      where: { status: 'EXPIRED', currentPeriodEnd: { gte: from, lt: to } },
+      where: { status: 'EXPIRED', currentPeriodEnd: { gte: from, lt: to }, courseId: { not: null } },
       select: { id: true, userId: true, currentPeriodEnd: true, course: { select: { slug: true, titleEn: true, titleAr: true } } },
     });
     // A learner who already has another live plan for the course needs no win-back.
     const out: EndedPlan[] = [];
     for (const r of rows) {
+      if (!r.course) continue;
       const live = await this.db.subscription.count({ where: { userId: r.userId, course: { slug: r.course.slug }, status: { in: ['ACTIVE', 'CANCELLING', 'PAST_DUE'] } } });
       if (live) continue;
       out.push({ subscriptionId: r.id, userId: r.userId, courseSlug: r.course.slug, courseEn: r.course.titleEn, courseAr: r.course.titleAr ?? r.course.titleEn, endedAt: r.currentPeriodEnd! });

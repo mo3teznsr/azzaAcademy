@@ -26,6 +26,7 @@ import { qk } from '@/lib/query-keys';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
 import { useProposalError } from './proposal-review';
+import { AllAccessCard } from './all-access-card';
 
 export function AdminSettings() {
   const { t } = useI18n();
@@ -45,6 +46,7 @@ export function AdminSettings() {
         <ContactCard />
         <LegalCard />
         <CutsCard />
+        <AllAccessCard />
         <AppStoreCard />
         <Panel>
           <SectionHeader title={t.admin.settingsPage.livekit} size="sm" />

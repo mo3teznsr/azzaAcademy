@@ -63,7 +63,8 @@ export class PayoutService implements EarningsAccrual, RefundEarningsReverser {
     const p = await this.repo.subscriptionPaymentForAccrual(paymentId);
     if (!p || p.status !== 'PAID' || p.reviewNote === 'MANUAL_REFUND_NEEDED' || p.totalFils <= 0 || !p.paidAt) return null;
     const course = p.subscription.course;
-    if (!course.createdById) return null;
+    // All-access periods (no course) are split by minutes watched when the period closes (AllAccessEarningsService).
+    if (!course?.createdById) return null;
     const net = this.calculator.orderNet({ totalFils: p.totalFils, vatFils: p.vatFils, refundedFils: 0, feeFils: p.feeFils });
     const amountFils = this.calculator.paymentShare(net, cutFor(course, await this.settings.cuts()));
     return this.repo.upsertSubscriptionEarning({

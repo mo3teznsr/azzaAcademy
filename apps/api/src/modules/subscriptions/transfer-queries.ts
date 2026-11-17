@@ -1,5 +1,6 @@
-import type { OrderStatus, SubscriptionPaymentStatus } from '@azza/shared';
+import { ALL_ACCESS_ID, type OrderStatus, type SubscriptionPaymentStatus } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
+import { ALL_ACCESS_TITLE } from '../all-access/all-access-course';
 
 /** The inbox speaks the seat-order vocabulary, so one review panel serves both kinds. */
 const INBOX_STATUS: Record<SubscriptionPaymentStatus, OrderStatus> = {
@@ -44,7 +45,7 @@ interface InboxRow {
   user: { id: string; name: string; email: string };
   bankAccount: { id: string; bankName: string; iban: string } | null;
   reviewedBy: { id: string; name: string } | null;
-  subscription: { id: string; course: { id: string; slug: string; titleEn: string; titleAr: string | null } };
+  subscription: { id: string; course: { id: string; slug: string; titleEn: string; titleAr: string | null } | null };
 }
 
 /** A subscription payment shaped like a seat order so the inbox renders both, plus `kind`, `course` and `plan`. */
@@ -57,7 +58,9 @@ export function toInboxItem(p: InboxRow) {
     status: inboxStatus(p.status),
     paymentStatus: p.status,
     plan: p.plan,
-    course: { id: p.subscription.course.id, slug: p.subscription.course.slug, titleEn: p.subscription.course.titleEn, titleAr: p.subscription.course.titleAr },
+    course: p.subscription.course
+      ? { id: p.subscription.course.id, slug: p.subscription.course.slug, titleEn: p.subscription.course.titleEn, titleAr: p.subscription.course.titleAr }
+      : { id: ALL_ACCESS_ID, slug: ALL_ACCESS_ID, titleEn: ALL_ACCESS_TITLE.en, titleAr: ALL_ACCESS_TITLE.ar },
     subscriptionId: p.subscription.id,
     subtotalFils: p.subtotalFils,
     vatFils: p.vatFils,

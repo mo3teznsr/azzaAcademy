@@ -54,7 +54,24 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PlanForm({ course, subscription, renewing }: { course: CourseDetail; subscription: MySubscription | null; renewing: boolean }) {
+/** What a plan form sells: a recorded course, or the all-access plan (`ALL_ACCESS_ID` as id and slug). */
+export type PlanOffer = Pick<CourseDetail, 'id' | 'slug' | 'titleEn' | 'monthlyPriceFils' | 'yearlyPriceFils'>;
+
+export function PlanForm({
+  course,
+  subscription,
+  renewing,
+  gets,
+  signInNext,
+}: {
+  course: PlanOffer;
+  subscription: MySubscription | null;
+  renewing: boolean;
+  /** "What you get" lines (default: the course's). */
+  gets?: string[];
+  /** Where sign-in returns to (default: the course page's plan card). */
+  signInNext?: string;
+}) {
   const { t, f, fill } = useI18n();
   const money = useMoney();
   const qc = useQueryClient();
@@ -102,7 +119,7 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
       sub: `${fill(t.recorded.yearlyPerMonth, { amount: money.display(Math.round(yearly / 12)) })}`,
     },
   ];
-  const href = `/sign-in?next=${encodeURIComponent(`/courses/${course.slug}#plan`)}`;
+  const href = `/sign-in?next=${encodeURIComponent(signInNext ?? `/courses/${course.slug}#plan`)}`;
 
   if (transfer) {
     return (
@@ -182,7 +199,7 @@ function PlanForm({ course, subscription, renewing }: { course: CourseDetail; su
           {t.recorded.youGet}
         </h3>
         <ul className="flex flex-col gap-2 text-[15px]">
-          {[t.recorded.getLessons, t.recorded.getCertificate, t.recorded.getCancel].map((line) => (
+          {(gets ?? [t.recorded.getLessons, t.recorded.getCertificate, t.recorded.getCancel]).map((line) => (
             <li key={line} className="flex gap-2.5">
               <Check className="mt-0.5 size-4 shrink-0 text-green-deep" aria-hidden />
               {line}

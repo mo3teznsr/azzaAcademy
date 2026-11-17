@@ -19,6 +19,9 @@ import type {
 } from '../src/modules/subscriptions/subscription.repository';
 import { SubscriptionService } from '../src/modules/subscriptions/subscription.service';
 import { RecordingNotifier } from './fakes/in-memory';
+import { ALL_ACCESS_ID, allAccessPlanInput } from '@azza/shared';
+import { allAccessCourse, EMPTY_ALL_ACCESS_PLAN } from '../src/modules/all-access/all-access-course';
+import { AllAccessPlanService } from '../src/modules/all-access/all-access-plan.service';
 
 const errorOf = (p: Promise<unknown>) => p.then(() => null, (e: AppError) => e);
 const codeOf = async (p: Promise<unknown>) => (await errorOf(p))?.code ?? null;
@@ -672,5 +675,59 @@ describe('reads', () => {
     expect(Array.isArray(body)).toBe(false);
     expect(body.items).toHaveLength(1);
     expect(body.items[0]).toMatchObject({ id: 'sub1', hasAccess: true });
+  });
+});
+
+describe('the all-access plan through the course plan flow', () => {
+  const plan = { enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, stripeProductId: 'prod_all', stripeMonthlyPriceId: 'price_all_m', stripeYearlyPriceId: 'price_all_y' };
+
+  test('card checkout sells it like a course, with ALL_ACCESS_ID as the course', async () => {
+    const ctx = setup();
+    ctx.repo.courses.push(allAccessCourse(plan));
+    const res = await ctx.service.subscribe('sam', ALL_ACCESS_ID, { plan: 'YEARLY', method: 'STRIPE' });
+    expect(res.reference).toBe('sub1');
+    expect(ctx.repo.subs[0]).toMatchObject({ courseId: ALL_ACCESS_ID, plan: 'YEARLY', priceFils: 200_000 });
+    expect(ctx.gateway.subscriptionCheckouts[0]).toMatchObject({ priceId: 'price_all_y', metadata: { courseId: ALL_ACCESS_ID } });
+  });
+
+  test('switched off, it takes no new purchases', async () => {
+    const ctx = setup();
+    ctx.repo.courses.push(allAccessCourse({ ...plan, enabled: false }));
+    expect(await codeOf(ctx.service.subscribe('sam', ALL_ACCESS_ID, { plan: 'MONTHLY', method: 'STRIPE' }))).toBe('NOT_FOUND');
+  });
+
+  test('not sold on iOS (no App Store product)', async () => {
+    const ctx = setup();
+    ctx.repo.courses.push(allAccessCourse(plan));
+    expect(await codeOf(ctx.service.subscribe('sam', ALL_ACCESS_ID, { plan: 'MONTHLY', method: 'APPLE_IAP' }))).toBe('APPLE_PRODUCT_MISSING');
+  });
+});
+
+describe('AllAccessPlanService', () => {
+  function planSetup() {
+    let stored = { ...EMPTY_ALL_ACCESS_PLAN };
+    const repo = { get: async () => stored, save: async (p: Partial<typeof stored>) => (stored = { ...stored, ...p }), publishedRecordedCount: async () => 12 };
+    return { service: new AllAccessPlanService(repo, new FakePaymentGateway(new PriceCalculator(5))), stored: () => stored };
+  }
+
+  test('setting prices syncs VAT-inclusive Stripe Prices and switches the plan on', async () => {
+    const { service, stored } = planSetup();
+    const out = await service.update({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000 });
+    expect(out).toEqual({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, courseCount: 12, cardReady: true });
+    expect(stored()).toMatchObject({ stripeProductId: `prod_fake_${ALL_ACCESS_ID}`, stripeMonthlyPriceId: 'price_fake_m_21000', stripeYearlyPriceId: 'price_fake_y_210000' });
+  });
+
+  test('switching off keeps the prices and Stripe ids', async () => {
+    const { service, stored } = planSetup();
+    await service.update({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000 });
+    await service.update({ enabled: false, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000 });
+    expect(stored()).toMatchObject({ enabled: false, stripeMonthlyPriceId: 'price_fake_m_21000' });
+    expect((await service.view()).enabled).toBe(false);
+  });
+
+  test('the input refuses switching on without prices, and a yearly price above twelve months', () => {
+    expect(allAccessPlanInput.safeParse({ enabled: true, monthlyPriceFils: null, yearlyPriceFils: null }).success).toBe(false);
+    expect(allAccessPlanInput.safeParse({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 300_000 }).success).toBe(false);
+    expect(allAccessPlanInput.safeParse({ enabled: false, monthlyPriceFils: null, yearlyPriceFils: null }).success).toBe(true);
   });
 });
