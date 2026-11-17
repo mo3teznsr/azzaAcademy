@@ -731,6 +731,11 @@ export const subscribeInput = z.object({
   method: z.enum(['STRIPE', 'APPLE_IAP', 'BANK_TRANSFER']),
   bankAccountId: id.optional(),
   displayCurrency: currencyCode.optional(),
+  /**
+   * A course plan bought while the learner holds a live all-access plan (which already opens the course) is refused with
+   * `ALL_ACCESS_ACTIVE` unless this is true: the learner saw the warning and still wants it.
+   */
+  confirmAllAccess: z.boolean().optional(),
 });
 export type SubscribeInput = z.infer<typeof subscribeInput>;
 

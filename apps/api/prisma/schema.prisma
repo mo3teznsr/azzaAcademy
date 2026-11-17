@@ -223,19 +223,19 @@ model User {
   assignedTickets              SupportTicket[]         @relation("SupportTicketAssignee")
   supportMessages              SupportMessage[]
   subscriptionPayments         SubscriptionPayment[]
+  auditEntries                 AuditLog[]              @relation("AuditActor")
+  lifecycleMessages            LifecycleMessage[]
+  taxDocuments                 TaxDocument[]
+  referralsMade                Referral[]              @relation("ReferralReferrer")
+  referredBy                   Referral?               @relation("ReferralReferred")
+  ownCoupons                   Coupon[]                @relation("CouponOwner")
+  lessonQuestions              LessonQuestion[]        @relation("LessonQuestionAuthor")
+  lessonAnswers                LessonAnswer[]          @relation("LessonAnswerAuthor")
+  organizationMemberships      OrganizationMember[]
+  seatAssignments              SeatAssignment[]        @relation("SeatAssignee")
+  seatPacksCreated             SeatPack[]              @relation("SeatPackCreator")
 
   @@map("user")
-  auditEntries    AuditLog[] @relation("AuditActor")
-  lifecycleMessages LifecycleMessage[]
-  taxDocuments    TaxDocument[]
-  referralsMade   Referral[] @relation("ReferralReferrer")
-  referredBy      Referral?  @relation("ReferralReferred")
-  ownCoupons      Coupon[]   @relation("CouponOwner")
-  lessonQuestions LessonQuestion[] @relation("LessonQuestionAuthor")
-  lessonAnswers   LessonAnswer[]   @relation("LessonAnswerAuthor")
-  organizationMemberships OrganizationMember[]
-  seatAssignments         SeatAssignment[] @relation("SeatAssignee")
-  seatPacksCreated        SeatPack[]       @relation("SeatPackCreator")
 }
 
 /// better-auth "session" (login session) – named AuthSession to avoid clashing with live sessions.
@@ -349,18 +349,18 @@ model Course {
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
 
-  modules       CourseModule[]
-  batches       Batch[]
-  coupons       Coupon[]
-  reviews       CourseReview[]
-  savedBy       SavedCourse[]
-  subscriptions Subscription[]
-  seatPacks     SeatPack[]
+  modules         CourseModule[]
+  batches         Batch[]
+  coupons         Coupon[]
+  reviews         CourseReview[]
+  savedBy         SavedCourse[]
+  subscriptions   Subscription[]
+  seatPacks       SeatPack[]
   watchTimes      LessonWatchTime[]
   allAccessShares AllAccessShare[]
-  quizzes       Quiz[]
-  earnings      Earning[]
-  certificates  Certificate[]
+  quizzes         Quiz[]
+  earnings        Earning[]
+  certificates    Certificate[]
 
   @@index([status, category])
   @@index([createdById])
@@ -438,32 +438,32 @@ model ScheduleRule {
 
 /// A scheduled live class. Each maps 1:1 to a LiveKit room.
 model LiveSession {
-  id           String        @id @default(cuid())
-  batchId      String
-  batch        Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  number       Int
-  title        String
-  agenda       Json?
-  notes        String?
-  startsAt     DateTime
-  endsAt       DateTime
-  status       SessionStatus @default(SCHEDULED)
-  movedFrom    DateTime?
-  moveReason   String?
-  hostId       String?
-  host         User?         @relation("SessionHost", fields: [hostId], references: [id])
-  roomName     String        @unique
-  startedAt    DateTime?
-  endedAt      DateTime?
-  recordingUrl String?
-  egressId     String?
+  id             String        @id @default(cuid())
+  batchId        String
+  batch          Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  number         Int
+  title          String
+  agenda         Json?
+  notes          String?
+  startsAt       DateTime
+  endsAt         DateTime
+  status         SessionStatus @default(SCHEDULED)
+  movedFrom      DateTime?
+  moveReason     String?
+  hostId         String?
+  host           User?         @relation("SessionHost", fields: [hostId], references: [id])
+  roomName       String        @unique
+  startedAt      DateTime?
+  endedAt        DateTime?
+  recordingUrl   String?
+  egressId       String?
   /// When each reminder before the session went out (24 h, 1 h, 10 min), and when absentees were told about the recording.
   reminderDayAt  DateTime?
   reminderHourAt DateTime?
   reminderSoonAt DateTime?
   missedNoticeAt DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   attendance         Attendance[]
   messages           ChatMessage[]
@@ -536,9 +536,9 @@ model Order {
   receiptUploadedAt          DateTime?
   expiresAt                  DateTime?
   /// Where the buyer came from for this purchase (UTM tags, click ids).
-  attribution Json?
+  attribution                Json?
   /// When the "your hold ends soon" reminder went out (bank transfers).
-  receiptReminderAt DateTime?
+  receiptReminderAt          DateTime?
   verifiedById               String?
   verifiedBy                 User?             @relation("OrderVerifier", fields: [verifiedById], references: [id])
   verifiedAt                 DateTime?
@@ -548,9 +548,9 @@ model Order {
   updatedAt                  DateTime          @updatedAt
   couponRedemption           CouponRedemption?
   supportTickets             SupportTicket[]
+  taxDocuments               TaxDocument[]
 
   @@index([status, method])
-  taxDocuments TaxDocument[]
 }
 
 model BankAccount {
@@ -568,7 +568,7 @@ model BankAccount {
   updatedAt    DateTime @updatedAt
 
   /// How this bank's CSV statement maps to date, credit/amount and description columns (see StatementMapping).
-  statementMapping     Json?
+  statementMapping Json?
 
   orders               Order[]
   subscriptionPayments SubscriptionPayment[]
@@ -638,35 +638,35 @@ model Currency {
 }
 
 model Coupon {
-  id             String             @id @default(cuid())
-  code           String             @unique
-  percentOff     Int?
-  amountOffFils  Int?
-  maxRedemptions Int?
-  redemptions    Int                @default(0)
-  expiresOn      DateTime?
+  id                String             @id @default(cuid())
+  code              String             @unique
+  percentOff        Int?
+  amountOffFils     Int?
+  maxRedemptions    Int?
+  redemptions       Int                @default(0)
+  expiresOn         DateTime?
   /// Pause switch — a paused coupon is refused at checkout.
-  active         Boolean            @default(true)
+  active            Boolean            @default(true)
   /// First valid day (inclusive). null = valid immediately.
-  startsOn       DateTime?
+  startsOn          DateTime?
   /// Max paid uses per student. null = unlimited.
-  perUserLimit   Int?
+  perUserLimit      Int?
   /// Minimum order subtotal (before discount). null = no minimum.
-  minOrderFils   Int?
+  minOrderFils      Int?
   /// Stored only — one coupon per order today.
-  stackable      Boolean            @default(false)
+  stackable         Boolean            @default(false)
   /// Scope: at most one of courseId / batchId. Both null = every course.
-  courseId       String?
-  course         Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  batchId        String?
-  batch          Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  courseId          String?
+  course            Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  batchId           String?
+  batch             Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
   /// Personal coupon (referral rewards): only this user can use it. null = anyone.
-  ownerId        String?
-  owner          User?              @relation("CouponOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt      DateTime           @default(now())
-  usages         CouponRedemption[]
-  referralRewardOf  Referral?       @relation("ReferralReferrerCoupon")
-  referralWelcomeOf Referral?       @relation("ReferralReferredCoupon")
+  ownerId           String?
+  owner             User?              @relation("CouponOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt         DateTime           @default(now())
+  usages            CouponRedemption[]
+  referralRewardOf  Referral?          @relation("ReferralReferrerCoupon")
+  referralWelcomeOf Referral?          @relation("ReferralReferredCoupon")
 
   @@index([ownerId])
 }
@@ -1135,32 +1135,32 @@ model LessonAnswer {
 
 /// Platform-wide settings: a single row with id 'default'.
 model PlatformSettings {
-  id                 String   @id @default("default")
+  id                     String    @id @default("default")
   /// Default teacher cuts, in percent. A course's own `teacherCutPercent` wins when set.
-  liveCutPercent     Int
-  recordedCutPercent Int
+  liveCutPercent         Int
+  recordedCutPercent     Int
   /// Business rules; null = the env default (VAT_PERCENT, EARNING_HOLD_DAYS, MIN_PAYOUT_AED, BANK_TRANSFER_HOLD_HOURS).
-  vatPercent            Int?
-  earningHoldDays       Int?
-  minPayoutAed          Int?
-  bankTransferHoldHours Int?
+  vatPercent             Int?
+  earningHoldDays        Int?
+  minPayoutAed           Int?
+  bankTransferHoldHours  Int?
   /// Apple's commission on in-app purchases (percent of the price before VAT); null = APPLE_COMMISSION_PERCENT.
   appleCommissionPercent Int?
   /// Public contact details (footer, help, WhatsApp buttons). whatsappNumber: digits with country code, no `+`.
-  contactEmail   String?
-  contactPhone   String?
-  whatsappNumber String?
-  addressEn      String?
-  addressAr      String?
+  contactEmail           String?
+  contactPhone           String?
+  whatsappNumber         String?
+  addressEn              String?
+  addressAr              String?
   /// { instagram?, x?, facebook?, linkedin?, youtube?, tiktok?, snapchat? } — https URLs.
-  socials        Json     @default("{}")
+  socials                Json      @default("{}")
   /// Tax invoices (UAE FTA): the supplier's legal name, address and TRN. Invoices are issued only once a TRN is set,
   /// for payments made from `invoicingFrom` (set when the TRN is first saved).
-  legalName             String?
-  legalAddress          String?
-  taxRegistrationNumber String?
-  invoicingFrom         DateTime?
-  updatedAt          DateTime @updatedAt
+  legalName              String?
+  legalAddress           String?
+  taxRegistrationNumber  String?
+  invoicingFrom          DateTime?
+  updatedAt              DateTime  @updatedAt
 }
 
 /// A learner's plan on a recorded course, or the all-access plan when `courseId` is null (every published recorded course).
@@ -1197,7 +1197,7 @@ model Subscription {
   createdAt                  DateTime             @default(now())
   updatedAt                  DateTime             @updatedAt
 
-  payments SubscriptionPayment[]
+  payments       SubscriptionPayment[]
   seatAssignment SeatAssignment?
 
   @@index([userId, courseId])
@@ -1237,26 +1237,29 @@ model SubscriptionPayment {
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
 
-  earnings Earning[]
+  earnings           Earning[]
   /// All-access plans only: when the period's teacher shares were worked out (once, after `periodEnd`).
   allAccessAccruedAt DateTime?
   allAccessShares    AllAccessShare[]
+  taxDocuments       TaxDocument[]
 
   @@index([subscriptionId])
   @@index([status])
-  taxDocuments TaxDocument[]
 }
 
 /// The all-access plan's settings: a single row with id 'default'. Prices before VAT, synced to one Stripe Product.
 model AllAccessPlan {
-  id                   String   @id @default("default")
-  enabled              Boolean  @default(false)
-  monthlyPriceFils     Int?
-  yearlyPriceFils      Int?
-  stripeProductId      String?
-  stripeMonthlyPriceId String?
-  stripeYearlyPriceId  String?
-  updatedAt            DateTime @updatedAt
+  id                    String   @id @default("default")
+  enabled               Boolean  @default(false)
+  monthlyPriceFils      Int?
+  yearlyPriceFils       Int?
+  stripeProductId       String?
+  stripeMonthlyPriceId  String?
+  stripeYearlyPriceId   String?
+  /// App Store products of the plan's own subscription group (`appleAllAccessProductId`); null = not sold on iOS.
+  appleMonthlyProductId String?
+  appleYearlyProductId  String?
+  updatedAt             DateTime @updatedAt
 }
 
 /// Seconds of a lesson's video a learner actually watched on a UTC day (from the player's position reports; recorded
@@ -1540,33 +1543,33 @@ enum TaxDocumentKind {
 /// A UAE tax invoice or credit note. Numbers are sequential with no gaps (TaxDocumentCounter); documents are never
 /// edited or deleted. Supplier and buyer details are snapshots taken at issue.
 model TaxDocument {
-  id                    String          @id @default(cuid())
+  id                    String               @id @default(cuid())
   kind                  TaxDocumentKind
   /// Position in its series (invoices and credit notes are numbered separately).
   seq                   Int
-  number                String          @unique
+  number                String               @unique
   /// A credit note's original invoice.
   invoiceId             String?
-  invoice               TaxDocument?    @relation("CreditNotes", fields: [invoiceId], references: [id])
-  creditNotes           TaxDocument[]   @relation("CreditNotes")
+  invoice               TaxDocument?         @relation("CreditNotes", fields: [invoiceId], references: [id])
+  creditNotes           TaxDocument[]        @relation("CreditNotes")
   orderId               String?
-  order                 Order?          @relation(fields: [orderId], references: [id])
+  order                 Order?               @relation(fields: [orderId], references: [id])
   subscriptionPaymentId String?
   subscriptionPayment   SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id])
   /// The learner who paid; null on an organization's seat-pack invoice (the buyer is the organization).
   userId                String?
-  user                  User?           @relation(fields: [userId], references: [id])
+  user                  User?                @relation(fields: [userId], references: [id])
   seatPackId            String?
-  seatPack              SeatPack?       @relation(fields: [seatPackId], references: [id])
+  seatPack              SeatPack?            @relation(fields: [seatPackId], references: [id])
   description           String
   subtotalFils          Int
-  discountFils          Int             @default(0)
+  discountFils          Int                  @default(0)
   vatPercent            Int
   vatFils               Int
   totalFils             Int
   supplier              Json
   buyer                 Json
-  issuedAt              DateTime        @default(now())
+  issuedAt              DateTime             @default(now())
 
   @@unique([kind, seq])
   @@index([userId, issuedAt])

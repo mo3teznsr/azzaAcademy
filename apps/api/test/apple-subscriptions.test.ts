@@ -1,4 +1,7 @@
 import { describe, expect, test } from 'bun:test';
+import { ALL_ACCESS_ID, appleAllAccessProductId } from '@azza/shared';
+import { allAccessCourse, EMPTY_ALL_ACCESS_PLAN } from '../src/modules/all-access/all-access-course';
+import { isRecordedPlanProduct } from '../src/modules/payments/apple/apple-iap-policy';
 import type { AppError } from '../src/core/errors';
 import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction } from '../src/core/ports';
 import { FakePaymentGateway } from '../src/infrastructure/payments/stripe-gateway';
@@ -548,5 +551,57 @@ describe('apple fix round 1', () => {
     verifier.txs.set('j', tx({ productId: MONTHLY, appAccountToken: first.appAccountToken, priceMilliunits: 105_000 }));
     expect((await service.verifyApple('sam', 'j')).status).toBe('ACTIVE');
     expect(repo.subs[0]).toMatchObject({ status: 'ACTIVE', plan: 'MONTHLY' });
+  });
+});
+
+describe('the all-access plan in the App Store', () => {
+  const ALL_M = appleAllAccessProductId('MONTHLY');
+  const ALL_Y = appleAllAccessProductId('YEARLY');
+  const plan = { ...EMPTY_ALL_ACCESS_PLAN, enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, appleMonthlyProductId: ALL_M, appleYearlyProductId: ALL_Y };
+
+  async function boughtAllAccess() {
+    const ctx = setup();
+    ctx.repo.courses.push(allAccessCourse(plan));
+    const res = await ctx.service.subscribe('sam', ALL_ACCESS_ID, { plan: 'YEARLY', method: 'APPLE_IAP' });
+    ctx.verifier.txs.set('jws-all', tx({ productId: ALL_Y, appAccountToken: res.appAccountToken, priceMilliunits: 2_100_000 }));
+    const verified = await ctx.service.verifyApple('sam', 'jws-all');
+    return { ...ctx, res, verified };
+  }
+
+  test('its product ids sit under the recorded prefix, so notifications reach the plan flow', () => {
+    expect(ALL_M).toBe('com.futuretech.azza.rec.all_access.monthly');
+    expect(isRecordedPlanProduct(ALL_Y)).toBe(true);
+  });
+
+  test('subscribe hands out the all-access product; verify activates it and records the payment without a course earning', async () => {
+    const { res, verified, repo } = await boughtAllAccess();
+    expect(res.productId).toBe(ALL_Y);
+    expect(verified.status).toBe('ACTIVE');
+    expect(repo.subs[0]).toMatchObject({ courseId: ALL_ACCESS_ID, provider: 'APPLE', status: 'ACTIVE', appleOriginalTransactionId: 'o1' });
+    expect(repo.payments[0]).toMatchObject({ totalFils: 210_000, vatFils: 10_000, status: 'PAID' });
+  });
+
+  test('a course product is not accepted for the all-access row', async () => {
+    const ctx = setup();
+    ctx.repo.courses.push(allAccessCourse(plan));
+    const res = await ctx.service.subscribe('sam', ALL_ACCESS_ID, { plan: 'YEARLY', method: 'APPLE_IAP' });
+    ctx.verifier.txs.set('jws-x', tx({ productId: YEARLY, appAccountToken: res.appAccountToken }));
+    expect(await codeOf(ctx.service.verifyApple('sam', 'jws-x'))).toBe('PRODUCT_MISMATCH');
+  });
+
+  test('DID_RENEW and REFUND notifications are applied to the all-access row', async () => {
+    const { notify, repo, reversed } = await boughtAllAccess();
+    const end2 = new Date(MONTH_END.getTime() + 365 * DAY);
+    expect((await notify(note('DID_RENEW', null, tx({ transactionId: 't2', productId: ALL_Y, purchaseDate: MONTH_END, expiresDate: end2 })))).handled).toBe(true);
+    expect(repo.subs[0]).toMatchObject({ status: 'ACTIVE', currentPeriodEnd: end2 });
+    expect((await notify(note('REFUND', null, tx({ transactionId: 't2', productId: ALL_Y, expiresDate: end2, revocationDate: T0 })))).handled).toBe(true);
+    expect(repo.subs[0]?.status).toBe('EXPIRED');
+    expect(reversed).toEqual([['pay1', repo.payments[1]!.totalFils]]);
+  });
+
+  test('switched off, iOS takes no new purchase either', async () => {
+    const ctx = setup();
+    ctx.repo.courses.push(allAccessCourse({ ...plan, enabled: false }));
+    expect(await codeOf(ctx.service.subscribe('sam', ALL_ACCESS_ID, { plan: 'MONTHLY', method: 'APPLE_IAP' }))).toBe('NOT_FOUND');
   });
 });
