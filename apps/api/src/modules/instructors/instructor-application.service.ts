@@ -1,5 +1,5 @@
 import type { InstructorApplicationInput, ReviewDecisionInput, Role } from '@azza/shared';
-import { BusinessRuleError, ConflictError, NotFoundError } from '../../core/errors';
+import { BusinessRuleError, NotFoundError } from '../../core/errors';
 import type { Notifier } from '../notifications/notification.types';
 
 export type ApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -26,13 +26,17 @@ export interface ApplicationRepository {
   find(id: string): Promise<ApplicationRecord | null>;
   list(status?: ApplicationStatus): Promise<ApplicationRecord[]>;
   create(userId: string, input: InstructorApplicationInput): Promise<ApplicationRecord>;
-  /** Marks the decision; on approval also promotes the user to TEACHER and fills an empty public profile. */
-  decide(id: string, d: { approve: boolean; note: string | null; adminId: string; at: Date }): Promise<ApplicationRecord>;
+  /** Marks the decision; on approval also promotes the user to TEACHER and fills an empty public profile. `adminId` is null for a self-serve sign-up. */
+  decide(id: string, d: { approve: boolean; note: string | null; adminId: string | null; at: Date }): Promise<ApplicationRecord>;
 }
 
 type Actor = { id: string; role: Role };
 
-/** "Join as instructor": learners apply, admins approve (→ TEACHER) or decline with a note. */
+/**
+ * "Join as instructor": self-serve. A learner fills in their teaching profile and becomes a TEACHER at once; quality is
+ * gated at the course level instead (every course is reviewed before it opens). Admins are told who joined, and the
+ * review path stays for applications sent before sign-up became instant.
+ */
 export class InstructorApplicationService {
   constructor(
     private readonly repo: ApplicationRepository,
@@ -47,13 +51,21 @@ export class InstructorApplicationService {
   async apply(input: InstructorApplicationInput, actor: Actor) {
     if (actor.role !== 'STUDENT') throw new BusinessRuleError('You can already teach on Azza', 'ALREADY_INSTRUCTOR');
     const last = await this.repo.latestFor(actor.id);
-    if (last?.status === 'PENDING') throw new ConflictError('Your application is already being reviewed');
-    const app = await this.repo.create(actor.id, input);
+    // An application left pending from before sign-up became instant is approved as it stands.
+    const open = last?.status === 'PENDING' ? last : await this.repo.create(actor.id, input);
+    const app = await this.repo.decide(open.id, { approve: true, note: null, adminId: null, at: this.now() });
+    await this.notifier.notify([app.userId], {
+      type: 'INSTRUCTOR_APPROVED',
+      title: 'Welcome to teaching on Azza',
+      body: 'Your teacher account is ready. Build your first course in the studio and send it for review.',
+      ar: { title: 'أهلًا بك مدرّسًا في عازة', body: 'حساب التدريس جاهز. أنشئ دورتك الأولى في الاستوديو وأرسلها للمراجعة.' },
+      data: { applicationId: app.id },
+    });
     await this.notifier.notifyRole('ADMIN', {
       type: 'INSTRUCTOR_APPLIED',
-      title: 'New instructor application',
+      title: 'New teacher joined',
       body: `${app.user.name} — ${app.headline}`,
-      ar: { title: 'طلب جديد للتدريس', body: `${app.user.name} — ${app.headline}` },
+      ar: { title: 'انضم مدرّس جديد', body: `${app.user.name} — ${app.headline}` },
       data: { applicationId: app.id },
     });
     return app;

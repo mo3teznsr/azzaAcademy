@@ -1,4 +1,4 @@
-import { SOCIAL_NETWORKS, type AdminSettings, type ContactSettingsInput, type RuleSettings, type RuleSettingsInput, type SiteSettings, type SocialLinks } from '@azza/shared';
+import { SOCIAL_NETWORKS, type AdminSettings, type ContactSettingsInput, type RuleSettings, type RuleSettingsInput, type SiteSettings, type SocialLinks, type TeachingTerms } from '@azza/shared';
 import type { CutSettings } from './settings.repository';
 import { EMPTY_SITE_SETTINGS, type SiteSettingsRepository, type SiteSettingsRow } from './site-settings.repository';
 
@@ -17,7 +17,7 @@ export interface SiteSettingsDeps {
   /** The env values: the fallback whenever a DB value is null. */
   defaults: RuleValues;
   integrations: Integrations;
-  /** Default teacher cuts, for the legacy TEACHER_SHARE_PERCENT key. */
+  /** Default teacher cuts (the legacy TEACHER_SHARE_PERCENT key and the public teaching terms). */
   cuts: () => Promise<CutSettings>;
   /** Called (fire-and-forget) after the effective VAT changed: Stripe prices of recorded courses are VAT-inclusive. */
   onVatChanged?: (vatPercent: number) => Promise<unknown>;
@@ -117,6 +117,18 @@ export class SiteSettingsService {
   async siteSettings(): Promise<SiteSettings> {
     const row = await this.row();
     return { ...pickContact(row), socials: setSocials(row.socials) };
+  }
+
+  /** `GET /teaching-terms` (public): default cuts plus the payout and VAT rules, so the teach page never quotes stale numbers. */
+  async teachingTerms(): Promise<TeachingTerms> {
+    const [rules, cuts] = await Promise.all([this.rules(), this.deps.cuts()]);
+    return {
+      liveCutPercent: cuts.liveCutPercent,
+      recordedCutPercent: cuts.recordedCutPercent,
+      earningHoldDays: rules.earningHoldDays,
+      minPayoutAed: rules.minPayoutAed,
+      vatPercent: rules.vatPercent,
+    };
   }
 
   async updateRules(input: RuleSettingsInput): Promise<AdminSettings> {

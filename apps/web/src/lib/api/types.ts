@@ -816,7 +816,7 @@ export interface PlatformCuts {
   recordedCutPercent: number;
 }
 
-export type { RuleSettingsInput, ContactSettingsInput, SiteSettings, SocialNetwork as SocialKey } from '@azza/shared';
+export type { RuleSettingsInput, ContactSettingsInput, SiteSettings, TeachingTerms, SocialNetwork as SocialKey } from '@azza/shared';
 export type PlatformSettings = import('@azza/shared').AdminSettings;
 export type RuleKey = keyof import('@azza/shared').RuleSettings;
 

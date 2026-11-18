@@ -3,6 +3,7 @@ export const qk = {
   currencies: ['currencies'] as const,
   adminCurrencies: ['admin', 'currencies'] as const,
   siteSettings: ['site-settings'] as const,
+  teachingTerms: ['teaching-terms'] as const,
   liveNow: ['stats', 'live'] as const,
   calendar: ['me', 'calendar'] as const,
   me: ['me'] as const,
