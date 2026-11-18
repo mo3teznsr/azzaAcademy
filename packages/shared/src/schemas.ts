@@ -891,6 +891,20 @@ export interface SiteSettings extends ContactSettings {
   socials: SocialLinks;
 }
 
+/** `GET /teaching-terms` (public): the money rules a prospective teacher needs, as currently in effect. */
+export interface TeachingTerms {
+  /** Default teacher share of a live course's net revenue (after VAT and payment fees), in percent. */
+  liveCutPercent: number;
+  /** Default teacher share of a recorded course's net revenue, in percent. */
+  recordedCutPercent: number;
+  /** Days an earning is held before it can be paid out (refund window). */
+  earningHoldDays: number;
+  /** Smallest balance, in AED, that is paid out. */
+  minPayoutAed: number;
+  /** UAE VAT added to learner prices, in percent. */
+  vatPercent: number;
+}
+
 /** Effective business rules (DB override, else env). Keys match the env names. */
 export interface RuleSettings {
   VAT_PERCENT: number;

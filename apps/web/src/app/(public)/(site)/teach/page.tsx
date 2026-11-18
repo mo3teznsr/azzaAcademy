@@ -3,6 +3,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { pageAlternates } from '@/lib/site';
 import en from '@/lib/i18n/dictionaries/en';
 import ar from '@/lib/i18n/dictionaries/ar';
+import { getTeachingTerms } from '@/lib/api/server';
 import { TeachPage } from '@/features/instructors/teach-page';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -11,6 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.instructors.apply.kicker, description: t.instructors.apply.body, alternates: pageAlternates(locale, '/teach') };
 }
 
-export default function Page() {
-  return <TeachPage />;
+/** The shares and payout rules are rendered on the server from the admin settings, so they are in the HTML and never stale. */
+export default async function Page() {
+  return <TeachPage initialTerms={(await getTeachingTerms()) ?? undefined} />;
 }

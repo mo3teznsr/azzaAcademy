@@ -26,8 +26,8 @@ const CHIP =
 /** Empty optional fields go to the API as undefined, not "". */
 const optional = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
 
-/** The join-as-instructor application. Prefills from a declined application so the applicant can revise it. */
-export function ApplicationForm({ previous }: { previous?: InstructorApplication | null }) {
+/** The teacher profile that opens a teacher account on save (no review). Prefills from an older application. `onDone` runs once the account is a teacher. */
+export function ApplicationForm({ previous, onDone }: { previous?: InstructorApplication | null; onDone?: () => void }) {
   const { t, pick } = useI18n();
   const c = t.instructors.apply;
   const id = useId();
@@ -52,6 +52,7 @@ export function ApplicationForm({ previous }: { previous?: InstructorApplication
     onSuccess: (application) => {
       qc.setQueryData(qk.myInstructorApplication, application);
       toast.success(c.sent);
+      onDone?.();
     },
   });
   const onSubmit = form.handleSubmit((values) => apply.mutate(values));

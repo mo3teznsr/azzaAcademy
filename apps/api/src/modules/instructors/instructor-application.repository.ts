@@ -28,7 +28,7 @@ export class PrismaApplicationRepository implements ApplicationRepository {
     return this.db.instructorApplication.create({ data: { ...input, userId }, include }) as Promise<ApplicationRecord>;
   }
 
-  decide(id: string, d: { approve: boolean; note: string | null; adminId: string; at: Date }) {
+  decide(id: string, d: { approve: boolean; note: string | null; adminId: string | null; at: Date }) {
     return this.db.$transaction(async (tx) => {
       const app = await tx.instructorApplication.update({
         where: { id },

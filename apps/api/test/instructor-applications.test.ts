@@ -53,12 +53,26 @@ function setup() {
 }
 
 describe('join as instructor', () => {
-  test('a learner applies once; admins are told; a second open application is refused', async () => {
-    const { service, notifier } = setup();
-    expect((await service.apply(input, sara)).status).toBe('PENDING');
-    expect(notifier.sent).toMatchObject([{ userIds: ['role:ADMIN'], notice: { type: 'INSTRUCTOR_APPLIED' } }]);
-    expect(await codeOf(service.apply(input, sara))).toBe('CONFLICT');
-    expect((await service.mine(sara))?.status).toBe('PENDING');
+  test('a learner becomes a teacher at once; they are welcomed and admins are told', async () => {
+    const { service, repo, notifier } = setup();
+    const a = await service.apply(input, sara);
+    expect(a.status).toBe('APPROVED');
+    expect(repo.roles.get('sara')).toBe('TEACHER');
+    expect(notifier.sent).toMatchObject([
+      { userIds: ['sara'], notice: { type: 'INSTRUCTOR_APPROVED' } },
+      { userIds: ['role:ADMIN'], notice: { type: 'INSTRUCTOR_APPLIED' } },
+    ]);
+    expect((await service.mine(sara))?.status).toBe('APPROVED');
+  });
+
+  test('an application left pending from before is approved as it stands, not duplicated', async () => {
+    const { service, repo } = setup();
+    const old = await repo.create('sara', input);
+    const a = await service.apply({ ...input, headline: 'Something else' }, sara);
+    expect(a.id).toBe(old.id);
+    expect(a.headline).toBe(input.headline);
+    expect(repo.rows).toHaveLength(1);
+    expect(repo.roles.get('sara')).toBe('TEACHER');
   });
 
   test('teachers and admins cannot apply', async () => {
@@ -67,22 +81,13 @@ describe('join as instructor', () => {
     expect(await codeOf(service.apply(input, admin))).toBe('ALREADY_INSTRUCTOR');
   });
 
-  test('approval promotes the applicant and tells them; a decided application cannot be decided again', async () => {
+  test('admins can still decide an old pending application, once', async () => {
     const { service, repo, notifier } = setup();
-    const a = await service.apply(input, sara);
-    await service.review(a.id, { approve: true }, admin);
-    expect(repo.roles.get('sara')).toBe('TEACHER');
-    expect(notifier.types()).toContain('INSTRUCTOR_APPROVED');
-    expect(await codeOf(service.review(a.id, { approve: false, note: 'nope' }, admin))).toBe('APPLICATION_DECIDED');
-  });
-
-  test('a declined applicant gets the note and may apply again', async () => {
-    const { service, repo, notifier } = setup();
-    const a = await service.apply(input, sara);
+    const a = await repo.create('sara', input);
     await service.review(a.id, { approve: false, note: 'Add a sample lesson video' }, admin);
     expect(repo.roles.has('sara')).toBe(false);
     expect(notifier.sent.at(-1)).toMatchObject({ userIds: ['sara'], notice: { type: 'INSTRUCTOR_DECLINED', body: 'Add a sample lesson video' } });
-    expect((await service.apply(input, sara)).status).toBe('PENDING');
-    expect((await service.list('PENDING')).items).toHaveLength(1);
+    expect(await codeOf(service.review(a.id, { approve: true }, admin))).toBe('APPLICATION_DECIDED');
+    expect((await service.apply(input, sara)).status).toBe('APPROVED');
   });
 });

@@ -9,7 +9,7 @@ import type { SubscriptionService } from '../../subscriptions/subscription.servi
 import {
   APPLE_REJECTION_IS_FINAL,
   APPLE_REJECTION_MESSAGES,
-  appleCommissionFils,
+  appleSeatFeeFils,
   appleNotificationAction,
   isRecordedPlanProduct,
   decideApplePurchase,
@@ -60,7 +60,8 @@ export class AppleIapService {
       console.warn(`[apple-iap] transaction ${tx.transactionId} (${tx.environment}) rejected for order ${order.id}: ${decision.reason}`);
       throw rejection(decision.reason, order.id);
     }
-    const feeFils = appleCommissionFils(order.totalFils, order.vatFils, await resolveRule(this.commissionPercent));
+    // The App Store price is grossed up for Apple's cut, so the learner paid it: the fee is only the price-point rounding.
+    const feeFils = appleSeatFeeFils(order, tx, await resolveRule(this.commissionPercent));
     return { order: await this.checkout.confirmPaid(order, { ...decision.patch, feeFils }), duplicate: false };
   }
 

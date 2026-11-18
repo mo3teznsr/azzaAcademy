@@ -22,11 +22,11 @@ import { ReviewNoteQuote } from './proposal-review';
 
 const TABS: InstructorApplicationStatus[] = ['PENDING', 'APPROVED', 'REJECTED'];
 
-/** `/admin/instructors`: students applying to teach. Approve, or decline with a note. */
+/** `/admin/instructors`: teachers who joined (self-serve), plus any older applications still waiting for a decision. */
 export function InstructorApplications() {
   const { t } = useI18n();
   const c = t.instructors.admin;
-  const [status, setStatus] = useState<InstructorApplicationStatus>('PENDING');
+  const [status, setStatus] = useState<InstructorApplicationStatus>('APPROVED');
   const q = useQuery({ queryKey: qk.admin.instructorApplications(status), queryFn: () => instructorsApi.list(status) });
   const label: Record<InstructorApplicationStatus, string> = { PENDING: c.tabPending, APPROVED: c.tabApproved, REJECTED: c.tabDeclined };
 

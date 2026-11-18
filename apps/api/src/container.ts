@@ -405,7 +405,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
 
   const appStoreSyncer: AppStoreSyncer = adapters.appStore
     ? (() => {
-        const engine = new AppStoreSyncService(adapters.appStore, prices);
+        const engine = new AppStoreSyncService(adapters.appStore, prices, appleCommission);
         return {
           configured: true,
           syncSeatPrice: (priceFils) => engine.syncSeatPrice(priceFils),

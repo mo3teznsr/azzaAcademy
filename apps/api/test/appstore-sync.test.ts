@@ -42,6 +42,18 @@ describe('syncSeatPrice', () => {
     expect(catalog.count('createConsumable')).toBe(1);
   });
 
+  test('the App Store target is the web price grossed up for Apple’s commission, then VAT', async () => {
+    const catalog = new InMemoryAppStoreCatalog();
+    catalog.points = [
+      { id: 'web', customerPrice: 472.5 },
+      { id: 'grossed', customerPrice: 674.99 },
+    ];
+    const svc = new AppStoreSyncService(catalog, prices, async () => 30);
+    const r = await svc.syncSeatPrice(45_000); // 450 AED → 642.86 before VAT → 675.00 with VAT
+    expect(r.detail).toContain('target 675');
+    expect(catalog.prices.get(catalog.iaps.get('com.futuretech.azza.seat.aed450')!.id)).toBe('grossed');
+  });
+
   test('a non-whole-dirham price is skipped with a reason', async () => {
     const { catalog, svc } = make();
     const r = await svc.syncSeatPrice(45_050);

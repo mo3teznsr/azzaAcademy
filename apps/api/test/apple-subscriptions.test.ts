@@ -216,6 +216,16 @@ describe('apple verify', () => {
     expect(ctx.repo.payments[0]).toMatchObject({ totalFils: 10_500, subtotalFils: 10_000, vatFils: 500 });
   });
 
+  test('without an AED price at 30% the grossed-up App Store price is assumed, so the net is still the course price', async () => {
+    const ctx = setup(30);
+    const res = await ctx.service.subscribe('sam', 'logo-design', { plan: 'MONTHLY', method: 'APPLE_IAP' });
+    ctx.verifier.txs.set('j', tx({ productId: MONTHLY, appAccountToken: res.appAccountToken, priceMilliunits: null, currency: null }));
+    await ctx.service.verifyApple('sam', 'j');
+    const p = ctx.repo.payments[0]!;
+    expect(p).toMatchObject({ subtotalFils: 14_286 }); // 100 AED ÷ 0.7
+    expect(p.totalFils - p.vatFils - p.feeFils).toBeGreaterThanOrEqual(10_000);
+  });
+
   test('verifying twice is a no-op', async () => {
     const { service, repo, accrued } = await active();
     await service.verifyApple('sam', 'jws-1');
