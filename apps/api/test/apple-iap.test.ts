@@ -5,7 +5,7 @@ import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction } fro
 import { FixedClock } from '../src/infrastructure/clock';
 import { AppStoreSignedDataVerifier } from '../src/infrastructure/payments/apple-store-verifier';
 import { FakePaymentGateway } from '../src/infrastructure/payments/stripe-gateway';
-import { appleCommissionFils, decideApplePurchase, receivedFils } from '../src/modules/payments/apple/apple-iap-policy';
+import { appleCommissionFils, appleSeatFeeFils, appStorePreVatFils, decideApplePurchase, receivedFils } from '../src/modules/payments/apple/apple-iap-policy';
 import { AppleIapService } from '../src/modules/payments/apple/apple-iap.service';
 import { AppleIapCheckout } from '../src/modules/payments/checkout/apple-iap-checkout';
 import { CheckoutStrategyRegistry } from '../src/modules/payments/checkout/checkout-strategy';
@@ -123,6 +123,24 @@ describe('apple purchase decision', () => {
     expect(receivedFils({ totalFils: 92_400 }, { priceMilliunits: null, currency: null })).toBe(92_400);
   });
 
+  test('the App Store price is grossed up so the learner pays Apple’s cut', () => {
+    expect(appStorePreVatFils(50_000, 30)).toBe(71_429); // 500 AED → 714.29 AED; 70% of it is 500 AED again
+    expect(appStorePreVatFils(88_000, 15)).toBe(103_530);
+    expect(appStorePreVatFils(88_000, 0)).toBe(88_000);
+  });
+
+  test('a seat bought at the grossed-up price costs the teacher nothing; only price-point rounding is a fee', () => {
+    const order = { totalFils: 92_400, vatFils: 4_400 }; // web: 880 AED + VAT
+    // Apple charged 1,087.99 AED (VAT incl.) ≈ 1,035.30 + VAT: 85% of it covers the 880 AED in full.
+    expect(appleSeatFeeFils(order, { priceMilliunits: 1_087_990, currency: 'AED' }, 15)).toBe(0);
+    // A price point a little under the gross-up leaves a small shortfall, not Apple's whole commission.
+    expect(appleSeatFeeFils(order, { priceMilliunits: 1_079_990, currency: 'AED' }, 15)).toBe(573);
+    // Another storefront (no AED price): Apple is taken to have charged the grossed-up price.
+    expect(appleSeatFeeFils(order, { priceMilliunits: 999_990, currency: 'SAR' }, 30)).toBe(0);
+    // Sold at the plain web price (not re-synced yet): the shortfall is Apple's whole cut, as before.
+    expect(appleSeatFeeFils(order, { priceMilliunits: 924_000, currency: 'AED' }, 15)).toBe(13_200);
+  });
+
   test("Apple's commission is a percent of the price before VAT", () => {
     expect(appleCommissionFils(92_400, 4_400, 15)).toBe(13_200);
     expect(appleCommissionFils(92_400, 4_400, 30)).toBe(26_400);
@@ -222,12 +240,20 @@ describe('apple in-app purchase flow', () => {
     expect(notifier.types().filter((t) => t === 'ENROLLED')).toHaveLength(1);
   });
 
-  test("the paid order records Apple's commission as its fee (15% of AED 880 before VAT)", async () => {
+  test('a seat Apple sold at the plain web price records its whole commission as the fee (15% of AED 880 before VAT)', async () => {
     const withCut = new AppleIapService(repo, verifier, checkout, finance, undefined, async () => 15);
     const { order } = await startOrder();
     verifier.transactions.set('jws-1', tx({ appAccountToken: order.appleAppAccountToken }));
     const { order: paid } = await withCut.verifyPurchase('sara', { orderId: order.id, signedTransaction: 'jws-1' });
     expect(paid).toMatchObject({ status: 'PAID', totalFils: 92_400, vatFils: 4_400, feeFils: 13_200 });
+  });
+
+  test('a seat sold at the grossed-up App Store price keeps the web net for the teacher', async () => {
+    const withCut = new AppleIapService(repo, verifier, checkout, finance, undefined, async () => 15);
+    const { order } = await startOrder();
+    verifier.transactions.set('jws-1', tx({ appAccountToken: order.appleAppAccountToken, priceMilliunits: 1_087_990 }));
+    const { order: paid } = await withCut.verifyPurchase('sara', { orderId: order.id, signedTransaction: 'jws-1' });
+    expect(paid).toMatchObject({ status: 'PAID', totalFils: 92_400, vatFils: 4_400, feeFils: 0 });
   });
 
   test('restored transactions without orderId find their order by appAccountToken', async () => {

@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { API_URL, toQueryString, type Query } from './client';
 import { qk } from '@/lib/query-keys';
-import type { Category, Course, Items, TeacherProfile } from './types';
+import type { Category, Course, Items, TeacherProfile, TeachingTerms } from './types';
 import type { BlogPage, BlogPost, Testimonial } from './blog';
 
 /**
@@ -37,6 +37,13 @@ export const getCategories = cache(() =>
   publicGet<Items<Category>>('/api/v1/categories')
     .then((r) => r.items)
     .catch(() => [] as Category[]),
+);
+
+/** The teacher cuts and payout rules as an admin last saved them (never cached); null when the API is down. */
+export const getTeachingTerms = cache(() =>
+  fetch(`${API_URL}/api/v1/teaching-terms`, { headers: { Accept: 'application/json' }, cache: 'no-store' })
+    .then((r) => (r.ok ? (r.json() as Promise<TeachingTerms>) : null))
+    .catch(() => null),
 );
 
 /** A query client for one server render; dehydrate it into a `HydrationBoundary`. Failed prefetches are left out and the browser retries them. */

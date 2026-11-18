@@ -73,11 +73,40 @@ export function receivedFils(order: Pick<OrderRecord, 'totalFils'>, tx: Pick<App
 
 /**
  * Apple's commission on an in-app purchase, in fils: `percent` of the price before VAT (Apple charges its cut on the
- * VAT-exclusive price and remits the VAT itself). Recorded as the payment's `feeFils`, so teacher earnings and the
- * platform's net exclude it, as they exclude Stripe's fee.
+ * VAT-exclusive price and remits the VAT itself). Used as `feeFils` where the payment's total is what Apple charged
+ * (recorded-course plans): the App Store price is grossed up by `appStorePreVatFils`, so the net after this fee is
+ * the web price and the teacher's share is not reduced by Apple.
  */
 export function appleCommissionFils(totalFils: number, vatFils: number, percent: number): number {
   return Math.max(0, Math.round(((totalFils - vatFils) * percent) / 100));
+}
+
+/**
+ * The App Store price before VAT for a web price before VAT: grossed up so that what is left after Apple's commission
+ * is the web price. The learner who buys in the app pays Apple's cut; the teacher and the platform get the same as on
+ * the web. 500 AED at 30% → 714.29 AED (rounded up to the fil; App Store price points round further).
+ */
+export function appStorePreVatFils(webPreVatFils: number, percent: number): number {
+  const p = Math.min(Math.max(percent, 0), 99);
+  return Math.ceil((webPreVatFils * 100) / (100 - p));
+}
+
+/**
+ * `feeFils` of a seat bought in the app. The order keeps the web price (its quote), while Apple charged the grossed-up
+ * App Store price; the fee is whatever Apple's payout falls short of the web price before VAT (only App Store price-point
+ * rounding), never Apple's whole commission. With no AED price on the transaction (another storefront), Apple is taken
+ * to have charged the grossed-up price.
+ */
+export function appleSeatFeeFils(
+  order: Pick<OrderRecord, 'totalFils' | 'vatFils'>,
+  tx: Pick<AppleTransaction, 'priceMilliunits' | 'currency'>,
+  percent: number,
+): number {
+  const preVat = order.totalFils - order.vatFils;
+  const actual = tx.currency === 'AED' && tx.priceMilliunits !== null && order.totalFils > 0;
+  const grossPreVat = actual ? Math.round((receivedFils(order, tx) * preVat) / order.totalFils) : appStorePreVatFils(preVat, percent);
+  const payout = Math.floor((grossPreVat * (100 - Math.min(Math.max(percent, 0), 99))) / 100);
+  return Math.max(0, preVat - payout);
 }
 
 /** App Store Server Notifications V2 we act on: a refunded or revoked (Family Sharing) purchase gives the seat back. */

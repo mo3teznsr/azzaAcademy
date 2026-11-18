@@ -20,8 +20,8 @@ export function adminSettingsRoutes(service: SettingsService, site: Pick<SiteSet
 }
 
 /**
- * Mounted at /api/v1, both public and cacheable for a minute: `GET /site-settings` (contact details and the social links
- * that are set) and `GET /teaching-terms` (teacher cuts, payout hold and minimum, VAT) for the teach page.
+ * Mounted at /api/v1, both public: `GET /site-settings` (contact details and the social links that are set; cacheable for a
+ * minute) and `GET /teaching-terms` (teacher cuts, payout hold and minimum, VAT; never cached, so an admin's change shows at once).
  */
 export function siteSettingsRoutes(site: Pick<SiteSettingsService, 'siteSettings' | 'teachingTerms'>) {
   return new Hono<AppEnv>()
@@ -30,7 +30,7 @@ export function siteSettingsRoutes(site: Pick<SiteSettingsService, 'siteSettings
       return c.json(await site.siteSettings());
     })
     .get('/teaching-terms', async (c) => {
-      c.header('Cache-Control', 'public, max-age=60');
+      c.header('Cache-Control', 'no-store');
       return c.json(await site.teachingTerms());
     });
 }

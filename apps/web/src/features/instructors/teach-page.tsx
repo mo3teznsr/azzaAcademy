@@ -1,8 +1,12 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
+import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
+  Apple,
+  ArrowLeft,
   Award,
   BarChart3,
   Check,
@@ -30,11 +34,14 @@ const PROPOSE = '/studio/courses/new';
 const STUDIO = '/studio';
 const SECTION = 'border-t border-border py-[clamp(3rem,7vw,5.5rem)]';
 
-/** `/teach`: everything a prospective teacher needs (formats, tools, fees, payouts, FAQ) plus instant teacher sign-up. */
-export function TeachPage() {
+/**
+ * `/teach`: everything a prospective teacher needs (why Azza, formats, tools, fees, payouts, FAQ) plus instant teacher
+ * sign-up. `initialTerms` comes from the server render (admin settings, never cached), so the numbers are in the HTML.
+ */
+export function TeachPage({ initialTerms }: { initialTerms?: TeachingTerms }) {
   const { t } = useI18n();
   const c = t.instructors.apply;
-  const terms = useQuery({ queryKey: qk.teachingTerms, queryFn: siteApi.teachingTerms, staleTime: 60_000 });
+  const terms = useQuery({ queryKey: qk.teachingTerms, queryFn: siteApi.teachingTerms, initialData: initialTerms });
 
   return (
     <div className="mx-auto w-full max-w-[1360px] px-4 sm:px-6 lg:px-10">
@@ -63,6 +70,7 @@ export function TeachPage() {
         </div>
       </div>
 
+      <Stories />
       <Steps />
       <Formats terms={terms.data} />
       <Tools />
@@ -75,7 +83,7 @@ export function TeachPage() {
 
 /** The two headline numbers, right under the pitch, so nobody has to scroll to find out what they keep. */
 function ShareGlance({ terms }: { terms?: TeachingTerms }) {
-  const { t, f } = useI18n();
+  const { t, f, fill } = useI18n();
   const c = t.instructors.apply;
   const rows = [
     { label: c.live.tag, value: terms?.liveCutPercent, Icon: Radio },
@@ -88,9 +96,12 @@ function ShareGlance({ terms }: { terms?: TeachingTerms }) {
           <dt className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Icon className="size-4" aria-hidden /> {label}
           </dt>
-          <dd className="flex items-baseline gap-2">
-            <span className="font-display text-4xl font-extrabold tabular-nums">{value === undefined ? '—' : f.percent(value)}</span>
-            <span className="text-sm text-muted-foreground">{c.yourShare}</span>
+          <dd className="flex flex-col gap-0.5">
+            <span className="flex items-baseline gap-2">
+              <span className="font-display text-4xl font-extrabold tabular-nums">{value === undefined ? '—' : f.percent(value)}</span>
+              <span className="text-sm text-muted-foreground">{c.yourShare}</span>
+            </span>
+            {value !== undefined && <span className="text-xs text-muted-foreground">{fill(c.azzaKeeps, { p: f.percent(100 - value) })}</span>}
           </dd>
         </div>
       ))}
@@ -169,6 +180,61 @@ function JoinPanel() {
   );
 }
 
+/** The benefit illustrations, as a swipeable strip of story cards with a caption in the page's language. */
+function Stories() {
+  const { t, dir, fill } = useI18n();
+  const c = t.instructors.apply;
+  const strip = useRef<HTMLUListElement>(null);
+  const step = (forward: boolean) => {
+    const el = strip.current;
+    const card = el?.querySelector('li');
+    if (!el || !card) return;
+    const by = (card.getBoundingClientRect().width + 20) * (forward ? 1 : -1) * (dir === 'rtl' ? -1 : 1);
+    el.scrollBy({ left: by, behavior: 'smooth' });
+  };
+  return (
+    <section aria-labelledby="teach-why" className={SECTION}>
+      <div className="flex flex-wrap items-end justify-between gap-6">
+        <div className="flex max-w-2xl flex-col gap-3">
+          <SectionHead id="teach-why" kicker={c.whyKicker} title={c.whyTitle} />
+          <p className="text-lg text-soft-foreground">{c.whyBody}</p>
+        </div>
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="icon" aria-label={c.storiesPrev} onClick={() => step(false)}>
+            <ArrowLeft className="rtl:rotate-180" />
+          </Button>
+          <Button type="button" variant="outline" size="icon" aria-label={c.storiesNext} onClick={() => step(true)}>
+            <ArrowRight className="rtl:rotate-180" />
+          </Button>
+        </div>
+      </div>
+      <ul
+        ref={strip}
+        className="-mx-4 mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-4 pb-4 [scrollbar-width:thin] sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10"
+      >
+        {c.stories.map((story) => (
+          <li key={story.img} className="flex w-[78vw] max-w-[300px] shrink-0 snap-start flex-col gap-4">
+            <div className="overflow-hidden rounded-[22px] border border-border bg-card shadow-card">
+              <Image
+                src={`/images/teach-benefits/${story.img}.webp`}
+                alt={fill(c.storyAlt, { t: story.title })}
+                width={720}
+                height={1279}
+                sizes="300px"
+                className="h-auto w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <b className="font-display text-lg leading-snug">{story.title}</b>
+              <span className="text-sm text-muted-foreground">{story.body}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function Steps() {
   const { t } = useI18n();
   const c = t.instructors.apply;
@@ -218,6 +284,7 @@ function Formats({ terms }: { terms?: TeachingTerms }) {
               <div className="flex shrink-0 flex-col items-end">
                 <span className="font-display text-[clamp(40px,5vw,60px)] leading-none font-extrabold tabular-nums">{pct(share)}</span>
                 <span className="text-xs text-muted-foreground">{c.yourShare}</span>
+                {share !== undefined && <span className="text-xs text-muted-foreground">{fill(c.azzaKeeps, { p: f.percent(100 - share) })}</span>}
               </div>
             </div>
             <p className="text-soft-foreground">{copy.body}</p>
@@ -308,6 +375,16 @@ function Fees({ terms, loading }: { terms?: TeachingTerms; loading: boolean }) {
           <p className="rounded-2xl bg-sun p-4 font-bold text-ink">
             {fill(c.example, { live: example(terms?.liveCutPercent), rec: example(terms?.recordedCutPercent) })}
           </p>
+        </div>
+
+        <div className="flex gap-4 rounded-2xl border border-border bg-card p-5">
+          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
+            <Apple className="size-5" aria-hidden />
+          </span>
+          <div className="flex flex-col gap-1">
+            <h3 className="font-display text-base font-extrabold">{c.appleTitle}</h3>
+            <p className="text-sm text-soft-foreground">{c.appleBody}</p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2 border-t border-border pt-6">

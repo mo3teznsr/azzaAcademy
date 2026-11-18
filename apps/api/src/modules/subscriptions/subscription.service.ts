@@ -6,7 +6,7 @@ import { addHours, formatInZone } from '../../core/time';
 import type { AppleNotification, AppleSignedDataVerifier, AppleTransaction, Clock, PaymentGateway, PaymentWebhookEvent, WebhookInvoice, WebhookSubscription } from '../../core/ports';
 import { emailsIn } from '../notifications/email-templates';
 import type { Notice, Notifier } from '../notifications/notification.types';
-import { appleCommissionFils } from '../payments/apple/apple-iap-policy';
+import { appleCommissionFils, appStorePreVatFils } from '../payments/apple/apple-iap-policy';
 import { COUPON_REFUSAL_MESSAGES, couponRefusal } from '../payments/coupon-eligibility';
 import { resolveBankAccount } from '../payments/checkout/bank-transfer-checkout';
 import type { BankAccountRecord, CouponRecord, PaymentsRepository } from '../payments/payments.repository';
@@ -1143,7 +1143,7 @@ export class SubscriptionService {
       if (expires.getTime() <= this.clock.now().getTime()) return { row, applied: false, duplicate: true };
     }
 
-    const total = this.appleTotalFils(tx, course, productPlan, row);
+    const total = await this.appleTotalFils(tx, course, productPlan, row);
     const payment = await this.recordApplePayment(row, course, tx, productPlan, total);
 
     const current = !row.currentPeriodEnd || expires.getTime() > row.currentPeriodEnd.getTime();
@@ -1184,17 +1184,21 @@ export class SubscriptionService {
     return { row: updated, applied: true, duplicate: false };
   }
 
-  /** What Apple charged in AED when it says so (milliunits: 924000 = AED 924.00); else the course price of the plan, VAT included. */
-  private appleTotalFils(tx: AppleTransaction, course: SubscribableCourse, plan: SubscriptionPlan, row: SubscriptionRow) {
+  /**
+   * What Apple charged in AED when it says so (milliunits: 924000 = AED 924.00); else the plan's App Store price: the
+   * course price grossed up for Apple's commission (the learner pays it), VAT included.
+   */
+  private async appleTotalFils(tx: AppleTransaction, course: SubscribableCourse, plan: SubscriptionPlan, row: SubscriptionRow) {
     if (tx.currency === 'AED' && tx.priceMilliunits !== null) return Math.round(tx.priceMilliunits / 10);
     const price = plan === 'YEARLY' ? course.yearlyPriceFils : course.monthlyPriceFils;
     if (price == null) this.log(`apple transaction ${tx.transactionId}: course ${course.id} has no ${plan} price, using the price locked on subscription ${row.id}`, null);
-    const total = this.prices.inclusive(price ?? row.priceFils);
+    const total = this.prices.inclusive(appStorePreVatFils(price ?? row.priceFils, await resolveRule(this.appleCommissionPercent)));
     if (total <= 0) this.log(`apple transaction ${tx.transactionId}: recording a 0-fils payment for subscription ${row.id}`, null);
     return total;
   }
 
-  private async recordApplePayment(row: SubscriptionRow, course: SubscribableCourse, tx: AppleTransaction, plan: SubscriptionPlan, total = this.appleTotalFils(tx, course, plan, row), extra: Partial<Pick<NewSubscriptionPayment, 'status' | 'refundedFils' | 'reviewNote'>> = {}) {
+  private async recordApplePayment(row: SubscriptionRow, course: SubscribableCourse, tx: AppleTransaction, plan: SubscriptionPlan, total?: number, extra: Partial<Pick<NewSubscriptionPayment, 'status' | 'refundedFils' | 'reviewNote'>> = {}) {
+    total ??= await this.appleTotalFils(tx, course, plan, row);
     const split = this.prices.splitInclusive(total);
     return this.repo.upsertPayment({
       subscriptionId: row.id,
@@ -1230,7 +1234,7 @@ export class SubscriptionService {
       await this.repo.refundPayment(payment.id, payment.totalFils);
     } else {
       const plan = this.planOfProduct(course, tx.productId) ?? row.plan;
-      const total = this.appleTotalFils(tx, course, plan, row);
+      const total = await this.appleTotalFils(tx, course, plan, row);
       await this.recordApplePayment(row, course, tx, plan, total, { status: 'REFUNDED', refundedFils: total });
       refunded = null; // nothing was ever earned for it
     }

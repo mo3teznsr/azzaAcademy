@@ -1,4 +1,6 @@
 import { appleRecordedProductId, appleSeatProductId } from '@azza/shared';
+import { resolveRule, type RuleValue } from '../../core/rule-value';
+import { appStorePreVatFils } from '../payments/apple/apple-iap-policy';
 import type { PriceCalculator } from '../payments/price-calculator';
 import type { AppStoreCatalog, LocalizationInput, PricePoint } from './appstore-sync.port';
 
@@ -57,7 +59,14 @@ export class AppStoreSyncService {
   constructor(
     private readonly catalog: AppStoreCatalog,
     private readonly prices: PriceCalculator,
+    /** Apple's commission in percent (admin-editable): App Store prices are grossed up by it, so the learner pays it. */
+    private readonly commissionPercent: RuleValue<number> = 0,
   ) {}
+
+  /** VAT-inclusive App Store target for a web price before VAT: grossed up for Apple's commission, then VAT. */
+  private async appStoreTarget(webPreVatFils: number): Promise<number> {
+    return this.prices.inclusive(appStorePreVatFils(webPreVatFils, await resolveRule(this.commissionPercent)));
+  }
 
   async syncSeatPrice(priceFils: number): Promise<SyncResult> {
     const productId = appleSeatProductId(priceFils);
@@ -78,7 +87,7 @@ export class AppStoreSyncService {
         { locale: 'en-US', name: 'Class seat', description: 'One place in a live class' },
         { locale: 'ar-SA', name: 'مقعد في صفّ', description: 'مكان واحد في صفّ مباشر' },
       ]);
-      const target = this.prices.inclusive(priceFils);
+      const target = await this.appStoreTarget(priceFils);
       const point = nearestPricePoint(await this.catalog.uaePricePoints(iap.id, 'iap'), target);
       if (!point) return { status: 'FAILED', detail: `no ARE price points for ${productId}` };
       const current = created ? null : await this.catalog.currentIapPrice(iap.id);
@@ -108,7 +117,7 @@ export class AppStoreSyncService {
           productId: yearlyId,
           period: 'ONE_YEAR' as const,
           groupLevel: 1,
-          targetFils: this.prices.inclusive(course.yearlyPriceFils),
+          targetFils: await this.appStoreTarget(course.yearlyPriceFils),
           nameEn: fitDisplayName(course.titleEn, 'Yearly'),
           nameAr: fitDisplayName(titleAr, 'سنوي'),
         },
@@ -116,7 +125,7 @@ export class AppStoreSyncService {
           productId: monthlyId,
           period: 'ONE_MONTH' as const,
           groupLevel: 2,
-          targetFils: this.prices.inclusive(course.monthlyPriceFils),
+          targetFils: await this.appStoreTarget(course.monthlyPriceFils),
           nameEn: fitDisplayName(course.titleEn, 'Monthly'),
           nameAr: fitDisplayName(titleAr, 'شهري'),
         },

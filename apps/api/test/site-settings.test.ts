@@ -327,12 +327,12 @@ describe('HTTP', () => {
     });
   });
 
-  test('GET /teaching-terms is public and reflects the current cuts and payout rules', async () => {
+  test('GET /teaching-terms is public, never cached, and reflects the current cuts and payout rules', async () => {
     const { app, svc } = make(null);
     await svc.updateRules({ minPayoutAed: 300 });
     const res = await app.request('/teaching-terms');
     expect(res.status).toBe(200);
-    expect(res.headers.get('Cache-Control')).toBe('public, max-age=60');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
     expect(await res.json()).toEqual({ liveCutPercent: 70, recordedCutPercent: 60, earningHoldDays: 14, minPayoutAed: 300, vatPercent: 5 });
   });
 

@@ -112,6 +112,7 @@ function RulesCard() {
   };
   const done = (d: AdminSettings) => {
     qc.setQueryData(SETTINGS_KEY, d);
+    void qc.invalidateQueries({ queryKey: qk.teachingTerms });
     seed(d);
     toast.success(r.saved);
   };
@@ -410,6 +411,7 @@ function CutsCard() {
     onSuccess: (d) => {
       toast.success(c.saved);
       qc.setQueryData(qk.admin.cuts, d);
+      void qc.invalidateQueries({ queryKey: qk.teachingTerms });
     },
     onError: (e) => toast.error(e.message === c.invalid ? c.invalid : errorText(e)),
   });
