@@ -3661,7 +3661,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get teachPitchBody =>
-      'Guide small classes of learners across the region, in Arabic or English, with lessons, practice and live sessions. Tell us who you are and what you\'d teach; our team reviews every application, usually within a few days.';
+      'Run live classes in Arabic or English, or publish a recorded course people learn from at their own pace. Open your teacher account today: there is no application to wait on, and no fee to join.';
 
   @override
   String get applySectionAbout => 'About you';
@@ -3714,10 +3714,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get applyPhoneHint => '+971 50 123 4567';
 
   @override
-  String get applySubmit => 'Send application';
+  String get applySubmit => 'Open my teacher account';
 
   @override
-  String get applySent => 'Application sent. We\'ll let you know.';
+  String get applySent => 'Your teacher account is ready.';
 
   @override
   String get applyHeadlineInvalid => 'Write 4 to 120 characters.';
@@ -3752,14 +3752,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The reviewer\'s note is below. You\'re welcome to apply again.';
 
   @override
-  String get applyApprovedTitle => 'You can teach now';
+  String get applyApprovedTitle => 'Your studio is open';
 
   @override
   String get applyApprovedBody =>
-      'Your instructor account is ready. Refresh to open the teacher studio and propose your first course.';
+      'Build a course, open classes and follow your earnings, all from the studio.';
 
   @override
-  String get applyRefresh => 'Refresh my account';
+  String get applyRefresh => 'Open the studio';
 
   @override
   String get refresh => 'Refresh';
@@ -5737,11 +5737,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guestReviewCta => 'Sign in to write a review';
 
   @override
-  String get guestTeachCta => 'Create an account to apply';
+  String get guestTeachCta => 'Create a free account';
 
   @override
   String get guestTeachBody =>
-      'Applications are tied to your account, so we can reach you and set up your teaching tools once you\'re approved.';
+      'Create a free account, fill in your teacher profile, and your studio opens straight away. The team reviews each course before it goes live, not you.';
 
   @override
   String get guestVerifyTitle => 'Verify a certificate';
@@ -7096,4 +7096,336 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allAccessCoveredBuy => 'Buy this plan anyway';
+
+  @override
+  String get teachFormTitle => 'Your teacher profile';
+
+  @override
+  String get teachFormSub =>
+      'This is what learners see on your teacher page. Your teacher account opens the moment you save it.';
+
+  @override
+  String get teachBadge1 => 'Teacher account in minutes';
+
+  @override
+  String get teachBadge2 => 'No joining or monthly fee';
+
+  @override
+  String get teachBadge3 => 'Paid in AED';
+
+  @override
+  String get teachLiveTag => 'Live classes';
+
+  @override
+  String get teachRecordedTag => 'Recorded courses';
+
+  @override
+  String get teachYourShare => 'Your share';
+
+  @override
+  String teachAzzaKeeps(String p) {
+    return 'Azza keeps $p';
+  }
+
+  @override
+  String get teachWhyKicker => 'Why teachers move to Azza';
+
+  @override
+  String get teachWhyTitle => 'Everything you teach, in one place';
+
+  @override
+  String get teachStory1Title => 'Out of the group chat';
+
+  @override
+  String get teachStory1Body =>
+      'Links in WhatsApp, files in Telegram, questions in private messages. On Azza your lessons, files, live sessions and questions sit in one place learners can always find.';
+
+  @override
+  String get teachStory2Title => 'Live in Azza, not on a shared link';
+
+  @override
+  String get teachStory2Body =>
+      'Teach in Azza’s own live room. Only learners with a seat can join, and your materials sit right beside the video.';
+
+  @override
+  String get teachStory3Title => 'Recorded the moment you finish';
+
+  @override
+  String get teachStory3Body =>
+      'Every live session is saved on its own and appears for your learners. Nobody has to chase a recording.';
+
+  @override
+  String get teachStory4Title => 'Learners from anywhere';
+
+  @override
+  String get teachStory4Body =>
+      'Teach in Arabic or English to learners across the UAE, the Gulf and beyond. They pay online; you are paid in AED.';
+
+  @override
+  String get teachStory5Title => 'A certificate when they finish';
+
+  @override
+  String get teachStory5Body =>
+      'Learners who complete your course get an Azza certificate with a code anyone can verify.';
+
+  @override
+  String get teachStepsTitle => 'From sign-up to your first payout';
+
+  @override
+  String get teachStep1Title => 'Open your teacher account';
+
+  @override
+  String get teachStep1Body =>
+      'Fill in your profile. Your studio opens at once.';
+
+  @override
+  String get teachStep2Title => 'Build your course';
+
+  @override
+  String get teachStep2Body =>
+      'Write lessons, upload videos, slides and files, and add quizzes and assignments.';
+
+  @override
+  String get teachStep3Title => 'The team reviews it';
+
+  @override
+  String get teachStep3Body =>
+      'A person checks each course before it opens, so learners can trust everything on Azza.';
+
+  @override
+  String get teachStep4Title => 'Open classes or publish';
+
+  @override
+  String get teachStep4Body =>
+      'Schedule live classes with your own seats and price, or publish your recorded course.';
+
+  @override
+  String get teachStep5Title => 'Get paid';
+
+  @override
+  String get teachStep5Body =>
+      'Earnings build up in the studio and are paid out to you in AED.';
+
+  @override
+  String get teachFormatsTitle => 'Live classes or a recorded course. Or both.';
+
+  @override
+  String get teachLiveTitle => 'Teach a group, face to face, online';
+
+  @override
+  String get teachLiveBody =>
+      'Run a class over a set number of weeks: live sessions at fixed times, with lessons and practice between them.';
+
+  @override
+  String get teachLiveBullet1 =>
+      'You set the schedule, the number of sessions, the seats and the seat price for each class';
+
+  @override
+  String get teachLiveBullet2 =>
+      'A live room with video, screen sharing and chat';
+
+  @override
+  String get teachLiveBullet3 =>
+      'Every session is recorded, so learners who miss one can catch up';
+
+  @override
+  String get teachLiveBullet4 => 'Attendance and a report after each session';
+
+  @override
+  String get teachLiveBullet5 =>
+      'Waitlists and a minimum class size, so a class only runs when it makes sense';
+
+  @override
+  String teachLivePay(String p) {
+    return 'You earn $p of what each class brings in, after VAT and payment fees. It is paid session by session, as you deliver them.';
+  }
+
+  @override
+  String get teachRecordedTitle => 'Record once, teach every day';
+
+  @override
+  String get teachRecordedBody =>
+      'Learners subscribe monthly or yearly and work through your lessons at their own pace.';
+
+  @override
+  String get teachRecordedBullet1 =>
+      'Video lessons with progress saved on every device, web and mobile';
+
+  @override
+  String get teachRecordedBullet2 =>
+      'Quizzes, files and lesson Q&A alongside each video';
+
+  @override
+  String get teachRecordedBullet3 =>
+      'Monthly and yearly prices are agreed with the team';
+
+  @override
+  String get teachRecordedBullet4 =>
+      'Included in Azza All-access, so members can find your course too';
+
+  @override
+  String teachRecordedPay(String p) {
+    return 'You earn $p of every subscription payment to your course, after VAT and payment fees. From All-access members, $p of the net is shared between teachers by minutes watched.';
+  }
+
+  @override
+  String get teachToolsTitle => 'Everything a class needs, built in';
+
+  @override
+  String get teachTool1Title => 'Live room and recordings';
+
+  @override
+  String get teachTool1Body =>
+      'Video, screen sharing and chat. Recordings appear for your learners on their own.';
+
+  @override
+  String get teachTool2Title => 'Quizzes';
+
+  @override
+  String get teachTool2Body =>
+      'Single-choice, multiple-choice and true or false questions, marked automatically.';
+
+  @override
+  String get teachTool3Title => 'Assignments and grading';
+
+  @override
+  String get teachTool3Body =>
+      'Set work, collect files from learners, and grade it with feedback.';
+
+  @override
+  String get teachTool4Title => 'Lesson Q&A';
+
+  @override
+  String get teachTool4Body =>
+      'Learners ask under each lesson; you answer once and everyone sees it.';
+
+  @override
+  String get teachTool5Title => 'Certificates';
+
+  @override
+  String get teachTool5Body =>
+      'Learners who finish your course get a certificate anyone can verify.';
+
+  @override
+  String get teachTool6Title => 'Analytics and earnings';
+
+  @override
+  String get teachTool6Body =>
+      'See who is keeping up, where learners stop, and every dirham you have earned.';
+
+  @override
+  String get teachFeesTitle => 'What Azza takes, in plain numbers';
+
+  @override
+  String get teachFeesBody =>
+      'No joining fee, no monthly fee, no listing fee. Azza only earns when you do.';
+
+  @override
+  String get teachTermHold => 'Held before payout';
+
+  @override
+  String teachTermHoldValue(String n) {
+    return '$n days';
+  }
+
+  @override
+  String get teachTermMin => 'Minimum payout';
+
+  @override
+  String teachTermMinValue(String n) {
+    return '$n AED';
+  }
+
+  @override
+  String get teachNetTitle => 'How your share is worked out';
+
+  @override
+  String teachNet1(String v) {
+    return 'The learner pays your price plus $v VAT.';
+  }
+
+  @override
+  String get teachNet2 =>
+      'The VAT goes to the UAE tax authority, and the card processing fee comes off.';
+
+  @override
+  String get teachNet3 =>
+      'What is left is the net. You keep your share; Azza keeps the rest to run hosting, live video, payments, support and marketing.';
+
+  @override
+  String teachExample(String live, String rec) {
+    return 'Say a payment leaves 1,000 AED after VAT and fees. On a live class you earn $live AED; on a recorded course, $rec AED.';
+  }
+
+  @override
+  String get teachAppleTitle =>
+      'Bought in the iPhone app? The learner pays Apple’s fee';
+
+  @override
+  String get teachAppleBody =>
+      'Apple takes a commission on every App Store purchase. Azza adds it to the price in the app, so the learner pays it, not you. Your share is the same whether a learner pays on the web or in the app.';
+
+  @override
+  String get teachPayoutTitle => 'Getting paid';
+
+  @override
+  String teachPayoutBody(String d, String m) {
+    return 'Each earning is held for $d days, the refund window, then joins your balance. Once your balance reaches $m AED it is paid to your bank account (IBAN) or through Stripe. Every earning and payout is listed in the studio.';
+  }
+
+  @override
+  String get teachCustomNote =>
+      'Some courses carry a custom share agreed with the team. The studio always shows the share that applies to each course.';
+
+  @override
+  String get teachFaqTitle => 'Questions teachers ask';
+
+  @override
+  String get teachFaq1Q => 'Do I need to be approved to teach?';
+
+  @override
+  String get teachFaq1A =>
+      'No. Your teacher account opens as soon as you save your profile. The team reviews each course before it goes live, so you can start building right away.';
+
+  @override
+  String get teachFaq2Q => 'What does the course review check?';
+
+  @override
+  String get teachFaq2A =>
+      'That the course is clear, honest about what learners will get, and ready to teach. If something needs work, you get a note and can send it again.';
+
+  @override
+  String get teachFaq3Q => 'Can I teach in Arabic and English?';
+
+  @override
+  String get teachFaq3A =>
+      'Yes. Pick the languages you teach in on your profile, and set the language of each class.';
+
+  @override
+  String get teachFaq4Q => 'How big are live classes?';
+
+  @override
+  String get teachFaq4A =>
+      'You choose the seats for each class. Azza is built for small groups where you can see and hear every learner.';
+
+  @override
+  String get teachFaq5Q => 'Do I need special software or equipment?';
+
+  @override
+  String get teachFaq5A =>
+      'No. A laptop with a camera and a steady connection is enough; a headset helps.';
+
+  @override
+  String get teachFaq6Q => 'Does the App Store fee come out of my share?';
+
+  @override
+  String get teachFaq6A =>
+      'No. Prices in the iPhone app include Apple’s commission on top of your price, so learners who buy there pay it. Your share is worked out exactly as for a purchase on the web.';
+
+  @override
+  String get teachFaq7Q => 'When do I get paid?';
+
+  @override
+  String get teachFaq7A =>
+      'After each earning’s hold period, once your balance reaches the minimum payout. The studio shows what is on hold, what is ready, and every payout.';
 }

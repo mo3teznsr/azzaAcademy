@@ -6101,7 +6101,7 @@ abstract class AppLocalizations {
   /// No description provided for @teachPitchBody.
   ///
   /// In en, this message translates to:
-  /// **'Guide small classes of learners across the region, in Arabic or English, with lessons, practice and live sessions. Tell us who you are and what you\'d teach; our team reviews every application, usually within a few days.'**
+  /// **'Run live classes in Arabic or English, or publish a recorded course people learn from at their own pace. Open your teacher account today: there is no application to wait on, and no fee to join.'**
   String get teachPitchBody;
 
   /// No description provided for @applySectionAbout.
@@ -6203,13 +6203,13 @@ abstract class AppLocalizations {
   /// No description provided for @applySubmit.
   ///
   /// In en, this message translates to:
-  /// **'Send application'**
+  /// **'Open my teacher account'**
   String get applySubmit;
 
   /// No description provided for @applySent.
   ///
   /// In en, this message translates to:
-  /// **'Application sent. We\'ll let you know.'**
+  /// **'Your teacher account is ready.'**
   String get applySent;
 
   /// No description provided for @applyHeadlineInvalid.
@@ -6275,19 +6275,19 @@ abstract class AppLocalizations {
   /// No description provided for @applyApprovedTitle.
   ///
   /// In en, this message translates to:
-  /// **'You can teach now'**
+  /// **'Your studio is open'**
   String get applyApprovedTitle;
 
   /// No description provided for @applyApprovedBody.
   ///
   /// In en, this message translates to:
-  /// **'Your instructor account is ready. Refresh to open the teacher studio and propose your first course.'**
+  /// **'Build a course, open classes and follow your earnings, all from the studio.'**
   String get applyApprovedBody;
 
   /// No description provided for @applyRefresh.
   ///
   /// In en, this message translates to:
-  /// **'Refresh my account'**
+  /// **'Open the studio'**
   String get applyRefresh;
 
   /// No description provided for @refresh.
@@ -9575,13 +9575,13 @@ abstract class AppLocalizations {
   /// No description provided for @guestTeachCta.
   ///
   /// In en, this message translates to:
-  /// **'Create an account to apply'**
+  /// **'Create a free account'**
   String get guestTeachCta;
 
   /// No description provided for @guestTeachBody.
   ///
   /// In en, this message translates to:
-  /// **'Applications are tied to your account, so we can reach you and set up your teaching tools once you\'re approved.'**
+  /// **'Create a free account, fill in your teacher profile, and your studio opens straight away. The team reviews each course before it goes live, not you.'**
   String get guestTeachBody;
 
   /// No description provided for @guestVerifyTitle.
@@ -11899,6 +11899,558 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Buy this plan anyway'**
   String get allAccessCoveredBuy;
+
+  /// No description provided for @teachFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher profile'**
+  String get teachFormTitle;
+
+  /// No description provided for @teachFormSub.
+  ///
+  /// In en, this message translates to:
+  /// **'This is what learners see on your teacher page. Your teacher account opens the moment you save it.'**
+  String get teachFormSub;
+
+  /// No description provided for @teachBadge1.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher account in minutes'**
+  String get teachBadge1;
+
+  /// No description provided for @teachBadge2.
+  ///
+  /// In en, this message translates to:
+  /// **'No joining or monthly fee'**
+  String get teachBadge2;
+
+  /// No description provided for @teachBadge3.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid in AED'**
+  String get teachBadge3;
+
+  /// No description provided for @teachLiveTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Live classes'**
+  String get teachLiveTag;
+
+  /// No description provided for @teachRecordedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded courses'**
+  String get teachRecordedTag;
+
+  /// No description provided for @teachYourShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Your share'**
+  String get teachYourShare;
+
+  /// No description provided for @teachAzzaKeeps.
+  ///
+  /// In en, this message translates to:
+  /// **'Azza keeps {p}'**
+  String teachAzzaKeeps(String p);
+
+  /// No description provided for @teachWhyKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Why teachers move to Azza'**
+  String get teachWhyKicker;
+
+  /// No description provided for @teachWhyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you teach, in one place'**
+  String get teachWhyTitle;
+
+  /// No description provided for @teachStory1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of the group chat'**
+  String get teachStory1Title;
+
+  /// No description provided for @teachStory1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Links in WhatsApp, files in Telegram, questions in private messages. On Azza your lessons, files, live sessions and questions sit in one place learners can always find.'**
+  String get teachStory1Body;
+
+  /// No description provided for @teachStory2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Live in Azza, not on a shared link'**
+  String get teachStory2Title;
+
+  /// No description provided for @teachStory2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Teach in Azza’s own live room. Only learners with a seat can join, and your materials sit right beside the video.'**
+  String get teachStory2Body;
+
+  /// No description provided for @teachStory3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded the moment you finish'**
+  String get teachStory3Title;
+
+  /// No description provided for @teachStory3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Every live session is saved on its own and appears for your learners. Nobody has to chase a recording.'**
+  String get teachStory3Body;
+
+  /// No description provided for @teachStory4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Learners from anywhere'**
+  String get teachStory4Title;
+
+  /// No description provided for @teachStory4Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Teach in Arabic or English to learners across the UAE, the Gulf and beyond. They pay online; you are paid in AED.'**
+  String get teachStory4Body;
+
+  /// No description provided for @teachStory5Title.
+  ///
+  /// In en, this message translates to:
+  /// **'A certificate when they finish'**
+  String get teachStory5Title;
+
+  /// No description provided for @teachStory5Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Learners who complete your course get an Azza certificate with a code anyone can verify.'**
+  String get teachStory5Body;
+
+  /// No description provided for @teachStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'From sign-up to your first payout'**
+  String get teachStepsTitle;
+
+  /// No description provided for @teachStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your teacher account'**
+  String get teachStep1Title;
+
+  /// No description provided for @teachStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in your profile. Your studio opens at once.'**
+  String get teachStep1Body;
+
+  /// No description provided for @teachStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Build your course'**
+  String get teachStep2Title;
+
+  /// No description provided for @teachStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Write lessons, upload videos, slides and files, and add quizzes and assignments.'**
+  String get teachStep2Body;
+
+  /// No description provided for @teachStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'The team reviews it'**
+  String get teachStep3Title;
+
+  /// No description provided for @teachStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'A person checks each course before it opens, so learners can trust everything on Azza.'**
+  String get teachStep3Body;
+
+  /// No description provided for @teachStep4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Open classes or publish'**
+  String get teachStep4Title;
+
+  /// No description provided for @teachStep4Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule live classes with your own seats and price, or publish your recorded course.'**
+  String get teachStep4Body;
+
+  /// No description provided for @teachStep5Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Get paid'**
+  String get teachStep5Title;
+
+  /// No description provided for @teachStep5Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings build up in the studio and are paid out to you in AED.'**
+  String get teachStep5Body;
+
+  /// No description provided for @teachFormatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live classes or a recorded course. Or both.'**
+  String get teachFormatsTitle;
+
+  /// No description provided for @teachLiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Teach a group, face to face, online'**
+  String get teachLiveTitle;
+
+  /// No description provided for @teachLiveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Run a class over a set number of weeks: live sessions at fixed times, with lessons and practice between them.'**
+  String get teachLiveBody;
+
+  /// No description provided for @teachLiveBullet1.
+  ///
+  /// In en, this message translates to:
+  /// **'You set the schedule, the number of sessions, the seats and the seat price for each class'**
+  String get teachLiveBullet1;
+
+  /// No description provided for @teachLiveBullet2.
+  ///
+  /// In en, this message translates to:
+  /// **'A live room with video, screen sharing and chat'**
+  String get teachLiveBullet2;
+
+  /// No description provided for @teachLiveBullet3.
+  ///
+  /// In en, this message translates to:
+  /// **'Every session is recorded, so learners who miss one can catch up'**
+  String get teachLiveBullet3;
+
+  /// No description provided for @teachLiveBullet4.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance and a report after each session'**
+  String get teachLiveBullet4;
+
+  /// No description provided for @teachLiveBullet5.
+  ///
+  /// In en, this message translates to:
+  /// **'Waitlists and a minimum class size, so a class only runs when it makes sense'**
+  String get teachLiveBullet5;
+
+  /// No description provided for @teachLivePay.
+  ///
+  /// In en, this message translates to:
+  /// **'You earn {p} of what each class brings in, after VAT and payment fees. It is paid session by session, as you deliver them.'**
+  String teachLivePay(String p);
+
+  /// No description provided for @teachRecordedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record once, teach every day'**
+  String get teachRecordedTitle;
+
+  /// No description provided for @teachRecordedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Learners subscribe monthly or yearly and work through your lessons at their own pace.'**
+  String get teachRecordedBody;
+
+  /// No description provided for @teachRecordedBullet1.
+  ///
+  /// In en, this message translates to:
+  /// **'Video lessons with progress saved on every device, web and mobile'**
+  String get teachRecordedBullet1;
+
+  /// No description provided for @teachRecordedBullet2.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes, files and lesson Q&A alongside each video'**
+  String get teachRecordedBullet2;
+
+  /// No description provided for @teachRecordedBullet3.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly and yearly prices are agreed with the team'**
+  String get teachRecordedBullet3;
+
+  /// No description provided for @teachRecordedBullet4.
+  ///
+  /// In en, this message translates to:
+  /// **'Included in Azza All-access, so members can find your course too'**
+  String get teachRecordedBullet4;
+
+  /// No description provided for @teachRecordedPay.
+  ///
+  /// In en, this message translates to:
+  /// **'You earn {p} of every subscription payment to your course, after VAT and payment fees. From All-access members, {p} of the net is shared between teachers by minutes watched.'**
+  String teachRecordedPay(String p);
+
+  /// No description provided for @teachToolsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything a class needs, built in'**
+  String get teachToolsTitle;
+
+  /// No description provided for @teachTool1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Live room and recordings'**
+  String get teachTool1Title;
+
+  /// No description provided for @teachTool1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Video, screen sharing and chat. Recordings appear for your learners on their own.'**
+  String get teachTool1Body;
+
+  /// No description provided for @teachTool2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes'**
+  String get teachTool2Title;
+
+  /// No description provided for @teachTool2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Single-choice, multiple-choice and true or false questions, marked automatically.'**
+  String get teachTool2Body;
+
+  /// No description provided for @teachTool3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignments and grading'**
+  String get teachTool3Title;
+
+  /// No description provided for @teachTool3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Set work, collect files from learners, and grade it with feedback.'**
+  String get teachTool3Body;
+
+  /// No description provided for @teachTool4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson Q&A'**
+  String get teachTool4Title;
+
+  /// No description provided for @teachTool4Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Learners ask under each lesson; you answer once and everyone sees it.'**
+  String get teachTool4Body;
+
+  /// No description provided for @teachTool5Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get teachTool5Title;
+
+  /// No description provided for @teachTool5Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Learners who finish your course get a certificate anyone can verify.'**
+  String get teachTool5Body;
+
+  /// No description provided for @teachTool6Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics and earnings'**
+  String get teachTool6Title;
+
+  /// No description provided for @teachTool6Body.
+  ///
+  /// In en, this message translates to:
+  /// **'See who is keeping up, where learners stop, and every dirham you have earned.'**
+  String get teachTool6Body;
+
+  /// No description provided for @teachFeesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What Azza takes, in plain numbers'**
+  String get teachFeesTitle;
+
+  /// No description provided for @teachFeesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No joining fee, no monthly fee, no listing fee. Azza only earns when you do.'**
+  String get teachFeesBody;
+
+  /// No description provided for @teachTermHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Held before payout'**
+  String get teachTermHold;
+
+  /// No description provided for @teachTermHoldValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} days'**
+  String teachTermHoldValue(String n);
+
+  /// No description provided for @teachTermMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum payout'**
+  String get teachTermMin;
+
+  /// No description provided for @teachTermMinValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} AED'**
+  String teachTermMinValue(String n);
+
+  /// No description provided for @teachNetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How your share is worked out'**
+  String get teachNetTitle;
+
+  /// No description provided for @teachNet1.
+  ///
+  /// In en, this message translates to:
+  /// **'The learner pays your price plus {v} VAT.'**
+  String teachNet1(String v);
+
+  /// No description provided for @teachNet2.
+  ///
+  /// In en, this message translates to:
+  /// **'The VAT goes to the UAE tax authority, and the card processing fee comes off.'**
+  String get teachNet2;
+
+  /// No description provided for @teachNet3.
+  ///
+  /// In en, this message translates to:
+  /// **'What is left is the net. You keep your share; Azza keeps the rest to run hosting, live video, payments, support and marketing.'**
+  String get teachNet3;
+
+  /// No description provided for @teachExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Say a payment leaves 1,000 AED after VAT and fees. On a live class you earn {live} AED; on a recorded course, {rec} AED.'**
+  String teachExample(String live, String rec);
+
+  /// No description provided for @teachAppleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bought in the iPhone app? The learner pays Apple’s fee'**
+  String get teachAppleTitle;
+
+  /// No description provided for @teachAppleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple takes a commission on every App Store purchase. Azza adds it to the price in the app, so the learner pays it, not you. Your share is the same whether a learner pays on the web or in the app.'**
+  String get teachAppleBody;
+
+  /// No description provided for @teachPayoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting paid'**
+  String get teachPayoutTitle;
+
+  /// No description provided for @teachPayoutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Each earning is held for {d} days, the refund window, then joins your balance. Once your balance reaches {m} AED it is paid to your bank account (IBAN) or through Stripe. Every earning and payout is listed in the studio.'**
+  String teachPayoutBody(String d, String m);
+
+  /// No description provided for @teachCustomNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Some courses carry a custom share agreed with the team. The studio always shows the share that applies to each course.'**
+  String get teachCustomNote;
+
+  /// No description provided for @teachFaqTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions teachers ask'**
+  String get teachFaqTitle;
+
+  /// No description provided for @teachFaq1Q.
+  ///
+  /// In en, this message translates to:
+  /// **'Do I need to be approved to teach?'**
+  String get teachFaq1Q;
+
+  /// No description provided for @teachFaq1A.
+  ///
+  /// In en, this message translates to:
+  /// **'No. Your teacher account opens as soon as you save your profile. The team reviews each course before it goes live, so you can start building right away.'**
+  String get teachFaq1A;
+
+  /// No description provided for @teachFaq2Q.
+  ///
+  /// In en, this message translates to:
+  /// **'What does the course review check?'**
+  String get teachFaq2Q;
+
+  /// No description provided for @teachFaq2A.
+  ///
+  /// In en, this message translates to:
+  /// **'That the course is clear, honest about what learners will get, and ready to teach. If something needs work, you get a note and can send it again.'**
+  String get teachFaq2A;
+
+  /// No description provided for @teachFaq3Q.
+  ///
+  /// In en, this message translates to:
+  /// **'Can I teach in Arabic and English?'**
+  String get teachFaq3Q;
+
+  /// No description provided for @teachFaq3A.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes. Pick the languages you teach in on your profile, and set the language of each class.'**
+  String get teachFaq3A;
+
+  /// No description provided for @teachFaq4Q.
+  ///
+  /// In en, this message translates to:
+  /// **'How big are live classes?'**
+  String get teachFaq4Q;
+
+  /// No description provided for @teachFaq4A.
+  ///
+  /// In en, this message translates to:
+  /// **'You choose the seats for each class. Azza is built for small groups where you can see and hear every learner.'**
+  String get teachFaq4A;
+
+  /// No description provided for @teachFaq5Q.
+  ///
+  /// In en, this message translates to:
+  /// **'Do I need special software or equipment?'**
+  String get teachFaq5Q;
+
+  /// No description provided for @teachFaq5A.
+  ///
+  /// In en, this message translates to:
+  /// **'No. A laptop with a camera and a steady connection is enough; a headset helps.'**
+  String get teachFaq5A;
+
+  /// No description provided for @teachFaq6Q.
+  ///
+  /// In en, this message translates to:
+  /// **'Does the App Store fee come out of my share?'**
+  String get teachFaq6Q;
+
+  /// No description provided for @teachFaq6A.
+  ///
+  /// In en, this message translates to:
+  /// **'No. Prices in the iPhone app include Apple’s commission on top of your price, so learners who buy there pay it. Your share is worked out exactly as for a purchase on the web.'**
+  String get teachFaq6A;
+
+  /// No description provided for @teachFaq7Q.
+  ///
+  /// In en, this message translates to:
+  /// **'When do I get paid?'**
+  String get teachFaq7Q;
+
+  /// No description provided for @teachFaq7A.
+  ///
+  /// In en, this message translates to:
+  /// **'After each earning’s hold period, once your balance reaches the minimum payout. The studio shows what is on hold, what is ready, and every payout.'**
+  String get teachFaq7A;
 }
 
 class _AppLocalizationsDelegate

@@ -3785,7 +3785,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get teachPitchBody =>
-      'أرشد صفوفًا صغيرة من المتعلّمين في أنحاء المنطقة، بالعربية أو الإنجليزية، عبر الدروس والتدريب والحصص المباشرة. أخبرنا من أنت وماذا ستدرّس، ويراجع فريقنا كل طلب عادةً خلال أيام قليلة.';
+      'قدّم صفوفًا مباشرة بالعربية أو الإنجليزية، أو انشر دورة مسجّلة يتعلّم منها الناس في الوقت الذي يناسبهم. افتح حساب التدريس اليوم: لا طلب تنتظر الرد عليه، ولا رسوم للانضمام.';
 
   @override
   String get applySectionAbout => 'عنك';
@@ -3838,10 +3838,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get applyPhoneHint => '+971 50 123 4567';
 
   @override
-  String get applySubmit => 'أرسل الطلب';
+  String get applySubmit => 'افتح حساب التدريس';
 
   @override
-  String get applySent => 'أُرسل الطلب. سنخبرك بالقرار.';
+  String get applySent => 'حساب التدريس جاهز.';
 
   @override
   String get applyHeadlineInvalid => 'اكتب من 4 إلى 120 حرفًا.';
@@ -3876,14 +3876,14 @@ class AppLocalizationsAr extends AppLocalizations {
       'ملاحظة المراجع أدناه، ويمكنك التقديم مجددًا.';
 
   @override
-  String get applyApprovedTitle => 'يمكنك التدريس الآن';
+  String get applyApprovedTitle => 'الاستوديو مفتوح لك';
 
   @override
   String get applyApprovedBody =>
-      'حساب المعلّم جاهز. حدّث حسابك لتفتح استوديو المعلّم وتقترح دورتك الأولى.';
+      'أنشئ دورة، وافتح صفوفًا، وتابع أرباحك، كلها من الاستوديو.';
 
   @override
-  String get applyRefresh => 'حدّث حسابي';
+  String get applyRefresh => 'افتح الاستوديو';
 
   @override
   String get refresh => 'تحديث';
@@ -5909,11 +5909,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get guestReviewCta => 'سجّل الدخول لتكتب مراجعة';
 
   @override
-  String get guestTeachCta => 'أنشئ حسابًا لتتقدّم بطلبك';
+  String get guestTeachCta => 'أنشئ حسابًا مجانيًا';
 
   @override
   String get guestTeachBody =>
-      'يرتبط الطلب بحسابك، حتى نتواصل معك ونجهّز أدوات التدريس لك بعد الموافقة.';
+      'أنشئ حسابًا مجانيًا، واملأ ملفك كمدرّس، فيُفتح لك الاستوديو فورًا. يراجع الفريق كل دورة قبل نشرها، لا يراجعك أنت.';
 
   @override
   String get guestVerifyTitle => 'التحقق من شهادة';
@@ -7253,4 +7253,331 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get allAccessCoveredBuy => 'اشترِ هذا الاشتراك على أي حال';
+
+  @override
+  String get teachFormTitle => 'ملفك كمدرّس';
+
+  @override
+  String get teachFormSub =>
+      'هذا ما يراه المتعلّمون في صفحتك. يُفتح حساب التدريس لحظة حفظه.';
+
+  @override
+  String get teachBadge1 => 'حساب تدريس في دقائق';
+
+  @override
+  String get teachBadge2 => 'بلا رسوم انضمام أو اشتراك شهري';
+
+  @override
+  String get teachBadge3 => 'أرباحك بالدرهم';
+
+  @override
+  String get teachLiveTag => 'صفوف مباشرة';
+
+  @override
+  String get teachRecordedTag => 'دورات مسجّلة';
+
+  @override
+  String get teachYourShare => 'نصيبك';
+
+  @override
+  String teachAzzaKeeps(String p) {
+    return 'تحتفظ عازة بـ $p';
+  }
+
+  @override
+  String get teachWhyKicker => 'لماذا ينتقل المدرّسون إلى عازة';
+
+  @override
+  String get teachWhyTitle => 'كل ما تدرّسه، في مكان واحد';
+
+  @override
+  String get teachStory1Title => 'وداعًا لفوضى المجموعات';
+
+  @override
+  String get teachStory1Body =>
+      'روابط في واتساب، وملفات في تليجرام، وأسئلة في الرسائل الخاصة. في عازة تجتمع دروسك وملفاتك وحصصك المباشرة وأسئلة متعلّميك في مكان واحد يجدونه دائمًا.';
+
+  @override
+  String get teachStory2Title => 'بث مباشر داخل عازة، لا عبر رابط خارجي';
+
+  @override
+  String get teachStory2Body =>
+      'درِّس في غرفة عازة المباشرة. لا يدخلها إلا من حجز مقعدًا، وموادك بجانب الفيديو مباشرة.';
+
+  @override
+  String get teachStory3Title => 'التسجيل جاهز فور انتهاء الحصّة';
+
+  @override
+  String get teachStory3Body =>
+      'تُحفظ كل حصّة مباشرة تلقائيًا وتظهر لمتعلّميك، فلا أحد يلاحق التسجيل.';
+
+  @override
+  String get teachStory4Title => 'متعلّمون من كل مكان';
+
+  @override
+  String get teachStory4Body =>
+      'درِّس بالعربية أو الإنجليزية لمتعلّمين في الإمارات والخليج وخارجهما. يدفعون عبر الإنترنت، وتستلم أرباحك بالدرهم.';
+
+  @override
+  String get teachStory5Title => 'شهادة عند إتمام الدورة';
+
+  @override
+  String get teachStory5Body =>
+      'يحصل من يُتمّ دورتك على شهادة من عازة برمز يمكن لأي أحد التحقّق منه.';
+
+  @override
+  String get teachStepsTitle => 'من التسجيل حتى أول دفعة';
+
+  @override
+  String get teachStep1Title => 'افتح حساب التدريس';
+
+  @override
+  String get teachStep1Body => 'املأ ملفك، فيُفتح الاستوديو فورًا.';
+
+  @override
+  String get teachStep2Title => 'ابنِ دورتك';
+
+  @override
+  String get teachStep2Body =>
+      'اكتب الدروس، وارفع الفيديو والعروض والملفات، وأضف الاختبارات والواجبات.';
+
+  @override
+  String get teachStep3Title => 'يراجعها الفريق';
+
+  @override
+  String get teachStep3Body =>
+      'يتحقّق أحد أعضاء الفريق من كل دورة قبل فتحها، ليثق المتعلّمون بكل ما على عازة.';
+
+  @override
+  String get teachStep4Title => 'افتح صفوفًا أو انشر';
+
+  @override
+  String get teachStep4Body =>
+      'حدّد صفوفًا مباشرة بمقاعدك وسعرك، أو انشر دورتك المسجّلة.';
+
+  @override
+  String get teachStep5Title => 'استلم أرباحك';
+
+  @override
+  String get teachStep5Body =>
+      'تتجمّع أرباحك في الاستوديو وتُحوَّل إليك بالدرهم.';
+
+  @override
+  String get teachFormatsTitle => 'صفوف مباشرة أو دورة مسجّلة. أو الاثنتان.';
+
+  @override
+  String get teachLiveTitle => 'درِّس مجموعة وجهًا لوجه، عبر الإنترنت';
+
+  @override
+  String get teachLiveBody =>
+      'صفّ يمتد عددًا محددًا من الأسابيع: حصص مباشرة في مواعيد ثابتة، ودروس وتدريبات بينها.';
+
+  @override
+  String get teachLiveBullet1 =>
+      'أنت تحدّد الجدول وعدد الحصص والمقاعد وسعر المقعد لكل صفّ';
+
+  @override
+  String get teachLiveBullet2 => 'غرفة مباشرة فيها فيديو ومشاركة شاشة ودردشة';
+
+  @override
+  String get teachLiveBullet3 => 'كل حصّة تُسجَّل، فيلحق بها من فاتته';
+
+  @override
+  String get teachLiveBullet4 => 'الحضور وتقرير بعد كل حصّة';
+
+  @override
+  String get teachLiveBullet5 =>
+      'قوائم انتظار وحدّ أدنى للمتعلّمين، فلا يُعقد الصف إلا حين يستحق';
+
+  @override
+  String teachLivePay(String p) {
+    return 'تحصل على $p من دخل كل صفّ بعد ضريبة القيمة المضافة ورسوم الدفع، وتُحتسب حصّةً بحصّة كلما قدّمتها.';
+  }
+
+  @override
+  String get teachRecordedTitle => 'سجّل مرة، ودرِّس كل يوم';
+
+  @override
+  String get teachRecordedBody =>
+      'يشترك المتعلّمون شهريًا أو سنويًا ويتقدّمون في دروسك على مهلهم.';
+
+  @override
+  String get teachRecordedBullet1 =>
+      'دروس فيديو يُحفظ فيها التقدّم على كل الأجهزة، الويب والجوال';
+
+  @override
+  String get teachRecordedBullet2 => 'اختبارات وملفات وأسئلة وأجوبة تحت كل درس';
+
+  @override
+  String get teachRecordedBullet3 =>
+      'يُتّفق على السعر الشهري والسنوي مع الفريق';
+
+  @override
+  String get teachRecordedBullet4 =>
+      'مشمولة في باقة عازة الشاملة، فيصل إليها مشتركوها أيضًا';
+
+  @override
+  String teachRecordedPay(String p) {
+    return 'تحصل على $p من كل دفعة اشتراك في دورتك بعد الضريبة ورسوم الدفع. ومن مشتركي الباقة الشاملة، يُوزَّع $p من الصافي على المدرّسين بحسب دقائق المشاهدة.';
+  }
+
+  @override
+  String get teachToolsTitle => 'كل ما يحتاجه الصف، جاهز';
+
+  @override
+  String get teachTool1Title => 'غرفة مباشرة وتسجيلات';
+
+  @override
+  String get teachTool1Body =>
+      'فيديو ومشاركة شاشة ودردشة، وتظهر التسجيلات لمتعلّميك تلقائيًا.';
+
+  @override
+  String get teachTool2Title => 'اختبارات';
+
+  @override
+  String get teachTool2Body =>
+      'أسئلة اختيار واحد واختيار متعدد وصح أو خطأ، تُصحَّح تلقائيًا.';
+
+  @override
+  String get teachTool3Title => 'واجبات وتقييم';
+
+  @override
+  String get teachTool3Body =>
+      'كلّف بالواجبات، واستلم ملفات المتعلّمين، وقيّمها مع ملاحظاتك.';
+
+  @override
+  String get teachTool4Title => 'أسئلة الدروس';
+
+  @override
+  String get teachTool4Body =>
+      'يسأل المتعلّمون تحت كل درس؛ تجيب مرة ويرى الجميع الجواب.';
+
+  @override
+  String get teachTool5Title => 'شهادات';
+
+  @override
+  String get teachTool5Body =>
+      'يحصل من يُتمّ دورتك على شهادة يمكن لأي أحد التحقّق منها.';
+
+  @override
+  String get teachTool6Title => 'تحليلات وأرباح';
+
+  @override
+  String get teachTool6Body =>
+      'اعرف من يواكب، وأين يتوقّف المتعلّمون، وكل درهم ربحته.';
+
+  @override
+  String get teachFeesTitle => 'ما تأخذه عازة، بأرقام واضحة';
+
+  @override
+  String get teachFeesBody =>
+      'بلا رسوم انضمام ولا اشتراك شهري ولا رسوم نشر. عازة لا تربح إلا حين تربح أنت.';
+
+  @override
+  String get teachTermHold => 'مدة الحجز قبل الدفع';
+
+  @override
+  String teachTermHoldValue(String n) {
+    return '$n يومًا';
+  }
+
+  @override
+  String get teachTermMin => 'الحد الأدنى للدفعة';
+
+  @override
+  String teachTermMinValue(String n) {
+    return '$n درهم';
+  }
+
+  @override
+  String get teachNetTitle => 'كيف يُحتسب نصيبك';
+
+  @override
+  String teachNet1(String v) {
+    return 'يدفع المتعلّم سعرك مضافًا إليه $v ضريبة القيمة المضافة.';
+  }
+
+  @override
+  String get teachNet2 =>
+      'تذهب الضريبة إلى الهيئة الاتحادية للضرائب، وتُخصم رسوم معالجة البطاقة.';
+
+  @override
+  String get teachNet3 =>
+      'الباقي هو الصافي. تحتفظ بنصيبك، وتحتفظ عازة بالباقي لتشغيل الاستضافة والبث المباشر والدفع والدعم والتسويق.';
+
+  @override
+  String teachExample(String live, String rec) {
+    return 'لنفترض أن دفعة ما تركت 1,000 درهم بعد الضريبة والرسوم. في صفّ مباشر تربح $live درهم، وفي دورة مسجّلة $rec درهم.';
+  }
+
+  @override
+  String get teachAppleTitle =>
+      'الشراء من تطبيق الآيفون؟ المتعلّم يدفع عمولة Apple';
+
+  @override
+  String get teachAppleBody =>
+      'تأخذ Apple عمولة على كل شراء من App Store. تضيفها عازة إلى السعر داخل التطبيق، فيدفعها المتعلّم لا أنت. نصيبك واحد سواء دفع المتعلّم عبر الموقع أو من التطبيق.';
+
+  @override
+  String get teachPayoutTitle => 'استلام الأرباح';
+
+  @override
+  String teachPayoutBody(String d, String m) {
+    return 'يُحجز كل ربح $d يومًا، وهي مدة الاسترداد، ثم يُضاف إلى رصيدك. وحين يبلغ رصيدك $m درهم يُحوَّل إلى حسابك البنكي (IBAN) أو عبر Stripe. كل ربح وكل دفعة مدرجة في الاستوديو.';
+  }
+
+  @override
+  String get teachCustomNote =>
+      'بعض الدورات لها نصيب خاص متّفق عليه مع الفريق، ويعرض الاستوديو دائمًا النصيب المطبّق على كل دورة.';
+
+  @override
+  String get teachFaqTitle => 'أسئلة يطرحها المدرّسون';
+
+  @override
+  String get teachFaq1Q => 'هل أحتاج إلى موافقة لأدرّس؟';
+
+  @override
+  String get teachFaq1A =>
+      'لا. يُفتح حساب التدريس فور حفظ ملفك. يراجع الفريق كل دورة قبل نشرها، فتبدأ البناء مباشرة.';
+
+  @override
+  String get teachFaq2Q => 'ماذا تتحقّق منه مراجعة الدورة؟';
+
+  @override
+  String get teachFaq2A =>
+      'أن الدورة واضحة، وصادقة فيما يحصل عليه المتعلّم، وجاهزة للتدريس. إن احتاج شيء إلى تعديل تصلك ملاحظة وتعيد الإرسال.';
+
+  @override
+  String get teachFaq3Q => 'هل يمكنني التدريس بالعربية والإنجليزية؟';
+
+  @override
+  String get teachFaq3A => 'نعم. اختر لغات تدريسك في ملفك، وحدّد لغة كل صفّ.';
+
+  @override
+  String get teachFaq4Q => 'كم حجم الصفوف المباشرة؟';
+
+  @override
+  String get teachFaq4A =>
+      'أنت تختار عدد المقاعد لكل صفّ. صُمّمت عازة لمجموعات صغيرة ترى فيها كل متعلّم وتسمعه.';
+
+  @override
+  String get teachFaq5Q => 'هل أحتاج برامج أو معدّات خاصة؟';
+
+  @override
+  String get teachFaq5A =>
+      'لا. يكفي حاسوب بكاميرا واتصال ثابت، وتساعد سماعة الرأس.';
+
+  @override
+  String get teachFaq6Q => 'هل تُخصم عمولة App Store من نصيبي؟';
+
+  @override
+  String get teachFaq6A =>
+      'لا. أسعار تطبيق الآيفون تشمل عمولة Apple فوق سعرك، فيدفعها من يشتري من هناك. ويُحتسب نصيبك تمامًا كما في الشراء عبر الموقع.';
+
+  @override
+  String get teachFaq7Q => 'متى أستلم أرباحي؟';
+
+  @override
+  String get teachFaq7A =>
+      'بعد مدة حجز كل ربح، حين يبلغ رصيدك الحد الأدنى للدفعة. يعرض الاستوديو ما هو محجوز وما هو جاهز وكل دفعة.';
 }

@@ -528,7 +528,10 @@ class FakeProposalsRepository implements ProposalsRepository {
 
 /// Instructors directory and applications: records applications and reviews; [applyError] / [reviewError] steer failures.
 class FakeInstructorsRepository implements InstructorsRepository {
-  FakeInstructorsRepository({this.cards = const [], this.application, this.pending = const [], this.applyError, this.reviewError});
+  FakeInstructorsRepository({this.cards = const [], this.application, this.pending = const [], this.applyError, this.reviewError, this.terms = defaultTerms});
+
+  static const defaultTerms = TeachingTerms(liveCutPercent: 60, recordedCutPercent: 50, earningHoldDays: 14, minPayoutAed: 200, vatPercent: 5);
+  TeachingTerms terms;
   List<InstructorCard> cards;
   InstructorApplication? application;
   List<InstructorApplication> pending;
@@ -552,9 +555,10 @@ class FakeInstructorsRepository implements InstructorsRepository {
   Future<InstructorApplication> apply(InstructorApplicationDraft draft) async {
     applied.add(draft);
     if (applyError != null) throw applyError!;
+    // Like the API: saving the profile opens the teacher account at once.
     return application = InstructorApplication(
       id: 'app-new',
-      status: ApplicationStatus.pending,
+      status: ApplicationStatus.approved,
       headline: draft.headline,
       bio: draft.bio,
       categories: draft.categories,
@@ -565,6 +569,9 @@ class FakeInstructorsRepository implements InstructorsRepository {
       createdAt: DateTime(2026, 11, 6),
     );
   }
+
+  @override
+  Future<TeachingTerms> teachingTerms() async => terms;
 
   @override
   Future<List<InstructorApplication>> applications({ApplicationStatus? status}) async =>

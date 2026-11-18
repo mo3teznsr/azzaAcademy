@@ -131,20 +131,26 @@ void main() {
         up ? -200 : 200,
         scrollable: find.descendant(of: find.byKey(const Key('apply-form')), matching: find.byType(Scrollable)).first,
       );
+      // The page is long now (profile, then the guide): bring the target fully on screen before tapping it.
+      await Scrollable.ensureVisible(tester.element(target), alignment: 0.5);
       await settle(tester, 8);
     }
 
-    testWidgets('validates, then submits the application and shows the pending card', (tester) async {
+    testWidgets('validates, then saving the profile opens the teacher account at once', (tester) async {
       final repo = await pumpTeach(tester);
       expect(find.text('Teach what you know.'), findsOneWidget);
+      await scrollTo(tester, find.text('Your teacher profile'));
+      await scrollTo(tester, find.byKey(const Key('apply-headline')));
       expect(find.text('Product designer · 8 years at agencies'), findsOneWidget, reason: 'the headline field shows a sample');
 
       await scrollTo(tester, find.byKey(const Key('apply-submit')));
       await tester.tap(find.byKey(const Key('apply-submit')));
       await settle(tester);
       expect(repo.applied, isEmpty);
-      expect(find.text('Pick 1 to 5 categories.'), findsOneWidget);
+      await scrollTo(tester, find.text('Pick at least one language.'), up: true);
       expect(find.text('Pick at least one language.'), findsOneWidget);
+      await scrollTo(tester, find.text('Pick 1 to 5 categories.'), up: true);
+      expect(find.text('Pick 1 to 5 categories.'), findsOneWidget);
 
       await scrollTo(tester, find.byKey(const Key('apply-headline')), up: true);
       await tester.enterText(find.byKey(const Key('apply-headline')), 'Calligrapher · 10 years');
@@ -173,18 +179,26 @@ void main() {
       expect(d.languages, [SessionLanguage.ar]);
       expect(d.toJson()['sampleUrl'], 'https://example.com/portfolio');
       expect(d.toJson().containsKey('phone'), isFalse);
-      expect(find.byKey(const Key('application-pending')), findsOneWidget);
-      expect(find.text('Your application is being reviewed'), findsOneWidget);
+      expect(find.byKey(const Key('application-approved')), findsOneWidget);
+      expect(find.text('Your studio is open'), findsOneWidget);
     });
 
-    testWidgets('a pending application shows the status card, not the form', (tester) async {
-      await pumpTeach(tester, application: _pendingApp);
-      expect(find.byKey(const Key('application-pending')), findsOneWidget);
-      expect(find.text('Calligrapher · 10 years'), findsOneWidget);
-      expect(find.byKey(const Key('apply-form')), findsNothing);
+    testWidgets('the guide shows the live shares, what Azza keeps, payout rules and the App Store note', (tester) async {
+      await pumpTeach(tester);
+      expect(find.descendant(of: find.byKey(const Key('teach-share-live')), matching: find.text('60%')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('teach-share-live')), matching: find.text('Azza keeps 40%')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('teach-share-recorded')), matching: find.text('50%')), findsOneWidget);
+
+      await scrollTo(tester, find.byKey(const Key('teach-stories')));
+      expect(find.text('Out of the group chat'), findsOneWidget);
+      await scrollTo(tester, find.byKey(const Key('teach-term-hold')));
+      expect(find.descendant(of: find.byKey(const Key('teach-term-hold')), matching: find.text('14 days')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('teach-term-min')), matching: find.text('200 AED')), findsOneWidget);
+      await scrollTo(tester, find.byKey(const Key('teach-apple')));
+      expect(find.text('Bought in the iPhone app? The learner pays Apple’s fee'), findsOneWidget);
     });
 
-    testWidgets('a rejected application shows the review note above a prefilled form', (tester) async {
+    testWidgets('an older pending or declined application prefills the profile instead of blocking it', (tester) async {
       await pumpTeach(
         tester,
         application: InstructorApplication(
@@ -195,13 +209,20 @@ void main() {
           categories: const ['design'],
         ),
       );
-      expect(find.byKey(const Key('application-rejected')), findsOneWidget);
-      expect(find.textContaining('Please add a teaching sample.'), findsOneWidget);
       expect(find.byKey(const Key('apply-form')), findsOneWidget);
+      await scrollTo(tester, find.byKey(const Key('apply-headline')));
       expect(find.widgetWithText(TextFormField, 'Calligrapher'), findsOneWidget);
+      expect(find.textContaining('Please add a teaching sample.'), findsNothing);
     });
 
-    testWidgets('approved: "You can teach now" refreshes the session into the teacher role', (tester) async {
+    testWidgets('a pending application from before shows the form, not a waiting card', (tester) async {
+      await pumpTeach(tester, application: _pendingApp);
+      expect(find.byKey(const Key('apply-form')), findsOneWidget);
+      await scrollTo(tester, find.byKey(const Key('apply-headline')));
+      expect(find.widgetWithText(TextFormField, 'Calligrapher · 10 years'), findsOneWidget);
+    });
+
+    testWidgets('refresh picks up a teacher account and shows "Your studio is open"', (tester) async {
       final auth = FakeAuthRepository(student);
       final repo = FakeInstructorsRepository(application: _pendingApp);
       late WidgetRef widgetRef;
@@ -218,17 +239,16 @@ void main() {
         ],
       );
       await settle(tester, 10);
-      expect(find.byKey(const Key('application-pending')), findsOneWidget);
+      expect(find.byKey(const Key('apply-form')), findsOneWidget);
 
-      // The admin approves: the server now reports a teacher.
       auth.user = teacher;
       repo.application = InstructorApplication(id: 'app-1', status: ApplicationStatus.approved, headline: 'x');
       await tester.tap(find.byKey(const Key('teach-refresh')));
       await settle(tester, 10);
       expect(widgetRef.read(currentRoleProvider), Role.teacher);
-      expect(find.text('You can teach now'), findsOneWidget);
+      expect(find.text('Your studio is open'), findsOneWidget);
       expect(find.byKey(const Key('approved-refresh')), findsOneWidget);
-    });
+  });
   });
 
   group('admin: instructor applications', () {

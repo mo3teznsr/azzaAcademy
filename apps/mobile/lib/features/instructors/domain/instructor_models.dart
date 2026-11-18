@@ -158,3 +158,31 @@ class InstructorApplicationDraft {
         if (phone != null && phone!.trim().isNotEmpty) 'phone': phone!.trim(),
       };
 }
+
+/// `GET /teaching-terms` (public): the teacher shares and payout rules as an admin last saved them.
+class TeachingTerms {
+  const TeachingTerms({
+    required this.liveCutPercent,
+    required this.recordedCutPercent,
+    required this.earningHoldDays,
+    required this.minPayoutAed,
+    required this.vatPercent,
+  });
+
+  /// Default teacher share of a live class's net revenue, in percent.
+  final num liveCutPercent;
+
+  /// Default teacher share of a recorded course's net revenue, in percent.
+  final num recordedCutPercent;
+  final num earningHoldDays;
+  final num minPayoutAed;
+  final num vatPercent;
+
+  factory TeachingTerms.fromJson(Map<String, dynamic> j) => TeachingTerms(
+        liveCutPercent: (j['liveCutPercent'] as num?) ?? 0,
+        recordedCutPercent: (j['recordedCutPercent'] as num?) ?? 0,
+        earningHoldDays: (j['earningHoldDays'] as num?) ?? 0,
+        minPayoutAed: (j['minPayoutAed'] as num?) ?? 0,
+        vatPercent: (j['vatPercent'] as num?) ?? 0,
+      );
+}
