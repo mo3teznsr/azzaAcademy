@@ -1,9 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import { ArrowDown } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { Button } from '@/components/ui/button';
+import { ExplainerVideo } from '@/components/brand/explainer-video';
 import { useI18n } from '@/lib/i18n/provider';
 import { useLiveNow } from '../catalog/use-catalog';
 import { Kicker, Seat } from './seat';
@@ -57,9 +57,15 @@ export function Hero() {
 
         {/* The live-room window: the photo stays clean; the slate sits on the frame below it. */}
         <figure className="flex flex-col gap-3">
-          <div className="landing-window relative aspect-[4/3] overflow-hidden rounded-[24px] bg-muted shadow-media sm:aspect-[16/10] lg:aspect-[4/5]">
-            <Image src={LANDING_IMAGES.onAir} alt={h.photoAlt} fill preload sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover object-[50%_35%]" />
-          </div>
+          <ExplainerVideo
+            id="home"
+            title={t.explainers.home}
+            cover={LANDING_IMAGES.onAir}
+            coverAlt={h.photoAlt}
+            coverClassName="object-[50%_35%]"
+            coverPreload
+            className="landing-window aspect-[4/3] sm:aspect-[16/10] lg:aspect-[4/5]"
+          />
           <figcaption className="flex flex-col gap-1 text-sm text-muted-foreground">
             <span className="label-mono flex items-center gap-2 text-foreground" role="status">
               <Seat state={onAir ? 'onair' : 'pulse'} className="text-[14px]" />

@@ -1,0 +1,87 @@
+[
+ {
+  "layout": "photo-hook",
+  "photo": "hero.jpg",
+  "title": "تبي تتعلم مهارة جديدة؟",
+  "hl": "مهارة جديدة",
+  "chips": [
+   "🌍 بالعربي والإنجليزي",
+   "👩‍🏫 مع معلم حقيقي"
+  ],
+  "chipTone": "good",
+  "chipsAt": 0.6,
+  "voice": "تبي تتعلم مهارة جديدة… بس الفيديوهات لحالها ما تكفي؟",
+  "direction": "Instant friendly hook, relatable question, no lead-in."
+ },
+ {
+  "layout": "logos",
+  "title": "هذي عازة",
+  "hl": "عازة",
+  "chips": [
+   "دورات خطوة بخطوة 👇"
+  ],
+  "voice": "في عازة، تتعلم خطوة بخطوة… ومعاك معلم يتابعك لين تتقن المهارة.",
+  "direction": "Proud, warm brand intro."
+ },
+ {
+  "layout": "cards",
+  "title": "معلم يعرفك باسمك",
+  "hl": "باسمك",
+  "images": [
+   "on-air.jpg"
+  ],
+  "ratios": [
+   1.5
+  ],
+  "chips": [
+   "👥 صفوف صغيرة"
+  ],
+  "voice": "الصفوف صغيرة… فمعلمك يشوف شغلك ويعطيك ملاحظات، مو بث لآلاف الناس.",
+  "direction": "Sincere, personal."
+ },
+ {
+  "layout": "tiles",
+  "title": "على راحتك",
+  "hl": "راحتك",
+  "tiles": [
+   {
+    "icon": "📚",
+    "label": "دروس"
+   },
+   {
+    "icon": "🎥",
+    "label": "حصص مباشرة"
+   },
+   {
+    "icon": "📝",
+    "label": "اختبارات"
+   }
+  ],
+  "note": "فاتتك الحصة؟ التسجيل ينتظرك",
+  "voice": "تابع الدروس وقت ما يناسبك، والتقي معلمك مباشرة مرة أو مرتين في الأسبوع.",
+  "direction": "Relaxed, reassuring."
+ },
+ {
+  "layout": "cards",
+  "title": "شهادة تثبت إنك تعلّمت",
+  "hl": "شهادة",
+  "images": [
+   "cert.png"
+  ],
+  "ratios": [
+   0.82
+  ],
+  "chips": [
+   "✅ أي أحد يقدر يتحقق منها"
+  ],
+  "voice": "وفي النهاية تاخذ شهادة… وأي أحد يقدر يتحقق منها.",
+  "direction": "Proud payoff."
+ },
+ {
+  "layout": "cta",
+  "title": "مهارتك الجاية تبدأ هنا",
+  "hl": "تبدأ هنا",
+  "voice": "اختار دورتك الحين من عازة دوت أكاديمي.",
+  "direction": "Warm, energetic call to action."
+ }
+]

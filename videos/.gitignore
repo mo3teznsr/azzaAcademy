@@ -1,0 +1,10 @@
+node_modules/
+.env
+out/
+output/
+# research screenshots and raw TTS takes (vf-N.wav, the processed clips, are kept so a re-render needs no new voice)
+public/*/ar-*.png
+public/*/courses-*.png
+public/*/page.txt
+public/*/voice-*.wav
+public/*/score.wav

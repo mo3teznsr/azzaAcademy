@@ -1,0 +1,247 @@
+[
+  {
+    "layout": "photo-hook",
+    "photo": "evening.jpg",
+    "title": "شلون تتعلم في عازة؟",
+    "hl": "عازة",
+    "chips": [
+      "٣ خطوات بس"
+    ],
+    "chipTone": "good",
+    "chipsAt": 0.6,
+    "voice": "شلون تتعلم في عازة؟ ثلاث خطوات بس.",
+    "direction": "Curious, inviting hook.",
+    "start": 0,
+    "frames": 105,
+    "seconds": 3.14,
+    "audio": "how/vf-0.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.813,
+        "text": "شلون تتعلم في عازة؟"
+      },
+      {
+        "start": 1.813,
+        "end": 3.211,
+        "text": "ثلاث خطوات بس"
+      }
+    ]
+  },
+  {
+    "layout": "cards",
+    "step": 1,
+    "title": "تعلّم",
+    "hl": "تعلّم",
+    "images": [
+      "learn.jpg"
+    ],
+    "ratios": [
+      0.8
+    ],
+    "chips": [
+      "خطوة بخطوة"
+    ],
+    "voice": "أول شي، تعلّم… دروس تاخذك خطوة بخطوة، وحدة وحدة.",
+    "direction": "Clear tutorial pace.",
+    "start": 105,
+    "frames": 161,
+    "seconds": 5.02,
+    "audio": "how/vf-1.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.012,
+        "text": "أول شي"
+      },
+      {
+        "start": 1.012,
+        "end": 1.884,
+        "text": "تعلّم…"
+      },
+      {
+        "start": 1.884,
+        "end": 3.919,
+        "text": "دروس تاخذك خطوة بخطوة"
+      },
+      {
+        "start": 3.919,
+        "end": 5.082,
+        "text": "وحدة وحدة"
+      }
+    ]
+  },
+  {
+    "layout": "tiles",
+    "step": 2,
+    "title": "تدرّب",
+    "hl": "تدرّب",
+    "tiles": [
+      {
+        "icon": "📝",
+        "label": "اختبارات"
+      },
+      {
+        "icon": "📂",
+        "label": "واجبات"
+      },
+      {
+        "icon": "💬",
+        "label": "ملاحظات"
+      }
+    ],
+    "voice": "بعدها تدرّب… اختبارات وواجبات بعد الدروس، مع ملاحظات على شغلك.",
+    "direction": "Encouraging.",
+    "start": 266,
+    "frames": 160,
+    "seconds": 4.99,
+    "audio": "how/vf-2.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.219,
+        "text": "بعدها تدرّب…"
+      },
+      {
+        "start": 1.219,
+        "end": 3.396,
+        "text": "اختبارات وواجبات بعد الدروس"
+      },
+      {
+        "start": 3.396,
+        "end": 5.06,
+        "text": "مع ملاحظات على شغلك"
+      }
+    ]
+  },
+  {
+    "layout": "cards",
+    "step": 2,
+    "title": "علقت؟ اسأل",
+    "hl": "اسأل",
+    "images": [
+      "gallery.jpg"
+    ],
+    "ratios": [
+      1.5
+    ],
+    "chips": [
+      "✋ ارفع يدك",
+      "💬 اكتب في الشات"
+    ],
+    "voice": "علقت في شي؟ في الحصة المباشرة ارفع يدك أو اكتب في الشات، وتاخذ الجواب على طول.",
+    "direction": "Lively, helpful.",
+    "start": 426,
+    "frames": 202,
+    "seconds": 6.39,
+    "audio": "how/vf-3.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.112,
+        "text": "علقت في شي؟"
+      },
+      {
+        "start": 1.112,
+        "end": 2.526,
+        "text": "في الحصة المباشرة"
+      },
+      {
+        "start": 2.526,
+        "end": 3.571,
+        "text": "ارفع يدك أو"
+      },
+      {
+        "start": 3.571,
+        "end": 4.801,
+        "text": "اكتب في الشات"
+      },
+      {
+        "start": 4.801,
+        "end": 6.461,
+        "text": "وتاخذ الجواب على طول"
+      }
+    ]
+  },
+  {
+    "layout": "cards",
+    "step": 3,
+    "title": "أتقن",
+    "hl": "أتقن",
+    "images": [
+      "cert.png"
+    ],
+    "ratios": [
+      0.82
+    ],
+    "chips": [
+      "🎓 شهادتك"
+    ],
+    "voice": "وآخر شي، أتقن… احضر ثمانين بالمية من الحصص، أو خلّص كل الدروس والاختبارات، وتاخذ شهادتك.",
+    "direction": "Proud payoff.",
+    "start": 628,
+    "frames": 270,
+    "seconds": 8.65,
+    "audio": "how/vf-4.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.043,
+        "text": "وآخر شي"
+      },
+      {
+        "start": 1.043,
+        "end": 1.81,
+        "text": "أتقن…"
+      },
+      {
+        "start": 1.81,
+        "end": 3.484,
+        "text": "احضر ثمانين بالمية"
+      },
+      {
+        "start": 3.484,
+        "end": 4.53,
+        "text": "من الحصص"
+      },
+      {
+        "start": 4.53,
+        "end": 5.646,
+        "text": "أو خلّص كل"
+      },
+      {
+        "start": 5.646,
+        "end": 7.39,
+        "text": "الدروس والاختبارات"
+      },
+      {
+        "start": 7.39,
+        "end": 8.715,
+        "text": "وتاخذ شهادتك"
+      }
+    ]
+  },
+  {
+    "layout": "cta",
+    "title": "ابدأ اليوم",
+    "hl": "اليوم",
+    "voice": "يلا… اختار دورتك وابدأ اليوم.",
+    "direction": "Warm call to action.",
+    "start": 898,
+    "frames": 84,
+    "seconds": 2.46,
+    "audio": "how/vf-5.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 0.681,
+        "text": "يلا…"
+      },
+      {
+        "start": 0.681,
+        "end": 2.522,
+        "text": "اختار دورتك وابدأ اليوم"
+      }
+    ]
+  }
+]
