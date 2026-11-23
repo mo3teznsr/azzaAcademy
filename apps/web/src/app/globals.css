@@ -393,8 +393,9 @@ html[lang="ar"] .font-display {
   outline-offset: 3px;
 }
 
-/* Fields show focus with their own green-deep border and halo, not the outline too. */
-:is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]):focus-visible {
+/* Fields show focus with their own green-deep border and halo, not the outline too. A field inside an input group
+   (icon + input + actions) lets the group draw that border and halo around the whole box. */
+:is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"], [data-slot="input-group-control"]):focus-visible {
   outline: none;
 }
 
