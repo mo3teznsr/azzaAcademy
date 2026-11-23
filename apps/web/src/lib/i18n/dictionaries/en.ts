@@ -429,6 +429,13 @@ const en = {
       missingRef: 'This link is missing its reference.',
     },
   },
+  explainers: {
+    lengthNote: '30 seconds · in Arabic',
+    home: 'Azza in 30 seconds',
+    how: 'Watch the 3 steps',
+    allAccess: 'How the plan works',
+    teach: 'Teaching on Azza in 30 seconds',
+  },
   allAccess: {
     name: 'All recorded courses',
     kicker: 'All-access plan',

@@ -1,0 +1,46 @@
+{
+ "id": "TeachReel",
+ "rtl": true,
+ "font": "Almarai",
+ "endHold": 45,
+ "musicVolume": 0.1,
+ "footerText": "علّم ما تعرفه",
+ "brand": {
+  "name": "عازة",
+  "logo": "logo.png",
+  "partnerLogo": null,
+  "partnerName": null,
+  "url": "azza.academy",
+  "cta": "افتح حسابك مجاناً",
+  "secondary": "",
+  "stamp": "",
+  "colors": {
+   "paper": "#f5f7f3",
+   "ink": "#102018",
+   "dark": "#0e1f17",
+   "accent": "#2fc36b",
+   "accentSoft": "#dff5e6",
+   "highlight": "#d9f45a",
+   "bad": "#e2412b",
+   "warn": "#ffc91f"
+  }
+ },
+ "voice": {
+  "model": "gemini-3.8-flash-lite-tts",
+  "voice": "Kore",
+  "style": "A warm, friendly, confident Emirati/Gulf Arabic narrator for a short explainer on an education website, speaking natural UAE colloquial Arabic (Khaleeji), not formal MSA newsreader delivery and not Egyptian or Levantine. Clear, unhurried, smiling, short natural pauses at ellipses. Speak the supplied words exactly; do not add or omit anything and do not speak these directions. BRAND PRONUNCIATION: عازة is the brand name, said 'Aaza' (long first A, like عازة), never عزّة; 'azza.academy' is said 'عازة دوت أكاديمي'."
+ },
+ "audio": {
+  "tempo": 1.06,
+  "lead": 2,
+  "tail": 8,
+  "captionWords": 4,
+  "loudness": -16,
+  "music": true,
+  "bpm": 96
+ },
+ "review": {
+  "model": "gemini-3.8-flash",
+  "expect": "natural UAE/Gulf colloquial Arabic, warm, not robotic; brand said Aaza"
+ }
+}

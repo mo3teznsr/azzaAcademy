@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowUpRight, Infinity as InfinityIcon } from 'lucide-react';
+import { ExplainerVideo } from '@/components/brand/explainer-video';
 import { ALL_ACCESS_ID } from '@azza/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -45,7 +46,8 @@ export function AllAccessTeaser() {
         {t.allAccess.title}
       </h3>
       <p className="text-sm text-muted-foreground">
-        {f.plural(p.courseCount, t.allAccess.courses)} · {fill(t.allAccess.from, { amount: money.display(perMonth) })}
+        {p.courseCount > 0 && `${f.plural(p.courseCount, t.allAccess.courses)} · `}
+        {fill(t.allAccess.from, { amount: money.display(perMonth) })}
       </p>
       <Button asChild variant="outline" className="self-start">
         <Link href="/all-access">
@@ -102,6 +104,7 @@ export function AllAccessPage() {
             <Link href="/#catalog">{t.allAccess.browse}</Link>
           </Button>
           {!plan.data?.appleProducts && <p className="text-[13px] text-muted-foreground">{t.allAccess.appNote}</p>}
+          <ExplainerVideo id="all-access" title={t.explainers.allAccess} className="mt-2 aspect-[4/5] w-full max-w-sm" />
         </div>
         {plan.isPending ? (
           <LoadingBlock rows={1} height={420} />

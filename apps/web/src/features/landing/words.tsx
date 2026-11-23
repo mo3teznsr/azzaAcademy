@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
+import { ExplainerVideoButton } from '@/components/brand/explainer-video';
 import { useI18n } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 import { EASE, useSequence } from './hooks';
@@ -37,6 +38,7 @@ export function Words() {
                 </li>
               ))}
             </ol>
+            <ExplainerVideoButton id="how" title={t.explainers.how} variant="ink" className="self-start" />
           </div>
         </Wrap>
       </section>
@@ -97,6 +99,8 @@ export function Words() {
               </motion.div>
             </AnimatePresence>
           </div>
+
+          <ExplainerVideoButton id="how" title={t.explainers.how} variant="ink" className="self-start" />
 
           <div aria-hidden className="h-1 overflow-hidden rounded-full bg-ink-deep/15">
             <motion.div className="h-full origin-left bg-ink-deep rtl:origin-right" style={{ scaleX: bar }} />

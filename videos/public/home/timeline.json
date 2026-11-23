@@ -1,0 +1,228 @@
+[
+  {
+    "layout": "photo-hook",
+    "photo": "hero.jpg",
+    "title": "تبي تتعلم مهارة جديدة؟",
+    "hl": "مهارة جديدة",
+    "chips": [
+      "🌍 بالعربي والإنجليزي",
+      "👩‍🏫 مع معلم حقيقي"
+    ],
+    "chipTone": "good",
+    "chipsAt": 0.6,
+    "voice": "تبي تتعلم مهارة جديدة… بس الفيديوهات لحالها ما تكفي؟",
+    "direction": "Instant friendly hook, relatable question, no lead-in.",
+    "start": 0,
+    "frames": 102,
+    "seconds": 3.06,
+    "audio": "home/vf-0.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.328,
+        "text": "تبي تتعلم مهارة جديدة…"
+      },
+      {
+        "start": 1.328,
+        "end": 2.499,
+        "text": "بس الفيديوهات لحالها"
+      },
+      {
+        "start": 2.499,
+        "end": 3.129,
+        "text": "ما تكفي؟"
+      }
+    ]
+  },
+  {
+    "layout": "logos",
+    "title": "هذي عازة",
+    "hl": "عازة",
+    "chips": [
+      "دورات خطوة بخطوة 👇"
+    ],
+    "voice": "في عازة، تتعلم خطوة بخطوة… ومعاك معلم يتابعك لين تتقن المهارة.",
+    "direction": "Proud, warm brand intro.",
+    "start": 102,
+    "frames": 204,
+    "seconds": 6.46,
+    "audio": "home/vf-1.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.157,
+        "text": "في عازة"
+      },
+      {
+        "start": 1.157,
+        "end": 2.947,
+        "text": "تتعلم خطوة بخطوة…"
+      },
+      {
+        "start": 2.947,
+        "end": 4.738,
+        "text": "ومعاك معلم يتابعك"
+      },
+      {
+        "start": 4.738,
+        "end": 6.528,
+        "text": "لين تتقن المهارة"
+      }
+    ]
+  },
+  {
+    "layout": "cards",
+    "title": "معلم يعرفك باسمك",
+    "hl": "باسمك",
+    "images": [
+      "on-air.jpg"
+    ],
+    "ratios": [
+      1.5
+    ],
+    "chips": [
+      "👥 صفوف صغيرة"
+    ],
+    "voice": "الصفوف صغيرة… فمعلمك يشوف شغلك ويعطيك ملاحظات، مو بث لآلاف الناس.",
+    "direction": "Sincere, personal.",
+    "start": 306,
+    "frames": 174,
+    "seconds": 5.45,
+    "audio": "home/vf-2.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.27,
+        "text": "الصفوف صغيرة…"
+      },
+      {
+        "start": 1.27,
+        "end": 2.664,
+        "text": "فمعلمك يشوف شغلك"
+      },
+      {
+        "start": 2.664,
+        "end": 3.994,
+        "text": "ويعطيك ملاحظات"
+      },
+      {
+        "start": 3.994,
+        "end": 5.514,
+        "text": "مو بث لآلاف الناس"
+      }
+    ]
+  },
+  {
+    "layout": "tiles",
+    "title": "على راحتك",
+    "hl": "راحتك",
+    "tiles": [
+      {
+        "icon": "📚",
+        "label": "دروس"
+      },
+      {
+        "icon": "🎥",
+        "label": "حصص مباشرة"
+      },
+      {
+        "icon": "📝",
+        "label": "اختبارات"
+      }
+    ],
+    "note": "فاتتك الحصة؟ التسجيل ينتظرك",
+    "voice": "تابع الدروس وقت ما يناسبك، والتقي معلمك مباشرة مرة أو مرتين في الأسبوع.",
+    "direction": "Relaxed, reassuring.",
+    "start": 480,
+    "frames": 167,
+    "seconds": 5.23,
+    "audio": "home/vf-3.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.198,
+        "text": "تابع الدروس وقت"
+      },
+      {
+        "start": 1.198,
+        "end": 2.06,
+        "text": "ما يناسبك"
+      },
+      {
+        "start": 2.06,
+        "end": 3.407,
+        "text": "والتقي معلمك مباشرة"
+      },
+      {
+        "start": 3.407,
+        "end": 4.377,
+        "text": "مرة أو مرتين"
+      },
+      {
+        "start": 4.377,
+        "end": 5.293,
+        "text": "في الأسبوع"
+      }
+    ]
+  },
+  {
+    "layout": "cards",
+    "title": "شهادة تثبت إنك تعلّمت",
+    "hl": "شهادة",
+    "images": [
+      "cert.png"
+    ],
+    "ratios": [
+      0.82
+    ],
+    "chips": [
+      "✅ أي أحد يقدر يتحقق منها"
+    ],
+    "voice": "وفي النهاية تاخذ شهادة… وأي أحد يقدر يتحقق منها.",
+    "direction": "Proud payoff.",
+    "start": 647,
+    "frames": 145,
+    "seconds": 4.49,
+    "audio": "home/vf-4.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 2.101,
+        "text": "وفي النهاية تاخذ شهادة…"
+      },
+      {
+        "start": 2.101,
+        "end": 3.364,
+        "text": "وأي أحد يقدر"
+      },
+      {
+        "start": 3.364,
+        "end": 4.556,
+        "text": "يتحقق منها"
+      }
+    ]
+  },
+  {
+    "layout": "cta",
+    "title": "مهارتك الجاية تبدأ هنا",
+    "hl": "تبدأ هنا",
+    "voice": "اختار دورتك الحين من عازة دوت أكاديمي.",
+    "direction": "Warm, energetic call to action.",
+    "start": 792,
+    "frames": 90,
+    "seconds": 2.64,
+    "audio": "home/vf-5.wav",
+    "subtitles": [
+      {
+        "start": 0.067,
+        "end": 1.307,
+        "text": "اختار دورتك الحين"
+      },
+      {
+        "start": 1.307,
+        "end": 2.708,
+        "text": "من عازة دوت أكاديمي"
+      }
+    ]
+  }
+]

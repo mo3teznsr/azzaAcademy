@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import { motion, useMotionValueEvent, useScroll } from 'motion/react';
 import { useAuth } from '@/lib/auth/use-auth';
 import { sessionCode } from '@/lib/i18n/format';
+import { AllAccessTeaser } from '@/features/subscriptions/all-access';
 import { useI18n } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 import { LANDING_IMAGES } from './content';
@@ -94,6 +95,10 @@ export function Recordings() {
               <Seat state="empty" className="text-[13px]" /> {r.upcoming}
             </span>
           </div>
+        </div>
+
+        <div className="max-w-md">
+          <AllAccessTeaser />
         </div>
       </Wrap>
     </section>
