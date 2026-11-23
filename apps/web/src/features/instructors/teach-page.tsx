@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ExplainerVideoButton } from '@/components/brand/explainer-video';
+import { ExplainerVideo } from '@/components/brand/explainer-video';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -63,12 +63,14 @@ export function TeachPage({ initialTerms }: { initialTerms?: TeachingTerms }) {
               </li>
             ))}
           </ul>
-          <ExplainerVideoButton id="teach" title={t.explainers.teach} className="self-start" />
           <ShareGlance terms={terms.data} />
         </section>
 
-        <div id="join" className="scroll-mt-24">
-          <JoinPanel />
+        <div className="flex flex-col gap-6">
+          <div id="join" className="scroll-mt-24">
+            <JoinPanel />
+          </div>
+          <ExplainerVideo id="teach" title={t.explainers.teach} className="aspect-[4/5] w-full max-w-md self-center lg:self-start" />
         </div>
       </div>
 
