@@ -14,8 +14,10 @@ import { cn } from '@/lib/utils';
  */
 export type ExplainerId = 'home' | 'how' | 'all-access' | 'teach';
 
-const src = (id: ExplainerId) => `/videos/${id}.mp4`;
-const poster = (id: ExplainerId) => `/videos/${id}.jpg`;
+export const explainerSrc = (id: ExplainerId) => `/videos/${id}.mp4`;
+export const explainerPoster = (id: ExplainerId) => `/videos/${id}.jpg`;
+const src = explainerSrc;
+const poster = explainerPoster;
 
 /** In the dialog the video mounts on open (that click allows sound), so it can autoplay. */
 function Player({ id, title }: { id: ExplainerId; title: string }) {
@@ -26,7 +28,7 @@ function Player({ id, title }: { id: ExplainerId; title: string }) {
 }
 
 /** The duration chip and the play affordance drawn over a cover. */
-function PlayBadge({ label }: { label: string }) {
+export function PlayBadge({ label }: { label: string }) {
   const { t } = useI18n();
   return (
     <span className="flex items-center gap-3 rounded-full bg-white/95 py-2 ps-2 pe-5 text-ink-deep shadow-media transition-transform duration-200 group-hover:-translate-y-0.5">

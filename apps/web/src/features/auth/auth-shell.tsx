@@ -1,8 +1,10 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import Image from 'next/image';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
+import { PlayBadge, explainerPoster, explainerSrc } from '@/components/brand/explainer-video';
+import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/signal-mark';
 import { LocaleSwitcher } from '@/components/brand/switchers';
 import { ThemeMenu } from '@/components/brand/theme-switcher';
@@ -14,6 +16,14 @@ import { useI18n } from '@/lib/i18n/provider';
  */
 export function AuthShell({ kicker, title, sub, children }: { kicker: string; title: string; sub?: string; children: ReactNode }) {
   const { t } = useI18n();
+  // "Azza in 30 seconds" plays over the whole photo panel. The element is there from the start with preload="none"
+  // (nothing downloads), so play() runs inside the click and keeps its sound.
+  const video = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const stop = () => {
+    video.current?.pause();
+    setPlaying(false);
+  };
   return (
     <div className="flex min-h-dvh items-stretch justify-center bg-background p-3 sm:p-6 lg:items-center lg:p-10">
       <div className="grid w-full max-w-[1180px] overflow-hidden rounded-[28px] border border-border bg-card shadow-card lg:min-h-[min(760px,calc(100dvh-5rem))] lg:grid-cols-[1fr_1.05fr]">
@@ -35,7 +45,35 @@ export function AuthShell({ kicker, title, sub, children }: { kicker: string; ti
                 </li>
               ))}
             </ul>
+            <button
+              type="button"
+              className="group self-start"
+              onClick={() => {
+                setPlaying(true);
+                void video.current?.play();
+              }}
+            >
+              <PlayBadge label={t.explainers.home} />
+            </button>
           </div>
+          <video
+            ref={video}
+            src={explainerSrc('home')}
+            poster={explainerPoster('home')}
+            preload="none"
+            playsInline
+            controls={playing}
+            aria-label={t.explainers.home}
+            aria-hidden={!playing}
+            tabIndex={playing ? 0 : -1}
+            onEnded={() => setPlaying(false)}
+            className={playing ? 'absolute inset-0 z-20 size-full bg-ink-deep object-cover' : 'pointer-events-none absolute inset-0 -z-30 size-full opacity-0'}
+          />
+          {playing && (
+            <Button variant="secondary" size="icon-sm" className="absolute end-4 top-4 z-30 rounded-full" onClick={stop} aria-label={t.common.close}>
+              <X />
+            </Button>
+          )}
         </section>
 
         {/* Form side. */}
