@@ -17,6 +17,9 @@ import { effectivePreviewLessonId } from './preview-lesson';
 /** What clients get: Stripe ids stay server-side, Apple ids come as one block. */
 export type CourseDto<T extends CourseRecord = CourseRecord> = Omit<T, 'stripeProductId' | 'stripeMonthlyPriceId' | 'stripeYearlyPriceId' | 'teacherCutPercent' | 'appleSyncStatus' | 'appleSyncDetail' | 'appleSyncedAt'> & {
   appleProducts: { monthly: string | null; yearly: string | null } | null;
+  /** Recorded plans' VAT-inclusive prices (what the learner pays); null when the plan has no price or VAT is unknown here. */
+  monthlyTotalFils: number | null;
+  yearlyTotalFils: number | null;
   /** Only admins and the course's author get this; everyone else gets no such field. */
   teacherCutPercent?: number | null;
   /** Last App Store product sync; only admins and the author get these (the detail is on the admin App Store status). */
@@ -30,7 +33,10 @@ type Actor = { id: string; role: Role };
 /** The teacher's cut is private to admins and the author. */
 const canSeeCut = (course: Pick<CourseRecord, 'createdById'>, viewer: Viewer) => viewer?.role === 'ADMIN' || (!!viewer && course.createdById === viewer.id);
 
-export function present<T extends CourseRecord>(course: T, viewer: Viewer = null): CourseDto<T> {
+/** Adds VAT to a pre-VAT price (`PriceCalculator.inclusive`). */
+export type Inclusive = (priceFils: number) => number;
+
+export function present<T extends CourseRecord>(course: T, viewer: Viewer = null, inclusive?: Inclusive): CourseDto<T> {
   const { stripeProductId: _p, stripeMonthlyPriceId: _m, stripeYearlyPriceId: _y, teacherCutPercent, appleSyncStatus, appleSyncDetail: _d, appleSyncedAt, ...rest } = course;
   const monthly = course.appleMonthlyProductId ?? null;
   const yearly = course.appleYearlyProductId ?? null;
@@ -44,8 +50,12 @@ export function present<T extends CourseRecord>(course: T, viewer: Viewer = null
     }),
     type: course.type ?? 'LIVE',
     appleProducts: monthly || yearly ? { monthly, yearly } : null,
+    monthlyTotalFils: withVat(course.monthlyPriceFils, inclusive),
+    yearlyTotalFils: withVat(course.yearlyPriceFils, inclusive),
   } as unknown as CourseDto<T>;
 }
+
+const withVat = (fils: number | null | undefined, inclusive?: Inclusive) => (fils == null || !inclusive ? null : inclusive(fils));
 
 /**
  * The preview lesson clients see on a recorded course: the effective one (the teacher's choice, else the first lesson), so the
@@ -98,7 +108,13 @@ export class CourseService {
     private readonly payments?: Pick<PaymentGateway, 'upsertRecordedProduct'>,
     /** Creates the course's App Store products after its prices are set (fire-and-forget; omitted in most tests). */
     private readonly appleSync?: { recordedPricingChanged(courseId: string): void },
+    /** Adds VAT to plan prices for display (`monthlyTotalFils`); omitted in tests that don't care. */
+    private readonly inclusive?: Inclusive,
   ) {}
+
+  private present<T extends CourseRecord>(course: T, viewer: Viewer = null) {
+    return present(course, viewer, this.inclusive);
+  }
 
   /** Students see published courses; a teacher with `mine` sees their own proposals; admins see everything. */
   async list(
@@ -117,11 +133,11 @@ export class CourseService {
   }
 
   private presentPage(page: { items: CourseRecord[]; total: number }, viewer: Viewer) {
-    return { ...page, items: page.items.map((c) => present(c, viewer)) };
+    return { ...page, items: page.items.map((c) => this.present(c, viewer)) };
   }
 
   async get(idOrSlug: string, viewer: Viewer): Promise<CourseDto> {
-    return present(await this.find(idOrSlug, viewer), viewer);
+    return this.present(await this.find(idOrSlug, viewer), viewer);
   }
 
   private async find(idOrSlug: string, viewer: Viewer): Promise<CourseRecord> {
@@ -134,7 +150,7 @@ export class CourseService {
   /** Up to 4 published courses in the same category, then the same level. */
   async related(idOrSlug: string) {
     const course = await this.find(idOrSlug, null);
-    return { items: (await this.courses.related(course, 4)).map((c) => present(c)) };
+    return { items: (await this.courses.related(course, 4)).map((c) => this.present(c)) };
   }
 
   /** ADMIN creates in any state; a TEACHER's course starts as their DRAFT proposal. */
@@ -143,7 +159,7 @@ export class CourseService {
     if (actor.role !== 'ADMIN') delete input.featuredRank;
     const slug = input.slug ?? (await this.freeSlug(slugify(input.titleEn)));
     if (await this.courses.findBySlug(slug)) throw new ConflictError(`Slug "${slug}" is taken`);
-    return present(
+    return this.present(
       await this.courses.create({
         ...input,
         slug,
@@ -170,7 +186,7 @@ export class CourseService {
     const wasPublished = existing.status === 'PUBLISHED';
     const updated = await this.courses.update(id, input);
     if (input.status === 'PUBLISHED' && !wasPublished) this.syncApple(updated);
-    return present(updated, actor);
+    return this.present(updated, actor);
   }
 
   /** A recorded course that just went live (and has prices) gets its App Store products. Fire-and-forget. */
@@ -203,7 +219,7 @@ export class CourseService {
       ...(stripe && { stripeProductId: stripe.productId, stripeMonthlyPriceId: stripe.monthlyPriceId, stripeYearlyPriceId: stripe.yearlyPriceId }),
     });
     this.appleSync?.recordedPricingChanged(id);
-    return present(updated, ADMIN_VIEWER);
+    return this.present(updated, ADMIN_VIEWER);
   }
 
   /**
@@ -248,7 +264,7 @@ export class CourseService {
     if (input.lessonId !== null && !course.modules.some((m) => m.lessons?.some((l) => l.id === input.lessonId))) {
       throw new NotFoundError('Lesson', input.lessonId);
     }
-    return present(await this.courses.update(id, { previewLessonId: input.lessonId }), actor);
+    return this.present(await this.courses.update(id, { previewLessonId: input.lessonId }), actor);
   }
 
   /** ADMIN: the App Store product ids of a recorded course. Each must be the id derived from the course slug. */
@@ -265,7 +281,7 @@ export class CourseService {
       }
       data[key] = value;
     }
-    return present(await this.courses.update(id, data), ADMIN_VIEWER);
+    return this.present(await this.courses.update(id, data), ADMIN_VIEWER);
   }
 
   private async requireRecorded(id: string) {
@@ -301,7 +317,7 @@ export class CourseService {
       ar: { title: 'دورة بانتظار المراجعة', body: `أرسل مدرّس دورة ${course.titleAr ?? course.titleEn} للمراجعة` },
       data: { courseId: id },
     });
-    return present(updated, actor);
+    return this.present(updated, actor);
   }
 
   /** ADMIN: approve (→ PUBLISHED) or send back with a note (→ DRAFT). */
@@ -326,7 +342,7 @@ export class CourseService {
       });
     }
     if (decision.approve) this.syncApple(updated);
-    return present(updated, ADMIN_VIEWER);
+    return this.present(updated, ADMIN_VIEWER);
   }
 
   private assertTeacherCanEdit(course: CourseRecord, actor: Actor) {

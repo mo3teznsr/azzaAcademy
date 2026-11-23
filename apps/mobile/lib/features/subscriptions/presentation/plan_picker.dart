@@ -96,8 +96,8 @@ class PlanPicker extends ConsumerWidget {
     if (sub != null && sub.hasAccess) return _PlanStatus(course: course, subscription: sub);
     if (allAccess?.hasAccess ?? false) return const _IncludedInAllAccess();
 
-    final monthly = course.monthlyPriceFils ?? course.priceFils;
-    final yearly = course.yearlyPriceFils;
+    final monthly = course.monthlyShownFils ?? course.priceFils;
+    final yearly = course.yearlyShownFils;
     if (yearly == null && choice.plan == SubscriptionPlan.yearly) {
       // No yearly price on this course: start on monthly instead (after this frame, not during build).
       Future.microtask(() => controller.plan(SubscriptionPlan.monthly));
@@ -447,7 +447,7 @@ class _PlanStartBarState extends ConsumerState<PlanStartBar> {
     final choice = ref.watch(planChoiceProvider(course.id));
     final availability = planAvailability(ref, course, choice);
     final pf = ref.watch(priceFormatProvider);
-    final fils = choice.plan == SubscriptionPlan.yearly ? course.yearlyPriceFils : (course.monthlyPriceFils ?? course.priceFils);
+    final fils = choice.plan == SubscriptionPlan.yearly ? course.yearlyShownFils : (course.monthlyShownFils ?? course.priceFils);
     final storeId = course.appleProducts?.forPlan(choice.plan);
     final storePrice = usesAppStorePayments && storeId != null ? ref.watch(appStoreProductProvider(storeId)).value?.price : null;
     final shown = usesAppStorePayments ? storePrice : (fils == null ? null : pf.display(fils));

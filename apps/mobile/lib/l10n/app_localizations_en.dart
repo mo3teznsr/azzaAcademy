@@ -5888,8 +5888,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get planWatchFree => 'Watch the free lesson';
 
   @override
-  String get planVatNote =>
-      'Prices are before VAT. Any VAT is added at checkout.';
+  String get planVatNote => 'Prices include VAT.';
 
   @override
   String get planFreeLesson => 'Free lesson';

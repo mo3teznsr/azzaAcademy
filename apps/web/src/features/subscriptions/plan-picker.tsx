@@ -78,7 +78,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 /** What a plan form sells: a recorded course, or the all-access plan (`ALL_ACCESS_ID` as id and slug). */
-export type PlanOffer = Pick<CourseDetail, 'id' | 'slug' | 'titleEn' | 'monthlyPriceFils' | 'yearlyPriceFils'>;
+export type PlanOffer = Pick<CourseDetail, 'id' | 'slug' | 'titleEn' | 'monthlyPriceFils' | 'yearlyPriceFils' | 'monthlyTotalFils' | 'yearlyTotalFils'>;
 
 export function PlanForm({
   course,
@@ -99,8 +99,9 @@ export function PlanForm({
   const money = useMoney();
   const qc = useQueryClient();
   const { isSignedIn, isPending: authPending } = useAuth();
-  const monthly = course.monthlyPriceFils;
-  const yearly = course.yearlyPriceFils;
+  // What the learner pays (VAT included); the pre-VAT price only if the API sent no total.
+  const monthly = course.monthlyTotalFils ?? course.monthlyPriceFils;
+  const yearly = course.yearlyTotalFils ?? course.yearlyPriceFils;
   // Yearly first when the course has a yearly price: it saves the learner money and is paid up front.
   const [plan, setPlan] = useState<SubscriptionPlan>(yearly != null ? 'YEARLY' : 'MONTHLY');
   const [method, setMethod] = useState<Method>(renewing ? 'BANK' : 'CARD');

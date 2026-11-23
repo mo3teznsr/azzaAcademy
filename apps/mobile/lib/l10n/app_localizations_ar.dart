@@ -6063,8 +6063,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get planWatchFree => 'شاهد الدرس المجاني';
 
   @override
-  String get planVatNote =>
-      'الأسعار قبل ضريبة القيمة المضافة، وتُضاف الضريبة عند الدفع إن وُجدت.';
+  String get planVatNote => 'الأسعار شاملة ضريبة القيمة المضافة.';
 
   @override
   String get planFreeLesson => 'درس مجاني';

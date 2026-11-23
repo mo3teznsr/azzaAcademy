@@ -19,7 +19,7 @@ export function CourseCard({ course, batches }: { course: Course; batches: Batch
   const next = batches.find((b) => b.status === 'ENROLLING') ?? batches[0];
   // "From" = the lowest listed batch price; the course's own derived price when no batches came with it.
   const recorded = course.type === 'RECORDED';
-  const minPrice = recorded ? (course.monthlyPriceFils ?? course.priceFils) : batches.length ? Math.min(...batches.map(batchPriceFils)) : course.priceFils;
+  const minPrice = recorded ? (course.monthlyTotalFils ?? course.monthlyPriceFils ?? course.priceFils) : batches.length ? Math.min(...batches.map(batchPriceFils)) : course.priceFils;
   return (
     <article className="group relative h-full">
       <Link href={href(`/courses/${course.slug}`)} className="flex h-full flex-col gap-4 rounded-[18px] border border-border bg-card p-3 no-underline transition-[translate,box-shadow] duration-300 ease-(--ease-expo) group-hover:-translate-y-1 group-hover:shadow-card">

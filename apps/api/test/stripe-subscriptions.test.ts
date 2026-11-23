@@ -759,13 +759,14 @@ describe('AllAccessPlanService', () => {
   function planSetup() {
     let stored = { ...EMPTY_ALL_ACCESS_PLAN };
     const repo = { get: async () => stored, save: async (p: Partial<typeof stored>) => (stored = { ...stored, ...p }), publishedRecordedCount: async () => 12 };
-    return { service: new AllAccessPlanService(repo, new FakePaymentGateway(new PriceCalculator(5))), stored: () => stored };
+    const prices = new PriceCalculator(5);
+    return { service: new AllAccessPlanService(repo, new FakePaymentGateway(prices), (f) => prices.inclusive(f)), stored: () => stored };
   }
 
   test('setting prices syncs VAT-inclusive Stripe Prices and switches the plan on', async () => {
     const { service, stored } = planSetup();
     const out = await service.update({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000 });
-    expect(out).toEqual({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, courseCount: 12, appleProducts: null, cardReady: true });
+    expect(out).toEqual({ enabled: true, monthlyPriceFils: 20_000, yearlyPriceFils: 200_000, monthlyTotalFils: 21_000, yearlyTotalFils: 210_000, courseCount: 12, appleProducts: null, cardReady: true });
     expect(stored()).toMatchObject({ stripeProductId: `prod_fake_${ALL_ACCESS_ID}`, stripeMonthlyPriceId: 'price_fake_m_21000', stripeYearlyPriceId: 'price_fake_y_210000' });
   });
 

@@ -376,7 +376,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
 
   const subscriptionRepo = new PrismaSubscriptionRepository(db);
   const allAccessRepo = new PrismaAllAccessRepository(db);
-  const allAccessPlan = new AllAccessPlanService(allAccessRepo, payments);
+  const allAccessPlan = new AllAccessPlanService(allAccessRepo, payments, (f) => prices.inclusive(f));
   const allAccessEarnings = new AllAccessEarningsService(allAccessRepo, new EarningsCalculator(), settings, clock, async () => (await rules()).earningHoldDays);
   const subscriptions = new SubscriptionService(
     subscriptionRepo,
@@ -417,7 +417,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
 
   const meService = new MeService(new PrismaMeRepository(db), clock, lifecycle, adapters.storage, currencies);
   const certificates = new CertificateService(new PrismaCertificateRepository(db), new CertificateCodeGenerator(), undefined, notifications, config.WEB_URL);
-  const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync);
+  const courses = new CourseService(courseRepo, notifications, clock, categories, payments, appStoreSync, (f) => prices.inclusive(f));
   resyncRecordedPrices = async () => {
     const r = await courses.resyncRecordedStripePrices();
     await allAccessPlan.resyncStripePrices().catch((e) => console.error('[stripe] re-syncing the all-access prices failed', e));
@@ -461,7 +461,7 @@ export function createContainer(config: AppConfig, adapters: Adapters = createAd
     courses,
     categories,
     reviews: new ReviewService(new PrismaReviewRepository(db), notifications, () => clock.now()),
-    savedCourses: new SavedCourseService(db),
+    savedCourses: new SavedCourseService(db, (f) => prices.inclusive(f)),
     blog: new BlogService(new PrismaBlogRepository(db), () => clock.now()),
     instructorApplications: new InstructorApplicationService(new PrismaApplicationRepository(db), notifications, () => clock.now()),
     batches: new BatchService(batchRepo, courseRepo, new ScheduleGenerator(), access, notifications, clock, appStoreSync),
