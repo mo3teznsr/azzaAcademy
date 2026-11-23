@@ -336,7 +336,7 @@ const en = {
     perYear: '{amount} / year',
     yearlyPerMonth: '≈ {amount}/month',
     saveMonths: { zero: 'save {n} months', one: 'save {n} month', two: 'save {n} months', few: 'save {n} months', many: 'save {n} months', other: 'save {n} months' },
-    vat: 'VAT is added at checkout where it applies.',
+    vat: 'Prices include VAT.',
     planLabel: 'Choose a plan',
     youGet: 'What you get',
     getLessons: 'All lessons and quizzes',

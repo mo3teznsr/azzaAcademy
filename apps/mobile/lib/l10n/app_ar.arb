@@ -1618,7 +1618,7 @@
   "planWebsiteOnlyBody": "افتح موقعنا في المتصفح لتبدأ هذه الخطة.",
   "planAppleNote": "تتولى Apple عملية الدفع. أدِر اشتراكك أو ألغِه من اشتراكات App Store.",
   "planWatchFree": "شاهد الدرس المجاني",
-  "planVatNote": "الأسعار قبل ضريبة القيمة المضافة، وتُضاف الضريبة عند الدفع إن وُجدت.",
+  "planVatNote": "الأسعار شاملة ضريبة القيمة المضافة.",
   "planFreeLesson": "درس مجاني",
   "planTransferBefore": "أرسل التحويل قبل {date}.",
   "planReceiptSent": "استلمنا إيصالك",

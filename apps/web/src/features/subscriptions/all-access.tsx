@@ -35,7 +35,7 @@ export function AllAccessTeaser() {
   const plan = useAllAccessPlan();
   const p = plan.data;
   if (!p?.enabled || p.monthlyPriceFils == null || p.yearlyPriceFils == null) return null;
-  const perMonth = Math.min(p.monthlyPriceFils, Math.round(p.yearlyPriceFils / 12));
+  const perMonth = Math.min(p.monthlyTotalFils ?? p.monthlyPriceFils, Math.round((p.yearlyTotalFils ?? p.yearlyPriceFils) / 12));
   return (
     <aside aria-labelledby="all-access-teaser" className="flex flex-col gap-3 rounded-[24px] border border-dashed border-line-strong p-5">
       <span className="label-mono flex items-center gap-1.5 text-muted-foreground">
@@ -122,7 +122,7 @@ export function AllAccessPage() {
           </p>
         ) : (
           <PlanForm
-            course={{ id: ALL_ACCESS_ID, slug: ALL_ACCESS_ID, titleEn: t.allAccess.name, monthlyPriceFils: p.monthlyPriceFils, yearlyPriceFils: p.yearlyPriceFils }}
+            course={{ id: ALL_ACCESS_ID, slug: ALL_ACCESS_ID, titleEn: t.allAccess.name, monthlyPriceFils: p.monthlyPriceFils, yearlyPriceFils: p.yearlyPriceFils, monthlyTotalFils: p.monthlyTotalFils, yearlyTotalFils: p.yearlyTotalFils }}
             subscription={mine}
             renewing={false}
             gets={[t.allAccess.getLessons, t.allAccess.getCertificate, t.allAccess.getCancel]}

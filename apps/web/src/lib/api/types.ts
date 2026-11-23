@@ -126,6 +126,9 @@ export interface Course {
   /** RECORDED only, before VAT, in fils of AED; null on LIVE courses. */
   monthlyPriceFils: number | null;
   yearlyPriceFils: number | null;
+  /** The same plan prices with VAT, as the learner pays them; shown to learners. Null/absent = fall back to the pre-VAT price. */
+  monthlyTotalFils?: number | null;
+  yearlyTotalFils?: number | null;
   /** The one lesson anyone can watch without a plan; null = none. */
   previewLessonId: string | null;
   appleProducts: { monthly: string | null; yearly: string | null } | null;

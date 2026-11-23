@@ -33,6 +33,9 @@ export interface AllAccessPlanView {
   enabled: boolean;
   monthlyPriceFils: number | null;
   yearlyPriceFils: number | null;
+  /** The same prices with VAT, as learners pay them (shown in the clients); null when unpriced. */
+  monthlyTotalFils: number | null;
+  yearlyTotalFils: number | null;
   /** Published recorded courses the plan opens today. */
   courseCount: number;
   /** App Store products (iOS); null when the plan is not sold in the iPhone app. */

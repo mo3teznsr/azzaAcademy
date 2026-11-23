@@ -205,7 +205,7 @@ class CourseCard extends ConsumerWidget {
               Expanded(child: Text(c.title(locale), style: t.titleMedium)),
               const SizedBox(width: 8),
               if (c.isRecorded)
-                Price(c.monthlyPriceFils ?? c.priceFils ?? 0, label: l.fromPricePerMonth, style: t.titleSmall, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end)
+                Price(c.monthlyShownFils ?? c.priceFils ?? 0, label: l.fromPricePerMonth, style: t.titleSmall, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end)
               else
                 Price.from(c.priceFils, style: t.titleSmall, crossAxisAlignment: CrossAxisAlignment.end, textAlign: TextAlign.end),
             ],

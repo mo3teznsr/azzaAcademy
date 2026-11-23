@@ -15,15 +15,16 @@ import { checkoutApi, type BankAccount, type Order } from '@/lib/api';
 import { useI18n } from '@/lib/i18n/provider';
 import { useMoney } from '@/lib/money';
 
-export function CopyValue({ value, label }: { value: string; label: string }) {
+/** A labelled value with a Copy button; `display` changes only how it reads (e.g. an IBAN in groups of four), never what is copied. */
+export function CopyValue({ value, label, display }: { value: string; label: string; display?: string }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl bg-background px-4 py-3">
-      <div className="min-w-0">
-        <span className="label-mono block text-muted-foreground">{label}</span>
-        <b className="font-mono text-lg" dir="ltr">
-          {value}
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="label-mono text-muted-foreground">{label}</span>
+        <b className="font-mono text-base font-bold tabular-nums [overflow-wrap:anywhere] sm:text-lg" dir="ltr">
+          {display ?? value}
         </b>
       </div>
       <Button
@@ -84,14 +85,16 @@ export function BankTransferDetails({
             {bankAccount.accountName}
             {bankAccount.branch ? ` · ${bankAccount.branch}` : ''}
           </span>
-          <div className="mt-2 font-mono text-sm" dir="ltr">
-            IBAN {bankAccount.iban}
-            {bankAccount.swift ? ` · SWIFT ${bankAccount.swift}` : ''} · AED
-          </div>
+          {bankAccount.swift && (
+            <div className="mt-1 font-mono text-xs text-muted-foreground" dir="ltr">
+              SWIFT {bankAccount.swift} · AED
+            </div>
+          )}
           {bankAccount.instructions && <p className="mt-2 text-sm text-muted-foreground">{bankAccount.instructions}</p>}
         </div>
       )}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="flex flex-col gap-2">
+        {bankAccount && <CopyValue label="IBAN" value={bankAccount.iban.replace(/\s+/g, '')} display={groupIban(bankAccount.iban)} />}
         <CopyValue label={t.checkout.exactAmount} value={money.aed(order.totalFils)} />
         <CopyValue label={t.checkout.reference} value={reference} />
       </div>
@@ -138,3 +141,6 @@ export function BankTransferDetails({
     </div>
   );
 }
+
+/** An IBAN as banks print it: groups of four characters. */
+const groupIban = (iban: string) => iban.replace(/\s+/g, '').replace(/(.{4})(?=.)/g, '$1 ');

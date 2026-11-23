@@ -142,6 +142,8 @@ class Course {
     this.type = CourseType.live,
     this.monthlyPriceFils,
     this.yearlyPriceFils,
+    this.monthlyTotalFils,
+    this.yearlyTotalFils,
     this.previewLessonId,
     this.appleProducts,
     this.teacherCutPercent,
@@ -183,6 +185,8 @@ class Course {
         type: CourseType.parse(j['type']),
         monthlyPriceFils: intOrNull(j, 'monthlyPriceFils'),
         yearlyPriceFils: intOrNull(j, 'yearlyPriceFils'),
+        monthlyTotalFils: intOrNull(j, 'monthlyTotalFils'),
+        yearlyTotalFils: intOrNull(j, 'yearlyTotalFils'),
         previewLessonId: strOrNull(j, 'previewLessonId'),
         appleProducts: AppleProducts.fromJson(objOrNull(j, 'appleProducts')),
         teacherCutPercent: intOrNull(j, 'teacherCutPercent'),
@@ -240,6 +244,14 @@ class Course {
   final CourseType type;
   final int? monthlyPriceFils;
   final int? yearlyPriceFils;
+
+  /// The plan prices with VAT, as the learner pays them (null when the API sent none).
+  final int? monthlyTotalFils;
+  final int? yearlyTotalFils;
+
+  /// What learners see: the VAT-inclusive price, else the pre-VAT one.
+  int? get monthlyShownFils => monthlyTotalFils ?? monthlyPriceFils;
+  int? get yearlyShownFils => yearlyTotalFils ?? yearlyPriceFils;
 
   /// The one lesson anyone may watch without a plan.
   final String? previewLessonId;

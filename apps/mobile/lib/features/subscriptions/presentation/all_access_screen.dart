@@ -24,6 +24,8 @@ Course allAccessAsCourse(AllAccessPlan plan) => Course(
       status: plan.enabled ? CourseStatus.published : CourseStatus.draft,
       monthlyPriceFils: plan.monthlyPriceFils,
       yearlyPriceFils: plan.yearlyPriceFils,
+      monthlyTotalFils: plan.monthlyTotalFils,
+      yearlyTotalFils: plan.yearlyTotalFils,
       appleProducts: plan.appleMonthly == null && plan.appleYearly == null ? null : AppleProducts(monthly: plan.appleMonthly, yearly: plan.appleYearly),
     );
 
@@ -145,7 +147,7 @@ class AllAccessEntryCard extends ConsumerWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(l.allAccessEntry, style: t.titleSmall),
               const SizedBox(height: 2),
-              Text(l.allAccessEntryFrom(pf.display(plan.monthlyPriceFils!)), style: t.bodySmall),
+              Text(l.allAccessEntryFrom(pf.display(plan.monthlyTotalFils ?? plan.monthlyPriceFils!)), style: t.bodySmall),
             ]),
           ),
           const Icon(Icons.chevron_right_rounded),

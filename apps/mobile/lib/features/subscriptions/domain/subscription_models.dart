@@ -237,10 +237,10 @@ const allAccessId = '_all-access';
 
 bool isAllAccess(String? courseIdOrSlug) => courseIdOrSlug == allAccessId;
 
-/// `GET /all-access`: one plan that opens every published recorded course. Prices before VAT, like recorded courses.
+/// `GET /all-access`: one plan that opens every published recorded course. Prices before VAT, like recorded courses, plus their VAT-inclusive totals for display.
 @immutable
 class AllAccessPlan {
-  const AllAccessPlan({required this.enabled, this.monthlyPriceFils, this.yearlyPriceFils, this.courseCount = 0, this.appleMonthly, this.appleYearly});
+  const AllAccessPlan({required this.enabled, this.monthlyPriceFils, this.yearlyPriceFils, this.monthlyTotalFils, this.yearlyTotalFils, this.courseCount = 0, this.appleMonthly, this.appleYearly});
 
   factory AllAccessPlan.fromJson(Json j) {
     final apple = objOrNull(j, 'appleProducts');
@@ -248,6 +248,8 @@ class AllAccessPlan {
       enabled: boolean(j, 'enabled'),
       monthlyPriceFils: intOrNull(j, 'monthlyPriceFils'),
       yearlyPriceFils: intOrNull(j, 'yearlyPriceFils'),
+      monthlyTotalFils: intOrNull(j, 'monthlyTotalFils'),
+      yearlyTotalFils: intOrNull(j, 'yearlyTotalFils'),
       courseCount: intOrNull(j, 'courseCount') ?? 0,
       appleMonthly: apple == null ? null : strOrNull(apple, 'monthly'),
       appleYearly: apple == null ? null : strOrNull(apple, 'yearly'),
@@ -257,6 +259,10 @@ class AllAccessPlan {
   final bool enabled;
   final int? monthlyPriceFils;
   final int? yearlyPriceFils;
+
+  /// The same prices with VAT, as learners pay them.
+  final int? monthlyTotalFils;
+  final int? yearlyTotalFils;
 
   /// Published recorded courses the plan opens today.
   final int courseCount;

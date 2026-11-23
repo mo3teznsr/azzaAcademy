@@ -1,12 +1,15 @@
 import { NotFoundError } from '../../core/errors';
 import type { Role } from '@azza/shared';
 import type { Db } from '../../infrastructure/db';
-import { present } from '../courses/course.service';
+import { present, type Inclusive } from '../courses/course.service';
 import type { CourseRecord } from '../courses/course.repository';
 
 /** Wishlist: a user's saved published courses, newest first. */
 export class SavedCourseService {
-  constructor(private readonly db: Db) {}
+  constructor(
+    private readonly db: Db,
+    private readonly inclusive?: Inclusive,
+  ) {}
 
   /** Courses go through the catalog presenter: Stripe ids never leave, and the teacher's cut only reaches admins and the author. */
   async list(userId: string, role: Role = 'STUDENT') {
@@ -19,7 +22,7 @@ export class SavedCourseService {
         },
       },
     });
-    return { items: rows.map((r) => ({ ...present(r.course as unknown as CourseRecord, { id: userId, role }), savedAt: r.createdAt })) };
+    return { items: rows.map((r) => ({ ...present(r.course as unknown as CourseRecord, { id: userId, role }, this.inclusive), savedAt: r.createdAt })) };
   }
 
   async save(userId: string, courseId: string) {

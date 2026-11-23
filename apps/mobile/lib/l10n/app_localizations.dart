@@ -9809,7 +9809,7 @@ abstract class AppLocalizations {
   /// No description provided for @planVatNote.
   ///
   /// In en, this message translates to:
-  /// **'Prices are before VAT. Any VAT is added at checkout.'**
+  /// **'Prices include VAT.'**
   String get planVatNote;
 
   /// No description provided for @planFreeLesson.

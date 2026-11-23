@@ -3467,7 +3467,7 @@
   "planWebsiteOnlyBody": "Open our website in your browser to start this plan.",
   "planAppleNote": "Payment is handled by Apple. Manage or cancel in your App Store subscriptions.",
   "planWatchFree": "Watch the free lesson",
-  "planVatNote": "Prices are before VAT. Any VAT is added at checkout.",
+  "planVatNote": "Prices include VAT.",
   "planFreeLesson": "Free lesson",
   "planTransferBefore": "Send it before {date}.",
   "@planTransferBefore": {

@@ -15,6 +15,8 @@ export class AllAccessPlanService {
   constructor(
     private readonly repo: AllAccessPlanRepository,
     private readonly payments: Pick<PaymentGateway, 'upsertRecordedProduct'> | null,
+    /** Adds VAT to a pre-VAT price, for the VAT-inclusive totals learners see; omitted in tests that don't care. */
+    private readonly inclusive?: (priceFils: number) => number,
   ) {}
 
   /** `GET /all-access` — public. */
@@ -26,6 +28,8 @@ export class AllAccessPlanService {
       enabled: plan.enabled,
       monthlyPriceFils: plan.monthlyPriceFils,
       yearlyPriceFils: plan.yearlyPriceFils,
+      monthlyTotalFils: plan.monthlyPriceFils == null || !this.inclusive ? null : this.inclusive(plan.monthlyPriceFils),
+      yearlyTotalFils: plan.yearlyPriceFils == null || !this.inclusive ? null : this.inclusive(plan.yearlyPriceFils),
       courseCount,
       appleProducts: monthly || yearly ? { monthly, yearly } : null,
     };
